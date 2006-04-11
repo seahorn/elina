@@ -1,0 +1,524 @@
+/* -*- mode: c -*- */
+
+quote(MLI,"(** Abstract values of level 1 *)")
+
+quote(C, "\n\
+#include <limits.h>\n\
+#include \"ap_expr0.h\"\n\
+#include \"ap_abstract0.h\"\n\
+#include \"ap_environment.h\"\n\
+#include \"ap_expr1.h\"\n\
+#include \"ap_abstract1.h\"\n\
+#include \"caml/callback.h\"\n\
+#include \"apron_caml.h\"\n\
+")
+
+import "scalar.idl";
+import "interval.idl";
+import "coeff.idl";
+import "dim.idl";
+import "linexpr0.idl";
+import "lincons0.idl";
+import "generator0.idl";
+import "manager.idl";
+import "abstract0.idl";
+import "environment.idl";
+import "linexpr1.idl";
+import "lincons1.idl";
+import "generator1.idl";
+
+struct ap_abstract1_t {
+  [mlname(mutable_abstract0)] ap_abstract0_ptr abstract0;
+  [mlname(mutable_env)] ap_environment_ptr env;
+};
+
+quote(MLMLI,"type box1 = { mutable interval_array : Interval.t array; mutable box1_env : Environment.t }")
+
+quote(MLMLI,"(* ********************************************************************** *)")
+quote(MLMLI,"(** {2 General management} *)")
+quote(MLMLI,"(* ********************************************************************** *)")
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Memory} *)")
+quote(MLMLI,"(* ============================================================ *)")
+
+quote(MLI,"\n\
+val copy : Manager.t -> t -> t\n\
+val size : Manager.t -> t -> int\n\
+")
+quote(ML,"\n\
+let copy man x = { abstract0 = Abstract0.copy man x.abstract0; env = x.env }\n\
+let size man x = Abstract0.size man x.abstract0\n\
+")
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Control of internal representation} *)")
+quote(MLMLI,"(* ============================================================ *)")
+
+quote(MLI,"\n\
+val minimize : Manager.t -> t -> unit\n\
+val canonicalize : Manager.t -> t -> unit\n\
+val approximate : Manager.t -> t -> 'a -> int -> unit\n\
+val is_minimal : Manager.t -> t -> Manager.tbool_t\n\
+val is_canonical : Manager.t -> t -> Manager.tbool_t\n\
+")
+quote(ML,"\n\
+let minimize man x = Abstract0.minimize man x.abstract0\n\
+let canonicalize man x = Abstract0.canonicalize man x.abstract0\n\
+let approximate man x n = Abstract0.approximate man x.abstract0\n\
+let is_minimal man x = Abstract0.is_minimal man x.abstract0\n\
+let is_canonical man x = Abstract0.is_canonical man x.abstract0\n\
+")
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Printing} *)")
+quote(MLMLI,"(* ============================================================ *)")
+
+quote(MLI,"\n(** Dump on the [stdout] C stream the internal representation of an abstract value, for debugging purposes *)")
+void ap_abstract1_fdump(ap_manager_ptr man, [ref]struct ap_abstract1_t* a)
+  quote(call,"ap_abstract1_fdump(stdout,man, a); fflush(stdout);")
+  quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLI,"\n(** Print as a set of constraints *)")
+quote(MLI,"val print: Format.formatter -> t -> unit")
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Serialization} *)")
+quote(MLMLI,"(* ============================================================ *)")
+
+quote(MLMLI,"(* ********************************************************************** *)")
+quote(MLMLI,"(** {2 Constructor, accessors, tests and property extraction} *)")
+quote(MLMLI,"(* ********************************************************************** *)")
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Basic constructors} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+struct ap_abstract1_t ap_abstract1_bottom(ap_manager_ptr man, ap_environment_ptr env)
+    quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_top(ap_manager_ptr man, ap_environment_ptr env)
+    quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_of_box(ap_manager_ptr man,
+				    ap_environment_ptr env,
+				    [size_is(size)]ap_var_t* tvar,
+				    [size_is(size2)]ap_interval_ptr* tinterval,
+				    unsigned int size, unsigned int size2)
+  quote(call,"\n\
+if (size!=size2)\n\
+  caml_failwith(\"Abstract1.of_box: the two arrays are of different sizes\");\n\
+_res = ap_abstract1_of_box(man,env,tvar,tinterval,size);\n\
+")
+    quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_of_lincons_array(ap_manager_ptr man,
+				       ap_environment_ptr env,
+				       [ref]struct ap_lincons1_array_t* array)
+    quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Accessors} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+quote(MLI,"\n\
+val manager : t -> Manager.t\n\
+val env : t -> Environment.t\n\
+val abstract0 : t -> Abstract0.t\n\
+")
+
+quote(ML,"\n\
+let manager x = Abstract0.manager x.abstract0\n\
+let env x = x.env\n\
+let abstract0 x = x.abstract0\n\
+")
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Tests} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+quote(MLI,"\n\
+val is_bottom : Manager.t -> t -> Manager.tbool_t\n\
+val is_top : Manager.t -> t -> Manager.tbool_t\n\
+")
+quote(ML,"\n\
+let is_bottom man x = Abstract0.is_bottom man x.abstract0\n\
+let is_top man x = Abstract0.is_top man x.abstract0\n\
+")
+
+ enum tbool_t ap_abstract1_is_leq(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
+    quote(dealloc,"I0_CHECK_EXC(man)");
+
+enum tbool_t ap_abstract1_is_eq(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
+    quote(dealloc,"I0_CHECK_EXC(man)");
+
+
+enum tbool_t ap_abstract1_sat_lincons(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, [ref]struct ap_lincons1_t* v)
+    quote(dealloc,"I0_CHECK_EXC(man)");
+
+enum tbool_t ap_abstract1_sat_interval(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+				    ap_var_t v1,
+				    [ref]struct ap_interval_t* v2)
+    quote(dealloc,"I0_CHECK_EXC(man)");
+
+enum tbool_t ap_abstract1_is_dimension_unconstrained(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, ap_var_t v)
+    quote(dealloc,"I0_CHECK_EXC(man)");
+
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Extraction of properties} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+[ref]struct ap_interval_t* ap_abstract1_bound_linexpr(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, [ref]struct ap_linexpr1_t* v)
+    quote(dealloc,"ap_interval_free(_res); I0_CHECK_EXC(man)");
+[ref]struct ap_interval_t* ap_abstract1_bound_dimension(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, ap_var_t v)
+    quote(dealloc,"ap_interval_free(_res); I0_CHECK_EXC(man)");
+
+quote(MLI,"\n\
+val to_lincons_array : Manager.t -> t -> Lincons1.earray\n\
+val to_generator_array : Manager.t -> t -> Generator1.earray\n\
+val to_box : Manager.t -> t -> box1\n\
+")
+quote(ML,"\n\
+let to_lincons_array man x = {\n\
+  Lincons1.lincons0_array = Abstract0.to_lincons_array man x.abstract0;\n\
+  Lincons1.array_env = x.env\n\
+}\n\
+let to_generator_array man x = {\n\
+  Generator1.generator0_array = Abstract0.to_generator_array man x.abstract0;\n\
+  Generator1.array_env = x.env\n\
+}\n\
+let to_box man x = {\n\
+  ap_interval_array = Abstract0.to_box man x.abstract0;\n\
+  box1_env = x.env\n\
+}\n\
+")
+
+quote(MLMLI,"(* ********************************************************************** *)")
+quote(MLMLI,"(** {2 Operations} *)")
+quote(MLMLI,"(* ********************************************************************** *)")
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Meet and Join} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+struct ap_abstract1_t ap_abstract1_meet(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
+     quote(call,"_res = ap_abstract1_meet(man,false,a1,a2);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_meet_array(ap_manager_ptr man, 
+					[size_is(size)]struct ap_abstract1_t* array, unsigned int size)
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_meet_lincons_array(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+						 [ref]struct ap_lincons1_array_t* v)
+     quote(call,"_res = ap_abstract1_meet_lincons_array(man,false,a,v);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_join(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
+     quote(call,"_res = ap_abstract1_join(man,false,a1,a2);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_join_array(ap_manager_ptr man, [size_is(size)]struct ap_abstract1_t* array, unsigned int size)
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_add_ray_array(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+					   [ref]struct ap_generator1_array_t* v)
+     quote(call,"_res = ap_abstract1_add_ray_array(man,false,a,v);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLI,"\n(** {5 Side-effect versions of the previous functions} *)\n")
+
+void ap_abstract1_meet_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
+	 quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_meet(man,true,a1,a2);\n\
+  value v = Field(_v_a1,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_meet_lincons_array_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+				       [ref]struct ap_lincons1_array_t* v)
+	 quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_meet_lincons_array(man,true,a,v);\n\
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_join_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
+	 quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_join(man,true,a1,a2);\n\
+  value v = Field(_v_a1,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_add_ray_array_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+				  [ref]struct ap_generator1_array_t* v)
+	 quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_add_ray_array(man,true,a,v);\n\
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Assignement and Substitutions} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+struct ap_abstract1_t ap_abstract1_assign_linexpr(ap_manager_ptr man,
+					    [ref]struct ap_abstract1_t* a,
+					    ap_var_t v1, [ref]struct ap_linexpr1_t* v2,
+					    struct ap_abstract1_t* dest)
+     quote(call,"_res = ap_abstract1_assign_linexpr(man,false,a,v1,v2,dest);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_substitute_linexpr(ap_manager_ptr man,
+						[ref]struct ap_abstract1_t* a,
+						ap_var_t v1, [ref]struct ap_linexpr1_t* v2,
+						struct ap_abstract1_t* dest)
+     quote(call,"_res = ap_abstract1_substitute_linexpr(man,false,a,v1,v2,dest);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_assign_linexpr_array(ap_manager_ptr man,
+						  [ref]struct ap_abstract1_t* a,
+						  [size_is(v3)]ap_var_t* v1,
+						    [size_is(v4)]struct ap_linexpr1_t* v2,
+						  int v3,int v4,
+						  struct ap_abstract1_t* dest)
+     quote(call,"\n\
+if (v3!=v4) caml_failwith(\"Abstract1.assign_linexpr_array: arrays of different size\");\n\
+_res = ap_abstract1_assign_linexpr_array(man,false,a,v1,v2,v3,dest);\n\
+")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_substitute_linexpr_array(ap_manager_ptr man,
+						      [ref]struct ap_abstract1_t* a,
+						      [size_is(v3)]ap_var_t* v1,
+						      [size_is(v4)]struct ap_linexpr1_t* v2,
+						      int v3, int v4,
+						      struct ap_abstract1_t* dest)
+     quote(call,"\n\
+if (v3!=v4) caml_failwith(\"Abstract1.substitute_linexpr_array: arrays of different size\");\n\
+_res = ap_abstract1_substitute_linexpr_array(man,false,a,v1,v2,v3,dest);\n\
+")
+      quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLI,"\n(** {5 Side-effect versions of the previous functions} *)\n")
+
+void ap_abstract1_assign_linexpr_with(ap_manager_ptr man,
+				   [ref]struct ap_abstract1_t* a,
+				   ap_var_t v1, [ref]struct ap_linexpr1_t* v2,
+				   struct ap_abstract1_t* dest)
+	 quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_assign_linexpr(man,true,a,v1,v2,dest);
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_substitute_linexpr_with(ap_manager_ptr man,
+				       [ref]struct ap_abstract1_t* a,
+				       ap_var_t v1, [ref]struct ap_linexpr1_t* v2,
+				       struct ap_abstract1_t* dest)
+  quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_substitute_linexpr(man,true,a,v1,v2,dest);
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_assign_linexpr_array_with(ap_manager_ptr man,
+					 [ref]struct ap_abstract1_t* a,
+					 [size_is(v3)]ap_var_t* v1,
+					 [size_is(v4)]struct ap_linexpr1_t* v2,
+					 int v3,int v4,
+					 struct ap_abstract1_t* dest)
+  quote(call,"\n\
+if (v3!=v4) caml_failwith(\"Abstract1.assign_linexpr_array_with: arrays of different size\");\n\
+{\n\
+  ap_abstract1_t res = ap_abstract1_assign_linexpr_array(man,true,a,v1,v2,v3,dest);\n\
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_substitute_linexpr_array_with(ap_manager_ptr man,
+					     [ref]struct ap_abstract1_t* a,
+					     [size_is(v3)]ap_var_t* v1,
+					     [size_is(v4)]struct ap_linexpr1_t* v2,
+					     int v3, int v4,
+					     struct ap_abstract1_t* dest)
+  quote(call,"\n\
+if (v3!=v4) caml_failwith(\"Abstract1.substitute_linexpr_array_with: arrays of different size\");\n\
+{\n\
+  ap_abstract1_t res = ap_abstract1_assign_linexpr_array(man,true,a,v1,v2,v3,dest);\n\
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Projections} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+struct ap_abstract1_t ap_abstract1_forget_array(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+					  [size_is(v2)]ap_var_t* v1, unsigned int v2, boolean v3)
+     quote(call,"_res = ap_abstract1_forget_array(man,false,a,v1,v2,v3);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+void ap_abstract1_forget_array_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, [size_is(v2)]ap_var_t* v1, int v2, boolean v3)
+     quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_forget_array(man,true,a,v1,v2,v3);
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Change and permutation of dimensions} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+struct ap_abstract1_t ap_abstract1_change_environment(ap_manager_ptr man,
+						 [ref]struct ap_abstract1_t* a,
+						 ap_environment_ptr v1,
+						 boolean v2)
+     quote(call,"_res = ap_abstract1_change_environment(man,false,a,v1,v2);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_minimize_environment(ap_manager_ptr man, [ref]struct ap_abstract1_t* a)
+     quote(call,"_res = ap_abstract1_minimize_environment(man,false,a);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_rename_array(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+					  [size_is(v3)]ap_var_t* v1, [size_is(v4)]ap_var_t* v2,
+					  unsigned int v3, unsigned int v4)
+     quote(call,"\n\
+if (v3!=v4) caml_failwith(\"Abstract1.rename_array: arrays of different size\");\n\
+_res = ap_abstract1_rename_array(man,false,a,v1,v2,v3);\n\
+")
+      quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_change_environment_with(ap_manager_ptr man,
+				       [ref]struct ap_abstract1_t* a,
+				       ap_environment_ptr v1,
+				       boolean v2)
+     quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_change_environment(man,true,a,v1,v2);
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+  v = Field(_v_a,1);\n\
+  *((ap_environment_ptr *) Data_custom_val(v)) = res.env;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_minimize_environment_with(ap_manager_ptr man,
+					 [ref]struct ap_abstract1_t* a)
+     quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_minimize_environment(man,true,a);
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+  v = Field(_v_a,1);\n\
+  *((ap_environment_ptr *) Data_custom_val(v)) = res.env;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_rename_array_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+				 [size_is(v3)]ap_var_t* v1, [size_is(v4)]ap_var_t* v2,
+				 unsigned int v3, unsigned int v4)
+     quote(call,"\n\
+if (v3!=v4) caml_failwith(\"Abstract1.rename_array_with: arrays of different size\");\n\
+{\n\
+  ap_abstract1_t res = ap_abstract1_rename_array(man,true,a,v1,v2,v3);\n\
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+  v = Field(_v_a,1);\n\
+  *((ap_environment_ptr *) Data_custom_val(v)) = res.env;\n\
+}")
+      quote(dealloc,"I0_CHECK_EXC(man)");
+
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Expansion and folding of dimensions} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+struct ap_abstract1_t ap_abstract1_expand(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+				    ap_var_t v1,
+				    [size_is(v3)]ap_var_t* v2,
+				    int v3)
+     quote(call,"_res = ap_abstract1_expand(man,false,a,v1,v2,v3);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_fold(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+				  [size_is(v2)]ap_var_t* v1,
+				  int v2)
+  quote(call,"_res = ap_abstract1_fold(man,false,a,v1,v2);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_expand_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+			   ap_var_t v1,
+			   [size_is(v3)]ap_var_t* v2,
+			   int v3)
+     quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_expand(man,true,a,v1,v2,v3);
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+  v = Field(_v_a,1);\n\
+  *((ap_environment_ptr *) Data_custom_val(v)) = res.env;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract1_fold_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+			 [size_is(v2)]ap_var_t* v1,
+			 int v2)
+     quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_fold(man,true,a,v1,v2);
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+  v = Field(_v_a,1);\n\
+  *((ap_environment_ptr *) Data_custom_val(v)) = res.env;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Widening} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+struct ap_abstract1_t ap_abstract1_widening(ap_manager_ptr man,
+				      [ref]struct ap_abstract1_t* a1,
+				      [ref]struct ap_abstract1_t* a2)
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+struct ap_abstract1_t ap_abstract1_widening_threshold(ap_manager_ptr man,
+						[ref]struct ap_abstract1_t* a1,
+						[ref]struct ap_abstract1_t* a2,
+						[ref]struct ap_lincons1_array_t* v)
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLMLI,"(* ============================================================ *)")
+quote(MLMLI,"(** {3 Closure operation} *)\n")
+quote(MLMLI,"(* ============================================================ *)")
+
+struct ap_abstract1_t ap_abstract1_closure(ap_manager_ptr man,[ref]struct ap_abstract1_t* a)
+     quote(call,"_res = ap_abstract1_closure(man,false,a);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+void ap_abstract1_closure_with(ap_manager_ptr man,[ref]struct ap_abstract1_t* a)
+     quote(call,"{\n\
+  ap_abstract1_t res = ap_abstract1_closure(man,true,a);
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+}")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(ML,"\n\
+let print fmt a =\n\
+let man = manager a in\n\
+if is_bottom man a = Manager.True then\n\
+  Format.pp_print_string fmt \"bottom\"\n\
+else if is_top man a = Manager.True then\n\
+  Format.pp_print_string fmt \"top\"\n\
+else begin\n\
+  let tab = to_lincons_array man a in\n\
+  Lincons1.array_print fmt tab;\n\
+end\n\
+")

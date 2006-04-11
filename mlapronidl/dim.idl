@@ -1,0 +1,28 @@
+/* -*- mode: c -*- */
+
+
+quote(C, "\n\
+#include <limits.h>\n\
+#include \"ap_dimension.h\"\n\
+#include \"caml/mlvalues.h\"\n\
+#include \"apron_caml.h\"\n\
+")
+
+typedef unsigned int ap_dim_t;
+
+typedef [mltype("{\n  dim : int array;\n  intdim : int;\n  realdim : int;\n}"),
+	 c2ml(camlidl_apron_dimchange_c2ml),
+	 ml2c(camlidl_apron_dimchange_ml2c)]
+struct ap_dimchange_t ap_dimchange_t;
+
+struct ap_dimperm_t {
+  [size_is(size)]unsigned int* dim;
+  unsigned int size;
+};
+
+struct ap_dimension_t {
+  [mlname(intd)]unsigned int intdim;
+  [mlname(reald)]unsigned int realdim;
+};
+
+quote(MLMLI,"(** Dimensions and related types *)")

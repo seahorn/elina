@@ -1,0 +1,54 @@
+\BOOKMARK [0][-]{chapter.1}{Module Scalar : Scalar numbers}{}
+\BOOKMARK [0][-]{chapter.2}{Module Interval : Intervals on scalars}{}
+\BOOKMARK [0][-]{chapter.3}{Module Coeff : Coefficients \(either scalars or intervals\)}{}
+\BOOKMARK [0][-]{chapter.4}{Module Dim : Dimensions and related types}{}
+\BOOKMARK [0][-]{chapter.5}{Module Linexpr0 : Linear expressions of level 0}{}
+\BOOKMARK [0][-]{chapter.6}{Module Lincons0 : Linear constraints of level 0}{}
+\BOOKMARK [0][-]{chapter.7}{Module Generator0 : Generators of level 0}{}
+\BOOKMARK [0][-]{chapter.8}{Module Manager : Managers}{}
+\BOOKMARK [0][-]{chapter.9}{Module Abstract0 : Abstract value of level 0}{}
+\BOOKMARK [1][-]{section.9.1}{General management}{chapter.9}
+\BOOKMARK [2][-]{subsection.9.1.1}{Memory}{section.9.1}
+\BOOKMARK [2][-]{subsection.9.1.2}{Control of internal representation}{section.9.1}
+\BOOKMARK [2][-]{subsection.9.1.3}{Printing}{section.9.1}
+\BOOKMARK [2][-]{subsection.9.1.4}{Serialization}{section.9.1}
+\BOOKMARK [1][-]{section.9.2}{Constructor, accessors, tests and property extraction}{chapter.9}
+\BOOKMARK [2][-]{subsection.9.2.1}{Basic constructors}{section.9.2}
+\BOOKMARK [2][-]{subsection.9.2.2}{Accessors}{section.9.2}
+\BOOKMARK [2][-]{subsection.9.2.3}{Tests}{section.9.2}
+\BOOKMARK [2][-]{subsection.9.2.4}{Extraction of properties}{section.9.2}
+\BOOKMARK [1][-]{section.9.3}{Operations}{chapter.9}
+\BOOKMARK [2][-]{subsection.9.3.1}{Meet and Join}{section.9.3}
+\BOOKMARK [2][-]{subsection.9.3.2}{Assignements and Substitutions}{section.9.3}
+\BOOKMARK [2][-]{subsection.9.3.3}{Projections}{section.9.3}
+\BOOKMARK [2][-]{subsection.9.3.4}{Change and permutation of dimensions}{section.9.3}
+\BOOKMARK [2][-]{subsection.9.3.5}{Expansion and folding of dimensions}{section.9.3}
+\BOOKMARK [2][-]{subsection.9.3.6}{Widening}{section.9.3}
+\BOOKMARK [2][-]{subsection.9.3.7}{Closure operation}{section.9.3}
+\BOOKMARK [0][-]{chapter.10}{Module Environment : Environments binding dimensions to names}{}
+\BOOKMARK [0][-]{chapter.11}{Module Linexpr1 : Expressions of level 1}{}
+\BOOKMARK [0][-]{chapter.12}{Module Lincons1 : Constraints and array of constraints of level 1}{}
+\BOOKMARK [1][-]{section.12.1}{Type t}{chapter.12}
+\BOOKMARK [1][-]{section.12.2}{Type array}{chapter.12}
+\BOOKMARK [0][-]{chapter.13}{Module Generator1 : Generators and array of generators of level 1}{}
+\BOOKMARK [1][-]{section.13.1}{Type t}{chapter.13}
+\BOOKMARK [1][-]{section.13.2}{Type earray}{chapter.13}
+\BOOKMARK [0][-]{chapter.14}{Module Abstract1 : Abstract values of level 1}{}
+\BOOKMARK [1][-]{section.14.1}{General management}{chapter.14}
+\BOOKMARK [2][-]{subsection.14.1.1}{Memory}{section.14.1}
+\BOOKMARK [2][-]{subsection.14.1.2}{Control of internal representation}{section.14.1}
+\BOOKMARK [2][-]{subsection.14.1.3}{Printing}{section.14.1}
+\BOOKMARK [2][-]{subsection.14.1.4}{Serialization}{section.14.1}
+\BOOKMARK [1][-]{section.14.2}{Constructor, accessors, tests and property extraction}{chapter.14}
+\BOOKMARK [2][-]{subsection.14.2.1}{Basic constructors}{section.14.2}
+\BOOKMARK [2][-]{subsection.14.2.2}{Accessors}{section.14.2}
+\BOOKMARK [2][-]{subsection.14.2.3}{Tests}{section.14.2}
+\BOOKMARK [2][-]{subsection.14.2.4}{Extraction of properties}{section.14.2}
+\BOOKMARK [1][-]{section.14.3}{Operations}{chapter.14}
+\BOOKMARK [2][-]{subsection.14.3.1}{Meet and Join}{section.14.3}
+\BOOKMARK [2][-]{subsection.14.3.2}{Assignement and Substitutions}{section.14.3}
+\BOOKMARK [2][-]{subsection.14.3.3}{Projections}{section.14.3}
+\BOOKMARK [2][-]{subsection.14.3.4}{Change and permutation of dimensions}{section.14.3}
+\BOOKMARK [2][-]{subsection.14.3.5}{Expansion and folding of dimensions}{section.14.3}
+\BOOKMARK [2][-]{subsection.14.3.6}{Widening}{section.14.3}
+\BOOKMARK [2][-]{subsection.14.3.7}{Closure operation}{section.14.3}

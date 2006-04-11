@@ -1,0 +1,21 @@
+/* ********************************************************************** */
+/* pk_widening.h: widening  */
+/* ********************************************************************** */
+
+#ifndef _PK_WIDENING_H_
+#define _PK_WIDENING_H_
+
+
+#include "pk_config.h"
+#include "pk_vector.h"
+#include "pk_bit.h"
+#include "pk_satmat.h"
+#include "pk_matrix.h"
+#include "pk.h"
+
+poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb);
+poly_t* poly_widening_threshold(ap_manager_t* man, 
+				const poly_t* pa, const poly_t* pb, 
+				const ap_lincons0_array_t* array);
+
+#endif

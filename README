@@ -1,0 +1,29 @@
+# $Id$
+
+This main directory contain the following subpackages of the APRON project:
+
+num:	  
+	manipulating "generic" numbers (used by intervals,
+        newpolka and possibly octagons).
+
+mlgmpidl:
+	OCaml interface for the GMP library, used by mlapronidl
+
+apron:
+	apron interface, C version
+
+mlapronidl:
+	apron interface, OCaml version (require apron)
+
+newpolka:
+	convex polyhedra library
+
+Makefile.config.model:
+	common configuration file model (to be copied to Makefile.config)
+	(installation directories mainly)
+
+Makefile:
+	compiles at most things at it can
+
+
+

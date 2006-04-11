@@ -1,0 +1,60 @@
+
+This package is an OCAML interface for the APRON library/interface.
+
+The interface is decomposed into 15 modules, corresponding to C modules:
+Scalar     : scalars (numbers)     
+Interval   : intervals on scalars 
+Coeff      : coefficients (either scalars or intervals)
+Dimension  : dimensions and related operations
+Linexpr0   : (interval) linear expressions, level 0
+Lincons0   : (interval) linear constraints, level 0
+Generator0 : generators, level 0
+Manager    : managers
+Abstract0: : abstract values, level 0
+Var        : variables 
+Environment: environment binding variables to dimensions
+Linexpr1   : (interval) linear expressions, level 1
+Lincons1   : interval) linear constraints, level 1
+Generator1 : generators, level 1
+Abstract1  : abstract values, level 1
+
+By default, variables (Var.t) are implemented as strings. To
+change this, one need to manually replace the default file var.ml
+by a user-defined one. The module Environment ensures that the new
+Var module offers a compatible signature.
+
+REQUIREMENTS
+============
+M4 preprocessor (standard on any UNIX system)
+APRON library
+GMP library (tested with version 4.0 and up)
+OCaml 3.0 or up (tested with 3.09)
+Camlidl (tested with 1.05)
+
+INSTALLATION
+============
+
+1. Library
+----------
+Set the file Makefile.config to your own setting.
+You might also have to modify the Makefile for executables
+
+type 'make', and then 'make install'
+
+The OCaml part of the library is named apron.cma (.cmxa, .a)
+The C part of the library is named libapron_caml.a (libapron_caml_debug.a)
+
+'make install' installs not only .mli, .cmi, but also .idl files.
+
+2. Documentation
+----------------
+
+The documentation (currently very sketchy) is generated with ocamldoc.
+
+'make mlgmpidl.dvi'
+'make html' (put the HTML files in the html subdirectoy)
+
+3. Miscellaneous
+----------------
+
+'make clean' and 'make distclean' have the usual behaviour.

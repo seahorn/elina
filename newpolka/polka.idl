@@ -1,0 +1,25 @@
+/* -*- mode: c -*- */
+
+quote(C,"#include \"pk_internal.h\"")
+quote(C,"#include \"ap_manager.h\"")
+quote(C,"#include \"apron_caml.h\"")
+
+quote(C,"typedef struct pk_internal_t* internal_ptr;")
+
+import "manager.idl";
+
+typedef [abstract] struct pk_internal_t* internal_ptr;
+
+ap_manager_ptr pk_manager_alloc(boolean strict);
+
+internal_ptr manager_get_internal(ap_manager_ptr man)
+  quote(call,"\n\
+if (strcmp(man->library,\"polka\")!=0){\n\
+  caml_failwith(\"Polka.get_internal applied to a manager not created by Polka\");\n\
+}\n\
+_res = (internal_ptr)man->internal;\n\
+");
+void pk_set_max_coeff_size(internal_ptr pk, unsigned int size);
+void pk_set_approximate_max_coeff_size(internal_ptr pk, unsigned int size);
+int pk_get_max_coeff_size(internal_ptr pk);
+int pk_get_approximate_max_coeff_size(internal_ptr pk);

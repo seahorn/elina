@@ -1,0 +1,285 @@
+/* ********************************************************************** */
+/* pk_satmat.c: operations on saturation matrices */
+/* ********************************************************************** */
+
+/* Operations on saturation matrices */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+
+#include "pk_satmat.h"
+#include "mf_qsort.h"
+
+/* ********************************************************************** */
+/* I. basic operations: creation, destruction, copying and printing */
+/* ********************************************************************** */
+
+/* Set all bits to zero. */
+void satmat_clear(satmat_t* sat)
+{
+  int i,j;
+  for (i=0; i<sat->nbrows; i++)
+    for (j=0; j<sat->nbcolumns; j++)
+      sat->p[i][j] = 0;
+}
+
+/* Standard allocation function, with initialization of the elements. */
+satmat_t* satmat_alloc(size_t nbrows, size_t nbcols)
+{
+  int i,j;
+
+  satmat_t* sat = (satmat_t*)malloc(sizeof(satmat_t));
+  sat->nbrows = sat->_maxrows = nbrows;
+  sat->nbcolumns = nbcols;
+  sat->p = (bitstring_t**)malloc(nbrows*sizeof(bitstring_t*));
+  for (i=0; i<nbrows; i++){
+    sat->p[i] = bitstring_alloc(nbcols);
+    for (j=0; j<sat->nbcolumns; j++)
+      sat->p[i][j] = 0;
+  }
+  return sat;
+}
+
+/* Deallocation function. */
+void satmat_free(satmat_t* sat)
+{
+  int i;
+
+  for (i=0;i<sat->_maxrows;i++){
+    bitstring_free(sat->p[i]);
+  }
+  free(sat->p);
+  free(sat);
+}
+
+/* Reallocation function, to scale up or to downsize a matrix */
+void satmat_realloc(satmat_t* sat, size_t nbrows)
+{
+  int i;
+
+  if (nbrows > sat->_maxrows){
+    sat->p = (bitstring_t**)realloc(sat->p, nbrows * sizeof(bitstring_t*));
+    for (i=sat->nbrows; i<nbrows; i++){
+      sat->p[i] = bitstring_alloc(sat->nbcolumns);
+    }
+  }
+  else if (nbrows < sat->_maxrows){
+    for (i=nbrows; i<sat->_maxrows; i++){
+      bitstring_free(sat->p[i]);
+    }
+    sat->p = (bitstring_t**)realloc(sat->p,nbrows * sizeof(bitstring_t*));
+  } 
+  sat->nbrows = nbrows;
+  sat->_maxrows = nbrows;
+}
+
+/* Reallocation function, to scale up or to downsize a matrix */
+void satmat_realloc2(satmat_t* sat, size_t nbcols)
+{
+  int i;
+
+  for (i=0; i<sat->_maxrows; i++){
+    sat->p[i] = bitstring_realloc(sat->p[i],nbcols);
+  }
+  sat->nbcolumns = nbcols;
+}
+
+/* Create a copy of the matrix of size nbrows (and not
+   _maxrows). Only ``used'' rows are copied. */
+satmat_t* satmat_copy(const satmat_t* sat)
+{
+  int i,j;
+  satmat_t* nsat = satmat_alloc(sat->nbrows,sat->nbcolumns);
+  for (i=0; i<sat->nbrows; i++){
+    for (j=0; j<sat->nbcolumns; j++){
+      nsat->p[i][j] = sat->p[i][j];
+    }
+  }
+  return nsat;
+}
+
+/* Reallocation function, to scale up or to downsize a matrix */
+void satmat_extend_columns(satmat_t* sat, size_t nbcols)
+{
+  int i,j;
+
+  if (nbcols != sat->nbcolumns){
+    for (i=0; i<sat->nbrows; i++){
+      sat->p[i] = bitstring_realloc(sat->p[i],nbcols);
+      for (j=sat->nbcolumns; j<nbcols; j++){
+	sat->p[i][j] = 0;
+      }
+    }
+    sat->nbcolumns = nbcols;
+  }
+}
+
+/* Create a copy of the matrix of size nbrows (and not
+   _maxrows) and extends columns. Only ``used'' rows are copied. */
+satmat_t* satmat_copy_extend_columns(const satmat_t* sat, size_t nbcols)
+{
+  int i,j;
+  satmat_t* nsat;
+
+  assert(nbcols>=sat->nbcolumns);
+  nsat = satmat_alloc(sat->nbrows,nbcols);
+  for (i=0; i<sat->nbrows; i++){
+    for (j=0; j<sat->nbcolumns; j++){
+      nsat->p[i][j] = sat->p[i][j];
+    }
+    for (j=sat->nbcolumns; j<nbcols; j++)
+      nsat->p[i][j] = 0;
+  }
+  return nsat;
+}
+
+/* Raw printing function. */
+void satmat_fprint(FILE* stream, const satmat_t* sat)
+{
+  int i;
+
+  fprintf(stream,"%d %d\n",sat->nbrows,sat->nbcolumns);
+  for (i=0; i<sat->nbrows; i++){
+    bitstring_fprint(stream,sat->p[i],sat->nbcolumns);
+    fprintf(stream,"\n");
+  }
+}
+void satmat_print(const satmat_t* sat)
+{
+  satmat_fprint(stdout,sat);
+}
+
+/* ********************************************************************** */
+/* II. Bit operations */
+/* ********************************************************************** */
+
+/* These function allow to read and to clear or set individual bits. i
+   indicates the row and jx the column. */
+
+bitstring_t satmat_get(const satmat_t* sat, size_t i, bitindex_t jx){
+  return bitstring_get(sat->p[i],jx);
+}
+void satmat_set(satmat_t* sat, size_t i, bitindex_t jx){
+  bitstring_set(sat->p[i],jx);
+}
+void satmat_clr(satmat_t* sat, size_t i, bitindex_t jx){
+  bitstring_clr(sat->p[i],jx);
+}
+
+/* ********************************************************************** */
+/* III. Matrix operations */
+/* ********************************************************************** */
+
+/* Transposition.
+
+nbcols indicates the number of bits to be transposed (the number of columns of
+the matrix is the size of the row of bitstring_t, not the number of bits really
+used). */
+
+satmat_t* satmat_transpose(const satmat_t* org, size_t nbcols)
+{
+  bitindex_t i,j;
+  satmat_t* dest = satmat_alloc(nbcols,bitindex_size(org->nbrows));
+
+  for (i = bitindex_init(0); i.index < org->nbrows; bitindex_inc(&i) ) {
+    for (j = bitindex_init(0); j.index < nbcols; bitindex_inc(&j) ){
+      if (satmat_get(org,i.index,j)) satmat_set(dest,j.index,i);
+    }
+  }
+  return dest;
+}
+
+/* Row exchange. */
+void satmat_exch_rows(satmat_t* sat, size_t l1, size_t l2)
+{
+  bitstring_t* aux=sat->p[l1];
+  sat->p[l1]=sat->p[l2];
+  sat->p[l2]=aux;
+}
+
+void satmat_move_rows(satmat_t* sat, size_t destrow, size_t orgrow, size_t size)
+{
+  int offset;
+  int i;
+
+  offset = destrow-orgrow;
+  if (offset>0){
+    assert(destrow+size<=sat->_maxrows);
+    for (i=destrow+size-1; i>=(int)destrow; i--){
+      satmat_exch_rows(sat,(size_t)i,(size_t)(i-offset));
+    }
+  } else {
+    assert(orgrow+size<=sat->_maxrows);
+    for(i=destrow; i<destrow+size; i++){
+      satmat_exch_rows(sat,(size_t)i,(size_t)(i-offset));
+    }
+  }
+}
+
+/* Row sorting.
+
+We use here the quick sort. */
+static int qsort_rows_compar(void* psize, const void* p1, const void* p2)
+{
+  return (bitstring_cmp( *(bitstring_t**)p1,
+			 *(bitstring_t**)p2,
+			 *(size_t*)psize ));
+}
+
+void satmat_sort_rows(satmat_t* sat)
+{
+  qsort2(sat->p,
+	 sat->nbrows, sizeof(bitstring_t*),
+	 qsort_rows_compar,
+	 &(sat->nbcolumns));
+}
+  
+/* Membership test.
+   
+The following function tests if the given row belongs to the sorted saturation
+matrix. If it is the case, it returns its rank in the saturation
+matrix. Otherwise, it returns -1 */
+  
+typedef struct index_man_t {
+  const bitstring_t* satline;
+  bitstring_t** p;
+  size_t size;
+} index_man_t;
+
+static int index2(const index_man_t* index_man, size_t low, size_t high)
+{
+  if (high - low <= 6){
+    int i;
+    int res=-1;
+    for (i=low; i<high; i++){
+      int cmp = bitstring_cmp(index_man->p[i],index_man->satline,index_man->size);
+      if (cmp==0){
+	res=i; break;
+      }
+      else if (cmp>0) break;
+    }
+    return res;
+  }
+  else {
+    size_t mid = low+(high-low)/2;
+    int cmp = bitstring_cmp(index_man->p[mid],index_man->satline,index_man->size);
+    if (cmp<0)
+      return (index2(index_man,mid+1,high));
+    else if (cmp>0)
+      return (index2(index_man,low,mid));
+    else
+      return mid;
+  }
+}
+
+int
+satmat_index_in_sorted_rows(const bitstring_t* satline, const satmat_t* sat)
+{
+  index_man_t index_man;
+
+  index_man.satline = satline;
+  index_man.p = sat->p;
+  index_man.size = sat->nbcolumns;
+  return (index2(&index_man,0,sat->nbrows));
+}
