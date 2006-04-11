@@ -189,7 +189,7 @@ let to_generator_array man x = {\n\
   Generator1.array_env = x.env\n\
 }\n\
 let to_box man x = {\n\
-  ap_interval_array = Abstract0.to_box man x.abstract0;\n\
+  interval_array = Abstract0.to_box man x.abstract0;\n\
   box1_env = x.env\n\
 }\n\
 ")
