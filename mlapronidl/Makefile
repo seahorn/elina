@@ -143,6 +143,8 @@ mpq.idl: $(MLGMPIDL_PREFIX)/lib/mpq.idl
 # TEX and HTML rules
 #---------------------------------------
 
+doc: mlapronidl.dvi html
+
 mlapronidl.dvi: $(MLINT) $(MLSRC)
 	ocamldoc $(OCAMLINC) \
 	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -o ocamldoc.tex $(MLMODULES:%=%.mli)
