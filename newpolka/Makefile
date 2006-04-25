@@ -155,21 +155,21 @@ libpolkag_debug.a: $(CCMODULES:%=%g_debug.o)
 
 polkatopg: polka.cmo libpolka_caml_debug.a libpolkag_debug.a
 	$(OCAMLMKTOP) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cmo polka.cmo \
-	-cclib "-L$(MLGMPIDL_PREFIX)/lib -lgmp_caml_debug" \
-	-cclib "-L$(GMP_PREFIX)/lib -lgmp" \
-	-cclib "-L$(MLCOMMONINTERFACIDL_PREFIX)/lib -lapron_caml_debug" \
-	-cclib "-L$(APRON_PREFIX)/lib -lapron_debug" \
-	-cclib "-L. -lpolka_caml_debug -lpolkag_debug" \
-	-cclib "-L$(CAMLIDL_PREFIX)/lib/ocaml -lcamlidl"
+	-ccopt -L$(MLGMPIDL_PREFIX)/lib -cclib -lgmp_caml_debug \
+	-ccopt -L$(GMP_PREFIX)/lib -cclib -lgmp \
+	-ccopt -L$(MLCOMMONINTERFACIDL_PREFIX)/lib -cclib -lapron_caml_debug \
+	-ccopt -L$(APRON_PREFIX)/lib -cclib -lapron_debug \
+	-ccopt -L. -cclib -lpolka_caml_debug -cclib -lpolkag_debug \
+	-ccopt -L$(CAMLIDL_PREFIX)/lib/ocaml -cclib -lcamlidl
 
 polkarung: polka.cmo libpolka_caml_debug.a libpolkag_debug.a
 	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cmo polka.cmo \
-	-cclib "-L$(MLGMPIDL_PREFIX)/lib -lgmp_caml_debug" \
-	-cclib "-L$(GMP_PREFIX)/lib -lgmp" \
-	-cclib "-L$(MLCOMMONINTERFACIDL_PREFIX)/lib -lapron_caml_debug" \
-	-cclib "-L$(APRON_PREFIX)/lib -lapron_debug" \
-	-cclib "-L. -lpolka_caml_debug -lpolkag_debug" \
-	-cclib "-L$(CAMLIDL_PREFIX)/lib/ocaml -lcamlidl"
+	-ccopt -L$(MLGMPIDL_PREFIX)/lib -cclib -lgmp_caml_debug \
+	-ccopt -L$(GMP_PREFIX)/lib -cclib -lgmp \
+	-ccopt -L$(MLCOMMONINTERFACIDL_PREFIX)/lib -cclib -lapron_caml_debug \
+	-ccopt -L$(APRON_PREFIX)/lib -cclib -lapron_debug \
+	-ccopt -L. -cclib -lpolka_caml_debug -cclib -lpolkag_debug \
+	-ccopt -L$(CAMLIDL_PREFIX)/lib/ocaml -cclib -lcamlidl
 
 testg_caml: test.cmo polkarung 
 	$(OCAMLC) -g $(OCAMLINC) -I $(MLAPRONIDL_PREFIX)/lib -o $@ -use-runtime polkarung bigarray.cma gmp.cma apron.cmo polka.cmo test.cmo 
