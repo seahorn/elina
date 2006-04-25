@@ -147,7 +147,7 @@ cdep: $(H_FILES)
 	notangle -L'#line %L "$(SRCDIR)/%F"%N' $^ >$@
 #	notangle $^ >$@
 %.tex: %.nw
-	noweave -n $^ >$@
+	LC_ALL=C noweave -n $^ >$@
 
 #---------------------------------------
 # C generic rules
