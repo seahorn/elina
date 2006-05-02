@@ -136,4 +136,53 @@ static inline bool num_fits_double(const num_t a);
 static inline double num_get_double(const num_t a);
   /* num -> double */
 
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+/* Notes:
+   - call _serialized_size to get the minimal size of the buffer to allocate
+   - _serialize then returns the actual size of the serialized data (may be 
+   less than _serialized_size)
+   - deserialze assumes that the num destination has already been initialized
+   - when deserializing an array, you must supply the number of elements in the
+   array (it is not stored with the array by serialize)
+   - serialization is not type-safe (it depends on the chosen numerical type
+   and, for types using native integers, on whether the machine is 32 or 64 
+   bits). You can only deserialize data if the num_serialize_id function 
+   returns the same value as when the data was serialized. (This id is not
+   stored systematically with each serialized number to save state, so, the
+   checking is up to you.)
+*/
+
+static inline unsigned char num_serialize_id(void);
+
+static inline size_t num_serialize(void* dst, const num_t src);
+static inline size_t num_deserialize(num_t dst, const void* src);
+static inline size_t num_serialized_size(const num_t a);
+
+static inline size_t num_serialize_array(void* dst, const num_t* src, size_t size)
+{
+  size_t i,n=0;
+  for (i=0;i<size;i++)
+    n += num_serialize((char*)dst+n,src[i]);
+  return n;
+}
+
+static inline size_t num_deserialize_array(num_t* dst, const void* src, size_t size)
+{
+  size_t i,n=0;
+  for (i=0;i<size;i++)
+    n += num_deserialize(dst[i],(const char*)src+n);
+  return n;
+}
+
+static inline size_t num_serialized_size_array(const num_t* src, size_t size)
+{
+  size_t i,n=0;
+  for (i=0;i<size;i++)
+    n += num_serialized_size(src[i]);
+  return n;
+}
+
 #endif

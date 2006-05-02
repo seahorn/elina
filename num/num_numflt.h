@@ -165,4 +165,21 @@ static inline double num_get_double(const num_t a)
          { return numflt_get_double(a); }
   /* num -> double */
 
+
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline unsigned char num_serialize_id(void)
+{ return numflt_serialize_id(); }
+
+static inline size_t num_serialize(void* dst, const num_t src)
+{ return numflt_serialize(dst,src); }
+
+static inline size_t num_deserialize(num_t dst, const void* src)
+{ return numflt_deserialize(dst,src); }
+
+static inline size_t num_serialized_size(const num_t a)
+{ return numflt_serialized_size(a); }
+
 #endif

@@ -30,7 +30,7 @@ static inline void numint_set(numint_t a, const numint_t b)
 { mpz_set(a,b); }
 static inline void numint_set_array(numint_t* a, const numint_t* b, size_t size)
 { 
-  int i;
+  size_t i;
   for (i=0; i<size; i++) mpz_set(a[i],b[i]);
 }
 static inline void numint_set_int(numint_t a, long int i)
@@ -44,7 +44,7 @@ static inline void numint_init(numint_t a)
 { mpz_init(a); }
 static inline void numint_init_array(numint_t* a, size_t size)
 {
-  int i; 
+  size_t i; 
   for (i=0; i<size; i++) mpz_init(a[i]); 
 }
 static inline void numint_init_set(numint_t a, const numint_t b)
@@ -56,7 +56,7 @@ static inline void numint_clear(numint_t a)
 { mpz_clear(a); }
 static inline void numint_clear_array(numint_t* a, size_t size)
 { 
-  int i; 
+  size_t i; 
   for (i=0; i<size; i++) mpz_clear(a[i]); 
 }
 
@@ -189,5 +189,35 @@ static inline bool numint_fits_double(const numint_t a)
 }
 static inline double numint_get_double(const numint_t a)
 { return mpz_get_d(a); }
+
+
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline unsigned char numint_serialize_id(void)
+{ return 0xf; }
+
+static inline size_t numint_serialize(void* dst, const numint_t src)
+{ 
+  size_t count = 0;
+  *((char*)dst) = mpz_sgn(src);
+  mpz_export((char*)dst+5,&count,1,1,1,0,src);
+  num_dump_word32((char*)dst+1,count);
+  return count+5;
+}
+
+static inline size_t numint_deserialize(numint_t dst, const void* src) 
+{
+  size_t count = num_undump_word32((const char*)src+1);
+  mpz_import(dst,count,1,1,1,0,(const char*)src+5);
+  if (*(const char*)src<0)
+    mpz_neg(dst,dst);
+  return count+5;
+}
+
+/* not the exact size of serialized data, but a sound overapproximation */
+static inline size_t numint_serialized_size(const numint_t a) 
+{ return mpz_sizeinbase(a,2)/8+5+sizeof(mp_limb_t); }
 
 #endif

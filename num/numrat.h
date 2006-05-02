@@ -121,4 +121,15 @@ static inline void numrat_set_numint2(numrat_t a, const numint_t b, const numint
 static inline numint_t numrat_numref(numrat_t a);
 static inline numint_t numrat_denref(numrat_t a);
 */
+
+
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline unsigned char numrat_serialize_id(void);
+static inline size_t numrat_serialize(void* dst, const numrat_t src);
+static inline size_t numrat_deserialize(numrat_t dst, const void* src);
+static inline size_t numrat_serialized_size(const numrat_t a);
+
 #endif

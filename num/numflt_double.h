@@ -38,7 +38,7 @@ static inline void numflt_init(numflt_t a)
 { *a = 0.0; }
 static inline void numflt_init_array(numflt_t* a, size_t size)
 {
-  int i; 
+  size_t i; 
   for (i=0; i<size; i++) *(a[i]) = 0.0; 
 }
 static inline void numflt_init_set(numflt_t a, const numflt_t b)
@@ -174,6 +174,25 @@ static inline bool numflt_infty(const numflt_t a)
 { return fabs(*a) == NUMFLT_MAX; }
 static inline void numflt_set_infty(numflt_t a)
 { *a = NUMFLT_MAX; }
+
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline size_t numflt_serialize(void* dst, const numflt_t src)
+{
+  num_store_words8(dst,src,sizeof(numflt_t));
+  return sizeof(numflt_t);
+}
+
+static inline size_t numflt_deserialize(numflt_t dst, const void* src)
+{
+  num_store_words8(dst,src,sizeof(numflt_t));
+  return sizeof(numflt_t);
+}
+
+static inline size_t numflt_serialized_size(const numflt_t a)
+{ return sizeof(numflt_t); }
 
 #endif
 

@@ -78,7 +78,7 @@ static inline void numrat_init(numrat_t a)
 }
 static inline void numrat_init_array(numrat_t* a, size_t size)
 {
-  int i;
+  size_t i;
   for (i=0; i<size; i++) numrat_init(a[i]);
 }
 static inline void numrat_init_set(numrat_t a, const numrat_t b)
@@ -314,5 +314,29 @@ static inline double numrat_get_double(const numrat_t a)
   return i/j;
 }
 
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline unsigned char numrat_serialize_id(void)
+{ return 0x10 + sizeof(numint_t)/4; }
+
+static inline size_t numrat_serialize(void* dst, const numrat_t src)
+{
+  size_t x = numint_serialize(dst,numrat_numref(src));
+  return x + numint_serialize((char*)dst+x,numrat_denref(src));
+}
+
+static inline size_t numrat_deserialize(numrat_t dst, const void* src)
+{
+  size_t x = numint_deserialize(numrat_numref(dst),src);
+  return x + numint_deserialize(numrat_denref(dst),(const char*)src+x);
+}
+
+static inline size_t numrat_serialized_size(const numrat_t a)
+{
+  return numint_serialized_size(numrat_numref(a)) +
+         numint_serialized_size(numrat_denref(a));
+}
 
 #endif

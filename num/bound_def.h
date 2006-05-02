@@ -102,7 +102,7 @@ static inline void bound_set_array(bound_t* a, const bound_t* b, size_t size)
 #if defined(NUM_NATIVE)
   memcpy(a,b,size*sizeof(bound_t));
 #else
-  int i;
+  size_t i;
   for (i=0; i<size; i++) bound_set(a[i],b[i]);
 #endif
 }
@@ -148,7 +148,7 @@ static inline void bound_clear_array(bound_t* a, size_t size)
 
 static inline void bound_init_array(bound_t* a, size_t size)
 { 
-  int i;
+  size_t i;
   for (i=0;i<size;i++) bound_init(a[i]);
 }
 static inline void bound_init_set(bound_t a, const bound_t b)
@@ -163,7 +163,7 @@ static inline void bound_init_set(bound_t a, const bound_t b)
 static inline void bound_clear_array(bound_t* a, size_t size) 
 { 
 #if !defined(NUM_NATIVE)
-  int i;
+  size_t i;
   for (i=0;i<size;i++) bound_clear(a[i]);
 #endif
 }
@@ -198,7 +198,7 @@ static inline void bound_sub_uint(bound_t a, const bound_t b, unsigned long int 
 static inline void bound_sub_num(bound_t a, const bound_t b, const num_t c)
 { num_sub(a,b,c); }
 
- et pour zero ?
+/* et pour zero ? */
 static inline void bound_mul(bound_t a, const bound_t b, const bound_t c)
 { num_mul(a,b,c); }
 static inline void bound_mul_num(bound_t a, const bound_t b, const num_t c)
@@ -411,6 +411,65 @@ static inline int bound_snprint(char* s, size_t size, const bound_t a)
 {
   if (bound_infty(a)) return snprintf(s,size,"+oo");
   else return num_snprint(s,size,bound_numref(a));
+}
+
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline size_t bound_serialize(void* dst, const bound_t src)
+{
+#if defined(NUM_MAX) || defined(NUM_NUMRAT)
+  return num_serialize(dst,src);
+#else
+  *(char*)dst = src->inf;
+  if (src->inf) return 1;
+  else return num_serialize((char*)dst+1,bound_numref(src))+1;
+#endif
+}
+
+static inline size_t bound_deserialize(bound_t dst, const void* src)
+{
+#if defined(NUM_MAX) || defined(NUM_NUMRAT)
+  return num_deserialize(dst,src);
+#else
+  dst->inf = *(const char*)src;
+  if (dst->inf) return 1;
+  else return num_deserialize(bound_numref(dst),(const char*)src+1)+1;
+#endif
+}
+
+static inline size_t bound_serialized_size(const bound_t a)
+{
+#if defined(NUM_MAX) || defined(NUM_NUMRAT)
+  return num_serialized_size(a);
+#else
+  return a->inf ? 1 : (num_serialized_size(bound_numref(a))+1);
+#endif
+}
+
+static inline size_t bound_serialize_array(void* dst, const bound_t* src, size_t size)
+{
+  size_t i,n=0;
+  for (i=0;i<size;i++)
+    n += bound_serialize((char*)dst+n,src[i]);
+  return n;
+}
+
+static inline size_t bound_deserialize_array(bound_t* dst, const void* src, size_t size)
+{
+  size_t i,n=0;
+  for (i=0;i<size;i++)
+    n += bound_deserialize(dst[i],(const char*)src+n);
+  return n;
+}
+
+static inline size_t bound_serialized_size_array(const bound_t* src, size_t size)
+{
+  size_t i,n=0;
+  for (i=0;i<size;i++)
+    n += bound_serialized_size(src[i]);
+  return n;
 }
 
 #endif

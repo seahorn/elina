@@ -40,7 +40,7 @@ static inline void numint_init(numint_t a)
 { *a = 0LL; }
 static inline void numint_init_array(numint_t* a, size_t size)
 {
-  int i; 
+  size_t i; 
   for (i=0; i<size; i++) *(a[i]) = 0LL; 
 }
 static inline void numint_init_set(numint_t a, const numint_t b)
@@ -75,17 +75,17 @@ static inline void numint_mul_2(numint_t a, const numint_t b)
 { *a = *b << 1; }
 static inline void numint_fdiv_q(numint_t a, const numint_t b, const numint_t c)
 {
-  lldiv_t div = lldiv(*b,*c); /* rounding towards 0 */
-  *a = div.quot;
-  if (div.quot<0 && div.rem!=0){
+  lldiv_t d = lldiv(*b,*c); /* rounding towards 0 */
+  *a = d.quot;
+  if (d.quot<0 && d.rem!=0){
     *a = *a - 1; /* rounding towards minus infty */
   }
 } 
 static inline void numint_cdiv_q(numint_t a, const numint_t b, const numint_t c)
 {
-  lldiv_t div = lldiv(*b,*c); /* rounding towards 0 */
-  *a = div.quot;
-  if (div.quot>=0LL && div.rem!=0LL){
+  lldiv_t d = lldiv(*b,*c); /* rounding towards 0 */
+  *a = d.quot;
+  if (d.quot>=0LL && d.rem!=0LL){
     *a = *a + 1; /* rounding towards plus infty */
   }
 } 
@@ -217,7 +217,7 @@ static inline bool double_fits_numint(double a)
   return a>=(double)(-LLONG_MAX) && a<=(double)LLONG_MAX;
 }
 static inline void numint_set_double(numint_t a, double b)
-{ *a = (long long int)ceil(b); }
+{ *a = ceil(b); }
 
 /* numint -> int */
 static inline bool numint_fits_int(const numint_t a)
@@ -250,5 +250,27 @@ static inline bool numint_fits_double(const numint_t a)
 static inline double numint_get_double(const numint_t a)
 { return (double)(*a); }
 
+
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline unsigned char numint_serialize_id(void)
+{ return sizeof(numint_t)/4; }
+
+static inline size_t numint_serialize(void* dst, const numint_t src)
+{
+  num_store_words8(dst,src,sizeof(numint_t));
+  return sizeof(numint_t);
+}
+
+static inline size_t numint_deserialize(numint_t dst, const void* src)
+{
+  num_store_words8(dst,src,sizeof(numint_t));
+  return sizeof(numint_t);
+}
+
+static inline size_t numint_serialized_size(const numint_t a)
+{ return sizeof(numint_t); }
 
 #endif

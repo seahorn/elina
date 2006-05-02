@@ -84,4 +84,18 @@ static inline void bound_print(const bound_t a);
 static inline void bound_fprint(FILE* stream, const bound_t a);
 static inline int bound_snprint(char* s, size_t size, const bound_t a);
 
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+/* Note: call _init before _deserialize */
+
+static inline size_t bound_serialize(void* dst, const bound_t src);
+static inline size_t bound_deserialize(bound_t dst, const void* src);
+static inline size_t bound_serialized_size(const bound_t a);
+
+static inline size_t bound_serialize_array(void* dst, const bound_t* src, size_t size);
+static inline size_t bound_deserialize_array(bound_t* dst, const void* src, size_t size);
+static inline size_t bound_serialized_size_array(const bound_t* src, size_t size);
+
 #endif

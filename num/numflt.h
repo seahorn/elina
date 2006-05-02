@@ -45,7 +45,7 @@ static inline void numflt_init_set_int(numflt_t a, long int i);
 static inline void numflt_clear(numflt_t a);
 static inline void numflt_clear_array(numflt_t* a, size_t size);
 
-static inline void numflt_swap(numflt_t* a, numflt_t* b)
+static inline void numflt_swap(numflt_t a, numflt_t b)
 { numflt_t t; *t=*a;*a=*b;*b=*t; }
 
 /* ====================================================================== */
@@ -81,8 +81,8 @@ static inline int numflt_equal(const numflt_t a, const numflt_t b);
 /* ====================================================================== */
 
 static inline void numflt_print(const numflt_t a);
-static inline void numflt_print(FILE* stream, const numflt_t a);
-static inline int numflt_snprint(char* s, size_t size, const numflt_t a);
+static inline void numflt_fprint(FILE* stream, const numflt_t a);
+static inline int  numflt_snprint(char* s, size_t size, const numflt_t a);
 
 /* ====================================================================== */
 /* Conversions */
@@ -120,5 +120,16 @@ static inline double numflt_get_double(const numflt_t a);
 
 static inline bool numflt_infty(const numflt_t a);
 static inline void numflt_set_infty(numflt_t a);
+
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline unsigned char numflt_serialize_id(void)
+{ return 0x20 + sizeof(numflt_t)/4; }
+
+static inline size_t numflt_serialize(void* dst, const numflt_t src);
+static inline size_t numflt_deserialize(numflt_t dst, const void* src);
+static inline size_t numflt_serialized_size(const numflt_t a);
 
 #endif

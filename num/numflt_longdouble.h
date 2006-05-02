@@ -37,7 +37,7 @@ static inline void numflt_init(numflt_t a)
 { *a = 0.0; }
 static inline void numflt_init_array(numflt_t* a, size_t size)
 {
-  int i; 
+  size_t i; 
   for (i=0; i<size; i++) *(a[i]) = (long double)0.0; 
 }
 static inline void numflt_init_set(numflt_t a, const numflt_t b)
@@ -105,7 +105,7 @@ static inline int numflt_equal(const numflt_t a, const numflt_t b)
 
 static inline void numflt_print(const numflt_t a)
 { printf("%.20Lg",*a+(long double)0.0); }
-static inline void numflt_print(FILE* stream, const numflt_t a)
+static inline void numflt_fprint(FILE* stream, const numflt_t a)
 { fprintf(stream,"%.20Lg",*a+0.0); }
 static inline int numflt_snprint(char* s, size_t size, const numflt_t a)
 { return snprintf(s,size,"%.20Lg",*a+(long double)0.0); }
@@ -176,5 +176,24 @@ static inline bool numflt_infty(const numflt_t a)
 { return fabsl(*a) == NUMFLT_MAX; }
 static inline void numflt_set_infty(numflt_t a)
 { *a = NUMFLT_MAX; }
+
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline size_t numflt_serialize(void* dst, const numflt_t src)
+{
+  num_store_words8(dst,src,sizeof(numflt_t));
+  return sizeof(numflt_t);
+}
+
+static inline size_t numflt_deserialize(numflt_t dst, const void* src)
+{
+  num_store_words8(dst,src,sizeof(numflt_t));
+  return sizeof(numflt_t);
+}
+
+static inline size_t numflt_serialized_size(const numflt_t a)
+{ return sizeof(numflt_t); }
 
 #endif

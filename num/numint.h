@@ -129,5 +129,13 @@ static inline bool numint_fits_double(const numint_t a);
 static inline double numint_get_double(const numint_t a);
   /* numint -> double */
 
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline unsigned char numint_serialize_id(void);
+static inline size_t numint_serialize(void* dst, const numint_t src);
+static inline size_t numint_deserialize(numint_t dst, const void* src);
+static inline size_t numint_serialized_size(const numint_t a);
 
 #endif

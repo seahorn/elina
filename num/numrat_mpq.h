@@ -48,7 +48,7 @@ static inline void numrat_set(numrat_t a, const numrat_t b)
 { mpq_set(a,b); }
 static inline void numrat_set_array(numrat_t* a, const numrat_t* b, size_t size)
 {
-  int i;
+  size_t i;
   for (i=0; i<size; i++) mpq_set(a[i],b[i]);
 }
 static inline void numrat_set_int(numrat_t a, long int i)
@@ -62,7 +62,7 @@ static inline void numrat_init(numrat_t a)
 { mpq_init(a); }
 static inline void numrat_init_array(numrat_t* a, size_t size)
 {
-  int i;
+  size_t i;
   for (i=0; i<size; i++) mpq_init(a[i]);
 }
 static inline void numrat_init_set(numrat_t a, const numrat_t b)
@@ -74,7 +74,7 @@ static inline void numrat_clear(numrat_t a)
 { mpq_clear(a); }
 static inline void numrat_clear_array(numrat_t* a, size_t size)
 {
-  int i;
+  size_t i;
   for (i=0; i<size; i++) mpq_clear(a[i]);
 }
 
@@ -196,7 +196,7 @@ static inline bool numrat_fits_int(const numrat_t a)
   return d<=LONG_MAX && d>=-LONG_MAX;
 }
 static inline long int numrat_get_int(const numrat_t a)
-{ return (long int)ceil(mpq_get_d(a)); } /* Bad... */
+{ return ceil(mpq_get_d(a)); } /* Bad... */
 
 /* numrat -> mpz */
 static inline void mpz_set_numrat(mpz_t a, const numrat_t b)
@@ -221,6 +221,45 @@ static inline bool numrat_fits_double(const numrat_t a)
 static inline double numrat_get_double(const numrat_t a)
 {
   return mpq_get_d(a);
+}
+
+
+/* ====================================================================== */
+/* Serialization */
+/* ====================================================================== */
+
+static inline unsigned char numrat_serialize_id(void)
+{ return 0x1f; }
+
+static inline size_t numrat_serialize(void* dst, const numrat_t src)
+{ 
+  size_t count1 = 0;
+  size_t count2 = 0;
+  *((char*)dst) = mpq_sgn(src);
+  mpz_export((char*)dst+5,&count1,1,1,1,0,mpq_numref(src));
+  mpz_export((char*)dst+9,&count2,1,1,1,0,mpq_denref(src));
+  num_dump_word32((char*)dst+1,count1);
+  num_dump_word32((char*)dst+5,count2);
+  return count1+count2+9;
+}
+
+static inline size_t numrat_deserialize(numrat_t dst, const void* src) 
+{
+  size_t count1 = num_undump_word32((const char*)src+1);
+  size_t count2 = num_undump_word32((const char*)src+5);
+  mpz_import(mpq_numref(dst),count1,1,1,1,0,(const char*)src+5);
+  mpz_import(mpq_denref(dst),count2,1,1,1,0,(const char*)src+9);
+  if (*(const char*)src<0)
+    mpq_neg(dst,dst);
+  return count1+count2+9;
+}
+
+/* not the exact size of serialized data, but a sound overapproximation */
+static inline size_t numrat_serialized_size(const numrat_t a) 
+{ 
+  return 
+    (mpz_sizeinbase(mpq_numref(a),2)+ mpz_sizeinbase(mpq_denref(a),2))/8+
+    9+2*sizeof(mp_limb_t);
 }
 
 #endif
