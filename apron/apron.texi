@@ -2645,14 +2645,14 @@ typedef struct ap_abstract1_t @{
 @end example
 @end deftp
 
-@deftp datatype box1_t
+@deftp datatype ap_box1_t
 @example
-typedef struct box1_t @{
+typedef struct ap_box1_t @{
   ap_interval_t** p;
   ap_environment_t* env;
-@} box1_t;
-void box1_fprint(FILE* stream, const box1_t* box);
-void box1_clear(box1_t* box);
+@} ap_box1_t;
+void ap_box1_fprint(FILE* stream, const ap_box1_t* box);
+void ap_box1_clear(ap_box1_t* box);
 @end example
 @end deftp
 
@@ -2877,7 +2877,7 @@ Return the interval taken by a linear expression @var{expr} over
 the abstract value @var{a}.
 @end deftypefun
 
-@deftypefun box1_t ap_abstract1_to_box (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun ap_box1_t ap_abstract1_to_box (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
 Convert @var{a} to an interval/hypercube.
 @end deftypefun
 

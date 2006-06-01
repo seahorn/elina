@@ -2,6 +2,9 @@
 /* ap_manager.c: global manager passed to all functions */
 /* ************************************************************************* */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

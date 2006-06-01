@@ -2,6 +2,9 @@
 /* apron_caml.h */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.
+   Please read the COPYING file packaged in the distribution  */
+
 #ifndef _APRON_CAML_H_
 #define _APRON_CAML_H_
 

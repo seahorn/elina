@@ -2,6 +2,9 @@
 /* ap_linexpr1.h: linear expressions */
 /* ************************************************************************* */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 /* normally included from expr0.h */
 
 #ifndef _AP_LINEXPR1_H_
@@ -111,8 +114,8 @@ bool ap_linexpr1_get_coeff(ap_coeff_t* coeff, const ap_linexpr1_t* expr, ap_var_
 /* Set the constant of the linear expression */
 static inline void ap_linexpr1_set_cst(ap_linexpr1_t* expr, const ap_coeff_t* cst);
 static inline void ap_linexpr1_set_cst_scalar(ap_linexpr1_t* expr, const ap_scalar_t* scalar);
-static inline void ap_linexpr1_set_cst_ap_scalar_int(ap_linexpr1_t* expr, int num);
-static inline void ap_linexpr1_set_cst_ap_scalar_frac(ap_linexpr1_t* expr, int num, unsigned int den);
+static inline void ap_linexpr1_set_cst_scalar_int(ap_linexpr1_t* expr, int num);
+static inline void ap_linexpr1_set_cst_scalar_frac(ap_linexpr1_t* expr, int num, unsigned int den);
 static inline void ap_linexpr1_set_cst_scalar_double(ap_linexpr1_t* expr, double num);
 static inline void ap_linexpr1_set_cst_interval(ap_linexpr1_t* expr, const ap_interval_t* itv);
 static inline void ap_linexpr1_set_cst_interval_scalar(ap_linexpr1_t* expr, const ap_scalar_t* inf, const ap_scalar_t* sup);
@@ -126,16 +129,16 @@ static inline void ap_linexpr1_set_cst_interval_double(ap_linexpr1_t* expr, doub
    Return true if var is unknown in the environment */
 static inline bool ap_linexpr1_set_coeff(ap_linexpr1_t* expr, ap_var_t var, const ap_coeff_t* coeff);
 static inline bool ap_linexpr1_set_coeff_scalar(ap_linexpr1_t* expr, ap_var_t var, const ap_scalar_t* scalar);
-static inline bool ap_linexpr1_set_coeff_ap_scalar_int(ap_linexpr1_t* expr, ap_var_t var, int num);
-static inline bool ap_linexpr1_set_coeff_ap_scalar_frac(ap_linexpr1_t* expr, ap_var_t var, int num, unsigned int den);
+static inline bool ap_linexpr1_set_coeff_scalar_int(ap_linexpr1_t* expr, ap_var_t var, int num);
+static inline bool ap_linexpr1_set_coeff_scalar_frac(ap_linexpr1_t* expr, ap_var_t var, int num, unsigned int den);
 static inline bool ap_linexpr1_set_coeff_scalar_double(ap_linexpr1_t* expr, ap_var_t var, double num);
 static inline bool ap_linexpr1_set_coeff_interval(ap_linexpr1_t* expr, ap_var_t var, const ap_interval_t* itv);
-static inline bool ap_linexpr1_set_coeff_ap_interval_scalar(ap_linexpr1_t* expr, ap_var_t var, const ap_scalar_t* inf, const ap_scalar_t* sup);
-static inline bool ap_linexpr1_set_coeff_ap_interval_int(ap_linexpr1_t* expr, ap_var_t var, int inf, int sup);
-static inline bool ap_linexpr1_set_coeff_ap_interval_frac(ap_linexpr1_t* expr, ap_var_t var,
+static inline bool ap_linexpr1_set_coeff_interval_scalar(ap_linexpr1_t* expr, ap_var_t var, const ap_scalar_t* inf, const ap_scalar_t* sup);
+static inline bool ap_linexpr1_set_coeff_interval_int(ap_linexpr1_t* expr, ap_var_t var, int inf, int sup);
+static inline bool ap_linexpr1_set_coeff_interval_frac(ap_linexpr1_t* expr, ap_var_t var,
 							   int numinf, unsigned int deninf,
 							   int numsup, unsigned int densup);
-static inline bool ap_linexpr1_set_coeff_ap_interval_double(ap_linexpr1_t* expr, ap_var_t var, double inf, double sup);
+static inline bool ap_linexpr1_set_coeff_interval_double(ap_linexpr1_t* expr, ap_var_t var, double inf, double sup);
 
 /*
 bool ap_linexpr1_set_format(ap_linexpr1_t* expr, char* fmt, ...);
@@ -228,10 +231,10 @@ static inline
 void ap_linexpr1_set_cst_scalar(ap_linexpr1_t* expr, const ap_scalar_t* scalar)
   { ap_coeff_set_scalar(&expr->linexpr0->cst, scalar); }
 static inline
-void ap_linexpr1_set_cst_ap_scalar_int(ap_linexpr1_t* expr, int num)
+void ap_linexpr1_set_cst_scalar_int(ap_linexpr1_t* expr, int num)
   { ap_coeff_set_scalar_int(&expr->linexpr0->cst, num); }
 static inline
-void ap_linexpr1_set_cst_ap_scalar_frac(ap_linexpr1_t* expr, int num, unsigned int den)
+void ap_linexpr1_set_cst_scalar_frac(ap_linexpr1_t* expr, int num, unsigned int den)
   { ap_coeff_set_scalar_frac(&expr->linexpr0->cst, num, den); }
 static inline
 void ap_linexpr1_set_cst_scalar_double(ap_linexpr1_t* expr, double num)
@@ -261,10 +264,10 @@ static inline
 bool ap_linexpr1_set_coeff_scalar(ap_linexpr1_t* expr, ap_var_t var, const ap_scalar_t* scalar)
   { ap_coeff_t* ecoeff = ap_linexpr1_coeffref(expr,var); if (ecoeff){ ap_coeff_set_scalar(ecoeff,scalar); return false; } else return true; }
 static inline
-bool ap_linexpr1_set_coeff_ap_scalar_int(ap_linexpr1_t* expr, ap_var_t var, int num)
+bool ap_linexpr1_set_coeff_scalar_int(ap_linexpr1_t* expr, ap_var_t var, int num)
   { ap_coeff_t* ecoeff = ap_linexpr1_coeffref(expr,var); if (ecoeff){ ap_coeff_set_scalar_int(ecoeff,num); return false; } else return true; }
 static inline
-bool ap_linexpr1_set_coeff_ap_scalar_frac(ap_linexpr1_t* expr, ap_var_t var, int num, unsigned int den)
+bool ap_linexpr1_set_coeff_scalar_frac(ap_linexpr1_t* expr, ap_var_t var, int num, unsigned int den)
   { ap_coeff_t* ecoeff = ap_linexpr1_coeffref(expr,var); if (ecoeff){ ap_coeff_set_scalar_frac(ecoeff,num, den); return false; } else return true; }
 static inline
 bool ap_linexpr1_set_coeff_scalar_double(ap_linexpr1_t* expr, ap_var_t var, double num)
@@ -273,18 +276,18 @@ static inline
 bool ap_linexpr1_set_coeff_interval(ap_linexpr1_t* expr, ap_var_t var, const ap_interval_t* itv)
   { ap_coeff_t* ecoeff = ap_linexpr1_coeffref(expr,var); if (ecoeff){ ap_coeff_set_interval(ecoeff,itv); return false; } else return true; }
 static inline
-bool ap_linexpr1_set_coeff_ap_interval_int(ap_linexpr1_t* expr, ap_var_t var, int inf, int sup)
+bool ap_linexpr1_set_coeff_interval_int(ap_linexpr1_t* expr, ap_var_t var, int inf, int sup)
   { ap_coeff_t* ecoeff = ap_linexpr1_coeffref(expr,var); if (ecoeff){ ap_coeff_set_interval_int(ecoeff,inf,sup); return false; } else return true; }
 static inline
-bool ap_linexpr1_set_coeff_ap_interval_scalar(ap_linexpr1_t* expr, ap_var_t var, const ap_scalar_t* inf, const ap_scalar_t* sup)
+bool ap_linexpr1_set_coeff_interval_scalar(ap_linexpr1_t* expr, ap_var_t var, const ap_scalar_t* inf, const ap_scalar_t* sup)
   { ap_coeff_t* ecoeff = ap_linexpr1_coeffref(expr,var); if (ecoeff){ ap_coeff_set_interval_scalar(ecoeff,inf,sup); return false; } else return true; }
 static inline
-bool ap_linexpr1_set_coeff_ap_interval_frac(ap_linexpr1_t* expr, ap_var_t var,
+bool ap_linexpr1_set_coeff_interval_frac(ap_linexpr1_t* expr, ap_var_t var,
 				  int numinf, unsigned int deninf,
 				  int numsup, unsigned int densup)
   { ap_coeff_t* ecoeff = ap_linexpr1_coeffref(expr,var); if (ecoeff){ ap_coeff_set_interval_frac(ecoeff,numinf,deninf, numsup,densup); return false; } else return true; }
 static inline
-bool ap_linexpr1_set_coeff_ap_interval_double(ap_linexpr1_t* expr, ap_var_t var, double inf, double sup)
+bool ap_linexpr1_set_coeff_interval_double(ap_linexpr1_t* expr, ap_var_t var, double inf, double sup)
   { ap_coeff_t* ecoeff = ap_linexpr1_coeffref(expr,var); if (ecoeff){ ap_coeff_set_interval_double(ecoeff,inf,sup); return false; } else return true; }
 
 #endif

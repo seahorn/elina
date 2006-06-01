@@ -2,6 +2,9 @@
 /* ap_lincons0.c: linear constraints and arrays */
 /* ************************************************************************* */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include "ap_lincons0.h"
 
 /* ********************************************************************** */
@@ -58,8 +61,8 @@ bool ap_lincons0_is_unsat(const ap_lincons0_t* cons)
 	abort();
       }
     case AP_COEFF_INTERVAL:
+      sgn = ap_scalar_sgn(expr->cst.val.interval->sup);
       switch(cons->constyp){
-	sgn = ap_scalar_sgn(expr->cst.val.interval->sup);
       case AP_CONS_EQ:
 	return 
 	  sgn < 0 ||

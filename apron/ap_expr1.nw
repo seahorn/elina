@@ -1,5 +1,8 @@
 % -*- mode: Noweb; noweb-code-mode: c-mode -*-
 
+% This file is part of the APRON Library, released under LGPL license.
+% Please read the COPYING file packaged in the distribution 
+
 %**********************************************************************
 \chapter{Sémantique concrète niveau 1 et fichier [[ap_expr1.h]]}
 %**********************************************************************
@@ -8,6 +11,9 @@
 /* ************************************************************************* */
 /* ap_expr1.h: datatypes for dimensions, expressions and constraints */
 /* ************************************************************************* */
+
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
 
 /* GENERATED FROM ap_expr1.nw: DOT NOT MODIFY ! */
 

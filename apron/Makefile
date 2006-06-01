@@ -88,8 +88,9 @@ dist: $(NOWEB_FILES) apron.texi apronrationale.tex Makefile README $(TEX_FILES) 
 
 clean:
 	/bin/rm -f $(NOWEB_FILES:%.nw=%.h) $(TEX_FILES)
-	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps apron.cps apron.fns apron.info apron.kys apron.pgs apron.tps apron.vrs
+	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps apron.cps apron.fns apron.info apron.fn apron.ky apron.pg apron.cp apron.tp apron.vr apron.kys apron.pgs apron.tps apron.vrs
 	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
+	/bin/rm -fr html
 
 install: $(H_FILES) libapron.a libapron_debug.a
 	mkdir -p $(APRON_PREFIX)/include
@@ -106,7 +107,7 @@ distclean:
 # Latex rules
 #---------------------------------------
 
-.PHONY : dvi apronrationale.dvi 
+.PHONY : dvi apronrationale.dvi apron.info
 
 ps: apronrationale.dvi
 	$(DVIPS) apronrationale -o
@@ -116,6 +117,13 @@ dvi: apronrationale.tex $(TEX_FILES)
 
 apronrationale.dvi: apronrationale.tex $(TEX_FILES)
 	$(LATEX) $^
+
+apron.info: apron.texi
+	makeinfo -o $@ $<
+
+apron.html: apron.texi
+	texi2html -split=section -nonumber -menu -subdir=html $<
+
 
 #---------------------------------------
 # C rules

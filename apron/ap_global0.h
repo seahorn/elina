@@ -2,6 +2,9 @@
 /* ap_global0.h: level 0 */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #ifndef _AP_GLOBAL0_H_
 #define _AP_GLOBAL0_H_
 

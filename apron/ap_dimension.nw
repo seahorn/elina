@@ -1,5 +1,8 @@
 % -*- mode: Noweb; noweb-code-mode: c-mode -*-
 
+% This file is part of the APRON Library, released under LGPL license.
+% Please read the COPYING file packaged in the distribution 
+
 %**********************************************************************
 \chapter{Dimension: dimensions et opérations reliées, fichier [[ap_dimension.h]]}
 \label{chap:dim}
@@ -12,6 +15,9 @@ Ce fichier définit les types de bases pour manipuler les dimensions.
 /* ********************************************************************** */
 /* ap_dimension.h: dimensions and related operations */
 /* ********************************************************************** */
+
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
 
 /* GENERATED FROM environment.nw: DOT NOT MODIFY ! */
 

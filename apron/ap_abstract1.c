@@ -159,7 +159,7 @@ The %dth abstract value of the array is of type %s and not of the type %s expect
   return true;
 }
 
-void box1_fprint(FILE* stream, const box1_t* box)
+void ap_box1_fprint(FILE* stream, const ap_box1_t* box)
 {
   size_t i;
   fprintf(stream,"Box1: (%d,%d)\n",
@@ -174,7 +174,7 @@ void box1_fprint(FILE* stream, const box1_t* box)
   }
 }
 
-void box1_clear(box1_t* box)
+void ap_box1_clear(ap_box1_t* box)
 {
   if (box->env==NULL){
     fprintf(stderr,"abstract1.c: box_clear: either non initialized or already deallocated box !\n");
@@ -585,9 +585,9 @@ ap_lincons1_array_t ap_abstract1_to_lincons_array(ap_manager_t* man, const ap_ab
    of the resulting array is ap_abstract1_dimension(man,a).  This
    function can be reimplemented by using ap_abstract1_bound_linexpr
    */
-box1_t ap_abstract1_to_box(ap_manager_t* man, const ap_abstract1_t* a)
+ap_box1_t ap_abstract1_to_box(ap_manager_t* man, const ap_abstract1_t* a)
 {
-  box1_t box;
+  ap_box1_t box;
 
   box.p = ap_abstract0_to_box(man,a->abstract0);
   box.env = ap_environment_copy(a->env);

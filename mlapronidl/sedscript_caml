@@ -1,3 +1,4 @@
+1 a\\n(* This file is part of the APRON Library, released under LGPL license.\n   Please read the COPYING file packaged in the distribution  *)
 s/mutable_/mutable /g;
 s/mpq_ptr/t/g;
 s/ap_scalar_t/t/g;

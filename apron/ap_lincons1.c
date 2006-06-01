@@ -2,6 +2,9 @@
 /* ap_lincons1.c: linear constraints */
 /* ************************************************************************* */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include "ap_lincons1.h"
 
 /* ********************************************************************** */

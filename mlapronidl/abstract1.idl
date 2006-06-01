@@ -1,5 +1,8 @@
 /* -*- mode: c -*- */
 
+/* This file is part of the APRON Library, released under LGPL license.
+   Please read the COPYING file packaged in the distribution  */
+
 quote(MLI,"(** Abstract values of level 1 *)")
 
 quote(C, "\n\
@@ -161,7 +164,7 @@ enum tbool_t ap_abstract1_sat_interval(ap_manager_ptr man, [ref]struct ap_abstra
 				    [ref]struct ap_interval_t* v2)
     quote(dealloc,"I0_CHECK_EXC(man)");
 
-enum tbool_t ap_abstract1_is_dimension_unconstrained(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, ap_var_t v)
+enum tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, ap_var_t v)
     quote(dealloc,"I0_CHECK_EXC(man)");
 
 
@@ -171,7 +174,7 @@ quote(MLMLI,"(* ============================================================ *)"
 
 [ref]struct ap_interval_t* ap_abstract1_bound_linexpr(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, [ref]struct ap_linexpr1_t* v)
     quote(dealloc,"ap_interval_free(_res); I0_CHECK_EXC(man)");
-[ref]struct ap_interval_t* ap_abstract1_bound_dimension(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, ap_var_t v)
+[ref]struct ap_interval_t* ap_abstract1_bound_variable(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, ap_var_t v)
     quote(dealloc,"ap_interval_free(_res); I0_CHECK_EXC(man)");
 
 quote(MLI,"\n\

@@ -2,7 +2,10 @@
 /* ap_linexpr0.h: linear expressions */
 /* ************************************************************************* */
 
-/* normally included from expr0.h */
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
+/* normally included from ap_expr0.h */
 
 #ifndef _AP_LINEXPR0_H_
 #define _AP_LINEXPR0_H_

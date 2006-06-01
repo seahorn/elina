@@ -2,6 +2,9 @@
 /* linexpr1.c: linear expressions */
 /* ************************************************************************* */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include "ap_linexpr1.h"
 #include <stdarg.h>
 

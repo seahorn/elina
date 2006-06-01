@@ -2,7 +2,10 @@
 /* ap_generator1.h: linear generators and arrays */
 /* ************************************************************************* */
 
-/* normally included from expr0.h */
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
+/* normally included from ap_expr1.h */
 
 #ifndef _AP_GENERATOR1_H_
 #define _AP_GENERATOR1_H_

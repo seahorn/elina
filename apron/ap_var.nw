@@ -1,5 +1,8 @@
 % -*- mode: Noweb; noweb-code-mode: c-mode -*-
 
+% This file is part of the APRON Library, released under LGPL license.
+% Please read the COPYING file packaged in the distribution 
+
 %**********************************************************************
 \chapter{Var: définition et manipulation de variables génériques, fichier [[ap_var.h]]}
 \label{chap:var}
@@ -9,6 +12,9 @@
 /* ********************************************************************** */
 /* ap_var.h: variables (strings or user-defined) */
 /* ********************************************************************** */
+
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
 
 /* GENERATED FROM ap_var.nw: DOT NOT MODIFY ! */
 
@@ -32,7 +38,7 @@
    and a free function.
 
    The parametrization is done via a global variable pointing to an 
-   ap_var_t structure.
+   ap_var_operations_t structure.
  */
 
 typedef void* ap_var_t;

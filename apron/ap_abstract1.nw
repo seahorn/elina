@@ -51,12 +51,12 @@ typedef struct ap_abstract1_t {
      ap_abstract0_integer_dimension(man,abstract0)== env->intdim &&
      ap_abstract0_real_dimension(man,abstract0)== env->realdim */
 
-typedef struct box1_t {
+typedef struct ap_box1_t {
   ap_interval_t** p;
   ap_environment_t* env;
-} box1_t;
-void box1_fprint(FILE* stream, const box1_t* box);
-void box1_clear(box1_t* box);
+} ap_box1_t;
+void ap_box1_fprint(FILE* stream, const ap_box1_t* box);
+void ap_box1_clear(ap_box1_t* box);
 @
 
 %----------------------------------------------------------------------
@@ -356,7 +356,7 @@ ap_lincons1_array_t ap_abstract1_to_lincons_array(ap_manager_t* man, const ap_ab
      - The environment of the result is a copy of the environment of the abstract value.
   */
 
-box1_t ap_abstract1_to_box(ap_manager_t* man, const ap_abstract1_t* a);
+ap_box1_t ap_abstract1_to_box(ap_manager_t* man, const ap_abstract1_t* a);
   /* Converts an abstract value to an interval/hypercube. */
 
 ap_generator1_array_t ap_abstract1_to_generator_array(ap_manager_t* man, const ap_abstract1_t* a);

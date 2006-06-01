@@ -1,4 +1,3 @@
-
 include ../Makefile.config
 
 #---------------------------------------
@@ -20,7 +19,7 @@ BINDIR = $(PREFIX)/bin
 #---------------------------------------
 # CAML part
 #---------------------------------------
-OCAMLC = ocamlc.opt 
+OCAMLC = ocamlc.opt
 OCAMLOPT = ocamlopt.opt
 OCAMLDEP = ocamldep
 OCAMLLEX = ocamllex.opt
@@ -40,7 +39,7 @@ ICFLAGS = \
 -I$(GMP_PREFIX)/include -I$(MLGMPIDL_PREFIX)/include \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml \
 -I$(APRON_PREFIX)/include \
--Wall -Winline -Wimplicit-function-declaration -std=c99 
+-Wall -Winline -Wimplicit-function-declaration -std=c99
 
 CFLAGS = $(ICFLAGS) -O3 -DNDEBUG
 CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG
@@ -56,7 +55,7 @@ DVIPS=dvips
 # Files
 #---------------------------------------
 
-IDLMODULES0 = scalar interval coeff dim linexpr0 lincons0 generator0 manager abstract0 
+IDLMODULES0 = scalar interval coeff dim linexpr0 lincons0 generator0 manager abstract0
 IDLMODULES1 = environment linexpr1 lincons1 generator1 abstract1
 IDLMODULES = $(IDLMODULES0) $(IDLMODULES1)
 MLMODULES0 = $(IDLMODULES0)
@@ -67,11 +66,11 @@ MLSRC = $(MLMODULES:%=%.mli) $(MLMODULES:%=%.ml)
 MLINT = $(MLMODULES:%=%.cmi)
 MLOBJ = $(MLMODULES:%=%.cmo)
 MLOBJx = $(MLMODULES:%=%.cmx)
-MLLIB_TOINSTALL = $(MLMODULES:%=%.mli) $(MLINT) apron.cmi apron.cmo 
+MLLIB_TOINSTALL = $(MLMODULES:%=%.mli) $(MLINT) apron.cmi apron.cmo
 MLLIB_TOINSTALLx = apron.cmx apron.o
 CCMODULES = apron_caml $(IDLMODULES:%=%_caml)
-CCSRC = $(CCMODULES:%=%.c) 
-CCLIB_TOINSTALL = libapron_caml.a libapron_caml_debug.a 
+CCSRC = $(CCMODULES:%=%.c)
+CCLIB_TOINSTALL = libapron_caml.a libapron_caml_debug.a
 CCINC_TOINSTALL = apron_caml.h
 
 #---------------------------------------
@@ -80,7 +79,7 @@ CCINC_TOINSTALL = apron_caml.h
 
 all: $(MLSRC) $(MLINT) $(MLOBJ) $(MLOBJx) apron.cmi apron.cmx libapron_caml.a libapron_caml_debug.a
 
-mlsrc: $(MLSRC) 
+mlsrc: $(MLSRC)
 
 mldep: $(MLSRC)
 	ocamldep $(OCAMLINC) $(MLSRC)
@@ -92,11 +91,11 @@ mldep: $(MLSRC)
 tar: $(IDLMODULES:%=%.idl) apron_caml.c apron_caml.h Makefile mlapronidl.tex
 	(cd ..; tar zcvf $(HOME)/mlapronidl.tgz $(^:%=mlapronidl/%))
 
-clean: 
+clean:
 	/bin/rm -f $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c)
 	/bin/rm -f mpz.idl mpq.idl
-	/bin/rm -f mlapronidl.aux mlapronidl.idx mlapronidl.ilg mlapronidl.ind mlapronidl.bbl mlapronidl.blg mlapronidl.dvi mlapronidl.log mlapronidl.toc mlapronidl.ps
-	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma 
+	/bin/rm -f mlapronidl.out mlapronidl.aux mlapronidl.idx mlapronidl.ilg mlapronidl.ind mlapronidl.bbl mlapronidl.blg mlapronidl.dvi mlapronidl.log mlapronidl.toc mlapronidl.ps
+	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
 	/bin/rm -fr tmp html
 	/bin/rm -f ocamldoc.[cefkimoptv]*
 
@@ -107,7 +106,7 @@ distclean:
 	/bin/rm -f $(IDLMODULES:%=$(MLAPRONIDL_PREFIX)/lib/%.idl)
 	/bin/rm -f $(CCINC_TOINSTALL:%=$(MLAPRONIDL_PREFIX)/include/%)
 
-install: $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(IDLMODULES:%=%.idl) $(CCINC_TOINSTALL) 
+install: $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(IDLMODULES:%=%.idl) $(CCINC_TOINSTALL)
 	mkdir -p $(MLAPRONIDL_PREFIX)/lib
 	mkdir -p $(MLAPRONIDL_PREFIX)/include
 	cp $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(IDLMODULES:%=%.idl) $(MLAPRONIDL_PREFIX)/lib
@@ -142,6 +141,8 @@ mpq.idl: $(MLGMPIDL_PREFIX)/lib/mpq.idl
 #---------------------------------------
 # TEX and HTML rules
 #---------------------------------------
+
+.PHONY: mlapronidl.dvi html
 
 doc: mlapronidl.dvi html
 
@@ -185,11 +186,11 @@ html: $(MLINT) $(MLSRC)
 #	sed -f sedscript_caml tmp/abstract$*.mli >abstract$*.mli
 #	sed -f sedscript_caml tmp/abstract$*.ml >abstract$*.ml
 
-%_caml.c %.ml %.mli: %.idl sedscript_caml 
+%_caml.c %.ml %.mli: %.idl sedscript_caml
 	mkdir -p tmp
 	cp $*.idl tmp/$*.idl
 	$(CAMLIDL) -no-include -prepro "$(M4) --prefix-builtins macros.m4" -I $(SRCDIR) tmp/$*.idl
-	cp tmp/$*_stubs.c $*_caml.c
+	sed -e '1 a\\n/* This file is part of the APRON Library, released under LGPL license.\n  Please read the COPYING file packaged in the distribution  */' tmp/$*_stubs.c >$*_caml.c
 	sed -f sedscript_caml tmp/$*.ml >$*.ml
 	sed -f sedscript_caml tmp/$*.mli >$*.mli
 

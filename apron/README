@@ -1,15 +1,26 @@
+# $Id$
+
+# This file is part of the APRON Library, released under LGPL
+# license.
+
+# Please read the COPYING file packaged in the distribution
 
 Source for APRON commoninterface files.
 
   To compile and/or to generate the doc, you need:
-  * the NOWEB ltterate programming tools
+  * the NOWEB litterate programming tools
   * the GMP library, for multiprecision arithmetic
+
+  You need to generate a Makefile.config file from the
+  Makefile.config.model in the parent directory of this file.
 
 Most useful make targets:
 
   all: clib ps
     everything
   apron.ps:
+  apron.info:
+  apron.html:
     the documentation
   clib: 
     C library (libapron.a libapron_debug.a)
@@ -32,7 +43,7 @@ Header files associated to C files and considered as modules:
   ap_var.h        : variables 
   ap_environment.h: environment binding variables to dimensions
   ap_linexpr1.h   : (interval) linear expressions, level 1
-  ap_lincons1.h   : interval) linear constraints, level 1
+  ap_lincons1.h   : (interval) linear constraints, level 1
   ap_generator1.h : generators, level 1
   ap_abstract1.h  : abstract values, level 1
 Additional header files:

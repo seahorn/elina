@@ -1,5 +1,8 @@
 /* -*- mode: c -*- */
 
+/* This file is part of the APRON Library, released under LGPL license.
+   Please read the COPYING file packaged in the distribution  */
+
 quote(C, "\n\
 #include <limits.h>\n\
 #include \"ap_expr0.h\"\n\
@@ -382,8 +385,10 @@ quote(MLMLI,"(* ============================================================ *)"
 quote(MLMLI,"(** {3 Change and permutation of dimensions} *)")
 quote(MLMLI,"(* ============================================================ *)")
 
-ap_abstract0_ptr ap_abstract0_add_dimensions(ap_manager_ptr man, ap_abstract0_ptr a, ap_dimchange_t dimchange)
-     quote(call,"_res = ap_abstract0_add_dimensions(man,false,a,&dimchange);ap_dimchange_clear(&dimchange);")
+quote(MLMLI,"\n")
+
+ap_abstract0_ptr ap_abstract0_add_dimensions(ap_manager_ptr man, ap_abstract0_ptr a, ap_dimchange_t dimchange, boolean v1)
+     quote(call,"_res = ap_abstract0_add_dimensions(man,false,a,&dimchange, v1);ap_dimchange_clear(&dimchange);")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 ap_abstract0_ptr ap_abstract0_remove_dimensions(ap_manager_ptr man, ap_abstract0_ptr a, ap_dimchange_t dimchange)
@@ -395,9 +400,9 @@ ap_abstract0_ptr ap_abstract0_permute_dimensions(ap_manager_ptr man, ap_abstract
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** {5 Side-effect versions of the previous functions} *)\n\n")
-void ap_abstract0_add_dimensions_with(ap_manager_ptr man, ap_abstract0_ptr a, ap_dimchange_t dimchange)
+void ap_abstract0_add_dimensions_with(ap_manager_ptr man, ap_abstract0_ptr a, ap_dimchange_t dimchange, boolean v1)
      quote(call,"{\n\
-  ap_abstract0_t* res = ap_abstract0_add_dimensions(man,true,a,&dimchange);\n\
+									      ap_abstract0_t* res = ap_abstract0_add_dimensions(man,true,a,&dimchange,v1);\n \
   ap_dimchange_clear(&dimchange);\n\
   *((ap_abstract0_ptr *) Data_custom_val(_v_a)) = res;\n\
 }")

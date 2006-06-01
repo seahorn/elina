@@ -16,7 +16,7 @@
 \renewcommand{\chaptermark}[1]{ %
   \markboth{\MakeUppercase{\chaptername}\ \thechapter.\ #1}{}}
 \renewcommand{\sectionmark}[1]{}
-\setcounter{tocdepth}{2}
+\setcounter{tocdepth}{1}
 \setcounter{secnumdepth}{4}
 \usepackage{color}
 \definecolor{mygreen}{rgb}{0,0.6,0}
@@ -31,9 +31,87 @@
 
 \makeindex
 
-\title{apron}
+\title{MLApronIDL: OCaml interface for APRON library}
+\author{Bertrand Jeannet}
+
 \begin{document}
 \maketitle
+
+\vspace*{0.9\textheight}
+
+All files distributed in the APRON library, including \textsc{MLApronIDL}
+subpackage, are distributed under LGPL license.
+
+Copyright (C) Bertrand Jeannet 2005-2006 for the
+\textsc{MLApronIDL} subpackage.
+
+\newpage
+
+\section*{Introduction}
+
+This package is an \textsc{OCaml} interface for the APRON library/interface.
+The interface is decomposed into 15 modules, corresponding to C modules:
+
+\noindent
+\begin{tabular}{l@{~:~~}l}
+Scalar     & scalars (numbers) \\
+Interval   & intervals on scalars \\
+Coeff      & coefficients (either scalars or intervals) \\
+Dimension  & dimensions and related operations \\
+Linexpr0   & (interval) linear expressions, level 0 \\
+Lincons0   & (interval) linear constraints, level 0 \\
+Generator0 & generators, level 0 \\
+Manager    & managers \\
+Abstract0  & abstract values, level 0 \\
+Var        & variables \\
+Environment& environment binding variables to dimensions \\
+Linexpr1   & (interval) linear expressions, level 1 \\
+Lincons1   & interval) linear constraints, level 1 \\
+Generator1 & generators, level 1 \\
+Abstract1  & abstract values, level 1
+\end{tabular}
+
+By default, variables (Var.t) are implemented as strings. To
+change this, one need to manually replace the default file var.ml
+by a user-defined one. The module Environment ensures that the new
+Var module offers a compatible signature.
+
+\subsection*{Requirements}
+
+\begin{itemize}
+\item M4 preprocessor (standard on any UNIX system)
+\item APRON library
+\item GMP library (tested with version 4.0 and up)
+\item mlgmpidl package
+\item OCaml 3.0 or up (tested with 3.09)
+\item Camlidl (tested with 1.05)
+\end{itemize}
+
+\subsection*{Installation}
+
+\begin{description}
+\item[Library]
+Set the file ../Makefile.config to your own setting.
+You might also have to modify the Makefile for executables
+
+type 'make', and then 'make install'
+
+The OCaml part of the library is named apron.cma (.cmxa, .a)
+The C part of the library is named libapron\_caml.a (libapron\_caml\_debug.a)
+
+'make install' installs not only .mli, .cmi, but also .idl files.
+\item[Documentation]
+The documentation (currently very sketchy) is generated with ocamldoc.
+
+'make mlapronidl.dvi'
+
+'make html' (put the HTML files in the html subdirectoy)
+
+\item[Miscellaneous]
+'make clean' and 'make distclean' have the usual behaviour.
+\end{description}
+
+\newpage
 
 \tableofcontents
 

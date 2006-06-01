@@ -2,6 +2,9 @@
 /* ap_lincons1.h: linear constraints and arrays */
 /* ************************************************************************* */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 /* normally included from expr0.h */
 
 #ifndef _AP_LINCONS1_H_
@@ -33,7 +36,7 @@ typedef struct ap_lincons1_array_t {
 
 
 /* ********************************************************************** */
-/* I. ap_lincons0_t */
+/* I. ap_lincons1_t */
 /* ********************************************************************** */
 
 /* ====================================================================== */
@@ -83,7 +86,7 @@ ap_linexpr1_t ap_lincons1_linexpr1ref(const ap_lincons1_t* cons);
   /* Get a reference to the underlying expression of the constraint.
      Do not free it: nothing is duplicated.
      Modifying the argument or the result is equivalent, except for
-     change of dimensions/envionment. */
+     change of dimensions/environement. */
 
 /* Get the constant and assign it to coeff */
 static inline void ap_lincons1_get_cst(ap_coeff_t* coeff, const ap_lincons1_t* cons);

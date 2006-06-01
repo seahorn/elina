@@ -1,5 +1,8 @@
 % -*- mode: Noweb; noweb-code-mode: c-mode -*-
 
+% This file is part of the APRON Library, released under LGPL license.
+% Please read the COPYING file packaged in the distribution 
+
 %**********************************************************************
 \chapter{Environment: liaison des variables aux dimensions (entiers), fichier [[ap_environlent.h]]}
 \label{chap:env}
@@ -27,7 +30,10 @@ niveau 0, qui sont d'un usage interne
 /* ap_environment.h: binding of addresses (strings) to dimensions */
 /* ********************************************************************** */
 
-/* GENERATED FROM environment.nw: DOT NOT MODIFY ! */
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
+/* GENERATED FROM ap_environment.nw: DOT NOT MODIFY ! */
 
 #ifndef _AP_ENVIRONMENT_H_
 #define _AP_ENVIRONMENT_H_
@@ -122,8 +128,8 @@ ap_environment_t* ap_environment_make(ap_var_t* name_of_intdim, size_t intdim,
                                 ap_var_t* name_of_realdim, size_t realdim);
   /* Build an environement from an array of integer and
      an array of real variables.
-     - Names are duplicated in the result, so it is the responsability
-       of the user to free the names he provides.
+     - Variables are duplicated in the result, so it is the responsability
+       of the user to free the variables he provides.
      - If the result does not satisfy the invariant, return NULL.
   */
 
@@ -154,7 +160,7 @@ ap_dim_t ap_environment_dim_of_var(const ap_environment_t* env, ap_var_t name);
 
 static inline
 ap_var_t ap_environment_var_of_dim(const ap_environment_t* env, ap_dim_t dim);
-  /* - Return the variable asosciated to the dimension.
+  /* - Return the variable associated to the dimension.
      - There is no bound check here */
 @
 
@@ -177,8 +183,8 @@ bool ap_environment_is_leq(const ap_environment_t* env1,
 int ap_environment_compare(const ap_environment_t* env1,
                         const ap_environment_t* env2);
   /* Return
-    - -2 if the environement are not compatible
-      (a variable has different types in the 2 environements)
+    - -2 if the environements are not compatible
+      (a variable has a different type in the 2 environements)
     - -1 if env1 is a subset of env2
     - 0 if equality
     - +1 if env1 is a superset of env2
@@ -208,7 +214,7 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
                                ap_dimchange_t** dimchange1,
                                ap_dimchange_t** dimchange2);
   /*
-  Least common environment to two environment.
+  Least common environment to two environements.
 
    - Assume ap_environment_is_eq(env1,env2)==false.
 
@@ -216,28 +222,30 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
      (a variable has different types in the 2 environements),
      return NULL
 
-   - Compute also in dimachange1 and dimchange2 the conversion transofrmations.
+   - Compute also in dimchange1 and dimchange2 the conversion transofrmations.
 
    - If no dimensions to add to env1, this implies that env is
      actually env1. In this case, *dimchange1==NULL. Otherwise, the
-     function allocates the dimchange1 with malloc.
+     function allocates *dimchange1 with ap_dimchange_alloc.
  */
 ap_environment_t* ap_environment_lce_array(const ap_environment_t** tenv,
                                      size_t size,
                                      ap_dimchange_t*** ptdimchange);
 /*
-  Least common environment to an array environments.
+  Least common environement to an array environements.
 
   - Assume the size of the array is at least one.
 
-  - If all input environments are the same, *ptdimchange==NULL.
+  - If all input environements are the same, *ptdimchange==NULL.
     Otherwise, compute in *ptdimchange the conversion permutations.
 
-  - If no dimensions to add to env[i], this implies that env is actually
-    env[i]. In this case, (*ptdimchange)[i]==NULL. Otherwise, the function allocates
-    the array (*ptdimchange)[0] with malloc.
+  - If no dimensions to add to tenv[i], this implies that env is actually
+    tenv[i]. In this case, (*ptdimchange)[i]==NULL. 
+    Otherwise, the function allocates
+    (*ptdimchange)[0] with ap_dimchange_alloc.
 
  */
+
 @
 
 %======================================================================
@@ -254,7 +262,7 @@ ap_environment_t* ap_environment_rename(ap_environment_t* env,
                                   ap_dimperm_t* perm);
   /* Rename the variables in the environment.
      size is the common size of tvar1 and tvar2,
-     and permutation is a result-parameter
+     and perm is a result-parameter
 
      The function applies the variable substitution tvar1[i]->tvar2[i] to
      the environment, and returns the resulting environment and 
