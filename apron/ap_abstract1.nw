@@ -1,5 +1,7 @@
 % -*- mode: Noweb; noweb-code-mode: c-mode -*-
 
+% This file is part of the APRON Library, released under LGPL license.
+% Please read the COPYING file packaged in the distribution 
 
 %**********************************************************************
 \chapter{Interface du domaine abstrait, niveau 1: fichier [[ap_abstract1.h]]}
@@ -14,6 +16,9 @@ sur des objets de niveau 1 en objets de niveau 0.
 /* ************************************************************************* */
 /* ap_abstract1.h: generic operations on abstract values at level 1 */
 /* ************************************************************************* */
+
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
 
 /* GENERATED FROM ap_abstract1.nw: DOT NOT MODIFY ! */
 
@@ -86,11 +91,7 @@ La politique de redimensionnement choisie est la suivante:
   Il faut remarquer qu'on peut traiter ces cas à la main, en
   redimensionant explicitement les polyèdres.
 
-\item Pour les fonctions prenant en argument plusieurs valeurs abstraites,
-  on applique la politique générale: on redimensionne au plus petit environnement commun, et on effectue l'opération.
-
-  \textbf{Motivations:} utile pour composer des relations, retour
-  de procédure en analyse interprocédurale contextuelle.
+\item Pour les fonctions prenant en argument plusieurs valeurs abstraites, on exige qu'elles soient toutes définies sur le même environnement.
 
 \end{itemize}
 
@@ -226,7 +227,7 @@ ap_membuf_t ap_abstract1_serialize_raw(ap_manager_t* man, const ap_abstract1_t* 
    of bytes written.  It is the user responsability to free the memory
    afterwards (with free). */
 
-ap_abstract1_t ap_abstract1_deserialize_raw(ap_manager_t* man, void* ptr);
+                                                                                ap_abstract1_t ap_abstract1_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size);
 /* Return the abstract value read in raw binary format from the input stream
    and store in size the number of bytes read */
 @
@@ -321,7 +322,7 @@ tbool_t ap_abstract1_sat_interval(ap_manager_t* man, const ap_abstract1_t* a,
   /* is the dimension included in the interval in the abstract value ?
      - Raises an exception if var is unknown in the environment of the abstract value
   */
-tbool_t ap_abstract1_is_dimension_unconstrained(ap_manager_t* man, const ap_abstract1_t* a,
+tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_t* man, const ap_abstract1_t* a,
                                              ap_var_t var);
   /* is the variable unconstrained in the abstract value ?
      - Raises an exception if var is unknown in the environment of the abstract value
@@ -342,9 +343,9 @@ ap_interval_t* ap_abstract1_bound_linexpr(ap_manager_t* man,
   /* Returns the interval taken by a linear expression
      over the abstract value */
 
-ap_interval_t* ap_abstract1_bound_dimension(ap_manager_t* man,
+ap_interval_t* ap_abstract1_bound_variable(ap_manager_t* man,
                                             const ap_abstract1_t* a, ap_var_t var);
-  /* Returns the interval taken by the dimension
+  /* Returns the interval taken by the variable
      over the abstract value
      - Raises an exception if var is unknown in the environment of the abstract value
   */
@@ -501,10 +502,10 @@ ap_abstract1_t ap_abstract1_expand(ap_manager_t* man,
                              bool destructive, ap_abstract1_t* a,
                              ap_var_t var,
                              ap_var_t* tvar, size_t size);
-  /* Expand the variable var into itself + n additional variables, of
-     same type than var.
+  /* Expand the variable var into itself + the size additional variables 
+     of the array tvar, which are given the same type as var.
 
-     It results in (n+1) unrelated variables having same
+     It results in (size+1) unrelated variables having same
      relations with other variables.
 
      The additional variables are added to the environment
@@ -520,16 +521,6 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
      The other variables of the array are then forgot
      and removed from the environment. */
 
-/* Imperative versions of the previous functions. */
-void ap_abstract1_expand_with(ap_manager_t* man,
-                                ap_abstract1_t* a,
-                                ap_var_t var,
-                                ap_var_t* tvar,
-                                size_t n);
-void ap_abstract1_fold_with(ap_manager_t* man,
-                              ap_abstract1_t* a,
-                              ap_var_t* tvar,
-                              size_t size);
 @
 
 %----------------------------------------------------------------------

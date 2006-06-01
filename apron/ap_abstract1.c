@@ -2,6 +2,9 @@
 /* ap_abstract1.c: level 1 of interface */
 /* ************************************************************************* */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -311,7 +314,7 @@ ap_membuf_t ap_abstract1_serialize_raw(ap_manager_t* man, const ap_abstract1_t* 
 
 /* Return the abstract value read in raw binary format from the input stream
    and store in size the number of bytes read */
-ap_abstract1_t ap_abstract1_deserialize_raw(ap_manager_t* man, void* ptr){
+ap_abstract1_t ap_abstract1_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size){
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_DESERIALIZE_RAW,"");
   return ap_abstract1_top(man,ap_environment_make_empty());
 }
@@ -498,7 +501,7 @@ tbool_t ap_abstract1_sat_interval(ap_manager_t* man, const ap_abstract1_t* a,
 }
 
 /* Is the dimension included in the interval in the abstract value ? */
-tbool_t ap_abstract1_is_dimension_unconstrained(ap_manager_t* man, const ap_abstract1_t* a,
+tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_t* man, const ap_abstract1_t* a,
 					     ap_var_t var)
 {
   ap_dim_t dim;
@@ -548,9 +551,9 @@ ap_interval_t* ap_abstract1_bound_linexpr(ap_manager_t* man,
   return res;
 }
 
-/* Returns the interval taken by the dimension over the abstract
+/* Returns the interval taken by the variable over the abstract
    value */
-ap_interval_t* ap_abstract1_bound_dimension(ap_manager_t* man,
+ap_interval_t* ap_abstract1_bound_variable(ap_manager_t* man,
 				      const ap_abstract1_t* a, ap_var_t var)
 {
   ap_dim_t dim;
@@ -920,7 +923,7 @@ ap_abstract1_t ap_abstract1_change_environment(ap_manager_t* man,
   assert(dimchange1 || dimchange2);
   value =
     dimchange1 ?
-    ap_abstract0_add_dimensions(man,destructive,a->abstract0,dimchange1) :
+    ap_abstract0_add_dimensions(man,destructive,a->abstract0,dimchange1,project) :
     a->abstract0;
   ;
   if (dimchange2){
