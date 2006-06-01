@@ -2,6 +2,9 @@
 /* ap_abstract0_c: generic interface */
 /* ************************************************************************* */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include "ap_abstract0.h"
 
 
@@ -1114,16 +1117,17 @@ ap_abstract0_t* ap_abstract0_forget_array(ap_manager_t* man,
 /* ============================================================ */
 
 ap_abstract0_t* ap_abstract0_add_dimensions(ap_manager_t* man,
-				      bool destructive,
-				      ap_abstract0_t* a,
-				      ap_dimchange_t* dimchange)
+					    bool destructive,
+					    ap_abstract0_t* a,
+					    ap_dimchange_t* dimchange,
+					    bool project)
 {
   ap_dimension_t dimension = _ap_abstract0_dimension(a);
   if (ap_abstract0_checkman1(AP_FUNID_ADD_DIMENSIONS,man,a) &&
       ap_abstract0_check_ap_dimchange_add(AP_FUNID_ADD_DIMENSIONS,man,dimension,dimchange)){
     void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_ADD_DIMENSIONS];
     void* valueold = a->value;
-    void* value = ptr(man,destructive,a->value,dimchange);
+    void* value = ptr(man,destructive,a->value,dimchange,project);
     if (value==valueold){
       assert(destructive);
       return a;

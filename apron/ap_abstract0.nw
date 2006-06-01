@@ -1,5 +1,8 @@
 % -*- mode: Noweb; noweb-code-mode: c-mode -*-
 
+% This file is part of the APRON Library, released under LGPL license.
+% Please read the COPYING file packaged in the distribution 
+
 %**********************************************************************
 \chapter{Interface du domaine abstrait: fichier [[ap_abstract0.h]]}
 \label{chap:abstract0}
@@ -10,7 +13,10 @@
 /* ap_abstract0.h: generic operations on numerical abstract values */
 /* ************************************************************************* */
 
-/* GENERATED FROM abstract0.nw: DOT NOT MODIFY ! */
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
+/* GENERATED FROM ap_abstract0.nw: DOT NOT MODIFY ! */
 
 
 #ifndef _AP_ABSTRACT0_H_
@@ -541,7 +547,8 @@ un flag pour distinguer [[project]] de [[forget]] ou [[embed]] ?
 ap_abstract0_t* ap_abstract0_add_dimensions(ap_manager_t* man,
                                       bool destructive,
                                       ap_abstract0_t* a,
-                                      ap_dimchange_t* dimchange);
+                                      ap_dimchange_t* dimchange,
+                                      bool project);
 ap_abstract0_t* ap_abstract0_remove_dimensions(ap_manager_t* man,
                                          bool destructive,
                                          ap_abstract0_t* a,
