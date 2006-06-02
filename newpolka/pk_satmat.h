@@ -2,6 +2,9 @@
 /* pk_satmat.h: operations on saturation matrices */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 /* This header file define operations on saturation matrices. A
    saturation matrix is an array of bits (or an array of bitstrings) used to
    memorize wether a given generator saturate a given constraint. */

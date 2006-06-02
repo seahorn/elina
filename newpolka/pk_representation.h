@@ -2,6 +2,9 @@
 /* pk_representation.h: General management of polyhedra  */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #ifndef _PK_REPRESENTATION_H_
 #define _PK_REPRESENTATION_H_
 

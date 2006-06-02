@@ -2,6 +2,9 @@
 /* pk_expandfold.c: expanding and folding dimensions */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include "pk_config.h"
 #include "pk_vector.h"
 #include "pk_bit.h"
@@ -75,7 +78,7 @@ matrix_t* matrix_expand(pk_internal_t* pk,
 	vector_copy(p[row],
 		    (const numint_t*)p[i],
 		    nbcols+dimsup);
-	numint_set(p[row][j],p[row][col]);
+	numint_set(p[row][pk->dec+j],p[row][col]);
 	numint_set_int(p[row][col],0);
 	row++;
       }

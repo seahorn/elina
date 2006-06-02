@@ -2,6 +2,9 @@
 /* pk_resize.h: change and permutation of dimensions  */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 /* This header file define operations allowing to convert polyhedra
 from one representation to the dual one. */
 
@@ -56,7 +59,8 @@ poly_t* cherni_add_dimensions(pk_internal_t* pk,
 /* ********************************************************************** */
 poly_t* poly_add_dimensions(ap_manager_t* man,
 			    bool destructive, poly_t* a,
-			    const ap_dimchange_t* dimchange);
+			    const ap_dimchange_t* dimchange,
+			    bool project);
 
 poly_t* poly_remove_dimensions(ap_manager_t* man,
 			    bool destructive, poly_t* a,

@@ -2,6 +2,9 @@
 /* pk_vector.c: operations on vectors */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include "pk_config.h"
 #include "pk_vector.h"
 #include "pk_internal.h"
@@ -631,8 +634,7 @@ bool vector_is_dummy_constraint(pk_internal_t* pk,
   }
 }
 
-/* The function tests if the given vector represents the positivity
-   ray, the strictness ray, or has a non-null epsilon component. */ 
+/* The function tests if the given vector represents the strictness ray, or has a non-null epsilon component. */ 
 bool vector_is_dummy_or_strict_generator(pk_internal_t* pk,
 					 const numint_t* q, size_t size)
 {
@@ -643,17 +645,8 @@ bool vector_is_dummy_or_strict_generator(pk_internal_t* pk,
     return false;
   else if (pk->strict && numint_sgn(q[polka_eps]))
     return true;
-  else {
-    int i;
-    bool res = true;
-    for (i=pk->dec; i<size; i++){
-      if (numint_sgn(q[i]) != 0){
-	res = false;
-	break;
-      }
-    }
-    return res;
-  }
+  else 
+    return false;
 }
 
 /* Return true if all dimensions involved in the expression are integer

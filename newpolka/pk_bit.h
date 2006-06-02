@@ -2,6 +2,9 @@
 /* pk_bit.h: operations on bitstrings */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 /* This header file define operations on \emph{bitstrings} and
    \emph{bitindices}, to be used to access and modify bitstrings. */
 

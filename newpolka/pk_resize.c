@@ -2,6 +2,9 @@
 /* pk_resize.c: change and permutation of dimensions  */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include "pk_config.h"
 #include "pk_vector.h"
 #include "pk_bit.h"
@@ -327,7 +330,8 @@ poly_t* cherni_add_dimensions(pk_internal_t* pk,
 poly_t* poly_add_dimensions(ap_manager_t* man,
 			    bool destructive,
 			    poly_t* pa,
-			    const ap_dimchange_t* dimchange)
+			    const ap_dimchange_t* dimchange,
+			    bool project)
 {
   poly_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_ADD_DIMENSIONS);
@@ -355,7 +359,16 @@ poly_t* poly_add_dimensions(ap_manager_t* man,
 			 pa->realdim + dimchange->realdim);
     }
   }
-  po = cherni_add_dimensions(pk, destructive, pa, dimchange);
+  if (project){
+      poly_dual(pa);
+      po = cherni_add_dimensions(pk, destructive, pa, dimchange);
+      poly_dual(po);
+      if (!destructive)
+	poly_dual(pa);
+  }
+  else {
+    po = cherni_add_dimensions(pk, destructive, pa, dimchange);
+  }
   assert(poly_check(pk,po));
   return po;
 }

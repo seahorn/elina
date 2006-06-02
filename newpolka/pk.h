@@ -2,6 +2,9 @@
 /* pk.h: Interface of the polka library  */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 /* The invariant of the representation of a polyhedron is the following:
 if the polyhedron is empty, then \verb-C=F=satC=satF=0-. Else, we have
 \verb-(C || F) && (satC || satF || !(C && F))-. This means that a
@@ -286,7 +289,8 @@ poly_t* poly_forget_array(ap_manager_t* man,
 
 poly_t* poly_add_dimensions(ap_manager_t* man,
 			    bool destructive, poly_t* a,
-			    const ap_dimchange_t* dimchange);
+			    const ap_dimchange_t* dimchange,
+			    bool project);
 
 poly_t* poly_remove_dimensions(ap_manager_t* man,
 			    bool destructive, poly_t* a,

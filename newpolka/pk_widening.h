@@ -2,6 +2,9 @@
 /* pk_widening.h: widening  */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #ifndef _PK_WIDENING_H_
 #define _PK_WIDENING_H_
 

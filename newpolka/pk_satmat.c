@@ -2,6 +2,9 @@
 /* pk_satmat.c: operations on saturation matrices */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 /* Operations on saturation matrices */
 
 #include <stdlib.h>

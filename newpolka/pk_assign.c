@@ -2,6 +2,9 @@
 /* pk_assign.c: Assignements and Substitutions */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include "pk_config.h"
 #include "pk_vector.h"
 #include "pk_satmat.h"
@@ -773,7 +776,7 @@ poly_asssub_quasilinear_linexpr_array(bool assign,
   }
 
   /* Add dimensions to polyhedra */
-  po = poly_add_dimensions(man,destructive,pa,&dimchange);
+  po = poly_add_dimensions(man,destructive,pa,&dimchange,false);
   /* From now, work by side-effect on po */
   /* Permute unprimed and primed dimensions if !assign */
   if (!assign){

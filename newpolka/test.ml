@@ -1,9 +1,14 @@
+
+(* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution. *)
+
 (*
+#load "camllib.cma";;
+
 polkatopg -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cmo";;
-#load "camllib.cma";;
 #load "polka.cmo";;
 *)
 
@@ -23,7 +28,7 @@ let assoc = function
 | 7 -> "b"
 ;;
 
-let print_array = Lincons1.print_array;;
+let print_array = Abstract0.print_array;;
 
 let man = Polka.manager_alloc true;;
 
@@ -38,7 +43,7 @@ let print_abstract0 fmt a =
     Format.pp_print_string fmt "top"
   else begin
     let tab = Abstract0.to_lincons_array man a in
-    print_array print_lincons0 fmt tab;
+    print_array (Lincons0.print assoc) fmt tab;
   end
 ;;
 

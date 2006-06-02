@@ -2,6 +2,9 @@
 /* pk_test.h: tests on polyhedra */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #ifndef _PK_TEST_H_
 #define _PK_TEST_H_
 

@@ -2,6 +2,9 @@
 /* pk_matrix.h: operations on matrices */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 /*
 A matrix is represented in the following manner: the coefficients are stored
 in an private array of pkint_t p_init of size

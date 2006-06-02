@@ -72,7 +72,7 @@ CCINC_TO_INSTALL = pk_config.h pk.h
 CCBIN_TO_INSTALL = polkarung polkatopg
 CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a 
 
-CAML_TO_INSTALL = polka.mli polka.cmi polka.cmo polka.cmx
+CAML_TO_INSTALL = polka.mli polka.cmi polka.cmo polka.cmx polka.o
 
 #---------------------------------------
 # Rules
@@ -90,11 +90,11 @@ allg: libpolkag.a libpolkag_debug.a
 
 test0g: test0g_debug.o libpolkag_debug.a
 	$(CC) $(ICFLAGS) $(XCFLAGS) -I$(GMP_PREFIX)/include -o $@ $< \
-	-L. -lpolkag_debug -L$(HOME)/dev/apron -lapron_debug -lgmp -lm
+	-L. -lpolkag_debug -L$(APRON_PREFIX)/lib -lapron_debug -lgmp -lm
 
 test1g: test1g_debug.o libpolkag_debug.a
 	$(CC) $(ICFLAGS) $(XCFLAGS) -I$(GMP_PREFIX)/include -o $@ $< \
-	-L. -lpolkag_debug -L$(HOME)/dev/apron -lapron_debug -lgmp -lm
+	-L. -lpolkag_debug -L$(APRON_PREFIX)/lib -lapron_debug -lgmp -lm
 
 clean:
 	/bin/rm -f *.[ao] 

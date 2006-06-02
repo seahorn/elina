@@ -2,6 +2,9 @@
 /* pk_assign.h: Assignements and Substitutions */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #ifndef _PK_ASSIGN_H_
 #define _PK_ASSIGN_H_
 

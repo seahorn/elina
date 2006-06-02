@@ -2,6 +2,9 @@
 /* test.c: unit testing  */
 /* ********************************************************************** */
 
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
 #include <fenv.h>
 
 #include "ap_dimension.h"
@@ -1484,9 +1487,15 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
     dimchange->dim[i]=i;
   }
   
-  p3 = poly_add_dimensions(man,false,p1,dimchange);
+  p3 = poly_add_dimensions(man,false,p1,dimchange,true);
   p4 = poly_copy(man,p1);
-  p4 = poly_add_dimensions(man,true,p4,dimchange);
+  p4 = poly_add_dimensions(man,true,p4,dimchange,true);
+  assert(poly_is_eq(man,p3,p4)==tbool_true);
+  poly_free(man,p3);
+  poly_free(man,p4);
+  p3 = poly_add_dimensions(man,false,p1,dimchange,false);
+  p4 = poly_copy(man,p1);
+  p4 = poly_add_dimensions(man,true,p4,dimchange,false);
   assert(poly_is_eq(man,p3,p4)==tbool_true);
   poly_free(man,p4);
   p4 = poly_permute_dimensions(man,false,p3,&perm);
