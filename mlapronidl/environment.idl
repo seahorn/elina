@@ -103,7 +103,7 @@ _res->count = 1;")
 
 quote(MLI,"\n(** Test equality if two environments *)")
 boolean ap_environment_equal(ap_environment_ptr env1,
-			  ap_environment_ptr env2)
+			     ap_environment_ptr env2)
   quote(call,"_res = ap_environment_is_eq(env1,env2);");
 
 quote(MLI,"\n(** Compare two environment. [compare env1 env2] return [-2] if the environements are not compatible (a variable has different types in the 2 environements), [-1] if [env1] is a subset of env2, [0] if equality,  [+1] if env1 is a superset of env2, and [+2] otherwise (the lce exists and is a strict superset of both) *)")
@@ -155,3 +155,41 @@ _res = ap_environment_dim_of_var(e,var);\n\
 if (_res==AP_DIM_MAX){\n\
    caml_failwith(\"Environment.dim_of_var: unknown variable in the environment\");\n\
 }");
+
+quote(MLMLI,"\n(** Printing *)")
+quote(MLI,"val print :\n\
+  ?first:(unit, Format.formatter, unit) format ->\n\
+  ?sep:(unit, Format.formatter, unit) format ->\n\
+  ?last:(unit, Format.formatter, unit) format ->\n\
+  Format.formatter -> t -> unit\n\
+")
+quote(ML,"\n\
+let print\n\
+  ?(first=(\"[|@[\":(unit,Format.formatter,unit) format))\n\
+  ?(sep = (\";@ \":(unit,Format.formatter,unit) format))\n\
+  ?(last = (\"@]|]\":(unit,Format.formatter,unit) format))\n\
+  (fmt:Format.formatter)\n\
+  (env: t)\n\
+  : unit\n\
+  =\n\
+  let dim = dimension env in\n\
+  if dim.Dim.intd+dim.Dim.reald=0 then begin\n\
+    Format.fprintf fmt first;\n\
+    Format.fprintf fmt last;\n\
+  end\n\
+  else begin\n\
+   Format.fprintf fmt first;\n\
+    let first = ref true in\n\
+    for i=0 to pred dim.Dim.intd do\n\
+      if !first then first := false else Format.fprintf fmt sep;\n\
+      Format.fprintf fmt \"%i> %s:int\" \n\
+        i (Var.to_string (var_of_dim env i)) \n\
+    done; \
+    for i=dim.Dim.intd to dim.Dim.intd + (pred dim.Dim.reald) do\n\
+      if !first then first := false else Format.fprintf fmt sep;\n\
+      Format.fprintf fmt \"%i> %s:real\" \n\
+        i (Var.to_string (var_of_dim env i)) \n\
+    done; \
+    Format.fprintf fmt last;\n\
+  end\n\
+")
