@@ -91,12 +91,12 @@ static void env_normalize(env_t* env, ap_dim_t* perm)
     vardim_t* vardim = malloc(env->size*sizeof(vardim_t));
     for (i=0; i<env->size; i++){
       vardim[i].var = env->var_of_dim[i];
-      vardim[i].dim = perm[i];
+      vardim[i].dim = i;
     }
     qsort(vardim,env->size,sizeof(vardim_t),vardim_cmp);
     for(i=0; i<env->size; i++){
       env->var_of_dim[i] = vardim[i].var;
-      perm[i] = vardim[i].dim;
+      perm[vardim[i].dim] = i; /* invert the permutation vardim[].dim */
     }
     free(vardim);
   }
@@ -294,13 +294,12 @@ static env_t env_lce(const env_t* e1, const env_t* e2)
 */
 
 static bool env_lce_dimchange(const env_t* e1, const env_t* e,
-		       ap_dimchange_t* dimchange1,
-		       size_t offsetwrite, size_t offsetread)
+			      ap_dimchange_t* dimchange1,
+			      size_t offsetwrite, size_t offsetread)
 {
   size_t i,i1,k1;
   int sgn=0;
 
-  if (e1->size==e->size) return false;
   if (e1->size>e->size) return true;
   i = 0;
   k1 = 0;
@@ -496,17 +495,19 @@ ap_environment_t* ap_environment_add_perm(const ap_environment_t* env,
 				    ap_dimperm_t* perm)
 {
   ap_environment_t* res;
-  size_t nsize;
+  size_t i,nsize;
   denv_t denv2;
   const denv_t denv1 = denv_of_environment(env);
 
   nsize = env->intdim+intdim+env->realdim+realdim;
   ap_dimperm_init(perm,nsize);
-  ap_dimperm_set_id(perm);
   denv2.envint = env_add(&denv1.envint, name_of_intdim, intdim,
 			 &(perm->dim[0]));
   denv2.envreal = env_add(&denv1.envreal, name_of_realdim, realdim,
 			  &(perm->dim[env->intdim+intdim]));
+  for (i=0;i<env->realdim+realdim;i++){
+    perm->dim[env->intdim + intdim + i] += env->intdim + intdim;
+  }
   res = environment_of_denv(&denv2);
   /* Check now that there is no problem */
   if (ap_environment_check(res)){
@@ -936,10 +937,12 @@ ap_environment_t* ap_environment_rename(ap_environment_t* env,
 
   /* Now we have to sort it and compute the permutation transformation */
   ap_dimperm_init(perm,nbdims);
-  ap_dimperm_set_id(perm);
   denv = denv_of_environment(res);
   env_normalize(&denv.envint,perm->dim);
   env_normalize(&denv.envreal,perm->dim+res->intdim);
+  for (i=0; i<res->realdim; i++){
+    perm->dim[res->intdim + i] += res->intdim;
+  }
   if (ap_environment_check(res)){
     ap_environment_free(res);
     ap_dimperm_clear(perm);
