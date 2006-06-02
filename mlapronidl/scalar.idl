@@ -37,6 +37,8 @@ void camlidl_apron_scalar_ml2c(value v, struct ap_scalar_t* scalar)\n\
 value camlidl_apron_scalar_c2ml(struct ap_scalar_t* scalar)\n\
 {\n\
   value v,v2;\n\
+  v2 = Val_unit;\n\
+  Begin_root(v2);\n\
   switch(scalar->discr){\n\
   case AP_SCALAR_DOUBLE:\n\
     v2 = caml_copy_double(scalar->val.dbl);\n\
@@ -51,7 +53,6 @@ value camlidl_apron_scalar_c2ml(struct ap_scalar_t* scalar)\n\
     }\n\
     break;\n\
   }\n\
-  Begin_root(v2);\n\
   v = alloc_small(1,scalar->discr);\n\
   Field(v,0) = v2;\n\
   End_roots();\n\

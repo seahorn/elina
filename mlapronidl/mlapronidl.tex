@@ -49,8 +49,10 @@ Copyright (C) Bertrand Jeannet 2005-2006 for the
 
 \section*{Introduction}
 
-This package is an \textsc{OCaml} interface for the APRON library/interface.
-The interface is decomposed into 15 modules, corresponding to C modules:
+This package is an \textsc{OCaml} interface for the APRON
+library/interface.  The interface is accessed via the module
+Apron, which is decomposed into 15 submodules, corresponding to C
+modules:
 
 \noindent
 \begin{tabular}{l@{~:~~}l}
@@ -71,7 +73,7 @@ Generator1 & generators, level 1 \\
 Abstract1  & abstract values, level 1
 \end{tabular}
 
-By default, variables (Var.t) are implemented as strings. To
+By default, variables (Apron.Var.t) are implemented as strings. To
 change this, one need to manually replace the default file var.ml
 by a user-defined one. The module Environment ensures that the new
 Var module offers a compatible signature.

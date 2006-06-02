@@ -7,7 +7,9 @@
 
 This package is an OCAML interface for the APRON library/interface.
 
-The interface is decomposed into 15 modules, corresponding to C modules:
+The interface is accessed via the Apron module, which is decomposed into 15
+submodules, corresponding to C modules:
+
 Scalar     : scalars (numbers)     
 Interval   : intervals on scalars 
 Coeff      : coefficients (either scalars or intervals)
