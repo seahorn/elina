@@ -701,7 +701,7 @@ void test_join_array(void)
     ppp = poly_join_array(mp,p,5);
 
     ps = poly_join(mp,false,p[0],p[1]);
-    //for (i=2;i<5;i++) ps = poly_join(mp,true,ps,p[i]);
+    for (i=2;i<5;i++) ps = poly_join(mp,true,ps,p[i]);
     RESULT(check(oo));
     for (i=0;i<5;i++)
       if (oct_is_leq(mo,o[i],oo)==tbool_false) ERROR("not upper bound");
@@ -726,7 +726,7 @@ void test_join_array(void)
     }
     */
     for (i=0;i<5;i++) { oct_free(mo,o[i]); poly_free(mp,p[i]); }
-    oct_free(mo,oo); poly_free(mp,pp); poly_free(mp,ppp); //poly_free(mp,ps);
+    oct_free(mo,oo); poly_free(mp,pp); poly_free(mp,ppp); poly_free(mp,ps);
   } ENDLOOP;
 }
 
