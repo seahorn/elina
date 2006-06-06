@@ -132,9 +132,12 @@ bool _poly_meet_particularcases(bool meet, bool lazy,
 				ap_manager_t* man,
 				poly_t* po, const poly_t* pa, const poly_t* pb)
 {
+  assert(pa!=pb);
+
   pk_internal_t* pk = (pk_internal_t*)man->internal;
   man->result.flag_exact = tbool_true;
   if (meet){
+    /* Meet */
     /* if one is bottom, return bottom */
     if ( (!pa->C && !pa->F) || (!pb->C && !pb->F) ){
       poly_set_bottom(pk,po);
@@ -142,6 +145,7 @@ bool _poly_meet_particularcases(bool meet, bool lazy,
     }
   }
   else {
+    /* Join */
     /* if one is bottom, return a copy of the other */
     if (!pa->C && !pa->F){
       if (!lazy){
@@ -161,16 +165,23 @@ bool _poly_meet_particularcases(bool meet, bool lazy,
     }
     /* if one want information about exactness, also test inclusion */
     if (pk->funopt->flag_exact_wanted){
+      poly_dual(pa);
+      poly_dual(pb);
       if (poly_is_leq(man,pa,pb)==tbool_true){
 	poly_set(po,pb);
-	return true;
+	goto _poly_meet_particularcases_exit;
       }
       else if (poly_is_leq(man,pb,pa)==tbool_true){
 	poly_set(po,pa);
+      _poly_meet_particularcases_exit:
+	poly_dual(pa);
+	poly_dual(pb);
+	poly_dual(po);
 	return true;
       }
     }
   }
+  man->result.flag_exact = tbool_false;
   return false;
 }
 

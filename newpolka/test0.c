@@ -1539,6 +1539,7 @@ void poly_test(size_t intdim, size_t realdim,
   ap_funid_t funid;
 
   man = pk_manager_alloc(false);
+
   pk = (pk_internal_t*)man->internal;
   pk_set_max_coeff_size(pk,0);
   pk_set_approximate_max_coeff_size(pk,10);
@@ -1570,8 +1571,196 @@ void poly_test(size_t intdim, size_t realdim,
   ap_manager_free(man);
 }
 
+void mine2()
+{
+  ap_manager_t* man;
+  ap_funopt_t funopt;
+  /* Creation du polyèdre 4x1 + 4x2 + 17 >= 0 */
+  ap_lincons0_array_t array;
+  poly_t* poly;
+  poly_t* poly2;
+  poly_t* poly3;
+
+  man = pk_manager_alloc(false);
+  array = ap_lincons0_array_make(1);
+
+  /* 1. Constraint system */
+  array.p[0].constyp = AP_CONS_SUPEQ;
+  array.p[0].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2);
+  ap_linexpr0_set_list(array.p[0].linexpr0,
+		       AP_COEFF_S_INT,4,1,
+		       AP_COEFF_S_INT,4,2,
+		       AP_CST_S_INT,17,
+		       AP_END);
+  /* Creation */
+  ap_lincons0_array_fprint(stdout,&array,NULL);
+  poly = poly_of_lincons_array(man,0,3,&array);
+  poly_fprint(stdout,man,poly,NULL);
+
+  poly2 = poly_bottom(man,0,3);
+  poly_fprint(stdout,man,poly2,NULL);
+  poly3 = poly_join(man,false,poly,poly2);
+  poly_fprint(stdout,man,poly3,NULL);
+
+  funopt = ap_manager_get_funopt(man, AP_FUNID_JOIN);
+  funopt.flag_exact_wanted = true;
+  funopt.flag_best_wanted = true;
+  ap_manager_set_funopt(man, AP_FUNID_JOIN, &funopt);
+  poly_free(man,poly3);
+  poly3 = poly_join(man,false,poly,poly2);
+  poly_fprint(stdout,man,poly3,NULL);
+  
+  poly_free(man,poly2);
+  poly_free(man,poly);
+  ap_lincons0_array_clear(&array);
+  ap_manager_free(man);
+}
+
+void mine3()
+{
+  ap_manager_t* man;
+  ap_funopt_t funopt;
+  ap_lincons0_array_t array;
+  poly_t* poly0;
+  poly_t* poly1;
+  poly_t* poly2;
+  poly_t* poly3;
+  poly_t* poly;
+  poly_t* tpoly[5];
+
+  man = pk_manager_alloc(false);
+
+  /* 0. Constraint system */
+  /* array of constraints of size 5
+     0: -4x0 + 4x1 + 5 >= 0
+     1: -x0 - x2 + 5 >= 0
+     2: -x0 + x2 + 7 >= 0
+     3: 4x0 - 4x1 + 11 >= 0
+     4: 2x1 - 1 >= 0
+  */
+  array = ap_lincons0_array_make(5);
+  array.p[0].constyp = AP_CONS_SUPEQ;
+  array.p[0].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2);
+  ap_linexpr0_set_list(array.p[0].linexpr0,
+		       AP_COEFF_S_INT,-4,0,
+		       AP_COEFF_S_INT,4,1,
+		       AP_CST_S_INT,5,
+		       AP_END);
+  array.p[1].constyp = AP_CONS_SUPEQ;
+  array.p[1].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2);
+  ap_linexpr0_set_list(array.p[1].linexpr0,
+		       AP_COEFF_S_INT,-1,0,
+		       AP_COEFF_S_INT,-1,2,
+		       AP_CST_S_INT,5,
+		       AP_END);
+  array.p[2].constyp = AP_CONS_SUPEQ;
+  array.p[2].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2);
+  ap_linexpr0_set_list(array.p[2].linexpr0,
+		       AP_COEFF_S_INT,-1,0,
+		       AP_COEFF_S_INT,1,2,
+		       AP_CST_S_INT,7,
+		       AP_END);
+  array.p[3].constyp = AP_CONS_SUPEQ;
+  array.p[3].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2);
+  ap_linexpr0_set_list(array.p[3].linexpr0,
+		       AP_COEFF_S_INT,4,0,
+		       AP_COEFF_S_INT,-4,1,
+		       AP_CST_S_INT,11,
+		       AP_END);
+  array.p[4].constyp = AP_CONS_SUPEQ;
+  array.p[4].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,1);
+  ap_linexpr0_set_list(array.p[4].linexpr0,
+		       AP_COEFF_S_INT,2,1,
+		       AP_CST_S_INT,-1,
+		       AP_END);
+  poly0 = poly_of_lincons_array(man,0,3,&array);
+  poly_fprint(stdout,man,poly0,NULL);
+
+  /* 1. Constraint system */
+  /* array of constraints of size 5
+     0: -x0 - x2 + 3 >= 0
+     1: -x0 + 3 >= 0
+     2: 3x1 + 5 >= 0
+  */
+  ap_lincons0_array_clear(&array);
+  array = ap_lincons0_array_make(3);
+  array.p[0].constyp = AP_CONS_SUPEQ;
+  array.p[0].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2);
+  ap_linexpr0_set_list(array.p[0].linexpr0,
+		       AP_COEFF_S_INT,-1,0,
+		       AP_COEFF_S_INT,-1,2,
+		       AP_CST_S_INT,3,
+		       AP_END);
+  array.p[1].constyp = AP_CONS_SUPEQ;
+  array.p[1].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,1);
+  ap_linexpr0_set_list(array.p[1].linexpr0,
+		       AP_COEFF_S_INT,-1,0,
+		       AP_CST_S_INT,3,
+		       AP_END);
+  array.p[2].constyp = AP_CONS_SUPEQ;
+  array.p[2].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,1);
+  ap_linexpr0_set_list(array.p[2].linexpr0,
+		       AP_COEFF_S_INT,3,1,
+		       AP_CST_S_INT,5,
+		       AP_END);
+
+  poly1 = poly_of_lincons_array(man,0,3,&array);
+  poly_fprint(stdout,man,poly1,NULL);
+
+   /* 2. Constraint system */
+  /* array of constraints of size 5
+     0: -3x0 + 3x2 + 4 >= 0
+     1: -2x1 + 5 >= 0
+     2: 4x0 - 4x2 - 1 >= 0
+     3: x0 + x2 >= 0
+  */
+  ap_lincons0_array_clear(&array);
+  array = ap_lincons0_array_make(4);
+  array.p[0].constyp = AP_CONS_SUPEQ;
+  array.p[0].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2);
+  ap_linexpr0_set_list(array.p[0].linexpr0,
+		       AP_COEFF_S_INT,-3,0,
+		       AP_COEFF_S_INT,3,2,
+		       AP_CST_S_INT,4,
+		       AP_END);
+  array.p[1].constyp = AP_CONS_SUPEQ;
+  array.p[1].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,1);
+  ap_linexpr0_set_list(array.p[1].linexpr0,
+		       AP_COEFF_S_INT,-2,1,
+		       AP_CST_S_INT,5,
+		       AP_END);
+  array.p[2].constyp = AP_CONS_SUPEQ;
+  array.p[2].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2);
+  ap_linexpr0_set_list(array.p[2].linexpr0,
+		       AP_COEFF_S_INT,4,0,
+		       AP_COEFF_S_INT,-4,2,
+		       AP_CST_S_INT,-1,
+		       AP_END);
+  array.p[3].constyp = AP_CONS_SUPEQ;
+  array.p[3].linexpr0 = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2);
+  ap_linexpr0_set_list(array.p[3].linexpr0,
+		       AP_COEFF_S_INT,1,0,
+		       AP_COEFF_S_INT,1,2,
+		       AP_END);
+
+  poly2 = poly_of_lincons_array(man,0,3,&array);
+  poly_fprint(stdout,man,poly2,NULL);
+
+  tpoly[0] = poly0;
+  tpoly[1] = poly1;
+  tpoly[2] = poly2;
+
+  poly = poly_join_array(man,tpoly,3);
+  fprintf(stdout,"res\n");
+  poly_fprint(stdout,man,poly,NULL);
+  ap_manager_free(man);
+}
+
 int main(int argc, char**argv)
 {
+
+  mine3();
+
   poly_test_example();
 
   srand(31);
