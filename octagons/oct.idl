@@ -1,0 +1,21 @@
+/* -*- mode: c -*- */
+
+quote(C,"#include \"oct.h\"")
+quote(C,"#include \"oct_internal.h\"")
+quote(C,"#include \"apron_caml.h\"")
+
+quote(C,"typedef struct oct_internal_t* internal_ptr;")
+
+import "manager.idl";
+
+typedef [abstract] struct oct_internal_t* internal_ptr;
+
+ap_manager_ptr oct_manager_alloc(void);
+
+internal_ptr manager_get_internal(ap_manager_ptr man)
+  quote(call,"\n\
+if (strcmp(man->library,\"oct\")!=0){\n\
+  caml_failwith(\"Oct.get_internal applied to a manager not created by Oct\");\n\
+}\n\
+_res = (internal_ptr)man->internal;\n\
+");
