@@ -375,27 +375,21 @@ poly_t* _poly_meet_array(bool meet,
 	  return poly;
 	} else {
 	  /* We exchange po[i] and po[size-1] */
-	  do {
-	    size--;
-	    if (i<size){
-	       poly_t* tmp = (poly_t*)po[i]; po[i] = po[size]; po[size] = tmp;
-	    }
-	    else {
-	      goto _poly_meet_array_label0;
-	    }
-	  } 
-	  while (!po[i]->C);
-	}
+	  size--;
+	  if (i<size){
+	    poly_t* tmp = (poly_t*)po[i]; po[i] = po[size]; po[size] = tmp;
+	  }
+	} 
       }
       nbrows += po[i]->C ? po[i]->C->nbrows : 0;
     }
-  _poly_meet_array_label0:
     /* if size has been decreased */
     if (size<=2){
       assert(!meet);
       if (size==0){ 
 	man->result.flag_exact = tbool_true;
 	poly_set_bottom(pk,poly);
+	poly_dual(poly);
       } 
       else if (size==1){
 	man->result.flag_exact = tbool_true;
@@ -590,6 +584,14 @@ poly_t* poly_join_array(ap_manager_t* man, const poly_t** po, size_t size)
   int i;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_JOIN_ARRAY);
 
+  if (size==0){
+    ap_manager_raise_exception(man,
+			    AP_EXC_INVALID_ARGUMENT,
+			    FUNID_JOIN_ARRAY, "empty array");
+    man->result.flag_best = man->result.flag_exact = tbool_false;
+    poly = poly_top(man,0,1);
+    return poly;
+  }
   /* We have to take care of possible aliases in the array of polyhedra */
   tpoly = malloc(size*sizeof(poly_t*));
   memcpy(tpoly, po, size*sizeof(poly_t*));
