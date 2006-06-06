@@ -45,8 +45,6 @@ void satmat_clr(satmat_t* sat, size_t i, bitindex_t jx);
 satmat_t* satmat_transpose(const satmat_t* org, size_t nbcols);
 
 void satmat_exch_rows(satmat_t* sat, size_t l1, size_t l2);
-void satmat_sort_rows(satmat_t* sat);
 void satmat_move_rows(satmat_t* sat, size_t destrow, size_t orgrow, size_t size);
-int satmat_index_in_sorted_rows(const bitstring_t* satline, const satmat_t* sat);
 
 #endif

@@ -18,6 +18,117 @@
 #include "pk_test.h"
 #include "pk_widening.h"
 
+typedef struct satmat_row_t {
+  bitstring_t* p; 
+    /* pointing somewhere in the field pinit of an underlying satmat_t object */
+  int index;
+} satmat_row_t;
+
+
+static satmat_row_t* esatmat_of_satmat(satmat_t* sat)
+{
+  size_t i;
+  satmat_row_t* tab;
+
+  tab = malloc(sat->nbrows * sizeof(satmat_row_t));
+  for (i=0; i<sat->nbrows; i++){
+    tab[i].p = sat->p[i];
+    tab[i].index = i;
+  }
+  return tab;
+}
+
+/* Row sorting.
+
+We use here the insertion sort. 
+The array tab is supposed to be of size sat->nbrows.
+*/
+static void esatmat_isort_rows(satmat_row_t* tab, const satmat_t* sat)
+{
+  int i,j;
+
+  for (i=1; i<sat->nbrows; i++){
+    satmat_row_t row = tab[i];
+    j = i;
+    while (j > 0 && bitstring_cmp(tab[j-1].p, row.p, sat->nbcolumns) > 0){
+      tab[j] = tab[j-1];
+      j--;
+    }
+    tab[j] = row;
+  }
+}
+
+/* Row sorting.
+
+We use here the quick sort. */
+static size_t qsort_size = 0;
+static int qsort_rows_compar(const void* p1, const void* p2)
+{
+  return (bitstring_cmp( ((satmat_row_t*)p1)->p,
+			 ((satmat_row_t*)p2)->p,
+			 qsort_size));
+}
+
+static void esatmat_sort_rows(satmat_row_t* tab, const satmat_t* sat)
+{
+  if (sat->nbrows>=6){
+    qsort_size = sat->nbcolumns;
+    qsort(tab,
+	  (size_t)sat->nbrows, sizeof(satmat_row_t),
+	  qsort_rows_compar);
+  }
+  else {
+    esatmat_isort_rows(tab,sat);
+  }
+}
+
+/* Membership test.
+
+The following function tests if the given row belongs to the sorted saturation
+matrix. If it is the case, it returns its rank in the saturation
+matrix. Otherwise, it returns -1 */
+
+static const bitstring_t* index_satline = NULL;
+static satmat_row_t* index_tab = NULL;
+static size_t index_size = 0;
+
+static bool index2(size_t low, size_t high)
+{
+  if (high - low <= 4){
+    int i;
+    int res=-1;
+    for (i=low; i<high; i++){
+      int cmp = bitstring_cmp(index_tab[i].p,index_satline,index_size);
+      if (cmp==0){
+	res=i; break;
+      }
+      else if (cmp>0) break;
+    }
+    return res;
+  }
+  else {
+    size_t mid = low+(high-low)/2;
+    int cmp = bitstring_cmp(index_tab[mid].p,index_satline,index_size);
+    if (cmp<0)
+      return (index2(mid+1,high));
+    else if (cmp>0)
+      return (index2(low,mid));
+    else
+      return mid;
+  }
+}
+
+static
+int esatmat_index_in_sorted_rows(const bitstring_t* const satline, 
+				 satmat_row_t* tab, 
+				 const satmat_t* const sat)
+{
+  index_satline = satline;
+  index_tab = tab;
+  index_size = sat->nbcolumns;
+  return (index2(0,sat->nbrows));
+}
+
 /* This function defines the standard widening operator.  The resulting
    polyhedron has no frame matrix, unless pa is empty. */
 
@@ -43,15 +154,15 @@ poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
     size_t sat_nbcols;
     size_t nbrows,i;
     int index;
-    satmat_t* sat;
     poly_t* po;
     bitstring_t* bitstringp;
-
+    satmat_row_t* tab;
+ 
     /* copy saturation pa->satF, and sort it */
     poly_obtain_satF(pa);
-    sat = satmat_copy(pa->satF);
-    satmat_sort_rows(sat);
-    sat_nbcols = sat->nbcolumns;
+    tab = esatmat_of_satmat(pa->satF);
+    esatmat_sort_rows(tab,pa->satF);
+    sat_nbcols = pa->satF->nbcolumns;
 
     po = poly_alloc(pa->intdim,pa->realdim);
 
@@ -65,7 +176,7 @@ poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
     for (i=0; i<pb->C->nbrows; i++){
       bitstring_clear(bitstringp,sat_nbcols);
       cherni_buildsatline(pk, pa->F, (const numint_t*)pb->C->p[i], bitstringp);
-      index = satmat_index_in_sorted_rows(bitstringp,sat);
+      index = esatmat_index_in_sorted_rows(bitstringp,tab,pa->satF);
       if ( index>=0 &&
 	   (!widening_affine ||
 	    !vector_is_positivity_constraint(pk, 
@@ -78,7 +189,7 @@ poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
 	  nbrows++;
       }
     }
-    satmat_free(sat);
+    free(tab);
     bitstring_free(bitstringp);
     po->C->nbrows = nbrows;
     man->result.flag_best = man->result.flag_exact = tbool_top;
