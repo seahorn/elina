@@ -296,7 +296,7 @@ void ap_coeff_neg(ap_coeff_t* a, const ap_coeff_t* b)
 
 /* Hash */
 
-int ap_coeff_hash(const ap_coeff_t* coeff)
+long ap_coeff_hash(const ap_coeff_t* coeff)
 {
   switch (coeff->discr){
   case AP_COEFF_SCALAR:

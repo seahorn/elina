@@ -41,7 +41,7 @@ typedef struct ap_scalar_t {
 /* Basics */
 /* ====================================================================== */
 
-ap_scalar_t* ap_scalar_alloc();
+ap_scalar_t* ap_scalar_alloc(void);
   /* Allocates a scalar, of default type DOUBLE (the most economical) */
 void ap_scalar_free(ap_scalar_t* scalar);
   /* Free a scalar */
@@ -127,7 +127,7 @@ void ap_scalar_neg(ap_scalar_t* a, const ap_scalar_t* b);
 void ap_scalar_inv(ap_scalar_t* a, const ap_scalar_t* b);
   /* Inversion. Not exact for floating-point type */
 
-int ap_scalar_hash(const ap_scalar_t* a);
+long ap_scalar_hash(const ap_scalar_t* a);
   /* Return an hash code (for instance for OCaml interface) */
 
 /* ********************************************************************** */

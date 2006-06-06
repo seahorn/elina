@@ -171,7 +171,7 @@ void ap_lincons1_array_clear(ap_lincons1_array_t* array)
   array->env = NULL;
 }
 void ap_lincons1_array_fprint(FILE* stream,
-			   const ap_lincons1_array_t* array)
+			      const ap_lincons1_array_t* array)
 {
   ap_environment_name_of_dim_t* name_of_dim;
   

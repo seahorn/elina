@@ -85,7 +85,7 @@ typedef struct ap_environment_t {
 
 typedef struct ap_environment_name_of_dim_t {
   size_t size;
-  char* p[0]; /* Assumed to be of size size */
+  char* p[]; /* Assumed to be of size size */
 } ap_environment_name_of_dim_t;
 @
 
@@ -121,7 +121,7 @@ void ap_environment_fdump(FILE* stream, ap_environment_t* env);
 ap_environment_name_of_dim_t* ap_environment_name_of_dim_alloc(ap_environment_t* e);
 void ap_environment_name_of_dim_free(ap_environment_name_of_dim_t*);
 
-ap_environment_t* ap_environment_make_empty();
+ap_environment_t* ap_environment_make_empty(void);
   /* Build an empty environement */
 
 ap_environment_t* ap_environment_make(ap_var_t* name_of_intdim, size_t intdim,

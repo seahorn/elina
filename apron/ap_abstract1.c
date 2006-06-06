@@ -124,9 +124,9 @@ bool ap_abstract1_check_env_array(ap_funid_t funid,ap_manager_t* man,
 	break;
 
 	char str[160];
-	snprintf(str,159,"The %dth abstract value of the array has not \
+	snprintf(str,159,"The %luth abstract value of the array has not \
 the same environement as the 0th abstract value\
-",i);
+",(unsigned long)i);
 	ap_manager_raise_exception(man,
 				   AP_EXC_INVALID_ARGUMENT,
 				   funid,str);
@@ -146,9 +146,9 @@ bool ap_abstract1_checkman_array(ap_funid_t funid,
     if (man != tab[i].abstract0->man){
       char str[160];
       snprintf(str,159,"\
-The %dth abstract value of the array is of type %s and not of the type %s expected by the manager\
+The %luth abstract value of the array is of type %s and not of the type %s expected by the manager\
 ",
-	       i,tab[i].abstract0->man->library,man->library);
+	       (unsigned long)i,tab[i].abstract0->man->library,man->library);
       ap_manager_raise_exception(man,
 				 AP_EXC_INVALID_ARGUMENT,
 				 funid,
@@ -162,8 +162,8 @@ The %dth abstract value of the array is of type %s and not of the type %s expect
 void ap_box1_fprint(FILE* stream, const ap_box1_t* box)
 {
   size_t i;
-  fprintf(stream,"Box1: (%d,%d)\n",
-	  box->env->intdim,box->env->realdim);
+  fprintf(stream,"Box1: (%lu,%lu)\n",
+	  (unsigned long)box->env->intdim,(unsigned long)box->env->realdim);
   for (i=0; i<box->env->intdim+box->env->realdim;i++){
     ap_var_t var = ap_environment_var_of_dim(box->env,i);
     char* name = ap_var_operations->to_string(var);

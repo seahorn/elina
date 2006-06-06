@@ -55,14 +55,15 @@ void ap_generator0_array_fprint(FILE* stream,
 			 const ap_generator0_array_t* array,
 			 char** name_of_dim)
 {
-  int i;
+  size_t i;
 
   if (array->size==0){
     fprintf(stream,"empty array of generators\n");
   } else {
-    fprintf(stream,"array of generator of size %d\n",array->size);
+    fprintf(stream,"array of generator of size %lu\n",
+	    (unsigned long)array->size);
     for (i=0; i<array->size; i++){
-      fprintf(stream,"%2d: ",i);
+      fprintf(stream,"%2lu: ",(unsigned long)i);
       ap_generator0_fprint(stream,&array->p[i],name_of_dim);
       fprintf(stream,"\n");
     }

@@ -126,7 +126,8 @@ void ap_scalar_set_mpq(ap_scalar_t* scalar, const mpq_t mpq)
 void ap_scalar_set_int(ap_scalar_t* scalar, long int i)
   { ap_scalar_reinit(scalar,AP_SCALAR_MPQ); mpq_set_si(scalar->val.mpq,i,1); }
 void ap_scalar_set_frac(ap_scalar_t* scalar, long int i, unsigned long int j)
-  { ap_scalar_reinit(scalar,AP_SCALAR_MPQ); mpq_set_si(scalar->val.mpq,i,j); }
+{ ap_scalar_reinit(scalar,AP_SCALAR_MPQ); mpq_set_si(scalar->val.mpq,i,j); 
+  mpq_canonicalize(scalar->val.mpq); }
 void ap_scalar_set_double(ap_scalar_t* scalar, double k)
   { ap_scalar_reinit(scalar,AP_SCALAR_DOUBLE); scalar->val.dbl = k; }
 void ap_scalar_set_infty(ap_scalar_t* scalar, int sgn)
@@ -368,7 +369,7 @@ void ap_scalar_inv(ap_scalar_t* a, const ap_scalar_t* b)
   }
 }
 
-int ap_scalar_hash(const ap_scalar_t* a)
+long ap_scalar_hash(const ap_scalar_t* a)
 {
   int infty = ap_scalar_infty(a);
   if (infty<0) return LONG_MIN;

@@ -256,7 +256,7 @@ ap_linexpr0_t* ap_linexpr0_permute_dimensions(const ap_linexpr0_t* expr,
 
 /* Induces reduction of the coefficients */
 
-int ap_linexpr0_hash(const ap_linexpr0_t* expr);
+long ap_linexpr0_hash(const ap_linexpr0_t* expr);
 bool ap_linexpr0_equal(ap_linexpr0_t* expr1,
 		    ap_linexpr0_t* expr2);
 

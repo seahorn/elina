@@ -212,16 +212,16 @@ void ap_linexpr0_fprint(FILE* stream, const ap_linexpr0_t* a, char** name_of_dim
       if (name_of_dim)
 	fprintf(stream,name_of_dim[dim]);
       else
-	fprintf(stream,"x%d",dim);
+	fprintf(stream,"x%lu",(unsigned long)dim);
     }
   }
   /* Constant */
-  if (! ap_coeff_zero(&a->cst)){
+  if (first || !ap_coeff_zero(&a->cst)){
     switch (a->cst.discr){
     case AP_COEFF_SCALAR:
       pscalar = a->cst.val.scalar;
       sgn = ap_scalar_sgn(pscalar);
-      if (sgn > 0){
+      if (sgn >= 0){
 	ap_scalar_set(scalar,pscalar);
 	if (!first)
 	  fprintf(stream," + ");
@@ -827,7 +827,7 @@ ap_linexpr0_permute_dimensions_with(ap_linexpr0_t* expr,
 /* V. Hashing, comparison */
 /* ====================================================================== */
 
-int ap_linexpr0_hash(const ap_linexpr0_t* expr)
+long ap_linexpr0_hash(const ap_linexpr0_t* expr)
 {
   if (expr->size==0){
     return ap_coeff_hash(&expr->cst);

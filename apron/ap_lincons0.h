@@ -52,7 +52,7 @@ ap_lincons0_t ap_lincons0_make(ap_constyp_t constyp, ap_linexpr0_t* linexpr);
   /* Create a constraint of given type with the given expression.
      The expression is not duplicated, just pointed to */
 
-ap_lincons0_t ap_lincons0_make_unsat();
+ap_lincons0_t ap_lincons0_make_unsat(void);
   /* Create the constraint -1>=0 */
 
 static inline

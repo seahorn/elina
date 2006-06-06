@@ -99,9 +99,9 @@ bool ap_abstract0_checkman_array(ap_funid_t funid,
     if (man->library != tab[i]->man->library){
       char str[160];
       snprintf(str,159,"\
-The %dth abstract value of the array is of type %s and not of the type %s expected by the manager\
+The %luth abstract value of the array is of type %s and not of the type %s expected by the manager\
 ",
-	   i,tab[i]->man->library,man->library);
+	       (unsigned long)i,tab[i]->man->library,man->library);
       ap_manager_raise_exception(man,
 			      AP_EXC_INVALID_ARGUMENT,
 			      funid,
@@ -136,12 +136,12 @@ bool ap_abstract0_check_abstract2(ap_funid_t funid, ap_manager_t* man,
 
     snprintf(str,159,"\
 incompatible dimensions for the two arguments:\n\
-first abstract0:  (%3d,%3d)\n\
-second abstract0: (%3d,%3d)",
-	     dim1.intdim,
-	     dim1.realdim,
-	     dim2.intdim,
-	     dim2.realdim);
+first abstract0:  (%3lu,%3lu)\n\
+second abstract0: (%3lu,%3lu)",
+	     (unsigned long)dim1.intdim,
+	     (unsigned long)dim1.realdim,
+	     (unsigned long)dim2.intdim,
+	     (unsigned long)dim2.realdim);
     ap_manager_raise_exception(man,
 			    AP_EXC_INVALID_ARGUMENT,
 			    funid,str);
@@ -187,12 +187,12 @@ bool ap_abstract0_check_abstract_array(ap_funid_t funid, ap_manager_t* man,
     else {
       snprintf(str,159,"\
 incompatible dimensions for the array of polyhedra:\n\
-abstract0 0: (%3d,%3d)\n\
-abstract0 %d: (%3d,%3d)\
+abstract0 0: (%3lu,%3lu)\n\
+abstract0 %lu: (%3lu,%3lu)\
 ",
-	       dim0.intdim,dim0.realdim,
-	       i,
-	       dim.intdim,dim.realdim
+	       (unsigned long)dim0.intdim,(unsigned long)dim0.realdim,
+	       (unsigned long)i,
+	       (unsigned long)dim.intdim,(unsigned long)dim.realdim
 	       );
     }
     ap_manager_raise_exception(man,
@@ -216,12 +216,12 @@ void ap_abstract0_check_dim_raise(ap_funid_t funid, ap_manager_t* man,
 
    snprintf(str,159,"\
 %s:\n\
-abstract0:  (%3d,%3d)\n\
-dimension:  %3d\n",
+abstract0:  (%3lu,%3lu)\n\
+dimension:  %3lu\n",
 	    prefix,
-	    dimension.intdim,
-	    dimension.realdim,
-	    dim);
+	    (unsigned long)dimension.intdim,
+	    (unsigned long)dimension.realdim,
+	    (unsigned long)dim);
    ap_manager_raise_exception(man,
 			   AP_EXC_INVALID_ARGUMENT,
 			   funid,str);
@@ -250,7 +250,7 @@ bool ap_abstract0_check_dim_array(ap_funid_t funid, ap_manager_t* man,
     ap_dim_t dim = tdim[i];
     if (dim>dimension.intdim+dimension.realdim){
       char str[80];
-      sprintf(str,"incompatible %dth dimension in the array for the abstract value",i);
+      sprintf(str,"incompatible %luth dimension in the array for the abstract value",(unsigned long)i);
       ap_abstract0_check_dim_raise(funid,man,dimension,dim,str);
       return false;
     }
@@ -309,11 +309,12 @@ void ap_abstract0_check_linexpr_raise(ap_funid_t funid, ap_manager_t* man,
   char str[160];
   snprintf(str,159,"\
 %s:\n\
-abstract0: (%3d,%3d)\n\
-dimension: %3d\
+abstract0: (%3lu,%3lu)\n\
+dimension: %3lu\
 ",
 	   prefix,
-	   dimension.intdim,dimension.realdim,dim);
+	   (unsigned long)dimension.intdim,(unsigned long)dimension.realdim,
+	   (unsigned long)dim);
   ap_manager_raise_exception(man,
 			  AP_EXC_INVALID_ARGUMENT,
 			  funid,str);
@@ -349,7 +350,7 @@ bool ap_abstract0_check_linexpr_array(ap_funid_t funid, ap_manager_t* man,
     ap_dim_t dim = ap_abstract0_check_linexpr_check(dimension,texpr[i]);
     if (dim!=AP_DIM_MAX){
       char str[80];
-      sprintf(str,"incompatible dimension in the %dth expression of the array",i);
+      sprintf(str,"incompatible dimension in the %luth expression of the array",(unsigned long)i);
       ap_abstract0_check_linexpr_raise(funid,man,dimension,dim,str);
       return false;
     }
@@ -367,7 +368,7 @@ bool ap_abstract0_check_lincons_array(ap_funid_t funid, ap_manager_t* man,
     ap_dim_t dim = ap_abstract0_check_linexpr_check(dimension,array->p[i].linexpr0);
     if (dim!=AP_DIM_MAX){
       char str[80];
-      sprintf(str,"incompatible dimension in the %dth constraint of the array",i);
+      sprintf(str,"incompatible dimension in the %luth constraint of the array",(unsigned long)i);
       ap_abstract0_check_linexpr_raise(funid,man,dimension,dim,str);
       return false;
     }
@@ -385,7 +386,7 @@ bool ap_abstract0_check_generator_array(ap_funid_t funid, ap_manager_t* man,
     ap_dim_t dim = ap_abstract0_check_linexpr_check(dimension,array->p[i].linexpr0);
     if (dim!=AP_DIM_MAX){
       char str[80];
-      sprintf(str,"incompatible dimension in the %dth generator of the array",i);
+      sprintf(str,"incompatible dimension in the %luth generator of the array",(unsigned long)i);
       ap_abstract0_check_linexpr_raise(funid,man,dimension,dim,str);
       return false;
     }

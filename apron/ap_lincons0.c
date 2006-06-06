@@ -114,14 +114,15 @@ void ap_lincons0_array_fprint(FILE* stream,
 			 const ap_lincons0_array_t* array,
 			 char** name_of_dim)
 {
-  int i;
+  size_t i;
 
   if (array->size==0){
     fprintf(stream,"empty array of constraints\n");
   } else {
-    fprintf(stream,"array of constraints of size %d\n",array->size);
+    fprintf(stream,"array of constraints of size %lu\n",
+	    (unsigned long)array->size);
     for (i=0; i<array->size; i++){
-      fprintf(stream,"%2d: ",i);
+      fprintf(stream,"%2lu: ",(unsigned long)i);
       ap_lincons0_fprint(stream,&array->p[i],name_of_dim);
       fprintf(stream,"\n");
     }

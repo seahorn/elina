@@ -112,7 +112,7 @@ bool ap_coeff_zero(const ap_coeff_t* coeff);
 void ap_coeff_neg(ap_coeff_t* a, const ap_coeff_t* b);
   /* Negation */
 
-int ap_coeff_hash(const ap_coeff_t* coeff);
+long ap_coeff_hash(const ap_coeff_t* coeff);
   /* Hash code */
 
 /* ====================================================================== */

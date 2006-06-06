@@ -569,11 +569,12 @@ void ap_environment_fdump(FILE* stream, ap_environment_t* env)
   size_t i;
   char* name;
 
-  fprintf(stream,"environment: dim = (%u,%u), count = %u\n",
-	  env->intdim,env->realdim,env->count);
+  fprintf(stream,"environment: dim = (%lu,%lu), count = %lu\n",
+	  (unsigned long)env->intdim,(unsigned long)env->realdim,
+	  (unsigned long)env->count);
   for (i=0; i<env->intdim+env->realdim; i++){
     name = ap_var_operations->to_string(env->var_of_dim[i]);
-    fprintf(stream,"%2u: %s\n",i,name);
+    fprintf(stream,"%2lu: %s\n",(unsigned long)i,name);
     free(name);
   }
 }

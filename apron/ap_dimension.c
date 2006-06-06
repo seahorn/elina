@@ -29,10 +29,11 @@ void ap_dimchange_fprint(FILE* stream, ap_dimchange_t* dimchange)
 {
   size_t i;
 
-  fprintf(stream,"dimchange: intdim=%d, realdim=%d\n           ",
-	  dimchange->intdim,dimchange->realdim);
+  fprintf(stream,"dimchange: intdim=%lu, realdim=%lu\n           ",
+	  (unsigned long)dimchange->intdim,
+	  (unsigned long)dimchange->realdim);
   for (i=0;i<dimchange->intdim+dimchange->realdim;i++){
-    fprintf(stream,"%2d ",dimchange->dim[i]);
+    fprintf(stream,"%2lu ",(unsigned long)dimchange->dim[i]);
   }
   fprintf(stream,"\n");
 }
@@ -64,9 +65,10 @@ void ap_dimperm_fprint(FILE* stream, ap_dimperm_t* perm)
 {
   size_t i;
 
-  fprintf(stream,"dimperm: size=%d\n",perm->size);
+  fprintf(stream,"dimperm: size=%lu\n",(unsigned long)perm->size);
   for (i=0;i<perm->size;i++){
-    fprintf(stream,"%2d -> %2d\n",i,perm->dim[i]);
+    fprintf(stream,"%2lu -> %2lu\n",(unsigned long)i,
+	    (unsigned long)perm->dim[i]);
   }
 }
 

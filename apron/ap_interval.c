@@ -164,7 +164,8 @@ void ap_interval_neg(ap_interval_t* a, const ap_interval_t* b)
     ap_scalar_neg(a->sup,b->inf);
   }
 }
-int ap_interval_hash(const ap_interval_t* itv)
+
+long ap_interval_hash(const ap_interval_t* itv)
 {
   if (ap_interval_is_bottom(itv)) return 0;
   else return ap_scalar_hash(itv->inf) + 2*ap_scalar_hash(itv->sup);

@@ -24,7 +24,7 @@ typedef struct ap_interval_t {
 /* ====================================================================== */
 /* Basics */
 /* ====================================================================== */
-ap_interval_t* ap_interval_alloc();
+ap_interval_t* ap_interval_alloc(void);
   /* Initialization, using DOUBLE as default type for scalars */
 void ap_interval_reinit(ap_interval_t* interval, ap_scalar_discr_t ap_scalar_discr);
   /* Change the type of scalars */
@@ -96,7 +96,7 @@ bool ap_interval_equal(const ap_interval_t* i1, const ap_interval_t* i2);
 
 void ap_interval_neg(ap_interval_t* a, const ap_interval_t* b);
   /* Negation */
-int ap_interval_hash(const ap_interval_t* itv);
+long ap_interval_hash(const ap_interval_t* itv);
   /* Hash code */
 
 /* ====================================================================== */
