@@ -152,6 +152,17 @@ let get_typ gen = gen.generator0.Generator0.typ\n\
 let set_typ gen typ = gen.generator0.Generator0.typ <- typ\n\
 let get_generator0 gen = gen.generator0\n\
 let get_env gen = gen.env\n\
+let set_list expr list = \n\
+  List.iter\n\
+    (fun (coeff,var) -> set_coeff expr var coeff )\n\
+    list;\n\
+  ()\n\
+let set_array expr tab = \n\
+  Array.iter\n\
+    (fun (coeff,var) -> set_coeff expr var coeff )\n\
+    tab;\n\
+  ()\n\
+\n\
 let iter f gen =\n\
   Linexpr0.iter\n\
     (begin fun coeff dim ->\n\

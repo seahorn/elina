@@ -182,6 +182,25 @@ let get_cst cons = Linexpr0.get_cst cons.lincons0.Lincons0.linexpr0\n\
 let set_cst cons cst = Linexpr0.set_cst cons.lincons0.Lincons0.linexpr0 cst\n\
 let get_lincons0 cons = cons.lincons0\n\
 let get_env cons = cons.env\n\
+let set_list expr list ocst = \n\
+  List.iter\n\
+    (fun (coeff,var) -> set_coeff expr var coeff )\n\
+    list;\n\
+  begin match ocst with\n\
+  | Some cst -> set_cst expr cst\n\
+  | None -> ()\n\
+  end;\n\
+  ()\n\
+let set_array expr tab ocst = \n\
+  Array.iter\n\
+    (fun (coeff,var) -> set_coeff expr var coeff )\n\
+    tab;\n\
+  begin match ocst with\n\
+  | Some cst -> set_cst expr cst\n\
+  | None -> ()\n\
+  end;\n\
+  ()\n\
+\n\
 let iter f cons =\n\
   Linexpr0.iter\n\
     (begin fun coeff dim ->\n\
