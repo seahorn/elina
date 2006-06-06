@@ -159,9 +159,10 @@ poly_t* poly_expand(ap_manager_t* man,
     po->status &= ~poly_status_gengauss & ~poly_status_minimal;
   }
   po->C = matrix_expand(pk, destructive, pa->C, 
-			dim, (dim < po->intdim-dimsup ?
-			      po->intdim-dimsup :
-			      po->intdim+po->realdim-dimsup),
+			dim, 
+			(dim + dimsup < po->intdim ?
+			 po->intdim-dimsup :
+			 po->intdim+po->realdim-dimsup),
 			dimsup);
   /* Minimize the result */
   if (pk->funopt->algorithm>0){

@@ -56,6 +56,41 @@ let print_abstract0 fmt a =
 
 *)
 
+let mine1 man = 
+  let expr = Linexpr0.make None in
+  Linexpr0.set_coeff expr 0 (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (-3))));
+  Linexpr0.set_coeff expr 1 (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (-3))));
+  Linexpr0.set_cst expr (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 14)));
+  let tab = Array.make 1 (Lincons0.make expr Lincons0.SUPEQ) in
+  let poly = Abstract0.of_lincons_array man 0 2 tab in
+  printf "poly=%a@." print_abstract0 poly;
+  let poly2 = Abstract0.expand man poly 1 2 in
+  printf "poly=%a@." print_abstract0 poly2;
+  ()
+;;
+
+let _ = mine1 man
+;;
+
+let mine2 man =
+  let fopt = Manager.get_funopt man Manager.Funid_join in
+  let fopt2  = { fopt with Manager.flag_exact_wanted = true; Manager.flag_best_wanted = true } in
+  Manager.set_funopt man Manager.Funid_join fopt2;
+  let expr = Linexpr0.make None in
+  Linexpr0.set_coeff expr 1 (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (4))));
+  Linexpr0.set_coeff expr 2 (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (4))));
+  Linexpr0.set_cst expr (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 17)));
+  let tab = Array.make 1 (Lincons0.make expr Lincons0.SUPEQ) in
+  let poly = Abstract0.of_lincons_array man 0 3 tab in
+  printf "poly=%a@." print_abstract0 poly;
+  let polye = Abstract0.bottom man 0 3 in
+  let poly2 = Abstract0.join man polye poly in
+  printf "poly2=%a@." print_abstract0 poly2;
+  ()
+;;
+let _ = mine2 man
+;;
+
 
 let poly1 man =
   (* Creation du polyèdre
