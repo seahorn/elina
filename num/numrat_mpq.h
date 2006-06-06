@@ -166,7 +166,7 @@ static inline int numrat_snprint(char* s, size_t size, const numrat_t a)
 
 /* int2 -> numrat */
 static inline void numrat_set_int2(numrat_t a, long int i, unsigned long int j)
-{ mpq_set_si(a,i,j); }
+{ mpq_set_si(a,i,j); numrat_canonicalize(a); }
 
 /* mpz -> numrat */
 static inline bool mpz_fits_numrat(const mpz_t a)
@@ -236,8 +236,8 @@ static inline size_t numrat_serialize(void* dst, const numrat_t src)
   size_t count1 = 0;
   size_t count2 = 0;
   *((char*)dst) = mpq_sgn(src);
-  mpz_export((char*)dst+5,&count1,1,1,1,0,mpq_numref(src));
-  mpz_export((char*)dst+9,&count2,1,1,1,0,mpq_denref(src));
+  mpz_export((char*)dst+9,&count1,1,1,1,0,mpq_numref(src));
+  mpz_export((char*)dst+count1+9,&count2,1,1,1,0,mpq_denref(src));
   num_dump_word32((char*)dst+1,count1);
   num_dump_word32((char*)dst+5,count2);
   return count1+count2+9;
@@ -247,8 +247,8 @@ static inline size_t numrat_deserialize(numrat_t dst, const void* src)
 {
   size_t count1 = num_undump_word32((const char*)src+1);
   size_t count2 = num_undump_word32((const char*)src+5);
-  mpz_import(mpq_numref(dst),count1,1,1,1,0,(const char*)src+5);
-  mpz_import(mpq_denref(dst),count2,1,1,1,0,(const char*)src+9);
+  mpz_import(mpq_numref(dst),count1,1,1,1,0,(const char*)src+9);
+  mpz_import(mpq_denref(dst),count2,1,1,1,0,(const char*)src+count1+9);
   if (*(const char*)src<0)
     mpq_neg(dst,dst);
   return count1+count2+9;
@@ -258,7 +258,7 @@ static inline size_t numrat_deserialize(numrat_t dst, const void* src)
 static inline size_t numrat_serialized_size(const numrat_t a) 
 { 
   return 
-    (mpz_sizeinbase(mpq_numref(a),2)+ mpz_sizeinbase(mpq_denref(a),2))/8+
+    (mpz_sizeinbase(mpq_numref(a),2)+mpz_sizeinbase(mpq_denref(a),2))/8+
     9+2*sizeof(mp_limb_t);
 }
 
