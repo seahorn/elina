@@ -47,34 +47,32 @@ val copy: t -> t\n\
 (** Print the linear constraint *)\n\
 val print : Format.formatter -> t -> unit\n\
 \n\
-(** Get the environement of the linear constraint *)\n\
-val get_env: t -> Environment.t\n\
-\n\
-(** Get the underlying linear expression. Modifying the linear expression ({e\n\
-  not advisable}) modifies correspondingly the linear constraint and\n\
-  conversely, except for changes of environements *)\n\
-val get_linexpr1: t -> Linexpr1.t\n\
-\n\
-(** Get the underlying linear constraint of level 0. Modifying the constraint\n\
-  of level 0 ({e not advisable}) modifies correspondingly the linear constraint\n\
-  and conversely, except for changes of environements*)\n\
-val get_lincons0: t -> Lincons0.t\n\
-\n\
 (** Get the constraint type *)\n\
 val get_typ: t -> Lincons0.typ\n\
-\n\
-(** Set the constraint type *)\n\
-val set_typ: t -> Lincons0.typ -> unit\n\
-\n\
-(** Get the constant of the underlying linear expression *)\n\
-val get_cst: t -> Coeff.t\n\
-\n\
-(** Set the constant of the underlying linear expression *)\n\
-val set_cst: t -> Coeff.t -> unit\n\
 \n\
 (** Iter the function on the pair coefficient/variable of the underlying linear\n\
   expression *)\n\
 val iter: (Coeff.t -> Environment.ap_var_t -> unit) -> t -> unit\n\
+\n\
+(** Get the constant of the underlying linear expression *)\n\
+val get_cst: t -> Coeff.t\n\
+\n\
+(** Set the constraint type *)\n\
+val set_typ: t -> Lincons0.typ -> unit\n\
+\n\
+(** Set simultaneously a number of coefficients.\n\
+\n\
+  [set_list expr [(c1,\"x\"); (c2,\"y\")] (Some cst)] assigns coefficients [c1] \n\
+  to variable [\"x\"], coefficient [c2] to variable [\"y\"], and coefficient [cst]\n\
+  to the constant. If [(Some cst)] is replaced by [None],\n\
+  the constant coefficient is not assigned. *)\n\
+val set_list : t -> (Coeff.t * Var.t) list -> Coeff.t option -> unit\n\
+\n\
+  (** Set simultaneously a number of coefficients, as [set_list]. *)\n\
+val set_array : t -> (Coeff.t * Var.t) array -> Coeff.t option -> unit\n\
+\n\
+(** Set the constant of the underlying linear expression *)\n\
+val set_cst: t -> Coeff.t -> unit\n\
 ")
 
 quote(MLI,"(** Get the coefficient of the variable in the underlying linear expression *)")
@@ -145,6 +143,22 @@ void ap_lincons1_extend_environment_with(struct ap_lincons1_t lincons,
   }\n\
 }")
 ;
+
+quote(MLI,"\n\
+(** Get the environement of the linear constraint *)\n\
+val get_env: t -> Environment.t\n\
+\n\
+(** Get the underlying linear expression. Modifying the linear expression ({e\n\
+  not advisable}) modifies correspondingly the linear constraint and\n\
+  conversely, except for changes of environements *)\n\
+val get_linexpr1: t -> Linexpr1.t\n\
+\n\
+(** Get the underlying linear constraint of level 0. Modifying the constraint\n\
+  of level 0 ({e not advisable}) modifies correspondingly the linear constraint\n\
+  and conversely, except for changes of environements*)\n\
+val get_lincons0: t -> Lincons0.t\n\
+\n\
+")
 
 quote(ML,"\n\
 let make linexpr1 typ = {\n\

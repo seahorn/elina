@@ -44,13 +44,13 @@ int ap_linexpr0_compare(const ap_linexpr0_ptr a, const ap_linexpr0_ptr b);
 quote(MLI,"(** Hashing function *)")
 int ap_linexpr0_hash(const ap_linexpr0_ptr a);
 
-quote(MLI,"(** Get the constant *)")
-[ref]struct ap_coeff_t* ap_linexpr0_get_cst(ap_linexpr0_ptr a)
-     quote(call,"_res = &a->cst;");
-
 quote(MLI,"(** Get the size of the linear expression (which may be sparse or dense) *)")
 int ap_linexpr0_get_size(ap_linexpr0_ptr a)
      quote(call,"_res = a->size;");
+
+quote(MLI,"(** Get the constant *)")
+[ref]struct ap_coeff_t* ap_linexpr0_get_cst(ap_linexpr0_ptr a)
+     quote(call,"_res = &a->cst;");
 
 quote(MLI,"(** Get the coefficient corresponding to the dimension *)")
 struct ap_coeff_t ap_linexpr0_get_coeff(ap_linexpr0_ptr a, ap_dim_t dim)
@@ -67,6 +67,17 @@ struct ap_coeff_t ap_linexpr0_get_coeff(ap_linexpr0_ptr a, ap_dim_t dim)
   }\n\
 }")
      quote(dealloc,"ap_coeff_clear(&_res);");
+
+quote(MLI,"\n\
+val set_list : t -> (Coeff.t * Dim.t) list -> Coeff.t option -> unit\n\
+  (** Set simultaneously a number of coefficients.\n\
+\n\
+    [set_list expr [(c1,1); (c2,2)] (Some cst)] assigns coefficients [c1] \n\
+    to dimension 1, coefficient [c2] to dimension 2, and coefficient [cst]\n\
+    to the constant. If [(Some cst)] is replaced by [None],\n\
+    the constant coefficient is not assigned. *)\n\
+val set_array : t -> (Coeff.t * Dim.t) array -> Coeff.t option -> unit\n\
+  (** Set simultaneously a number of coefficients, as [set_list]. *)\n")
 
 quote(MLI,"(** Set the constant *)")
 void ap_linexpr0_set_cst(ap_linexpr0_ptr a, [ref]struct ap_coeff_t* coeff)
@@ -118,6 +129,25 @@ val print : (Dim.t -> string) -> Format.formatter -> ap_linexpr0_ptr -> unit\n\
 ")
 
 quote(ML,"\n\
+let set_list expr list ocst = \n\
+  List.iter\n\
+    (fun (coeff,dim) -> set_coeff expr dim coeff )\n\
+    list;\n\
+  begin match ocst with\n\
+  | Some cst -> set_cst expr cst\n\
+  | None -> ()\n\
+  end;\n\
+  ()\n\
+let set_array expr tab ocst = \n\
+  Array.iter\n\
+    (fun (coeff,dim) -> set_coeff expr dim coeff )\n\
+    tab;\n\
+  begin match ocst with\n\
+  | Some cst -> set_cst expr cst\n\
+  | None -> ()\n\
+  end;\n\
+  ()\n\
+\n\
 let print assoc fmt expr = \n\
   Format.fprintf fmt \"@[<hov>\";\n\
   let first = ref true in\n\

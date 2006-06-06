@@ -30,17 +30,21 @@ val minimize: t -> unit\n\
 (** Copy *)\n\
 val copy: t -> t\n\
 \n\
-(** Get the underlying expression of level 0 (which is not a copy). *)\n\
-val get_linexpr0: t -> Linexpr0.t\n\
+(** Print the linear expression *)\n\
+val print: Format.formatter -> t -> unit\n\
 \n\
-(** Get the environement of the expression *)\n\
-val get_env: t -> Environment.t\n\
+val set_list : t -> (Coeff.t * Var.t) list -> Coeff.t option -> unit\n\
+  (** Set simultaneously a number of coefficients.\n\
+\n\
+    [set_list expr [(c1,\"x\"); (c2,\"y\")] (Some cst)] assigns coefficients [c1] \n\
+    to variable [\"x\"], coefficient [c2] to variable [\"y\"], and coefficient [cst]\n\
+    to the constant. If [(Some cst)] is replaced by [None],\n\
+    the constant coefficient is not assigned. *)\n\
+val set_array : t -> (Coeff.t * Var.t) array -> Coeff.t option -> unit\n\
+  (** Set simultaneously a number of coefficients, as [set_list]. *)\n\
 \n\
 (** Iter the function on the pair coefficient/variable of the linear expression *)\n\
 val iter: (Coeff.t -> Environment.var -> unit) -> t -> unit\n\
-\n\
-(** Print the linear expression *)\n\
-val print: Format.formatter -> t -> unit\n\
 \n\
 (** Get the constant *)\n\
 val get_cst: t -> Coeff.t\n\
@@ -48,11 +52,6 @@ val get_cst: t -> Coeff.t\n\
 (** Set the constant *)\n\
 val set_cst: t -> Coeff.t -> unit\n\
 ")
-
-quote(MLI,"(** Does the linear expression depend only on integer variables ? *)")
-boolean ap_linexpr1_is_integer([ref]struct ap_linexpr1_t* e);
-quote(MLI,"(** Does the linear expression depend only on real variables ? *)")
-boolean ap_linexpr1_is_real([ref]struct ap_linexpr1_t* e);
 
 quote(MLI,"(** Get the coefficient of the variable *)")
 struct ap_coeff_t ap_linexpr1_get_coeff([ref]struct ap_linexpr1_t* a, ap_var_t var)
@@ -120,6 +119,20 @@ void ap_linexpr1_extend_environment_with(struct ap_linexpr1_t linexpr,
 ")
 ;
 
+quote(MLI,"(** Does the linear expression depend only on integer variables ? *)")
+boolean ap_linexpr1_is_integer([ref]struct ap_linexpr1_t* e);
+quote(MLI,"(** Does the linear expression depend only on real variables ? *)")
+boolean ap_linexpr1_is_real([ref]struct ap_linexpr1_t* e);
+
+quote(MLI,"\n\
+(** Get the underlying expression of level 0 (which is not a copy). *)\n\
+val get_linexpr0: t -> Linexpr0.t\n\
+\n\
+(** Get the environement of the expression *)\n\
+val get_env: t -> Environment.t\n\
+\n\
+")
+
 quote(ML,"\n\
 let make ?(sparse=true) env = {\n\
   linexpr0 = Linexpr0.make\n\
@@ -139,6 +152,25 @@ let get_linexpr0 expr = expr.linexpr0\n\
 let get_env expr = expr.env\n\
 let set_cst expr cst =\n\
   Linexpr0.set_cst expr.linexpr0 cst\n\
+let set_list expr list ocst = \n\
+  List.iter\n\
+    (fun (coeff,var) -> set_coeff expr var coeff )\n\
+    list;\n\
+  begin match ocst with\n\
+  | Some cst -> set_cst expr cst\n\
+  | None -> ()\n\
+  end;\n\
+  ()\n\
+let set_array expr tab ocst = \n\
+  Array.iter\n\
+    (fun (coeff,var) -> set_coeff expr var coeff )\n\
+    tab;\n\
+  begin match ocst with\n\
+  | Some cst -> set_cst expr cst\n\
+  | None -> ()\n\
+  end;\n\
+  ()\n\
+\n\
 let iter f expr =\n\
   Linexpr0.iter\n\
     (begin fun coeff dim ->\n\

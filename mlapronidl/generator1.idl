@@ -47,28 +47,25 @@ val copy: t -> t\n\
 (** Print the generator *)\n\
 val print : Format.formatter -> t -> unit\n\
 \n\
-(** Get the environement of the generator *)\n\
-val get_env: t -> Environment.t\n\
-\n\
-(** Get the underlying linear expression. Modifying the linear expression ({e\n\
-  not advisable}) modifies correspondingly the generator and\n\
-  conversely, except for changes of environements *)\n\
-val get_linexpr1: t -> Linexpr1.t\n\
-\n\
-(** Get the underlying generator of level 0. Modifying the generator\n\
-  of level 0 ({e not advisable}) modifies correspondingly the generator\n\
-  and conversely, except for changes of environements*)\n\
-val get_generator0: t -> Generator0.t\n\
-\n\
 (** Get the generator type *)\n\
 val get_typ: t -> Generator0.typ\n\
-\n\
-(** Set the generator type *)\n\
-val set_typ: t -> Generator0.typ -> unit\n\
 \n\
 (** Iter the function on the pair coefficient/variable of the underlying linear\n\
   expression *)\n\
 val iter: (Coeff.t -> Environment.ap_var_t -> unit) -> t -> unit\n\
+\n\
+(** Set the generator type *)\n\
+val set_typ: t -> Generator0.typ -> unit\n\
+\n\
+(** Set simultaneously a number of coefficients.\n\
+\n\
+  [set_list expr [(c1,\"x\"); (c2,\"y\")]] assigns coefficients [c1] \n\
+  to variable [\"x\"] and coefficient [c2] to variable [\"y\"]. *)\n\
+val set_list : t -> (Coeff.t * Var.t) list -> unit\n\
+\n\
+  (** Set simultaneously a number of coefficients, as [set_list]. *)\n\
+val set_array : t -> (Coeff.t * Var.t) array -> unit\n\
+\n\
 ")
 
 quote(MLI,"(** Get the coefficient of the variable in the underlying linear expression *)")
@@ -220,6 +217,21 @@ void ap_generator1_array_extend_environment_with(struct ap_generator1_array_t ar
   }\n\
 }")
 ;
+
+quote(MLI,"\n\
+(** Get the environement of the generator *)\n\
+val get_env: t -> Environment.t\n\
+\n\
+(** Get the underlying linear expression. Modifying the linear expression ({e\n\
+  not advisable}) modifies correspondingly the generator and\n\
+  conversely, except for changes of environements *)\n\
+val get_linexpr1: t -> Linexpr1.t\n\
+\n\
+(** Get the underlying generator of level 0. Modifying the generator\n\
+  of level 0 ({e not advisable}) modifies correspondingly the generator\n\
+  and conversely, except for changes of environements*)\n\
+val get_generator0: t -> Generator0.t\n\
+")
 
 quote(ML,"\n\
 let array_make env size =\n\
