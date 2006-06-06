@@ -68,7 +68,12 @@ pk_representation pk_constructor pk_test pk_extract \
 pk_meetjoin pk_assign pk_project pk_resize pk_expandfold pk_widening pk_closure
 CCSRC = pk_config.h pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
-CCINC_TO_INSTALL = pk_config.h pk.h
+CCINC_TO_INSTALL = \
+ pk_assign.h  pk_constructor.h pk_matrix.h         pk_satmat.h pk_widening.h \
+ pk_bit.h     pk_expandfold.h  pk_meetjoin.h       pk_test.h \
+ pk_cherni.h  pk_extract.h     pk_project.h        pk_user.h \
+ pk_closure.h pk.h             pk_representation.h pk_util.h \
+ pk_config.h  pk_internal.h    pk_resize.h         pk_vector.h
 CCBIN_TO_INSTALL = polkarung polkatopg
 CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a 
 
@@ -197,7 +202,7 @@ libpolka_caml_debug.a: polka_caml_debug.o
 	sed -f sedscript_caml tmp/$*.mli | grep --extended-regexp '^(.)+$$' >$*.mli
 
 manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
-	ln -s $^ $@
+	ln -fs $^ $@
 
 #---------------------------------------
 # ML generic rules
