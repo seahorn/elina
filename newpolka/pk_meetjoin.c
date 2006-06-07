@@ -304,6 +304,8 @@ void _poly_meet(bool meet,
 /* I.3 Meet/Join array */
 /* ====================================================================== */
 
+static long long int counter = 0;
+
 poly_t* _poly_meet_array(bool meet,
 			 bool lazy,
 			 ap_manager_t* man,
@@ -312,6 +314,8 @@ poly_t* _poly_meet_array(bool meet,
   size_t intdim,realdim;
   poly_t* poly;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
+
+  counter++;
 
   man->result.flag_best = tbool_true;
 
@@ -351,7 +355,8 @@ poly_t* _poly_meet_array(bool meet,
 
     /* Count the total number of constraints */
     nbrows = 0;
-    for (i=0; i<size; i++){
+    i = 0;
+    while (i<size){
       char str[80];
       sprintf(str,"of the %d argument",i);
       if (lazy)
@@ -373,15 +378,19 @@ poly_t* _poly_meet_array(bool meet,
 	  /* We return with bottom */
 	  poly_set_bottom(pk,poly);
 	  return poly;
-	} else {
+	} 
+	else {
 	  /* We exchange po[i] and po[size-1] */
 	  size--;
 	  if (i<size){
 	    poly_t* tmp = (poly_t*)po[i]; po[i] = po[size]; po[size] = tmp;
 	  }
-	} 
+	}
       }
-      nbrows += po[i]->C ? po[i]->C->nbrows : 0;
+      else {
+	nbrows += po[i]->C->nbrows;
+	i++;
+      }
     }
     /* if size has been decreased */
     if (size<=2){
@@ -419,6 +428,7 @@ poly_t* _poly_meet_array(bool meet,
       /* Minimizing and selecting the start polyhedron */
       j = 0; /* The selected start polyhedron */
       for (i=0; i<size; i++){
+	assert(po[i]->C && po[i]->F);
 	if (po[i]->nbeq > po[j]->nbeq ||
 	    (po[i]->nbeq == po[j]->nbeq &&
 	     (po[i]->nbline < po[j]->nbline ||
@@ -587,7 +597,7 @@ poly_t* poly_join_array(ap_manager_t* man, const poly_t** po, size_t size)
   if (size==0){
     ap_manager_raise_exception(man,
 			    AP_EXC_INVALID_ARGUMENT,
-			    FUNID_JOIN_ARRAY, "empty array");
+			    AP_FUNID_JOIN_ARRAY, "empty array");
     man->result.flag_best = man->result.flag_exact = tbool_false;
     poly = poly_top(man,0,1);
     return poly;

@@ -324,7 +324,7 @@ size_t cherni_conversion(pk_internal_t* pk,
 		    pk->exn = AP_EXC_OUT_OF_SPACE;
 		    goto cherni_conversion_exit0;
 		  }
-		  if (nbrows==matrix_get_maxrows(ray)){
+		  if (nbrows==matrix_get_maxrows(ray) || nbrows==satc->_maxrows){
 		    /* resize output matrices */
 		    cherni_resize(ray,satc);
 		  }

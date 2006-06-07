@@ -15,8 +15,6 @@ if and only if \verb-satC || satF-. */
 #define __PK_H__
 
 #include "pk_config.h"
-#include "pk_satmat.h"
-#include "pk_matrix.h"
 
 typedef enum poly_status_t {
   poly_status_conseps=0x1,
@@ -27,10 +25,10 @@ typedef enum poly_status_t {
 
 typedef struct poly_t {
   /* private data: do not use directly ! */
-  matrix_t* C;
-  matrix_t* F;
-  satmat_t* satC;
-  satmat_t* satF;
+  struct matrix_t* C;
+  struct matrix_t* F;
+  struct satmat_t* satC;
+  struct satmat_t* satF;
   size_t intdim;
   size_t realdim;
   size_t nbeq;
