@@ -176,7 +176,7 @@ bool _poly_meet_particularcases(bool meet, bool lazy,
       _poly_meet_particularcases_exit:
 	poly_dual(pa);
 	poly_dual(pb);
-	poly_dual(po);
+	if (po!=pa) poly_dual(po);
 	return true;
       }
     }
