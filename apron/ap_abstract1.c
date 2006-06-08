@@ -316,7 +316,7 @@ ap_membuf_t ap_abstract1_serialize_raw(ap_manager_t* man, const ap_abstract1_t* 
    and store in size the number of bytes read */
 ap_abstract1_t ap_abstract1_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size){
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_DESERIALIZE_RAW,"");
-  return ap_abstract1_top(man,ap_environment_make_empty());
+  return ap_abstract1_top(man,ap_environment_alloc_empty());
 }
 
 
@@ -649,7 +649,7 @@ ap_abstract1_t ap_abstract1_meetjoin_array(ap_funid_t funid, ap_manager_t* man, 
     free(ntab);
   }
   else {
-    res = ap_abstract1_top(man, size==0 ? ap_environment_make_empty() : tab[0].env);
+    res = ap_abstract1_top(man, size==0 ? ap_environment_alloc_empty() : tab[0].env);
   }
   return res;
 }

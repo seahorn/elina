@@ -1,7 +1,7 @@
 # $Id$
 
 all:
-	(cd apron; make clib install)
+	(cd apron; make all install)
 	(cd mlgmpidl; make all debug install)
 	(cd mlapronidl; make all install)
 	(cd num; make all install)

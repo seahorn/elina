@@ -1,5 +1,5 @@
 /* ************************************************************************* */
-/* internal.h: internal manager */
+/* pk_internal.h: internal manager */
 /* ************************************************************************* */
 
 /* This file is part of the APRON Library, released under LGPL license.  Please
@@ -10,6 +10,7 @@
 
 #include "pk_config.h"
 #include "pk_bit.h"
+#include "pk.h"
 
 /* ********************************************************************** */
 /* I. Types */
@@ -57,9 +58,8 @@ struct pk_internal_t {
   struct matrix_t* poly_matspecial; 
   numint_t poly_prod; 
 };
-typedef struct pk_internal_t pk_internal_t;
 
-/* I. Constructor and destructor for internal */
+/* A. Constructor and destructor for internal */
 
 /* Allocates pk and initializes it with a default size */
 pk_internal_t* pk_internal_alloc(bool strict);
@@ -71,14 +71,18 @@ void pk_internal_realloc_lazy(pk_internal_t* pk, size_t maxdims);
 /* Initializes some fields of pk from manager */
 static inline pk_internal_t* pk_init_from_manager(ap_manager_t* man, ap_funid_t funid);
 
-/* II. Options */
+/* B. Options */
 void pk_set_max_coeff_size(pk_internal_t* pk, size_t size);
 void pk_set_approximate_max_coeff_size(pk_internal_t* pk, size_t size);
 size_t pk_get_max_coeff_size(pk_internal_t* pk);
 size_t pk_get_approximate_max_coeff_size(pk_internal_t* pk);
 
-
+/* C. Constructor for APRON manager (to be freed with ap_manager_free). */
 ap_manager_t* pk_manager_alloc(bool strict);
+
+/* D. Conversions */
+poly_t* pk_to_poly(ap_abstract0_t* abstract);
+ap_abstract0_t* pk_of_poly(ap_manager_t* man, poly_t* poly);
 
 /* ********************************************************************** */
 /* Definition of inline functions */

@@ -159,14 +159,14 @@ bool ap_linexpr1_set_list(ap_linexpr1_t* expr, ...);
 */
 #define ap_linexpr1_ForeachLinterm1(_p_e_, _p_i_, _p_var_, _p_ap_coeff_) \
   for ((_p_i_)=0;							\
-       (_p_i_)<(_p_e_)->size ?						\
-	 ((_p_e_)->discr==AP_LINEXPR_DENSE ?				\
+       (_p_i_)<(_p_e_)->linexpr0->size ?						\
+	 ((_p_e_)->linexpr0->discr==AP_LINEXPR_DENSE ?				\
 	  ((_p_var_) = ap_environment_var_of_dim((_p_e_)->env,(_p_i_)),	\
-	   (_p_ap_coeff_) = &(_p_e_)->p.coeff[(_p_i_)],			\
+	   (_p_ap_coeff_) = &(_p_e_)->linexpr0->p.coeff[(_p_i_)],			\
 	   true) :							\
 	  ((_p_var_) = ap_environment_var_of_dim((_p_e_)->env,\
-					      (_p_e_)->p.linterm[(_p_i_)].dim),	\
-	   (_p_ap_coeff_) = &(_p_e_)->p.linterm[(_p_i_)].coeff,		\
+					      (_p_e_)->linexpr0->p.linterm[(_p_i_)].dim),	\
+	   (_p_ap_coeff_) = &(_p_e_)->linexpr0->p.linterm[(_p_i_)].coeff,		\
 	   (_p_var_)!=NULL)) :						\
 	 false;								\
        (_p_i_)++)

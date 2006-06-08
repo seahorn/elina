@@ -4,11 +4,6 @@
 #
 GMP_PREFIX = 
 
-# Where to install and to find APRON 
-# ($(APRON_PREFIX)/include, $(APRON_PREFIX)/lib)
-#
-APRON_PREFIX = 
-
 # Where to find OCAML ($(CAML_PREFIX)/bin, $(CAML_PREFIX)/lib/ocaml, ...)
 #
 CAML_PREFIX =
@@ -17,23 +12,32 @@ CAML_PREFIX =
 #
 CAMLIDL_PREFIX =
 
+# Where to install and to find APRON 
+# ($(APRON_PREFIX)/include, $(APRON_PREFIX)/lib)
+#
+APRON_PREFIX = 
+
 # Where to install and to find MLGMPIDL ($(MLGMPIDL)/lib, $(MLGMPIDL)/bin)
 #
 MLGMPIDL_PREFIX = 
+# MLGMPIDL_PREFIX = $(APRON_PREFIX)
 
 # Where to install and to find MLAPRONIDL ($(MLAPRONIDL)/lib)
 #
 MLAPRONIDL_PREFIX = 
+# MLAPRONIDL_PREFIX = $(APRON_PREFIX)
 
 # Where to install and to find NUM ($(NUM)/include)
 #
 NUM_PREFIX = 
+# NUM_PREFIX = $(APRON_PREFIX)
 
 # Where to install and to find POLKA 
 # ($(POLKA_PREFIX)/include, $(POLKA_PREFIX)/lib, $(POLKA_PREFIX)/bin)
 #
 POLKA_PREFIX = 
+# POLKA_PREFIX = $(APRON_PREFIX)
 
 # Where to install and to find OMEGA
 OMEGA_PREFIX = 
-
+# OMEGA_PREFIX = $(APRON_PREFIX)

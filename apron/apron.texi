@@ -1938,11 +1938,11 @@ Print an environement under the form:
 @end example
 @end deftypefun
 
-@deftypefun ap_environment_t* ap_environment_make_empty ()
+@deftypefun ap_environment_t* ap_environment_alloc_empty ()
 Build an empty environement.
 @end deftypefun
 
-@deftypefun ap_environment_t* ap_environment_make (ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
+@deftypefun ap_environment_t* ap_environment_alloc (ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
 Build an environement from an array of integer and an array of real variables.
 
 @var{var_of_intdim} is an array of variables of size @var{intdim},
@@ -1960,7 +1960,7 @@ If some variables are duplicated, return @code{NULL}.
 @deftypefunx ap_environment_t* ap_environment_remove (const ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
 Resp. add or remove new variables to an existing environement, with a
 functional semantics. Same conventions as for
-@code{ap_environment_make} function apply. If the result is non-sense,
+@code{ap_environment_alloc} function apply. If the result is non-sense,
 return @code{NULL}.
 @end deftypefun
 

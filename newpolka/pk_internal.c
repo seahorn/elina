@@ -10,7 +10,7 @@
 #include "pk_vector.h"
 #include "pk_matrix.h"
 #include "pk_satmat.h"
-#include "pk.h"
+#include "pk_int.h"
 
 /* ********************************************************************** */
 /* I. Constructor and destructor for internal */
@@ -243,4 +243,34 @@ ap_manager_t* pk_manager_alloc(bool strict)
     ap_manager_set_abort_if_exception(man, i, false);
   }
   return man;
+}
+
+/* ********************************************************************** */
+/* IV. Conversions */
+/* ********************************************************************** */
+
+poly_t* pk_to_poly(ap_abstract0_t* abstract)
+{
+  ap_manager_t* man = abstract->man;
+  if (strcmp(man->library,"polka")!=0){
+    ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
+			       AP_FUNID_UNKNOWN,
+			       "pk_to_poly: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPOlka polyhedra");
+    return NULL;
+  }
+  return (poly_t*)abstract->value;
+}
+
+ap_abstract0_t* pk_of_poly(ap_manager_t* man, poly_t* poly)
+{
+  if (strcmp(man->library,"polka")!=0){
+    ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
+			       AP_FUNID_UNKNOWN,
+			       "pk_to_poly: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPOlka polyhedra");
+    return ap_abstract0_top(man,poly->intdim,poly->realdim);
+  }
+  ap_abstract0_t* res = malloc(sizeof(ap_abstract0_t));
+  res->value = poly;
+  res->man = ap_manager_copy(man);
+  return res;
 }

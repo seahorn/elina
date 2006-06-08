@@ -12,7 +12,7 @@
 #include "pk_vector.h"
 #include "pk_satmat.h"
 #include "pk_matrix.h"
-#include "pk.h"
+#include "pk_int.h"
 
 /* ********************************************************************** */
 /* I. Memory */

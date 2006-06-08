@@ -62,7 +62,7 @@ ap_environment_ptr ap_environment_make([size_is(intdim)]ap_var_t* name_of_intdim
 				 [size_is(realdim)]ap_var_t* name_of_realdim,
 				 int realdim)
      quote(call,"\n\
-_res = ap_environment_make(name_of_intdim,intdim,name_of_realdim,realdim);\n\
+_res = ap_environment_alloc(name_of_intdim,intdim,name_of_realdim,realdim);\n\
 if (_res==NULL){\n\
   camlidl_free(_ctx);\n\
   caml_failwith(\"Environment.make: duplicated variable names\");\n\

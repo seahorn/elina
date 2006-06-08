@@ -44,6 +44,8 @@ CAMLIDL = camlidl
 
 # Use ICFLAGS to specify machine-independent compilation flags.
 ICFLAGS = \
+-I$(POLKA_PREFIX)/include \
+-I$(MLGMPIDL_PREFIX)/include \
 -I$(GMP_PREFIX)/include \
 -I$(APRON_PREFIX)/include \
 -I$(MLAPRONIDL_PREFIX)/include \
@@ -143,6 +145,7 @@ liboct%.so: $(subst .c,%.o,$(CCSOURCES))
 test%: liboct%.a oct_test%.o
 	$(CC) -o $@ oct_test$*.o \
 	-L$(GMP_PREFIX)/lib -lgmp \
+	-L$(POLKA_PREFIX)/lib \
 	-L$(APRON_PREFIX)/lib -lpolkag_debug -lapron \
 	-L. -loct$*
 

@@ -10,7 +10,7 @@
 #include "pk_satmat.h"
 #include "pk_matrix.h"
 #include "pk_cherni.h"
-#include "pk.h"
+#include "pk_int.h"
 #include "pk_user.h"
 #include "pk_representation.h"
 #include "pk_extract.h"

@@ -39,19 +39,19 @@ void test_environment()
   ap_var_t name_of_realdim5[4] = {
     "a27","a31","a11","a37"
   };
-  e1 = ap_environment_make_empty();
+  e1 = ap_environment_alloc_empty();
   printf("env 1\n");
   ap_environment_fdump(stdout,e1);
   ap_environment_free(e1);
-  e1 = ap_environment_make(name_of_intdim1,3,
+  e1 = ap_environment_alloc(name_of_intdim1,3,
 			name_of_realdim1,3);
   printf("env 1\n");
   ap_environment_fdump(stdout,e1);
-  e2 = ap_environment_make(name_of_intdim2,4,
+  e2 = ap_environment_alloc(name_of_intdim2,4,
 			name_of_realdim2,4);
   printf("env 2\n");
   ap_environment_fdump(stdout,e2);
-  e5 = ap_environment_make(name_of_intdim5,4,
+  e5 = ap_environment_alloc(name_of_intdim5,4,
 			name_of_realdim5,4);
   printf("env 5\n");
   ap_environment_fdump(stdout,e5);
@@ -145,9 +145,9 @@ void absval1(ap_manager_t* man, ap_abstract1_t* ppo1, ap_abstract1_t* ppo2)
   ap_environment_t* envXYZW;
   bool b;
 
-  env = ap_environment_make(NULL,0,name_of_realdim1,6);
-  envXY = ap_environment_make(NULL,0,name_of_realdimXY,2);
-  envZW = ap_environment_make(NULL,0,name_of_realdimZW,2);
+  env = ap_environment_alloc(NULL,0,name_of_realdim1,6);
+  envXY = ap_environment_alloc(NULL,0,name_of_realdimXY,2);
+  envZW = ap_environment_alloc(NULL,0,name_of_realdimZW,2);
   envXYZW = ap_environment_add(envXY,NULL,0,name_of_realdimZW,2);
   
   array = ap_lincons1_array_make(envXYZW,5);

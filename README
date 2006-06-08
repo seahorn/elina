@@ -1,5 +1,11 @@
 # $Id$
 
+# This file is part of the APRON Library, released under LGPL
+# license.
+
+# Please read the COPYING file packaged in the distribution
+
+
 This main directory contain the following subpackages of the APRON project:
 
 num:	  
@@ -23,7 +29,7 @@ Makefile.config.model:
 	(installation directories mainly)
 
 Makefile:
-	compiles at most things at it can
+	compiles as many things as it can
 
 
 

@@ -1,9 +1,12 @@
 # $Id$
 
-This small package, only composed of header files, is used to
-offer a generic interface to different numbers representation. It
-took its inspiration from pk_int (integers in Newpolka library)
-and oct_num (integers in Octagon library).
+This small package, only composed of header files, is used to offer a generic
+interface to different numbers representation. It took its inspiration from
+pk_int (integers in Newpolka library from Bertrand Jeannet) and oct_num
+(integers in Octagon Abstract Domain library from Antoine Miné).
+
+It may be freely distributed and/or modified under the conditions of the LGPL
+license.
 
 Numbers
 =======

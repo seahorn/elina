@@ -66,14 +66,9 @@ pk_user \
 pk_internal pk_bit pk_satmat pk_vector pk_matrix pk_cherni \
 pk_representation pk_constructor pk_test pk_extract \
 pk_meetjoin pk_assign pk_project pk_resize pk_expandfold pk_widening pk_closure
-CCSRC = pk_config.h pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
+CCSRC = pk_config pk_int pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
-CCINC_TO_INSTALL = \
- pk_assign.h  pk_constructor.h pk_matrix.h         pk_satmat.h pk_widening.h \
- pk_bit.h     pk_expandfold.h  pk_meetjoin.h       pk_test.h \
- pk_cherni.h  pk_extract.h     pk_project.h        pk_user.h \
- pk_closure.h pk.h             pk_representation.h pk_util.h \
- pk_config.h  pk_internal.h    pk_resize.h         pk_vector.h
+CCINC_TO_INSTALL = pk.h
 CCBIN_TO_INSTALL = polkarung polkatopg
 CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a 
 
@@ -110,8 +105,8 @@ clean:
 	/bin/rm -fr tmp
 
 install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
-	$(INSTALLd) $(INCDIR)/polka $(LIBDIR)
-	$(INSTALL) $(CCINC_TO_INSTALL) $(INCDIR)/polka
+	$(INSTALLd) $(INCDIR) $(LIBDIR)
+	$(INSTALL) $(CCINC_TO_INSTALL) $(INCDIR)
 	for i in $(CCLIB_TO_INSTALL); do \
 		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
 	done
@@ -123,7 +118,7 @@ install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
 	done
 
 distclean: clean
-	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(INCDIR)/polka/$$i; done
+	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(INCDIR)/$$i; done
 	for i in $(CCLIB_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
 	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(BINDIR)/$$i; done
 	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done

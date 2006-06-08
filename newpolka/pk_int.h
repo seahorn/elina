@@ -11,8 +11,8 @@ if the polyhedron is empty, then \verb-C=F=satC=satF=0-. Else, we have
 polyhedron has a minimal representation minimal if and only if \verb-C && F-
 if and only if \verb-satC || satF-. */
 
-#ifndef __PKINT_H__
-#define __PKINT_H__
+#ifndef __PK_INT_H__
+#define __PK_INT_H__
 
 #include "pk.h"
 

@@ -14,28 +14,54 @@ if and only if \verb-satC || satF-. */
 #ifndef __PK_H__
 #define __PK_H__
 
-#include "pk_config.h"
+#include "ap_global0.h"
 
-typedef enum poly_status_t {
-  poly_status_conseps=0x1,
-  poly_status_consgauss=0x2,
-  poly_status_gengauss=0x4,
-  poly_status_minimal=0x8
-} poly_status_t;
+typedef struct poly_t poly_t;
+typedef struct pk_internal_t pk_internal_t;
 
-typedef struct poly_t {
-  /* private data: do not use directly ! */
-  struct matrix_t* C;
-  struct matrix_t* F;
-  struct satmat_t* satC;
-  struct satmat_t* satF;
-  size_t intdim;
-  size_t realdim;
-  size_t nbeq;
-  size_t nbline;
-  poly_status_t status;
-} poly_t;
+/* 
 
+  Important remark: the newpolka library is normally intended to be accessed
+  through the APRON itnerface, i.e., through abstract0_XX and abstract1_XX
+  functions. If it is accessed directly with poly_XXX functions, many checks on
+  arguments will not be performed.
+
+*/
+
+
+/* ============================================================ */
+/* A. Constructor and destructor for internal manager */
+/* ============================================================ */
+
+/* Allocates pk and initializes it with a default size */
+struct pk_internal_t* pk_internal_alloc(bool strict);
+/* Clear and free pk */
+void pk_internal_free(pk_internal_t* pk);
+
+/* ============================================================ */
+/* B. Options */
+/* ============================================================ */
+
+/* For setting options when one has a ap_manager_t object, one can use the
+   APRON function ap_manager_get_internal with a cast. */
+
+void pk_set_max_coeff_size(pk_internal_t* pk, size_t size);
+void pk_set_approximate_max_coeff_size(pk_internal_t* pk, size_t size);
+size_t pk_get_max_coeff_size(pk_internal_t* pk);
+size_t pk_get_approximate_max_coeff_size(pk_internal_t* pk);
+
+/* ============================================================ */
+/* C. Constructor for APRON manager (to be freed with ap_manager_free). */
+/* ============================================================ */
+
+ap_manager_t* pk_manager_alloc(bool strict);
+
+/* ============================================================ */
+/* D. Conversions */
+/* ============================================================ */
+
+poly_t* pk_to_poly(ap_abstract0_t* abstract);
+ap_abstract0_t* pk_of_poly(ap_manager_t* man, poly_t* poly);
 
 /* ********************************************************************** */
 /* I. General management */
