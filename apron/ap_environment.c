@@ -537,7 +537,7 @@ ap_environment_t* ap_environment_remove(const ap_environment_t* env,
   }
   return res;
 }
-ap_environment_t* ap_environment_make(ap_var_t* name_of_intdim, size_t intdim,
+ap_environment_t* ap_environment_alloc(ap_var_t* name_of_intdim, size_t intdim,
 			       ap_var_t* name_of_realdim, size_t realdim)
 {
   const ap_environment_t env = { NULL, 0,0,0 };
@@ -545,9 +545,9 @@ ap_environment_t* ap_environment_make(ap_var_t* name_of_intdim, size_t intdim,
 			 name_of_intdim, intdim,
 			 name_of_realdim, realdim);
 }
-ap_environment_t* ap_environment_make_empty()
+ap_environment_t* ap_environment_alloc_empty()
 {
-  return ap_environment_make(NULL,0,NULL,0);
+  return ap_environment_alloc(NULL,0,NULL,0);
 }
 
 void ap_environment_free2(ap_environment_t* env)

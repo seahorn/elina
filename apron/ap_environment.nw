@@ -16,7 +16,7 @@ On distingue deux catégories de fonctions:
 \begin{itemize}
 \item Celles utiles à un utilisateur du niveau 1 de l'interface,
   pour manipuler des environnements.  Il s'agit des fonctions
-  [[ap_environment_free, ap_environment_make, ap_environment_add,
+  [[ap_environment_free, ap_environment_alloc, ap_environment_add,
   ap_environment_remove, ap_environment_is_eq,
   environement_is_leq, ap_environment_compare]].
 \item Celles utilisées essentiellement par l'interface commune
@@ -121,10 +121,10 @@ void ap_environment_fdump(FILE* stream, ap_environment_t* env);
 ap_environment_name_of_dim_t* ap_environment_name_of_dim_alloc(ap_environment_t* e);
 void ap_environment_name_of_dim_free(ap_environment_name_of_dim_t*);
 
-ap_environment_t* ap_environment_make_empty(void);
+ap_environment_t* ap_environment_alloc_empty(void);
   /* Build an empty environement */
 
-ap_environment_t* ap_environment_make(ap_var_t* name_of_intdim, size_t intdim,
+ap_environment_t* ap_environment_alloc(ap_var_t* name_of_intdim, size_t intdim,
                                 ap_var_t* name_of_realdim, size_t realdim);
   /* Build an environement from an array of integer and
      an array of real variables.
@@ -137,7 +137,7 @@ ap_environment_t* ap_environment_add(const ap_environment_t* env,
                                ap_var_t* name_of_intdim, size_t intdim,
                                ap_var_t* name_of_realdim, size_t realdim);
   /* Add variables to an environement.
-     Same comments as for ap_environment_make */
+     Same comments as for ap_environment_alloc */
 ap_environment_t* ap_environment_add_perm(const ap_environment_t* env,
                                     ap_var_t* name_of_intdim, size_t intdim,
                                     ap_var_t* name_of_realdim, size_t realdim,
@@ -150,7 +150,7 @@ ap_environment_t* ap_environment_remove(const ap_environment_t* env,
                                   ap_var_t* name_of_intdim, size_t intdim,
                                   ap_var_t* name_of_realdim, size_t realdim);
   /* Remove variables from an environement.
-     Same comments as for environement_make */
+     Same comments as for environement_alloc */
 
 ap_dim_t ap_environment_dim_of_var(const ap_environment_t* env, ap_var_t name);
   /* - If the variable is present in the environemnt,
