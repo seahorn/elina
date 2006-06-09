@@ -83,12 +83,12 @@ csrc: $(H_FILES)
 tar: $(NOWEB_FILES) $(H_FILES) $(C_FILES) apron.texi apronrationale.tex Makefile README
 	(cd ..; tar zcvf $(HOME)/apron.tgz $(^:%=apron/%))
 
-dist: $(NOWEB_FILES) apron.texi apronrationale.tex Makefile README $(TEX_FILES) $(H_FILES) $(C_FILES) apronrationale.dvi
+dist: $(NOWEB_FILES) apron.texi apronrationale.tex Makefile COPYING README $(TEX_FILES) $(H_FILES) $(C_FILES) apronrationale.dvi apron.info apron.dvi html
 	(cd ..; tar zcvf $(HOME)/apron.tgz $(^:%=apron/%))
 
 clean:
 	/bin/rm -f $(NOWEB_FILES:%.nw=%.h) $(TEX_FILES)
-	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps apron.cps apron.fns apron.info apron.fn apron.ky apron.pg apron.cp apron.tp apron.vr apron.kys apron.pgs apron.tps apron.vrs
+	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps apron.cps apron.fns apron.info apron.fn apron.ky apron.pg apron.cp apron.tp apron.vr apron.kys apron.pgs apron.tps apron.vrs newpolka.texi itv.texi
 	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
 	/bin/rm -fr html
 
@@ -107,13 +107,17 @@ distclean:
 # Latex rules
 #---------------------------------------
 
-.PHONY : dvi apronrationale.dvi apron.info
+.PHONY : apronrationale.dvi apron.info apron.dvi html
 
 ps: apronrationale.dvi
 	$(DVIPS) apronrationale -o
 
-dvi: apronrationale.tex $(TEX_FILES)
-	$(LATEX) apronrationale.tex
+newpolka.texi: ../newpolka/newpolka.texi
+	ln -s $< $@
+itv.texi: ../itv/itv.texi
+	ln -s $< $@
+apron.dvi: apron.texi newpolka.texi itv.texi
+	texi2dvi -o $@ $<
 
 apronrationale.dvi: apronrationale.tex $(TEX_FILES)
 	$(LATEX) $^
@@ -121,7 +125,7 @@ apronrationale.dvi: apronrationale.tex $(TEX_FILES)
 apron.info: apron.texi
 	makeinfo -o $@ $<
 
-apron.html: apron.texi
+html: apron.texi
 	texi2html -split=section -nonumber -menu -subdir=html $<
 
 
