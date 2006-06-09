@@ -91,7 +91,7 @@ mldep: $(MLSRC)
 tar: $(IDLMODULES:%=%.idl) apron_caml.c apron_caml.h Makefile README mlapronidl.tex sedscript_caml
 	(cd ..; tar zcvf $(HOME)/mlapronidl.tgz $(^:%=mlapronidl/%))
 
-dist: $(IDLMODULES:%=%.idl) $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c) apron_caml.c apron_caml.h Makefile README mlapronidl.tex sedscript_caml mlapronidl.dvi html
+dist: $(IDLMODULES:%=%.idl) $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c) apron_caml.c apron_caml.h Makefile COPYING README mlapronidl.tex sedscript_caml mlapronidl.dvi html
 	(cd ..; tar zcvf $(HOME)/mlapronidl.tgz $(^:%=mlapronidl/%))
 
 clean:
