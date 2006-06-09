@@ -1,0 +1,156 @@
+
+(* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution. *)
+
+(*
+itvpolkatopg -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib -I $POLKA_INSTALL/lib -I $ITV_INSTALL/lib
+
+#load "gmp.cma";;
+#load "apron.cmo";;
+#load "polka.cmo";;
+#load "itv.cmo"
+
+#install_printer Apron.Linexpr1.print;;
+#install_printer Apron.Lincons1.print;;
+#install_printer Apron.Generator1.print;;
+#install_printer Apron.Abstract1.print;;
+
+*)
+
+open Apron;;
+open Mpqf
+open Format
+;;
+
+let print_array = Abstract0.print_array;;
+
+let manpk = Polka.manager_alloc true;;
+let manitv = Itv.manager_alloc ();;
+
+let lincons1_array_print fmt x =
+  Lincons1.array_print fmt x
+;;
+let generator1_array_print fmt x =
+  Generator1.array_print fmt x
+;;
+
+let ex1 (man:Manager.t) : Abstract1.t =
+  printf "Using Library: %s, version %s@." (Manager.get_library man) (Manager.get_version man);
+
+  let env = Environment.make
+    [| "x";"y";"z";"w"|]
+    [|"u";"v";"a";"b"|]
+  in
+  let env2 = Environment.make [| "x";"y";"z";"w"|] [||]
+  in
+  printf "env=%a@.env2=%a@."
+    (fun x -> Environment.print x) env
+    (fun x -> Environment.print x) env2
+  ;
+  (* Creation of abstract value
+     1/2x+2/3y=1, [1,2]<=z+2w<=4, 0<=u<=5 *)
+  let tab = Lincons1.array_make env 5 in
+
+  let expr = Linexpr1.make env in
+  Linexpr1.set_array expr
+    [|
+      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 1 2)), "x");
+      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 2 3)), "y")
+    |]
+    (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (1)))))
+    ;
+  let cons = Lincons1.make expr Lincons1.EQ in
+  Lincons1.array_set tab 0 cons;
+
+  let expr = Linexpr1.make env in
+  Linexpr1.set_array expr
+    [|
+      (Coeff.Scalar (Scalar.Float (-1.0)), "z");
+      (Coeff.Scalar (Scalar.Float (-2.0)), "w")
+    |]
+    (Some (Coeff.Scalar (Scalar.Float (4.0))))
+  ;
+  Lincons1.array_set tab 1 (Lincons1.make expr Lincons1.SUPEQ);
+ 
+  let expr = Linexpr1.make env2 in
+  Linexpr1.set_array expr
+    [|
+      (Coeff.Scalar (Scalar.Float 1.0), "z");
+      (Coeff.Scalar (Scalar.Float 2.0), "w")
+    |]
+    (Some 
+      (Coeff.Interval
+	(Interval.of_infsup
+	  (Scalar.Float (-2.0))
+	  (Scalar.Float (-1.0)))))
+    ;
+  Linexpr1.extend_environment_with expr env;
+  Lincons1.array_set tab 2 (Lincons1.make expr Lincons1.SUPEQ);
+ 
+  let cons = Lincons1.make (Linexpr1.make env) Lincons1.SUPEQ in
+  Lincons1.set_array cons
+    [|
+      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 1)), "u")
+    |]
+    None
+  ;
+  Lincons1.array_set tab 3 cons;
+  let cons = Lincons1.make (Linexpr1.make env) Lincons1.SUPEQ in
+  Lincons1.set_array cons
+    [|
+      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (-1))), "u")
+    |]
+    (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 5))))
+  ;
+  Lincons1.array_set tab 4 cons;
+ 
+  printf "tab = %a@." lincons1_array_print tab;
+
+  let abs = Abstract1.of_lincons_array man env tab in
+  printf "abs=%a@." Abstract1.print abs;
+  let array = Abstract1.to_generator_array man abs in
+  printf "gen=%a@." generator1_array_print array;
+  Abstract1.canonicalize man abs;
+  printf "abs=%a@." Abstract1.print abs;
+  let array = Abstract1.to_generator_array man abs in
+  printf "gen=%a@." generator1_array_print array;
+
+  (* Extraction (we first extract values for existing constraints, then for
+     dimensions) *)
+  let box = Abstract1.to_box man abs in
+  printf "box=%a@." (print_array Interval.print) box.Abstract1.interval_array;
+  for i=0 to 4 do
+    let expr = Lincons1.get_linexpr1 (Lincons1.array_get tab i) in
+    let itv = Abstract1.bound_linexpr man abs expr in
+    printf "Bound of %a = %a@."
+      Linexpr1.print expr
+      Interval.print itv;
+  done;
+  (* 2. dimensions *)
+  (* 3. of box *)
+  let abs2 = Abstract1.of_box man env [| "x";"y";"z";"w"; "u";"v";"a";"b"|]
+    box.Abstract1.interval_array 
+  in
+  printf "abs2=%a@." Abstract1.print abs2;
+  (* 4. Tests top and bottom *)
+  let abs3 = Abstract1.bottom man env in
+  printf "abs3=%a@.is_bottom(abs3)=%a@."
+    Abstract1.print abs3 
+    Manager.print_tbool (Abstract1.is_bottom man abs3);
+
+  printf "abs=%a@." 
+    Abstract1.print abs;
+  let p2 = Abstract1.expand man abs "y" [|"y1";"y2"|] in
+  printf "p2=expand(abs,y,[y1,y2]))=%a@."
+    Abstract1.print p2; 
+  let p2 = Abstract1.expand man abs "u" [|"u1";"u2"|] in
+  printf "p2=expand(abs,u,[u1,u2]))=%a@."
+    Abstract1.print p2; 
+  abs
+;;
+
+let abs1 = ex1 manpk;;
+
+let abs2 = ex1 manitv;;
+
+Abstract1.is_eq manpk abs1 abs2;;
