@@ -30,3 +30,6 @@ clean:
 distclean:
 	(cd $(NUM_PREFIX)/include; /bin/rm -f $(H_FILES))
 
+dist: $(H_FILES) Makefile README
+	(cd ..; tar zcvf $(HOME)/num.tgz $(^:%=num/%))
+
