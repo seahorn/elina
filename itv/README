@@ -1,0 +1,60 @@
+
+# This file is part of the APRON Library, released under LGPL
+# license.
+
+# Please read the COPYING file packaged in the distribution
+
+This package is a interval library/abstract domain that conforms to the APRON
+interface. It requires APRON package.
+
+It includes both the C interface and the OCaml interface to APRON.
+
+
+REQUIREMENTS
+============
+For the C interface:
+
+GMP library (tested with version 4.0 and up)
+NUM "library" (a set of header files)
+APRON library
+
+For the OCaml interface, in addition:
+M4 preprocessor (standard on any UNIX system)
+OCaml 3.0 or up (tested with 3.09)
+Camlidl (tested with 1.05)
+MLGMPIDL package
+MLAPRONIDL package
+
+INSTALLATION
+============
+
+Set the file Makefile.config to your own setting.
+You might also have to modify the Makefile for executables
+
+1. C Library
+----------
+
+type 'make', and then 'make install' 
+
+The library is named libitvmpq.a, libitvllr.a, libitvdbl.a (and
+libitvmpq_debug.a, ...).
+
+mpq, llr, dbl, stands for mpq_t, rationals on long long int, and double, which
+indicates the underlying representation of numbers.
+
+For use via APRON, the include files to consider is itv.h.
+
+
+2. OCaml Library
+----------------
+
+type 'make ml', and then 'make install' 
+
+The C part of the library is named libitv_caml.a (and libitv_caml_debug.a).
+The OCaml part is named itv.cmo (itv.cmx)
+
+
+3. Miscellaneous
+----------------
+
+'make clean' and 'make distclean' have the usual behaviour.
