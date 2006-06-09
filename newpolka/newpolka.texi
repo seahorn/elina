@@ -1,0 +1,105 @@
+@c This file is part of the APRON Library, released under LGPL
+@c license. Please read the COPYING file packaged in the distribution
+
+@c to be included from apron.texi
+
+The @sc{NewPolka} convex polyhedra library is aimed to be used through
+the APRON interface. However some specific points should be precised.
+First, @sc{NewPolka} can use several underlying representations for
+numbers, which lead to several library variants. Second, some specific
+functions are needed, typically to allocate managers, and to specify
+special options.
+
+@menu
+* Use of NewPolka::             
+* Allocating NewPolka managers and setting options::  
+@end menu
+
+@c ===================================================================
+@node Use of NewPolka, Allocating NewPolka managers and setting options, , NewPolka 
+@section Use of NewPolka
+@c ===================================================================
+
+To use @sc{NewPolka} in C, add
+@example
+#include "pk.h"
+@end example
+in your source file(s) and add @samp{-I$(POLKA_PREFIX)/include} in the
+command line in your Makefile.
+
+You should also link your object files with the @sc{NewPolka} library
+to produce an executable, by adding something like
+@samp{-L$(POLKA_PREFIX)/li -lpolkag_debug} in the command line in your
+Makefile.
+
+There are actually several variants of the library:
+@table @file
+@item libpolkai.a
+The underlying representation for integers is @code{long int}. This
+may easily cause overflows, especially with many dimensions or
+variables. Overflows are not detected but usually result in infinite
+looping.
+@item libpolkal.a
+The underlying representation for integers is @code{long long int}. This
+may (less) easily cause overflows.
+@item libpolkag.a
+The underlying representation for integers is @code{mpz_t}, the
+multi-precision integers from the GNU GMP library. Overflows are not
+possible any more, but huge numbers may appear.
+@end table
+
+There is a way to prevent overflow and/or huge numbers, which is to
+position the options @code{max_coeff_size} and
+@code{approximate_max_coeff_size}, see @ref{Allocating NewPolka
+managers and setting options}.
+
+Also, all library are available in debug mode
+(@samp{libpolkai_debug.a}, ....
+
+@c ===================================================================
+@node Allocating NewPolka managers and setting options,  , Use of NewPolka, NewPolka
+@section Allocating NewPolka managers and setting options
+@c ===================================================================
+
+@deftp datatype pk_internal_t
+NewPolka type for internal managers (specific to NewPolka, and
+specific to each execution thread in multithreaded programs).
+@end deftp
+
+@subheading Allocating managers
+
+@deftypefun ap_manager_t* pk_manager_alloc (bool @var{strict})
+Allocate a APRON manager linked to the NewPolka library.
+
+The @var{strict} option, when true, enables strict constraints (like
+@code{x>0}).
+@end deftypefun
+
+@subheading Setting options
+
+Options specific to @sc{NewPolka} are set directly on the internal manager. It can be extracted with the @code{pk_manager_get_internal} function.
+
+@deftypefun pk_internal_t* pk_manager_get_internal (ap_manager_t* @var{man})
+Return the internal submanager. If @var{man} has not been created by
+@code{pk_manager_alloc}, return @code{NULL}.
+@end deftypefun
+
+@deftypefun void pk_set_max_coeff_size (pk_internal_t* @var{pk}, size_t @var{size})
+If @var{size} is not 0, try to raise an @code{AP_EXC_OVERFLOW}
+exception as soon as the size of an integer exceed @var{size}.
+
+Very incomplete implementation. Currently, used only in
+@file{libpolkag} variant, where the size is the number of limbs as
+returned by the function @code{mpz_size} of the GMP library. This
+allows to detect huge numbers.
+@end deftypefun
+
+@deftypefun void pk_set_approximate_max_coeff_size (pk_internal_t* @var{pk}, size_t @var{size})
+This is the parameter to the @code{poly_approximate}/@code{ap_abstractX_approximate} functions.
+@end deftypefun
+
+@deftypefun size_t pk_get_max_coeff_size (pk_internal_t* @var{pk})
+@deftypefunx size_t pk_get_approximate_max_coeff_size (pk_internal_t* @var{pk})
+Reading the previous parameters.
+@end deftypefun
+

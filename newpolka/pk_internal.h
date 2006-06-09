@@ -72,6 +72,7 @@ void pk_internal_realloc_lazy(pk_internal_t* pk, size_t maxdims);
 static inline pk_internal_t* pk_init_from_manager(ap_manager_t* man, ap_funid_t funid);
 
 /* B. Options */
+pk_internal_t* pk_manager_get_internal(ap_manager_t* man);
 void pk_set_max_coeff_size(pk_internal_t* pk, size_t size);
 void pk_set_approximate_max_coeff_size(pk_internal_t* pk, size_t size);
 size_t pk_get_max_coeff_size(pk_internal_t* pk);

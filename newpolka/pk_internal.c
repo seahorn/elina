@@ -151,6 +151,10 @@ void pk_internal_realloc_lazy(pk_internal_t* pk, size_t maxdims)
 /* II. Options */
 /* ********************************************************************** */
 
+pk_internal_t* pk_manager_get_internal(ap_manager_t* man){
+  return man->internal;
+}
+
 void pk_set_max_coeff_size(pk_internal_t* pk, size_t size){
   pk->max_coeff_size = size;
 }

@@ -44,7 +44,7 @@ libpolkai_debug.a, ...).
 i, l, g, stands for long int, long long int, and gmp, which
 indicates the underlying representation of integers.
 
-For use via APRON, the include files to consider is pk_internal.h
+For use via APRON, the include files to consider is pk.h
 
 
 2. OCaml Library

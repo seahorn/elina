@@ -30,17 +30,16 @@ typedef struct pk_internal_t pk_internal_t;
 
 
 /* ============================================================ */
-/* A. Constructor and destructor for internal manager */
+/* A. Constructor for APRON manager (to be freed with ap_manager_free). */
 /* ============================================================ */
 
-/* Allocates pk and initializes it with a default size */
-struct pk_internal_t* pk_internal_alloc(bool strict);
-/* Clear and free pk */
-void pk_internal_free(pk_internal_t* pk);
+ap_manager_t* pk_manager_alloc(bool strict);
 
 /* ============================================================ */
 /* B. Options */
 /* ============================================================ */
+
+pk_internal_t* pk_manager_get_internal(ap_manager_t* man);
 
 /* For setting options when one has a ap_manager_t object, one can use the
    APRON function ap_manager_get_internal with a cast. */
@@ -51,17 +50,20 @@ size_t pk_get_max_coeff_size(pk_internal_t* pk);
 size_t pk_get_approximate_max_coeff_size(pk_internal_t* pk);
 
 /* ============================================================ */
-/* C. Constructor for APRON manager (to be freed with ap_manager_free). */
-/* ============================================================ */
-
-ap_manager_t* pk_manager_alloc(bool strict);
-
-/* ============================================================ */
 /* D. Conversions */
 /* ============================================================ */
 
 poly_t* pk_to_poly(ap_abstract0_t* abstract);
 ap_abstract0_t* pk_of_poly(ap_manager_t* man, poly_t* poly);
+
+/* ============================================================ */
+/* D. Constructor and destructor for internal manager */
+/* ============================================================ */
+
+/* Allocates pk and initializes it with a default size */
+struct pk_internal_t* pk_internal_alloc(bool strict);
+/* Clear and free pk */
+void pk_internal_free(pk_internal_t* pk);
 
 /* ********************************************************************** */
 /* I. General management */

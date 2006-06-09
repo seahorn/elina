@@ -66,7 +66,7 @@ pk_user \
 pk_internal pk_bit pk_satmat pk_vector pk_matrix pk_cherni \
 pk_representation pk_constructor pk_test pk_extract \
 pk_meetjoin pk_assign pk_project pk_resize pk_expandfold pk_widening pk_closure
-CCSRC = pk_config pk_int pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
+CCSRC = pk_config.h pk_int.h pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = pk.h
 CCBIN_TO_INSTALL = polkarung polkatopg
@@ -123,6 +123,9 @@ distclean: clean
 	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(BINDIR)/$$i; done
 	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
 	/bin/rm -f Makefile.depend
+
+dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.ml polka.mli polka_caml.c COPYING README
+	(cd ..; tar zcvf $(HOME)/newpolka.tgz $(^:%=newpolka/%))
 
 #---------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES
