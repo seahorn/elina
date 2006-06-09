@@ -72,7 +72,7 @@ CCINC_TO_INSTALL = pk.h
 CCBIN_TO_INSTALL = polkarung polkatopg
 CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a 
 
-CAML_TO_INSTALL = polka.mli polka.cmi polka.cmo polka.cmx polka.o
+CAML_TO_INSTALL = polka.mli polka.ml polka.idl polka.cmi polka.cmo polka.cmx polka.o
 
 #---------------------------------------
 # Rules
@@ -84,7 +84,7 @@ CAML_TO_INSTALL = polka.mli polka.cmi polka.cmo polka.cmx polka.o
 
 all: allg
 
-ml: polka.mli polka.cmi polka.cmo polka.cmx libpolka_caml.a libpolka_caml_debug.a
+ml: polka.mli polka.ml polka.idl polka.cmi polka.cmo polka.cmx libpolka_caml.a libpolka_caml_debug.a
 
 allg: libpolkag.a libpolkag_debug.a 
 
@@ -124,7 +124,7 @@ distclean: clean
 	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
 	/bin/rm -f Makefile.depend
 
-dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.ml polka.mli polka_caml.c COPYING README
+dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polka_caml.c COPYING README
 	(cd ..; tar zcvf $(HOME)/newpolka.tgz $(^:%=newpolka/%))
 
 #---------------------------------------

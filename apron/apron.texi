@@ -1117,7 +1117,7 @@ are of type @code{coeff_t}.
 
 @c -------------------------------------------------------------------
 @node Allocating linear expressions of level 0, Tests on linear expressions of level 0, Linear expressions of level 0, Linear expressions of level 0
-@subsection Allocating linear expressions
+@subsection Allocating linear expressions of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_linexpr0_t* ap_linexpr0_alloc (ap_linexpr_discr_t @var{lin_discr}, size_t @var{size});
@@ -1156,7 +1156,7 @@ Print the linear expression on stream @var{stream}, using the array
 
 @c -------------------------------------------------------------------
 @node Tests on linear expressions of level 0, Access to linear expressions of level 0, Allocating linear expressions of level 0, Linear expressions of level 0
-@subsection Tests
+@subsection Tests on linear expressions of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun bool ap_linexpr0_is_integer (const ap_linexpr0_t* @var{e}, size_t @var{intdim})
@@ -1179,7 +1179,7 @@ Return true iff all involved coefficients but the constant are scalars.
 
 @c -------------------------------------------------------------------
 @node Access to linear expressions of level 0, Change of dimensions and permutations of linear expressions of level 0, Tests on linear expressions of level 0, Linear expressions of level 0
-@subsection Access to linear expressions
+@subsection Access to linear expressions of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun size_t ap_linexpr0_size (const ap_linexpr0_t* @var{e})
@@ -1328,7 +1328,7 @@ Return @code{true} in case @code{ap_linexpr0_coeffref(e,dim)} returns NULL.
 
 @c -------------------------------------------------------------------
 @node Change of dimensions and permutations of linear expressions of level 0, Other functions on linear expressions of level 0, Access to linear expressions of level 0, Linear expressions of level 0
-@subsection Change of dimensions and permutations of linear expressions
+@subsection Change of dimensions and permutations of linear expressions of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun void ap_linexpr0_add_dimensions_with (ap_linexpr0_t* @var{e}, const ap_dimchange_t* @var{dimchange})
@@ -1348,7 +1348,7 @@ than the size of the permutation.
 
 @c -------------------------------------------------------------------
 @node Other functions on linear expressions of level 0,  , Change of dimensions and permutations of linear expressions of level 0, Linear expressions of level 0
-@subsection Other functions on linear expressions
+@subsection Other functions on linear expressions of level 0
 @c -------------------------------------------------------------------
 
 All these functions induces a reduction of the coefficients of the
@@ -1433,7 +1433,7 @@ One can assign a constraint to the index @var{index} by writing:
 
 @c -------------------------------------------------------------------
 @node Allocating linear constraints of level 0, Tests on linear constraints of level 0, Linear constraints of level 0, Linear constraints of level 0
-@subsection Allocating linear constraints
+@subsection Allocating linear constraints of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_lincons0_t ap_lincons0_make (ap_constyp_t @var{constyp}, ap_linexpr0_t* @var{linexpr})
@@ -1464,7 +1464,7 @@ Print the linear constraint on stream @var{stream}, using the array
 
 @c -------------------------------------------------------------------
 @node Tests on linear constraints of level 0, Arrays of linear constraints of level 0, Allocating linear constraints of level 0, Linear constraints of level 0
-@subsection Tests on linear constraints
+@subsection Tests on linear constraints of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun bool ap_lincons0_is_unsat (const ap_lincons0_t* @var{cons})
@@ -1474,7 +1474,7 @@ Return @code{true} if the constraint is not satisfiable.
 
 @c -------------------------------------------------------------------
 @node Arrays of linear constraints of level 0, Change of dimensions and permutations of linear constraints of level 0, Tests on linear constraints of level 0, Linear constraints of level 0
-@subsection Arrays of linear constraints
+@subsection Arrays of linear constraints of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_lincons0_array_t ap_lincons0_array_make (size_t @var{size})
@@ -1494,7 +1494,7 @@ Print the array on the stream.
 
 @c -------------------------------------------------------------------
 @node Change of dimensions and permutations of linear constraints of level 0,  , Arrays of linear constraints of level 0, Linear constraints of level 0
-@subsection Change of dimensions and permutations of linear constraints
+@subsection Change of dimensions and permutations of linear constraints of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun void ap_lincons0_add_dimensions_with (ap_lincons0_t* @var{cons}, const ap_dimchange_t* @var{dimchange})
@@ -1566,7 +1566,7 @@ Datatype for arrays of generators.
 
 @c -------------------------------------------------------------------
 @node Allocating generators of level 0, Arrays of generators of level 0, Generators of level 0, Generators of level 0
-@subsection Allocating generators
+@subsection Allocating generators of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_generator0_t ap_generator0_make (ap_gentyp_t @var{gentyp}, ap_linexpr0_t* @var{linexpr})
@@ -1594,7 +1594,7 @@ Print the linear generator on stream @var{stream}, using the array
 
 @c -------------------------------------------------------------------
 @node Arrays of generators of level 0, Change of dimensions and permutations of generators of level 0, Allocating generators of level 0, Generators of level 0
-@subsection Arrays of generators
+@subsection Arrays of generators of level 0
 @c -------------------------------------------------------------------
 
 Arrays are accessed directly, for example by writing
@@ -1619,7 +1619,7 @@ Print the array on the stream.
 
 @c -------------------------------------------------------------------
 @node Change of dimensions and permutations of generators of level 0,  , Arrays of generators of level 0, Generators of level 0
-@subsection Change of dimensions and permutations of generators
+@subsection Change of dimensions and permutations of generators of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun void ap_generator0_add_dimensions_with (ap_generator0_t* @var{gen}, gent ap_dimchange_t* @var{dimchange})
@@ -1678,7 +1678,7 @@ Constructors, Accessors, Tests and Extraction of properties
 
 * Constructors for abstract values of level 0::
 * Accessors for abstract values of level 0::
-* Tests for abstract values of level 0::
+* Tests on abstract values of level 0::
 * Extraction of properties of abstract values of level 0::
 
 Operations
@@ -1698,7 +1698,7 @@ Additional functions
 
 @c -------------------------------------------------------------------
 @node Allocating abstract values of level 0, Control of internal representation of abstract values of level 0, Abstract values and operations of level 0, Abstract values and operations of level 0
-@subsection Allocating abstract values
+@subsection Allocating abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract0_t* ap_abstract0_copy (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
@@ -1716,7 +1716,7 @@ Return the abstract size of @var{a}.
 
 @c -------------------------------------------------------------------
 @node Control of internal representation of abstract values of level 0, Printing abstract values of level 0, Allocating abstract values of level 0, Abstract values and operations of level 0
-@subsection Control of internal representation
+@subsection Control of internal representation of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun void ap_abstract0_minimize (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
@@ -1768,7 +1768,7 @@ purposes.
 
 @c -------------------------------------------------------------------
 @node Serialization of abstract values of level 0, Constructors for abstract values of level 0, Printing abstract values of level 0, Abstract values and operations of level 0
-@subsection Serialization
+@subsection Serialization of abstract values of level 0
 @c -------------------------------------------------------------------
 @deftypefun ap_membuf_t ap_abstract0_serialize_raw (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
 Allocate a memory buffer (with @code{malloc}), output @var{a}
@@ -1785,7 +1785,7 @@ read.
 
 @c -------------------------------------------------------------------
 @node Constructors for abstract values of level 0, Accessors for abstract values of level 0, Serialization of abstract values of level 0, Abstract values and operations of level 0
-@subsection Constructors
+@subsection Constructors for abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract0_t* ap_abstract0_bottom (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim})
@@ -1807,8 +1807,8 @@ have exactly the dimensions (@var{intdim},@var{realdim}).
 @end deftypefun
 
 @c -------------------------------------------------------------------
-@node Accessors for abstract values of level 0, Tests for abstract values of level 0, Constructors for abstract values of level 0, Abstract values and operations of level 0
-@subsection Accessors
+@node Accessors for abstract values of level 0, Tests on abstract values of level 0, Constructors for abstract values of level 0, Abstract values and operations of level 0
+@subsection Accessors for abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_dimension_t ap_abstract0_dimension (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
@@ -1816,8 +1816,8 @@ Return the dimensionality of @var{a}.
 @end deftypefun
 
 @c -------------------------------------------------------------------
-@node Tests for abstract values of level 0, Extraction of properties of abstract values of level 0, Accessors for abstract values of level 0, Abstract values and operations of level 0
-@subsection Tests
+@node Tests on abstract values of level 0, Extraction of properties of abstract values of level 0, Accessors for abstract values of level 0, Abstract values and operations of level 0
+@subsection Tests on abstract values of level 0
 @c -------------------------------------------------------------------
 
 If any of the following functions returns tbool_top, this means that
@@ -1848,8 +1848,8 @@ If it is the case, we have @code{forget(man,a,dim) == a}.
 @end deftypefun
 
 @c -------------------------------------------------------------------
-@node Extraction of properties of abstract values of level 0, Meet and Join of abstract values of level 0, Tests for abstract values of level 0, Abstract values and operations of level 0
-@subsection Extraction of properties
+@node Extraction of properties of abstract values of level 0, Meet and Join of abstract values of level 0, Tests on abstract values of level 0, Abstract values and operations of level 0
+@subsection Extraction of properties of abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_interval_t* ap_abstract0_bound_dimension (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, ap_dim_t @var{dim})
@@ -1881,7 +1881,7 @@ Convert @var{a} to an array of generators.
 
 @c -------------------------------------------------------------------
 @node Meet and Join of abstract values of level 0, Assignements and Substitutions of abstract values of level 0, Extraction of properties of abstract values of level 0, Abstract values and operations of level 0
-@subsection Meet and Join
+@subsection Meet and Join of abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract0_t* ap_abstract0_meet (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a1}, const ap_abstract0_t* @var{a2})
@@ -1922,7 +1922,7 @@ Generalized time elapse operator.
 
 @c -------------------------------------------------------------------
 @node Assignements and Substitutions of abstract values of level 0, Existential quantification of abstract values of level 0, Meet and Join of abstract values of level 0, Abstract values and operations of level 0
-@subsection Assignements and Substitutions
+@subsection Assignements and Substitutions of abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract0_t* ap_abstract0_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, const ap_linexpr0_t* @var{expr}, const ap_abstract0_t* @var{dest})
@@ -1950,7 +1950,7 @@ octagons.
 
 @c -------------------------------------------------------------------
 @node Existential quantification of abstract values of level 0, Change and permutation of dimensions of abstract values of level 0, Assignements and Substitutions of abstract values of level 0, Abstract values and operations of level 0
-@subsection Existential quantification
+@subsection Existential quantification of abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract0_t* ap_abstract0_forget_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, const ap_dim_t* @var{tdim}, size_t @var{size}, bool @var{project})
@@ -1961,7 +1961,7 @@ value @var{a}.
 
 @c -------------------------------------------------------------------
 @node Change and permutation of dimensions of abstract values of level 0, Expansion and Folding of dimensions in abstract values of level 0, Existential quantification of abstract values of level 0, Abstract values and operations of level 0
-@subsection Change and permutation of dimensions
+@subsection Change and permutation of dimensions of abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract0_t* ap_abstract0_add_dimensions (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_dimchange_t* @var{dimchange}, bool @var{project})
@@ -1980,7 +1980,7 @@ The size of the permutation is supposed to be large enough w.r.t. @var{a}.
 
 @c -------------------------------------------------------------------
 @node Expansion and Folding of dimensions in abstract values of level 0, Widening of abstract values of level 0, Change and permutation of dimensions of abstract values of level 0, Abstract values and operations of level 0
-@subsection Expansion and Folding of dimensions
+@subsection Expansion and Folding of dimensions of abstract values of level 0
 @c -------------------------------------------------------------------
 
 Formally, expanding @code{z} into @code{z} and @code{w} in
@@ -2012,7 +2012,7 @@ dimensions of the array are then removed.
 
 @c -------------------------------------------------------------------
 @node Widening of abstract values of level 0, Topological closure of abstract values of level 0, Expansion and Folding of dimensions in abstract values of level 0, Abstract values and operations of level 0
-@subsection Widening
+@subsection Widening of abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract0_t* ap_abstract0_widening (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a1}, const ap_abstract0_t* @var{a2})
@@ -2022,7 +2022,7 @@ included in @var{a2}.
 
 @c -------------------------------------------------------------------
 @node Topological closure of abstract values of level 0, Additional functions on abstract values of level 0, Widening of abstract values of level 0, Abstract values and operations of level 0
-@subsection Topological
+@subsection Topological closure of abstract values of level 0
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract0_t* ap_abstract0_closure (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a})
@@ -2031,7 +2031,7 @@ Relax strict constraints into non strict constraints.
 
 @c -------------------------------------------------------------------
 @node Additional functions on abstract values of level 0,  , Topological closure of abstract values of level 0, Abstract values and operations of level 0
-@subsection Additional functions
+@subsection Additional functions on abstract values of level 0
 @c -------------------------------------------------------------------
 
 These functions do not have corresponding functions into underlying libraries.
@@ -2340,7 +2340,7 @@ typedef struct ap_linexpr1_t @{
 
 @c -------------------------------------------------------------------
 @node Allocating linear expressions of level 1, Tests on linear expressions of level 1, Linear expressions of level 1, Linear expressions of level 1
-@subsection Allocating linear expressions
+@subsection Allocating linear expressions of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_linexpr1_t ap_linexpr1_make (ap_environment_t* @var{env}, ap_linexpr_discr_t @var{lin_discr}, size_t @var{size})
@@ -2372,7 +2372,7 @@ Print the linear expression on stream @var{stream}.
 
 @c -------------------------------------------------------------------
 @node Tests on linear expressions of level 1, Access to linear expressions of level 1, Allocating linear expressions of level 1, Linear expressions of level 1
-@subsection Tests
+@subsection Tests on linear expressions of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun bool ap_linexpr1_is_integer (const ap_linexpr1_t* @var{expr})
@@ -2393,7 +2393,7 @@ Return true iff all involved coefficients but the constant are scalars.
 
 @c -------------------------------------------------------------------
 @node Access to linear expressions of level 1, Change of dimensions and permutations of linear expressions of level 1, Tests on linear expressions of level 1, Linear expressions of level 1
-@subsection Access to linear expressions
+@subsection Access to linear expressions of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_environment_t* ap_linexpr1_envref (const ap_linexpr1_t* @var{expr})
@@ -2509,7 +2509,7 @@ Return @code{true} in case @code{ap_linexpr1_coeffref(e,var)} returns NULL.
 
 @c -------------------------------------------------------------------
 @node Change of dimensions and permutations of linear expressions of level 1,  , Access to linear expressions of level 1, Linear expressions of level 1
-@subsection Change of dimensions and permutations of linear expressions
+@subsection Change of dimensions and permutations of linear expressions of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun bool ap_linexpr1_extend_environment (ap_linexpr1_t* @var{nexpr}, const ap_linexpr1_t* @var{expr}, ap_environment_t* @var{nenv})
@@ -2576,7 +2576,7 @@ Arrays at level 1 cannot be accessed directly, for example by writing
 
 @c -------------------------------------------------------------------
 @node Allocating linear constraints of level 1, Tests on linear constraints of level 1, Linear constraints of level 1, Linear constraints of level 1
-@subsection Allocating linear constraints
+@subsection Allocating linear constraints of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_lincons1_t ap_lincons1_make (ap_constyp_t @var{constyp}, ap_linexpr1_t* @var{linexpr})
@@ -2604,7 +2604,7 @@ Print the linear constraint on stream @var{stream}.
 
 @c -------------------------------------------------------------------
 @node Tests on linear constraints of level 1, Access to linear constraints of level 1, Allocating linear constraints of level 1, Linear constraints of level 1
-@subsection Tests on linear constraints
+@subsection Tests on linear constraints of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun bool ap_lincons1_is_unsat (const ap_lincons1_t* @var{cons})
@@ -2614,7 +2614,7 @@ or @code{[a,b]>=0} with b negative).
 
 @c -------------------------------------------------------------------
 @node Access to linear constraints of level 1, Change of dimensions and permutations of linear constraints of level 1, Tests on linear constraints of level 1, Linear constraints of level 1
-@subsection Access to linear constraints
+@subsection Access to linear constraints of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_environment_t* ap_lincons1_envref (const ap_lincons1_t* @var{cons})
@@ -2652,7 +2652,7 @@ change of dimensions/envionment.
 
 @c -------------------------------------------------------------------
 @node Change of dimensions and permutations of linear constraints of level 1, Arrays of linear constraints of level 1, Access to linear constraints of level 1, Linear constraints of level 1
-@subsection Change of dimensions and permutations of linear constraints
+@subsection Change of dimensions and permutations of linear constraints of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun bool ap_lincons1_extend_environment (ap_lincons1_t* @var{ncons}, const ap_lincons1_t* @var{cons}, ap_environment_t* @var{nenv})
@@ -2662,7 +2662,7 @@ Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of di
 
 @c -------------------------------------------------------------------
 @node Arrays of linear constraints of level 1,  , Change of dimensions and permutations of linear constraints of level 1, Linear constraints of level 1
-@subsection Arrays of linear constraints
+@subsection Arrays of linear constraints of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_lincons1_array_t ap_lincons1_array_make (ap_environment_t* @var{env}, size_t @var{size})
@@ -2764,7 +2764,7 @@ Arrays at level 1 cannot be accessed directly, for example by writing
 
 @c -------------------------------------------------------------------
 @node Allocating generators of level 1, Access to generators of level 1, Generators of level 1, Generators of level 1
-@subsection Allocating generators
+@subsection Allocating generators of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_generator1_t ap_generator1_make (ap_gentyp_t @var{gentyp}, ap_linexpr1_t* @var{linexpr})
@@ -2788,7 +2788,7 @@ Print the linear generator on stream @var{stream}.
 
 @c -------------------------------------------------------------------
 @node Access to generators of level 1, Change of dimensions and permutations of generators of level 1, Allocating generators of level 1, Generators of level 1
-@subsection Access to generators
+@subsection Access to generators of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_environment_t* ap_generator1_envref (const ap_generator1_t* @var{gen})
@@ -2826,7 +2826,7 @@ change of dimensions/envionment.
 
 @c -------------------------------------------------------------------
 @node Change of dimensions and permutations of generators of level 1, Arrays of generators of level 1, Access to generators of level 1, Generators of level 1
-@subsection Change of dimensions and permutations of generators
+@subsection Change of dimensions and permutations of generators of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun bool ap_generator1_extend_environment (ap_generator1_t* @var{ngen}, const ap_generator1_t* @var{gen}, ap_environment_t* @var{nenv})
@@ -2837,7 +2837,7 @@ Identical to corresponding @code{ap_linexpr1_XXX} functions
 
 @c -------------------------------------------------------------------
 @node Arrays of generators of level 1,  , Change of dimensions and permutations of generators of level 1, Generators of level 1
-@subsection Arrays of generators
+@subsection Arrays of generators of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_generator1_array_t ap_generator1_array_make (ap_environment_t* @var{env}, size_t @var{size})
@@ -2947,7 +2947,7 @@ Constructors, Accessors, Tests and Extraction of properties
 
 * Constructors for abstract values of level 1::
 * Accessors for abstract values of level 1::
-* Tests for abstract values of level 1::
+* Tests on abstract values of level 1::
 * Extraction of properties of abstract values of level 1::
 
 Operations
@@ -2967,7 +2967,7 @@ Additional functions
 
 @c -------------------------------------------------------------------
 @node Allocating abstract values of level 1, Control of internal representation of abstract values of level 1, Abstract values and operations of level 1, Abstract values and operations of level 1
-@subsection Allocating abstract values
+@subsection Allocating abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract1_t ap_abstract1_copy (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
@@ -2985,7 +2985,7 @@ Return the abstract size of @var{a}.
 
 @c -------------------------------------------------------------------
 @node Control of internal representation of abstract values of level 1, Printing abstract values of level 1, Allocating abstract values of level 1, Abstract values and operations of level 1
-@subsection Control of internal representation
+@subsection Control of internal representation of abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun void ap_abstract1_minimize (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
@@ -3033,7 +3033,7 @@ purposes.
 
 @c -------------------------------------------------------------------
 @node Serialization of abstract values of level 1, Constructors for abstract values of level 1, Printing abstract values of level 1, Abstract values and operations of level 1
-@subsection Serialization
+@subsection Serialization of abstract values of level 1
 @c -------------------------------------------------------------------
 @deftypefun ap_membuf_t ap_abstract1_serialize_raw (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
 Allocate a memory buffer (with @code{malloc}), output @var{a}
@@ -3050,7 +3050,7 @@ read.
 
 @c -------------------------------------------------------------------
 @node Constructors for abstract values of level 1, Accessors for abstract values of level 1, Serialization of abstract values of level 1, Abstract values and operations of level 1
-@subsection Constructors
+@subsection Constructors for abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract1_t ap_abstract1_bottom (ap_manager_t* @var{man}, ap_environment_t* @var{env})
@@ -3074,8 +3074,8 @@ a subset of the environement @var{env}.
 @end deftypefun
 
 @c -------------------------------------------------------------------
-@node Accessors for abstract values of level 1, Tests for abstract values of level 1, Constructors for abstract values of level 1, Abstract values and operations of level 1
-@subsection Accessors
+@node Accessors for abstract values of level 1, Tests on abstract values of level 1, Constructors for abstract values of level 1, Abstract values and operations of level 1
+@subsection Accessors for abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_dimension_t ap_abstract1_environement (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
@@ -3093,8 +3093,8 @@ Get a reference to the underlying abstract value of level 0 in
 @end deftypefun
 
 @c -------------------------------------------------------------------
-@node Tests for abstract values of level 1, Extraction of properties of abstract values of level 1, Accessors for abstract values of level 1, Abstract values and operations of level 1
-@subsection Tests
+@node Tests on abstract values of level 1, Extraction of properties of abstract values of level 1, Accessors for abstract values of level 1, Abstract values and operations of level 1
+@subsection Tests on abstract values of level 1
 @c -------------------------------------------------------------------
 
 If any of the following functions returns tbool_top, this means that
@@ -3125,8 +3125,8 @@ If it is the case, we have @code{forget(man,a,dim) == a}.
 @end deftypefun
 
 @c -------------------------------------------------------------------
-@node Extraction of properties of abstract values of level 1, Meet and Join of abstract values of level 1, Tests for abstract values of level 1, Abstract values and operations of level 1
-@subsection Extraction of properties
+@node Extraction of properties of abstract values of level 1, Meet and Join of abstract values of level 1, Tests on abstract values of level 1, Abstract values and operations of level 1
+@subsection Extraction of properties of abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_interval_t* ap_abstract1_bound_variable (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var})
@@ -3157,7 +3157,7 @@ Convert @var{a} to an array of generators.
 
 @c -------------------------------------------------------------------
 @node Meet and Join of abstract values of level 1, Assignements and Substitutions of abstract values of level 1, Extraction of properties of abstract values of level 1, Abstract values and operations of level 1
-@subsection Meet and Join
+@subsection Meet and Join of abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract1_t ap_abstract1_meet (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
@@ -3191,7 +3191,7 @@ Generalized time elapse operator.
 
 @c -------------------------------------------------------------------
 @node Assignements and Substitutions of abstract values of level 1, Existential quantification of abstract values of level 1, Meet and Join of abstract values of level 1, Abstract values and operations of level 1
-@subsection Assignements and Substitutions
+@subsection Assignements and Substitutions of abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract1_t ap_abstract1_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, const ap_linexpr1_t* @var{expr}, const ap_abstract1_t* @var{dest})
@@ -3219,7 +3219,7 @@ octagons.
 
 @c -------------------------------------------------------------------
 @node Existential quantification of abstract values of level 1, Change of environements of abstract values of level 1, Assignements and Substitutions of abstract values of level 1, Abstract values and operations of level 1
-@subsection Existential quantification
+@subsection Existential quantification of abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract1_t ap_abstract1_forget_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_var_t* @var{tvar}, size_t @var{size}, bool @var{project})
@@ -3230,7 +3230,7 @@ value @var{a}.
 
 @c -------------------------------------------------------------------
 @node Change of environements of abstract values of level 1, Expansion and Folding of dimensions in abstract values of level 1, Existential quantification of abstract values of level 1, Abstract values and operations of level 1
-@subsection Change of environements
+@subsection Change of environements of abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract1_t ap_abstract1_change_environment (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_environment_t* @var{nenv}, bool @var{project})
@@ -3253,7 +3253,7 @@ renamed.
 
 @c -------------------------------------------------------------------
 @node Expansion and Folding of dimensions in abstract values of level 1, Widening of abstract values of level 1, Change of environements of abstract values of level 1, Abstract values and operations of level 1
-@subsection Expansion and Folding of dimensions
+@subsection Expansion and Folding of dimensions of abstract values of level 1
 @c -------------------------------------------------------------------
 
 Formally, expanding @code{z} into @code{z} and @code{w} in
@@ -3283,7 +3283,7 @@ of the array are then forgot and removed from the environement.
 
 @c -------------------------------------------------------------------
 @node Widening of abstract values of level 1, Topological closure of abstract values of level 1, Expansion and Folding of dimensions in abstract values of level 1, Abstract values and operations of level 1
-@subsection Widening
+@subsection Widening of abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract1_t ap_abstract1_widening (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
@@ -3301,7 +3301,7 @@ constraints in @var{array} that are satisfied by both @var{a1} and
 
 @c -------------------------------------------------------------------
 @node Topological closure of abstract values of level 1, Additional functions on abstract values of level 1, Widening of abstract values of level 1, Abstract values and operations of level 1
-@subsection Topological
+@subsection Topological closure of abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract1_t* ap_abstract1_closure (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a})
@@ -3310,7 +3310,7 @@ Relax strict constraints into non strict constraints.
 
 @c -------------------------------------------------------------------
 @node Additional functions on abstract values of level 1,  , Topological closure of abstract values of level 1, Abstract values and operations of level 1
-@subsection Additional functions
+@subsection Additional functions on abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_linexpr1_t ap_abstract1_quasilinear_of_intervallinear (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})

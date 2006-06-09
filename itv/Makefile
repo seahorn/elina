@@ -71,7 +71,7 @@ CCSRC = itv_config.h itv_int.h itv.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 CCINC_TO_INSTALL = itv.h
 CCBIN_TO_INSTALL = 
 CCLIB_TO_INSTALL = libitvmpq.a libitvmpq_debug.a
-CAML_TO_INSTALL = itv.mli itv.cmi itv.cmo itv.cmx itv.o libitv_caml.a libitv_caml_debug.a
+CAML_TO_INSTALL = itv.idl itv.ml itv.mli itv.cmi itv.cmo itv.cmx itv.o libitv_caml.a libitv_caml_debug.a
 
 #---------------------------------------
 # Rules
@@ -113,7 +113,7 @@ distclean: clean
 	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
 	/bin/rm -f Makefile.depend
 
-dist: $(CCSRC) Makefile sedscript_caml itv.texi itv.ml itv.mli itv_caml.c COPYING README
+dist: $(CCSRC) Makefile sedscript_caml itv.texi itv.idl itv.ml itv.mli itv_caml.c COPYING README
 	(cd ..; tar zcvf $(HOME)/itv.tgz $(^:%=itv/%))
 
 #---------------------------------------
