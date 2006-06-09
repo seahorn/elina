@@ -85,11 +85,7 @@ all: allmpq ml
 
 ml: itv.mli itv.cmi itv.cmo itv.cmx libitv_caml.a libitv_caml_debug.a
 
-debug: debugmpq
-
-allmpq: libitvmpq.a
-
-debugmpq: libitvmpq_debug.a
+allmpq: libitvmpq.a libitvmpq_debug.a
 
 clean:
 	/bin/rm -f *.[ao] *.cm[ioax] testg test*_caml* code2latex

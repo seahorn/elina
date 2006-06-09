@@ -196,8 +196,8 @@ libpolka_caml_debug.a: polka_caml_debug.o
 	cp $*.idl tmp/$*.idl
 	$(CAMLIDL) -no-include -nocpp -I $(MLAPRONIDL_PREFIX)/lib tmp/$*.idl
 	cp tmp/$*_stubs.c $*_caml.c
-	sed -f sedscript_caml tmp/$*.ml | grep --extended-regexp '^(.)+$$' >$*.ml
-	sed -f sedscript_caml tmp/$*.mli | grep --extended-regexp '^(.)+$$' >$*.mli
+	sed -f sedscript_caml tmp/$*.ml >$*.ml
+	sed -f sedscript_caml tmp/$*.mli >$*.mli
 
 manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
 	ln -fs $^ $@

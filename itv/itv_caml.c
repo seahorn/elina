@@ -16,7 +16,6 @@
 #include "itv_internal.h"
 #include "ap_manager.h"
 #include "apron_caml.h"
-typedef struct itv_internal_t* internal_ptr;
 extern int camlidl_ml2c_manager_enum_tbool_t(value);
 extern value camlidl_c2ml_manager_enum_tbool_t(int);
 
@@ -40,19 +39,6 @@ extern value camlidl_c2ml_manager_struct_ap_exclog_t(struct ap_exclog_t *, camli
 
 extern void camlidl_ml2c_manager_ap_manager_ptr(value, ap_manager_ptr *, camlidl_ctx _ctx);
 extern value camlidl_c2ml_manager_ap_manager_ptr(ap_manager_ptr *, camlidl_ctx _ctx);
-
-void camlidl_ml2c_itv_internal_ptr(value _v1, internal_ptr * _c2, camlidl_ctx _ctx)
-{
-  *_c2 = *((internal_ptr *) Bp_val(_v1));
-}
-
-value camlidl_c2ml_itv_internal_ptr(internal_ptr * _c2, camlidl_ctx _ctx)
-{
-value _v1;
-  _v1 = camlidl_alloc((sizeof(internal_ptr) + sizeof(value) - 1) / sizeof(value), Abstract_tag);
-  *((internal_ptr *) Bp_val(_v1)) = *_c2;
-  return _v1;
-}
 
 value camlidl_itv_itv_manager_alloc(value _unit)
 {

@@ -13,8 +13,12 @@ import "manager.idl";
 
 typedef [abstract] struct pk_internal_t* internal_ptr;
 
+quote(MLMLI,"(** Polka: Convex Polyhedra abstract domain *)")
+
+quote(MLI,"\n\n(** Create a NewPolka manager. A true Boolean enables strict constraints. *)")
 ap_manager_ptr pk_manager_alloc(boolean strict);
 
+quote(MLI,"\n\n(** Get the internal submanager of a NewPolka manager. *)")
 internal_ptr manager_get_internal(ap_manager_ptr man)
   quote(call,"\n\
 if (strcmp(man->library,\"polka\")!=0){\n\
@@ -22,6 +26,8 @@ if (strcmp(man->library,\"polka\")!=0){\n\
 }\n\
 _res = (internal_ptr)man->internal;\n\
 ");
+
+quote(MLI,"\n\n(** Various options. See the C documentation *)\n\n")
 void pk_set_max_coeff_size(internal_ptr pk, unsigned int size);
 void pk_set_approximate_max_coeff_size(internal_ptr pk, unsigned int size);
 int pk_get_max_coeff_size(internal_ptr pk);

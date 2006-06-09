@@ -13,7 +13,8 @@ num:
         newpolka and possibly octagons).
 
 mlgmpidl:
-	OCaml interface for the GMP library, used by mlapronidl
+	OCaml interface for the GMP library, used by mlapronidl.
+	Requires GMP version 4.0 or up.
 
 apron:
 	apron interface, C version

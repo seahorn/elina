@@ -91,7 +91,7 @@ mldep: $(MLSRC)
 tar: $(IDLMODULES:%=%.idl) apron_caml.c apron_caml.h Makefile README mlapronidl.tex sedscript_caml
 	(cd ..; tar zcvf $(HOME)/mlapronidl.tgz $(^:%=mlapronidl/%))
 
-dist: $(IDLMODULES:%=%.idl) $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c) apron_caml.c apron_caml.h Makefile COPYING README mlapronidl.tex sedscript_caml mlapronidl.dvi html
+dist: $(IDLMODULES:%=%.idl) $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c) var.ml var.mli apron_caml.c apron_caml.h Makefile COPYING README mlapronidl.tex sedscript_caml mlapronidl.dvi html
 	(cd ..; tar zcvf $(HOME)/mlapronidl.tgz $(^:%=mlapronidl/%))
 
 clean:
@@ -149,17 +149,17 @@ mpq.idl: $(MLGMPIDL_PREFIX)/lib/mpq.idl
 
 doc: mlapronidl.dvi html
 
-mlapronidl.dvi: $(MLINT) $(MLSRC)
+mlapronidl.dvi: $(MLMODULES:%=%.mli) ../itv/itv.mli ../newpolka/polka.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpq.mli ../mlgmpidl/mpz.mli ../mlgmpidl/gmp_random.mli
 	ocamldoc $(OCAMLINC) \
-	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -o ocamldoc.tex $(MLMODULES:%=%.mli)
+	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -o ocamldoc.tex $^
 	latex mlapronidl
 	makeindex mlapronidl
 	latex mlapronidl
 	latex mlapronidl
 
-html: $(MLINT) $(MLSRC)
+html: $(MLMODULES:%=%.mli) ../itv/itv.mli ../newpolka/polka.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpq.mli ../mlgmpidl/mpz.mli ../mlgmpidl/gmp_random.mli
 	mkdir -p html
-	ocamldoc $(OCAMLINC) -html -d html -colorize-code $(MLMODULES:%=%.mli)
+	ocamldoc $(OCAMLINC) -html -d html -colorize-code $^
 
 #--------------------------------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES

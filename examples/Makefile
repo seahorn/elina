@@ -81,6 +81,8 @@ itvpolkarung:
 clean:
 	rm -f example1g itvpolkarung *.cm[ioxa] *.o mlexample1g
 
+dist: example1.c mlexample1.ml Makefile README
+	(cd ..; tar zcvf $(HOME)/examples.tgz $(^:%=examples/%))
 
 
 

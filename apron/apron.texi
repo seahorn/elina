@@ -3349,9 +3349,11 @@ To come.
 Look at the examples in the @samp{example} subdirectoy of the full
 distribution, or click on the links below:
 
+@ifhtml
 @uref{example1.c}
 
-@uref{mlexample1.c}
+@uref{mlexample1.ml}
+@end ifhtml
 
 @c *******************************************************************
 @node Appendices,  , Examples, Top

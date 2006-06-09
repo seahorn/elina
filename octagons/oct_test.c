@@ -990,8 +990,8 @@ int main(int argc, const char** argv)
   //test_meet();
   //test_meet_array();
   //test_join();
-  test_join_array(); /* broken ? */
-  //test_addray();
+  /* test_join_array(); *//* broken ? */
+  test_addray();
   //test_addcons();
   //test_dimadd();
   //test_dimrem();
