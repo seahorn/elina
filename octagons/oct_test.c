@@ -951,6 +951,7 @@ int main(int argc, const char** argv)
   if (argc==2){
     seed = atol(argv[1]);
   }
+  printf("seed = %ld\n",seed);
   /* init */
   srand48(seed);
   mo = oct_manager_alloc();
