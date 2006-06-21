@@ -83,7 +83,7 @@ void ap_scalar_set_infty(ap_scalar_t* scalar, int sgn);
 ap_scalar_t* ap_scalar_alloc_set(const ap_scalar_t* scalar2);
 ap_scalar_t* ap_scalar_alloc_set_mpq(const mpq_t mpq);
   /* Change the type of scalar to MPQ and initialize it withmpq */
-ap_scalar_t* ap_scalar_alloc_double(double k);
+ap_scalar_t* ap_scalar_alloc_set_double(double k);
   /* Change the type of scalar to DOUBLE and initialize it with k. */
 
 /* ====================================================================== */
