@@ -91,6 +91,32 @@ let mine2 man =
 let _ = mine2 man
 ;;
 
+let mine3 man =
+  let tab = Array.make 2 (Lincons0.make (Linexpr0.make None) Lincons0.SUPEQ) in
+  let expr = Linexpr0.make None in
+  Linexpr0.set_list expr 
+    [((Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (-1)))),0)]
+    (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 1))));
+  tab.(0) <- Lincons0.make expr Lincons0.SUPEQ;
+  let expr = Linexpr0.make None in
+  Linexpr0.set_list expr 
+    [((Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (1)))),0)]
+    (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 1 4))));
+  tab.(1) <- Lincons0.make expr Lincons0.SUPEQ;
+  let poly = Abstract0.of_lincons_array man 0 2 tab in
+  Abstract0.canonicalize man poly;
+  printf "poly=%a@." print_abstract0 poly;
+  let expr = Linexpr0.make None in
+  Linexpr0.set_list expr 
+    [((Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 5 2))),0)]
+    (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (-1)))))
+  ;
+  let poly2 = Abstract0.assign_linexpr poly 0 expr None in
+  printf "poly2=%a@." print_abstract0 poly2;
+  ()
+;;
+let _ = mine3 man
+;;
 
 let poly1 man =
   (* Creation du polyèdre

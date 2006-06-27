@@ -399,7 +399,7 @@ void _poly_invert_vector(pk_internal_t* pk,
 	numint_set(ntab[i],tab[i]);
     }
   }
-  vector_normalize(pk,ntab,size);
+  vector_normalize_expr(pk,ntab,size);
   return;
 }
 
