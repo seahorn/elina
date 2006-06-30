@@ -51,9 +51,9 @@ ICFLAGS = \
 -I$(MLAPRONIDL_PREFIX)/include \
 -I$(NUM_PREFIX)/include \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml \
--Wall -W -Wundef -Wbad-function-cast -Wcast-qual -Wcast-align \
+-Wall -W -Wundef -Wbad-function-cast -Wcast-align \
 -Wstrict-prototypes -Wdisabled-optimization \
- -Wno-unused \
+-Wno-unused \
 -std=c99
 # -Winline
 
@@ -69,9 +69,9 @@ OCAMLOPTFLAGS = -inline 20
 #---------------------------------------
 
 CCSOURCES = oct_hmat.c oct_print.c oct_transfer.c oct_closure.c oct_nary.c \
-            oct_representation.c oct_predicate.c oct_resize.c
+            oct_representation.c oct_predicate.c oct_resize.c setround.c
 
-CCINC = oct.h oct_internal.h
+CCINC = oct.h oct_internal.h setround.h
 
 CCINC_TO_INSTALL = $(CCINC)
 CCBIN_TO_INSTALL =
@@ -88,9 +88,7 @@ CAML_TO_INSTALL =
 # depend doc install
 # and the following one
 
-cur: testQg
-
-all: liboct ml
+all: liboct test ml
 
 liboct: liboctZi.a liboctZl.a liboctZg.a liboctQi.a liboctQl.a liboctQg.a liboctFd.a liboctFl.a
 
@@ -147,7 +145,7 @@ test%: liboct%.a oct_test%.o
 	-L$(GMP_PREFIX)/lib -lgmp \
 	-L$(POLKA_PREFIX)/lib \
 	-L$(APRON_PREFIX)/lib -lpolkag_debug -lapron \
-	-L. -loct$*
+	-L. -loct$* -lm
 
 %Zi.o: %.c $(CCINC)
 	$(CC) $(CFLAGS) -DNUM_LONGINT -c -o $@ $<

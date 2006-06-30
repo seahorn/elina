@@ -85,7 +85,7 @@ inline bound_t* hmat_copy(oct_internal_t* pr, bound_t* m, size_t dim)
 {
   if (m) {
     bound_t* r = hmat_alloc(pr,dim);
-    bound_set_array(r,(const bound_t*)m,matsize(dim));
+    bound_set_array(r,m,matsize(dim));
     return r;
   }
   else return NULL;

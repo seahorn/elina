@@ -13,7 +13,7 @@
 #ifndef __OCT_INTERNAL_H
 #define __OCT_H
 
-#include "oct.h"
+#include "oct_fun.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +34,7 @@ struct _oct_internal_t {
 
   /* growing temporary buffer */
   bound_t* tmp;
+  void* tmp2;
   size_t tmp_size;
 
   /* raised when a conversion from/to a user type resulted in an 
@@ -61,6 +62,8 @@ oct_init_from_manager(ap_manager_t* man, ap_funid_t id, size_t size)
     assert(pr->tmp);
     pr->tmp_size = size;
     bound_init_array(pr->tmp,pr->tmp_size);
+    pr->tmp2 = realloc(pr->tmp2,sizeof(long)*size);
+    assert(pr->tmp2);
   }
   return pr;
 }
@@ -68,7 +71,8 @@ oct_init_from_manager(ap_manager_t* man, ap_funid_t id, size_t size)
 
 
 /* loss of precision can be due to one of the following
-   1) the algorithm is incomplete on Z and we have intdim > 0
+   1) the algorithm is incomplete or
+      the algorithm is incomplete on Z and we have intdim > 0
       or the numerical type induces overapproximation (NUMINT or NUMFLOAT)
       => no solution at run-time, you need to recompile the library 
          with another NUM base type
@@ -174,13 +178,27 @@ bool hmat_check_closed(bound_t* m, size_t dim);
 /* ============================================================ */
 
 /* see oct_transfer.c */
+  
+bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
+		      const ap_lincons0_array_t* ar, int* exact);
 
-void hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
-		      const ap_lincons0_array_t* ar);
+void hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
+			 const ap_generator0_array_t* ar);
 
-bound_t* hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
-			     const ap_generator0_array_t* ar);
 
+/* ============================================================ */
+/* II.5 Resze */
+/* ============================================================ */
+
+/* see oct_reize.c */
+
+void hmat_addrem_dimensions(bound_t* dst, const bound_t* src,
+			    const ap_dim_t* pos, size_t nb_pos,
+			    size_t mult, size_t dim, bool add);
+
+void hmat_permute(bound_t* dst, const bound_t* src,
+		  size_t dst_dim, size_t src_dim,
+		  ap_dim_t* permutation);
 
 /* ********************************************************************** */
 /* III. Numbers */
@@ -191,20 +209,26 @@ bound_t* hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
    result (as long as the fits function returns true).
  */
 
+static inline void bound_bmin(bound_t dst, const bound_t arg)
+{ bound_min(dst,dst,arg); }
+
+static inline void bound_badd(bound_t dst, const bound_t arg)
+{ bound_add(dst,dst,arg); }
+
 
 /* ============================================================ */
 /* III.1 Properties on num_t */
 /* ============================================================ */
 
 /*
-  num_name           unique type description
-  num_incomplete     does the type make algorithms incomplete
-  num_overflow       can large numbers be approximated to +oo
-  num_safe           is the type safe in case of overflow
+  num_name              unique type description
+  num_incomplete        does the type make algorithms incomplete
+  num_safe              is the type safe in case of overflow
   num_to_double_approx  num are approximated when converted to double
   num_to_mpq_approx     num are approximated when converted to mpq
   num_of_double_approx  num are approximated when converted from double
   num_of_mpq_approx     num are approximated when converted from mpq
+  num_fpu               num requires init_fpu to be called
 */
 
 
@@ -212,48 +236,47 @@ bound_t* hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
 /* overflows produce unsound results, type not closed by / 2 */
 #define num_name          "NUM_LONGINT"
 #define num_incomplete    1    
-#define num_overflow      1
 #define num_safe          0
 #define num_to_double_approx 1
 #define num_to_mpq_approx    0
 #define num_of_double_approx 1
 #define num_of_mpq_approx    1
+#define num_fpu              0
 #elif defined ( NUM_LONGLONGINT )
-#define num_name          "NUM_LONGLONGINT"
-#define num_incomplete    1
-#define num_overflow      1
-#define num_safe          0
+#define num_name             "NUM_LONGLONGINT"
+#define num_incomplete       1
+#define num_safe             0
 #define num_to_double_approx 1
 #define num_to_mpq_approx    0
 #define num_of_double_approx 1
 #define num_of_mpq_approx    1
+#define num_fpu              0
 
 #elif defined ( NUM_MPZ )
 /* no overflow, type not closed by / 2 */
-#define num_name          "NUM_MPZ"
-#define num_incomplete    1
-#define num_overflow      0
-#define num_safe          1
+#define num_name             "NUM_MPZ"
+#define num_incomplete       1
+#define num_safe             1
 #define num_to_double_approx 1
 #define num_to_mpq_approx    0
 #define num_of_double_approx 1
 #define num_of_mpq_approx    1
+#define num_fpu              0
 
 #elif defined ( NUM_LONGRAT )
 /* complete algorithms, but overflows produce unsound results */
-#define num_name          "NUM_LONGRAT"
-#define num_incomplete    0
-#define num_overflow      1
-#define num_safe          0
+#define num_name             "NUM_LONGRAT"
+#define num_incomplete       0
+#define num_safe             0
 #define num_to_double_approx 1
 #define num_to_mpq_approx    0
 #define num_of_double_approx 1
 #define num_of_mpq_approx    0 /* as long as mpq_fits_num */
+#define num_fpu              0
 #elif defined ( NUM_LONGLONGRAT )
-#define num_name          "NUM_LONGLONGRAT"
-#define num_incomplete    0
-#define num_overflow      1
-#define num_safe          0
+#define num_name             "NUM_LONGLONGRAT"
+#define num_incomplete       0
+#define num_safe             0
 #define num_to_double_approx 1
 #define num_to_mpq_approx    0
 #define num_of_double_approx 1
@@ -261,34 +284,34 @@ bound_t* hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
 
 #elif defined ( NUM_MPQ )
 /* the "perfect" type */
-#define num_name          "NUM_MPQ"
-#define num_incomplete    0
-#define num_overflow      0
-#define num_safe          1
+#define num_name             "NUM_MPQ"
+#define num_incomplete       0
+#define num_safe             1
 #define num_to_double_approx 1
 #define num_to_mpq_approx    0
 #define num_of_double_approx 0
 #define num_of_mpq_approx    0
+#define num_fpu              0
 
 #elif defined ( NUM_DOUBLE )
 /* overflow are ok (stick to +oo), type not closed by + and / 2 */
-#define num_name         "NUM_DOUBLE"
-#define num_incomplete    1
-#define num_overflow      1
-#define num_safe          1
+#define num_name            "NUM_DOUBLE"
+#define num_incomplete       1
+#define num_safe             1
 #define num_to_double_approx 0
 #define num_to_mpq_approx    0
 #define num_of_double_approx 0
 #define num_of_mpq_approx    1
+#define num_fpu              1
 #elif defined ( NUM_LONGDOUBLE )
-#define num_name          "NUM_LONGDOUBLE"
-#define num_incomplete    1
-#define num_overflow      1
-#define num_safe          1
+#define num_name             "NUM_LONGDOUBLE"
+#define num_incomplete       1
+#define num_safe             1
 #define num_to_double_approx 1
 #define num_to_mpq_approx    0
 #define num_of_double_approx 0
 #define num_of_mpq_approx    1
+#define num_fpu              1
 
 /* duh */
 #else
@@ -539,6 +562,30 @@ static inline ap_lincons0_t lincons_of_bound(oct_internal_t* pr,
 }
 
 
+/* ============================================================ */
+/* III.5 Expression classification */
+/* ============================================================ */
+
+/* see oct_transfer.c */
+
+typedef struct {
+  enum { 
+    ZERO,     /* 0 */
+    UNARY,    /* unary unit expression */
+    BINARY,   /* binary unit expression */
+    OTHER,
+  } type;
+
+  /* index and coefficient for unary / binary unit expressions */
+  size_t i,j;
+  int coef_i,coef_j; /* -1 or 1 */
+
+} uexpr;
+
+/* convert expression to bounds, look for unit unary or binary form */
+uexpr uexpr_of_linexpr(oct_internal_t* pr, bound_t* dst,
+		       const ap_linexpr0_t* e, size_t dim);
+
 
 /* ********************************************************************** */
 /* IV. Octagons */
@@ -570,11 +617,12 @@ struct _oct_t {
 
 oct_t* oct_alloc_internal (oct_internal_t* pr, size_t dim, size_t intdim);
 void   oct_free_internal  (oct_internal_t* pr, oct_t* o);
-oct_t* oct_copy_internal  (oct_internal_t* pr, const oct_t* o);
-void   oct_cache_closure  (oct_internal_t* pr, const oct_t* a);
+oct_t* oct_copy_internal  (oct_internal_t* pr, oct_t* o);
+void   oct_cache_closure  (oct_internal_t* pr, oct_t* a);
 void   oct_close          (oct_internal_t* pr, oct_t* a);
 oct_t* oct_set_mat        (oct_internal_t* pr, oct_t* a, bound_t* m, 
 			   bound_t* closed, bool destructive);
+oct_t* oct_alloc_top      (oct_internal_t* pr, size_t dim, size_t intdim);
 
 
 #ifdef __cplusplus

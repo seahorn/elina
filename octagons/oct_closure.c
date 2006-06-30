@@ -35,8 +35,8 @@ bool hmat_s_step(bound_t* m, size_t dim)
     bound_div_2(ij,m[matpos(i,i^1)]);
     for (j=0;j<=(i|1);j++,c++) {
       bound_div_2(ik,m[matpos(j^1,j)]);
-      bound_add(ik,ik,ij);
-      bound_min(*c,*c,ik);
+      bound_badd(ik,ij);
+      bound_bmin(*c,ik);
     }
   }
 
@@ -80,15 +80,15 @@ bool hmat_close(bound_t* m, size_t dim)
       bound_set(ik2,m[matpos2(i,k2)]);
       for (j=0;j<=br;j++,c++) {
 	bound_add(ij,ik,m[matpos(k,j)]);    /* ik+kj */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
 	bound_add(ij,ik2,m[matpos(k2,j)]);  /* ik2+k2j */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
       }
       for (;j<=i2;j++,c++) {
 	bound_add(ij,ik,m[matpos(j^1,k2)]); /* ik+kj */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
 	bound_add(ij,ik2,m[matpos(j^1,k)]); /* ik2+k2j */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
       }
     }
  
@@ -130,15 +130,15 @@ bool hmat_close_incremental(bound_t* m, size_t dim, size_t v)
       bound_set(ik2,m[matpos2(i,kk)]);
       for (j=0;j<=br;j++,c++) {
 	bound_add(ij,ik,m[matpos(k,j)]);    /* ik+kj */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
 	bound_add(ij,ik2,m[matpos(kk,j)]);  /* ik2+k2j */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
       }
       for (;j<=ii;j++,c++) {
 	bound_add(ij,ik,m[matpos(j^1,kk)]); /* ik+kj */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
 	bound_add(ij,ik2,m[matpos(j^1,k)]); /* ik2+k2j */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
       }
       /* v in second end-point position */   
       bound_set(ik,m[matpos2(k,i)]);
@@ -146,16 +146,16 @@ bool hmat_close_incremental(bound_t* m, size_t dim, size_t v)
       for (j=i;j<k;j++) {
 	c = m+matpos(j,i);
 	bound_add(ij,ik,m[matpos(kk,j^1)]); /* ik+kj */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
 	bound_add(ij,ik2,m[matpos(k,j^1)]); /* ik2+k2j */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
       }
       for (;j<2*dim;j++) {
 	c = m+matpos(j,i);
 	bound_add(ij,ik,m[matpos(j,k)]);    /* ik+kj */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
 	bound_add(ij,ik2,m[matpos(j,kk)]);  /* ik2+k2j */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
       }
     }
   }
@@ -171,15 +171,15 @@ bool hmat_close_incremental(bound_t* m, size_t dim, size_t v)
       bound_set(ik2,m[matpos2(i,kk)]);
       for (j=0;j<=br;j++,c++) {
 	bound_add(ij,ik,m[matpos(k,j)]);    /* ik+kj */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
 	bound_add(ij,ik2,m[matpos(kk,j)]);  /* ik2+k2j */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
       }
       for (;j<=ii;j++,c++) {
 	bound_add(ij,ik,m[matpos(j^1,kk)]); /* ik+kj */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
 	bound_add(ij,ik2,m[matpos(j^1,k)]); /* ik2+k2j */
-	bound_min(*c,*c,ij);
+	bound_bmin(*c,ij);
       }
     } 
   }

@@ -11,6 +11,7 @@
 
 #include "oct.h"
 #include "oct_internal.h"
+#include "setround.h"
 
 
 /* ============================================================ */
@@ -28,6 +29,13 @@ inline oct_t* oct_alloc_internal(oct_internal_t* pr, size_t dim, size_t intdim)
   return r;
 }
 
+inline oct_t* oct_alloc_top(oct_internal_t* pr, size_t dim, size_t intdim)
+{
+  oct_t* r = oct_alloc_internal(pr,dim,intdim);
+  r->closed = hmat_alloc_top(pr,dim);
+  return r;
+}
+
 inline void oct_free_internal(oct_internal_t* pr, oct_t* a)
 {
   if (a->m) hmat_free(pr,a->m,a->dim);
@@ -36,7 +44,7 @@ inline void oct_free_internal(oct_internal_t* pr, oct_t* a)
   free(a);
 }
 
-inline oct_t* oct_copy_internal(oct_internal_t* pr, const oct_t* a)
+inline oct_t* oct_copy_internal(oct_internal_t* pr, oct_t* a)
 {
   oct_t* r = oct_alloc_internal(pr,a->dim,a->intdim);
   r->m = hmat_copy(pr,a->m,a->dim);
@@ -44,7 +52,7 @@ inline oct_t* oct_copy_internal(oct_internal_t* pr, const oct_t* a)
   return r;
 }
 
-oct_t* oct_copy(ap_manager_t* man, const oct_t* a)
+oct_t* oct_copy(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_COPY,0);
   return oct_copy_internal(pr,a);
@@ -56,9 +64,9 @@ void oct_free(ap_manager_t* man, oct_t* a)
   oct_free_internal(pr,a);
 }
 
-size_t oct_size(ap_manager_t* man, const oct_t* a)
+size_t oct_size(ap_manager_t* man, oct_t* a)
 {
-  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SIZE,0);
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_ASIZE,0);
   if (!a->m) return 1;
   return matsize(a->dim);
 }
@@ -129,8 +137,13 @@ oct_t* oct_of_box(ap_manager_t* man, size_t intdim, size_t realdim,
 		       r->closed[matpos(2*i+1,2*i)],
 		       t[i],true);
   /* a S step is sufficient to ensure clsoure */
-  arg_assert(!hmat_s_step(r->closed,r->dim),
-	     oct_free_internal(pr,r);return NULL;);
+  if (hmat_s_step(r->closed,r->dim)){ 
+    /* definitively empty */
+    hmat_free(pr,r->closed,r->dim); 
+    r->closed = NULL; 
+  }
+
+  /* exact, except for conversion errors */
   if (pr->conv) flag_conv;
   return r; 
 }
@@ -140,12 +153,22 @@ oct_t* oct_of_lincons_array(ap_manager_t* man,
 			    const ap_lincons0_array_t* ar)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_OF_LINCONS_ARRAY,
-					     2*(intdim+realdim+1));
+					     2*(intdim+realdim+6));
   oct_t* r = oct_alloc_internal(pr,intdim+realdim,intdim);
+  int exact;
   if (!ar->size) { r->closed = hmat_alloc_top(pr,r->dim); return r; } /* full */
   r->m = hmat_alloc_top(pr,r->dim);
-  hmat_add_lincons(pr,r->m,r->dim,ar);
-  flag_incomplete;
+  if (hmat_add_lincons(pr,r->m,r->dim,ar,&exact)) {
+    /* empty result */
+    hmat_free(pr,r->m,r->dim);
+    r->m = NULL;
+  }
+  else {
+    /* exact on Q if octagonal constraints & no conversion error */
+    if (num_incomplete || !exact || intdim) flag_incomplete;
+    else if (pr->conv) flag_conv;
+    /* TODO: use incremental closure if possible */
+  }
   return r;
 }
 
@@ -153,14 +176,37 @@ oct_t* oct_of_generator_array(ap_manager_t* man,
                               size_t intdim, size_t realdim,
                               const ap_generator0_array_t* ar)
 {
+  size_t dim = intdim+realdim;
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_ADD_RAY_ARRAY,
-					     2*(intdim+realdim+1));
+					     2*(dim+1));
   oct_t* r = oct_alloc_internal(pr,intdim+realdim,intdim);
-  r->m = hmat_add_generators(pr,NULL,r->dim,ar);
-  /* best in Q and Z, except for conversion errors */
-  man->result.flag_exact = tbool_top;
-  if (pr->conv) flag_conv;
+  size_t i,j,k;
+  /* find one vertex */
+  for (i=0;i<ar->size;i++) {
+    bound_t* b;
+    if (ar->p[i].gentyp!=AP_GEN_VERTEX) continue;
+    bounds_of_generator(pr,pr->tmp,ar->p[i].linexpr0,dim);
+    r->m = hmat_alloc_top(pr,dim);
+    for (b=r->m,j=0;j<2*dim;j++) 
+      for (k=0;k<=(j|1);k++,b++) bound_sub(*b,pr->tmp[j],pr->tmp[k]);
+    break;
+  }
+  if (r->m) {
+    /* not empty */
+    hmat_add_generators(pr,r->m,dim,ar);
+    /* best in Q and Z, except for conversion errors */
+    man->result.flag_exact = tbool_top;
+    if (pr->conv) flag_conv;
+  }
   return r;
+}
+
+ap_abstract0_t* 
+ap_abstract0_of_generator_array(ap_manager_t* man,
+				size_t intdim, size_t realdim,
+				const ap_generator0_array_t* array)
+{
+  return abstract0_of_oct(man,oct_of_generator_array(man,intdim,realdim,array));
 }
 
 
@@ -168,8 +214,9 @@ oct_t* oct_of_generator_array(ap_manager_t* man,
 /* Accessors */
 /* ============================================================ */
 
-ap_dimension_t oct_dimension(ap_manager_t* man, const oct_t* a)
+ap_dimension_t oct_dimension(ap_manager_t* man, oct_t* a)
 {
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_DIMENSION,0);
   ap_dimension_t r;
   r.intdim = a->intdim;
   r.realdim = a->dim-a->intdim;
@@ -187,7 +234,7 @@ ap_dimension_t oct_dimension(ap_manager_t* man, const oct_t* a)
    => this DOES NOT affect the semantics of functions that rely on a->m
    (e.g., widening)
  */
-void oct_cache_closure(oct_internal_t* pr, const oct_t* aa)
+void oct_cache_closure(oct_internal_t* pr, oct_t* aa)
 {
   oct_t* a = (oct_t*) aa;
   if (a->closed || !a->m) return;
@@ -227,7 +274,7 @@ void oct_close(oct_internal_t* pr, oct_t* a)
 /* ============================================================ */
 
 /* NOT IMPLEMENTED: do nothing */
-void oct_minimize(ap_manager_t* man, const oct_t* a)
+void oct_minimize(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_MINIMIZE,0);
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,pr->funid,
@@ -235,7 +282,7 @@ void oct_minimize(ap_manager_t* man, const oct_t* a)
 }
 
 /* NOT IMPLEMENTED: do nothing */
-void oct_canonicalize(ap_manager_t* man, const oct_t* a)
+void oct_canonicalize(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_CANONICALIZE,0);
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,pr->funid,
@@ -251,7 +298,7 @@ void oct_approximate(ap_manager_t* man, oct_t* a, int algorithm)
 }
 
 /* NOT IMPLEMENTED: always returns top */
-tbool_t oct_is_minimal(ap_manager_t* man, const oct_t* a)
+tbool_t oct_is_minimal(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_MINIMAL,0);
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,pr->funid,
@@ -260,7 +307,7 @@ tbool_t oct_is_minimal(ap_manager_t* man, const oct_t* a)
 }
 
 /* NOT IMPLEMENTED: always returns top */
-tbool_t oct_is_canonical(ap_manager_t* man, const oct_t* a)
+tbool_t oct_is_canonical(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_CANONICAL,0);
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,pr->funid,
@@ -290,6 +337,7 @@ void oct_internal_free(oct_internal_t* pr)
 {
   bound_clear_array(pr->tmp,pr->tmp_size);
   free(pr->tmp);
+  free(pr->tmp2);
   free(pr);
 }
 
@@ -299,12 +347,21 @@ ap_manager_t* oct_manager_alloc(void)
   ap_manager_t* man;
   oct_internal_t* pr;
 
+#if num_fpu
+  if (!init_fpu()) {
+    fprintf(stderr,"oct_manager_alloc cannot change the FPU rounding mode\n");
+    return NULL;
+  }
+#endif
+
   pr = (oct_internal_t*)malloc(sizeof(oct_internal_t));
   assert(pr);
   pr->tmp_size = 10;
   pr->tmp = malloc(sizeof(bound_t)*pr->tmp_size);
   assert(pr->tmp);
   bound_init_array(pr->tmp,pr->tmp_size);
+  pr->tmp2 = malloc(sizeof(long)*pr->tmp_size);
+  assert(pr->tmp2);
 
   man = ap_manager_alloc("oct","1.0 with " num_name,pr,
 			 (void (*)(void*))oct_internal_free);
@@ -368,3 +425,16 @@ ap_manager_t* oct_manager_alloc(void)
   return man;
 }
 
+oct_t* oct_of_abstract0(ap_abstract0_t* a)
+{
+  return (oct_t*)a->value;
+}
+
+ap_abstract0_t* abstract0_of_oct(ap_manager_t* man, oct_t* oct)
+{
+  ap_abstract0_t* r = malloc(sizeof(ap_abstract0_t));
+  assert(r);
+  r->value = oct;
+  r->man = ap_manager_copy(man);
+  return r;
+}

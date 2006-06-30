@@ -73,9 +73,9 @@ oct_t* oct_forget_array(ap_manager_t* man,
 /* ============================================================ */
 
 /* internal helper function */
-static void oct_addrem_dimensions(bound_t* dst, const bound_t* src,
-				  const ap_dim_t* pos, size_t nb_pos,
-				  size_t mult, size_t dim, bool add)
+void hmat_addrem_dimensions(bound_t* dst, const bound_t* src,
+			    const ap_dim_t* pos, size_t nb_pos,
+			    size_t mult, size_t dim, bool add)
 {
   size_t i,j,new_j,org_j;
   new_j = org_j = pos[0]*2;
@@ -116,19 +116,18 @@ static void oct_addrem_dimensions(bound_t* dst, const bound_t* src,
       }
     }
   }
-  
 }
 
 oct_t* oct_add_dimensions(ap_manager_t* man,
 			  bool destructive, oct_t* a,
-			  const ap_dimchange_t* dimchange)
+			  const ap_dimchange_t* dimchange,
+			  bool project)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_ADD_DIMENSIONS,0);
-  const bound_t* m = (const bound_t*)(a->closed ? a->closed : a->m);
+  bound_t* m = a->closed ? a->closed : a->m;
   bound_t* mm;
   size_t i, nb = dimchange->intdim+dimchange->realdim;
   oct_t* r;
-  bool project = false;
   if (!m) mm = NULL;
   else {
     /* check */
@@ -139,7 +138,7 @@ oct_t* oct_add_dimensions(ap_manager_t* man,
     
     /* insert variables */
     mm = hmat_alloc_top(pr,a->dim+nb);
-    oct_addrem_dimensions(mm,m,dimchange->dim,nb,1,a->dim,true);
+    hmat_addrem_dimensions(mm,m,dimchange->dim,nb,1,a->dim,true);
 
     /* set new variables to 0, if necessary */
     if (project) {
@@ -163,12 +162,11 @@ oct_t* oct_remove_dimensions(ap_manager_t* man,
 			     const ap_dimchange_t* dimchange)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_REMOVE_DIMENSIONS,0);
-  const bound_t* m;
-  bound_t* mm;
+  bound_t *m, *mm;
   size_t i, nb = dimchange->intdim+dimchange->realdim;
   oct_t* r;
   if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
-  m = (const bound_t*)(a->closed ? a->closed : a->m);
+  m = a->closed ? a->closed : a->m;
   if (!m) mm = NULL;
   else {
     /* check */
@@ -179,7 +177,7 @@ oct_t* oct_remove_dimensions(ap_manager_t* man,
 
     /* remove variables */
     mm = hmat_alloc(pr,a->dim-nb);
-    oct_addrem_dimensions(mm,m,dimchange->dim,nb,1,a->dim,false);
+    hmat_addrem_dimensions(mm,m,dimchange->dim,nb,1,a->dim,false);
   }
 
   if (a->closed) {
@@ -197,12 +195,33 @@ oct_t* oct_remove_dimensions(ap_manager_t* man,
   return r;
 }
 
+/* internal helper function: permute & change dimension */
+void hmat_permute(bound_t* dst, const bound_t* src,
+		  size_t dst_dim, size_t src_dim,
+		  ap_dim_t* permutation)
+{
+  size_t i,j;
+  for (i=0;i<src_dim;i++) {
+    size_t new_ii = 2*permutation[i];
+    if (new_ii >= 2*dst_dim)  { src+=4*(i+1); continue; }
+    for (j=0;j<=i;j++,src+=2) {
+      size_t new_jj = 2*permutation[j];
+      if (new_jj >= 2*dst_dim) continue;
+      bound_set(dst[matpos2(new_ii  ,new_jj  )],src[0]);
+      bound_set(dst[matpos2(new_ii  ,new_jj+1)],src[1]);
+      bound_set(dst[matpos2(new_ii+1,new_jj  )],src[2*(i+1)]);
+      bound_set(dst[matpos2(new_ii+1,new_jj+1)],src[2*(i+1)+1]);
+    }
+    src+=2*(i+1);
+  }
+}
+
 oct_t* oct_permute_dimensions(ap_manager_t* man,
 			      bool destructive, oct_t* a,
 			      const ap_dimperm_t* permutation)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_ADD_DIMENSIONS,0);
-  const bound_t* m = (const bound_t*)(a->closed ? a->closed : a->m);
+  bound_t* m = a->closed ? a->closed : a->m;
   bound_t* mm;
   arg_assert(permutation->size==a->dim,return NULL;);
   if (!m) mm = NULL;
@@ -214,17 +233,7 @@ oct_t* oct_permute_dimensions(ap_manager_t* man,
     
     /* permuted copy */
     mm = hmat_alloc(pr,a->dim);
-    for (i=0;i<a->dim;i++) {
-      size_t new_ii = 2*permutation->dim[i];
-      for (j=0;j<=i;j++,m+=2) {
-	size_t new_jj = 2*permutation->dim[j];
-	bound_set(mm[matpos2(new_ii  ,new_jj  )],m[0]);
-	bound_set(mm[matpos2(new_ii  ,new_jj+1)],m[1]);
-	bound_set(mm[matpos2(new_ii+1,new_jj  )],m[2*(i+1)]);
-	bound_set(mm[matpos2(new_ii+1,new_jj+1)],m[2*(i+1)+1]);
-      }
-      m+=2*(i+1);
-    }
+    hmat_permute(mm,m,a->dim,a->dim,permutation->dim);
   }
   /* always exact, respects closure */
   if (a->closed) return oct_set_mat(pr,a,NULL,mm,destructive);
@@ -242,7 +251,7 @@ oct_t* oct_expand(ap_manager_t* man,
 		  size_t n)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_EXPAND,0);
-  const bound_t* m = (const bound_t*)(a->closed ? a->closed : a->m);
+  bound_t* m = a->closed ? a->closed : a->m;
   size_t i, j, pos = (dim < a->intdim) ? a->intdim : a->dim;
   bound_t* mm;
   oct_t* r;
@@ -251,24 +260,22 @@ oct_t* oct_expand(ap_manager_t* man,
   else {
     /* insert n variables at pos */
     mm = hmat_alloc_top(pr,a->dim+n);
-    oct_addrem_dimensions(mm,m,&pos,1,n,a->dim,true);
+    hmat_addrem_dimensions(mm,m,&pos,1,n,a->dim,true);
 
     for (i=0;i<n;i++) {
       /* copy info from dim */
-      for (j=0;j<2*a->dim;j++) {
-	bound_set(mm[matpos2(2*(pos+i)  ,j)],m[matpos2(2*dim  ,j)]);
-	bound_set(mm[matpos2(2*(pos+i)+1,j)],m[matpos2(2*dim+1,j)]);
+      for (j=0;j<2*dim;j++) {
+	bound_set(mm[matpos2(2*(pos+i)  ,j)],m[matpos(2*dim  ,j)]);
+	bound_set(mm[matpos2(2*(pos+i)+1,j)],m[matpos(2*dim+1,j)]);
+      }
+      for (j=2*dim+2;j<2*a->dim;j++) {
+	bound_set(mm[matpos2(2*(pos+i)  ,j)],m[matpos(j^1,2*dim+1)]);
+	bound_set(mm[matpos2(2*(pos+i)+1,j)],m[matpos(j^1,2*dim)]);
       }
 
       /* unary constraint */
       bound_set(mm[matpos2(2*(pos+i),2*(pos+i)+1)],m[matpos2(2*dim,2*dim+1)]);
       bound_set(mm[matpos2(2*(pos+i)+1,2*(pos+i))],m[matpos2(2*dim+1,2*dim)]);
-
-      /* remove constraints with dim */
-      bound_set_infty(mm[matpos(2*(pos+i)  ,2*dim  )]);
-      bound_set_infty(mm[matpos(2*(pos+i)  ,2*dim+1)]);
-      bound_set_infty(mm[matpos(2*(pos+i)+1,2*dim  )]);
-      bound_set_infty(mm[matpos(2*(pos+i)+1,2*dim+1)]);
     }
   }
   
@@ -286,11 +293,11 @@ oct_t* oct_fold(ap_manager_t* man,
 		size_t size)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_FOLD,matsize(a->dim));
-  const bound_t* m;
+  bound_t* m;
   bound_t* mm;
   oct_t* r;
   if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
-  m = (const bound_t*)(a->closed ? a->closed : a->m);
+  m = a->closed ? a->closed : a->m;
   if (!m) mm = NULL;
   else {
     /* check, assuming tdim[1..(size-1)] is strictly increasing */
@@ -325,7 +332,7 @@ oct_t* oct_fold(ap_manager_t* man,
 
     /* destroy all dimensions in tdim except the first one */
     mm = hmat_alloc_top(pr,a->dim-size+1);
-    oct_addrem_dimensions(mm,pr->tmp,tdim+1,size-1,1,a->dim,false);
+    hmat_addrem_dimensions(mm,pr->tmp,tdim+1,size-1,1,a->dim,false);
 
     /* reset diagonal elements */
     bound_set_int(mm[matpos(tdim[0]*2  ,tdim[0]*2  )],0);

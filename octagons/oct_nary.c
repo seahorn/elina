@@ -16,7 +16,7 @@
 /* Meet and Join */
 /* ============================================================ */
 
-oct_t* oct_meet(ap_manager_t* man, bool destructive, oct_t* a1, const oct_t* a2)
+oct_t* oct_meet(ap_manager_t* man, bool destructive, oct_t* a1, oct_t* a2)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_MEET,0);
   bound_t* m;
@@ -36,7 +36,7 @@ oct_t* oct_meet(ap_manager_t* man, bool destructive, oct_t* a1, const oct_t* a2)
   }
 }
 
-oct_t* oct_join(ap_manager_t* man, bool destructive, oct_t* a1, const oct_t* a2)
+oct_t* oct_join(ap_manager_t* man, bool destructive, oct_t* a1, oct_t* a2)
 {
  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_JOIN,0);
  arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,return NULL;);
@@ -78,7 +78,7 @@ oct_t* oct_join(ap_manager_t* man, bool destructive, oct_t* a1, const oct_t* a2)
  }
 }
 
-oct_t* oct_meet_array(ap_manager_t* man, const oct_t** tab, size_t size)
+oct_t* oct_meet_array(ap_manager_t* man, oct_t** tab, size_t size)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_MEET_ARRAY,0);
   oct_t* r;
@@ -95,12 +95,12 @@ oct_t* oct_meet_array(ap_manager_t* man, const oct_t** tab, size_t size)
     arg_assert(tab[k]->dim==r->dim && tab[k]->intdim==r->intdim,
 	       oct_free_internal(pr,r);return NULL;);
     for (i=0;i<matsize(r->dim);i++)
-      bound_min(r->m[i],r->m[i],x[i]);
+      bound_bmin(r->m[i],x[i]);
   }
   return r;
 }
 
-oct_t* oct_join_array(ap_manager_t* man, const oct_t** tab, size_t size)
+oct_t* oct_join_array(ap_manager_t* man, oct_t** tab, size_t size)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_JOIN_ARRAY,0);
   int algo = pr->funopt->algorithm;
@@ -139,7 +139,7 @@ oct_t* oct_join_array(ap_manager_t* man, const oct_t** tab, size_t size)
   }
   else {
     /* non closed, non optimal result */
-    r->m = m; 
+    r->m = m;
     flag_algo; 
   }
   return r;
@@ -151,7 +151,7 @@ oct_t* oct_join_array(ap_manager_t* man, const oct_t** tab, size_t size)
 /* Widening, Narrowing */
 /* ============================================================ */
 
-oct_t* oct_widening(ap_manager_t* man, const oct_t* a1, const oct_t* a2)
+oct_t* oct_widening(ap_manager_t* man, oct_t* a1, oct_t* a2)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
   int algo = pr->funopt->algorithm;
@@ -186,10 +186,10 @@ oct_t* oct_widening(ap_manager_t* man, const oct_t* a1, const oct_t* a2)
   return r;
 }
 
-oct_t* oct_widening_threshold(ap_manager_t* man,
-			      const oct_t* a1, const oct_t* a2,
-			      const ap_scalar_t** array,
-			      size_t nb)
+oct_t* oct_widening_thresholds(ap_manager_t* man,
+			       oct_t* a1, oct_t* a2,
+			       const ap_scalar_t** array,
+			       size_t nb)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,nb+1);
   int algo = pr->funopt->algorithm;
@@ -226,13 +226,13 @@ oct_t* oct_widening_threshold(ap_manager_t* man,
 	}
 	bound_set(r->m[i],pr->tmp[low]);
       }
+    /* warn user for conv errors in thresolds */
+    if (pr->conv) flag_conv;
   }
   return r;
 }
 
-
-/* TODO: get some AP_FUNID_NARROWING */
-oct_t* oct_narrowing(ap_manager_t* man, const oct_t* a1, const oct_t* a2)
+oct_t* oct_narrowing(ap_manager_t* man, oct_t* a1, oct_t* a2)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
   oct_t* r;
@@ -254,5 +254,35 @@ oct_t* oct_narrowing(ap_manager_t* man, const oct_t* a1, const oct_t* a2)
       bound_set(r->m[i], bound_infty(m1[i]) ? m2[i] : m1[i]);
   }
   return r;
+}
+
+ap_abstract0_t* ap_abstract0_oct_narrowing( ap_manager_t* man,
+					const ap_abstract0_t* a1,
+					const ap_abstract0_t* a2 )
+{
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
+  oct_t* a = (oct_t*) (a1->value);
+  arg_assert(man->library==a1->man->library &&
+	     man->library==a2->man->library,
+	     return abstract0_of_oct(man,oct_alloc_top(pr,a->dim,a->intdim)););
+  return abstract0_of_oct(man,oct_narrowing
+			  (man,a1->value,a2->value));
+}
+
+ap_abstract0_t* 
+ap_abstract0_oct_widening_thresholds(ap_manager_t* man,
+				     const ap_abstract0_t* a1, 
+				     const ap_abstract0_t* a2,
+				     const ap_scalar_t** array,
+				     size_t nb)
+{
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
+  oct_t* a = (oct_t*) (a1->value);
+  arg_assert(man->library==a1->man->library &&
+	     man->library==a2->man->library,
+	     return abstract0_of_oct(man,oct_alloc_top(pr,a->dim,a->intdim)););
+  return 
+    abstract0_of_oct(man,oct_widening_thresholds
+		     (man,a1->value,a2->value,array,nb));
 }
 

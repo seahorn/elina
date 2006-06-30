@@ -18,7 +18,7 @@
 /* Tests */
 /* ============================================================ */
 
-tbool_t oct_is_bottom(ap_manager_t* man, const oct_t* a)
+tbool_t oct_is_bottom(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_BOTTOM,0);
   if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
@@ -32,13 +32,14 @@ tbool_t oct_is_bottom(ap_manager_t* man, const oct_t* a)
     return tbool_true;
   else {
     /* no closure => we know that we don't know */
-    flag_incomplete; 
+    flag_algo; 
     return tbool_top;
   }
 }
 
-tbool_t oct_is_top(ap_manager_t* man, const oct_t* a)
+tbool_t oct_is_top(ap_manager_t* man, oct_t* a)
 {
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_TOP,0);
   size_t i,j;
   bound_t* m = a->m ? a->m : a->closed;
   if (!m) return tbool_false;
@@ -49,7 +50,7 @@ tbool_t oct_is_top(ap_manager_t* man, const oct_t* a)
   return tbool_true;
 }
 
-tbool_t oct_is_leq(ap_manager_t* man, const oct_t* a1, const oct_t* a2)
+tbool_t oct_is_leq(ap_manager_t* man, oct_t* a1, oct_t* a2)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_LEQ,0);
   arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,return tbool_top;);
@@ -88,7 +89,7 @@ tbool_t oct_is_leq(ap_manager_t* man, const oct_t* a1, const oct_t* a2)
 }
 
 
-tbool_t oct_is_eq(ap_manager_t* man, const oct_t* a1, const oct_t* a2)
+tbool_t oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_EQ,0);
   arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,return tbool_top;);
@@ -137,7 +138,7 @@ tbool_t oct_is_eq(ap_manager_t* man, const oct_t* a1, const oct_t* a2)
 }
 
 
-tbool_t oct_sat_interval(ap_manager_t* man, const oct_t* a,
+tbool_t oct_sat_interval(ap_manager_t* man, oct_t* a,
 			 ap_dim_t dim, const ap_interval_t* i)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SAT_INTERVAL,0);
@@ -159,19 +160,20 @@ tbool_t oct_sat_interval(ap_manager_t* man, const oct_t* a,
     ap_interval_free(b);
     if (r) return tbool_true; /* definitively saturates */
     else
-      if (!a->closed) 
-	{ flag_algo; return tbool_top; } 
-      else if (num_incomplete || a->intdim || pr->conv)
-	{ flag_incomplete; return tbool_top; } 
-      else return tbool_false; /* definitely does not saturate */
+      /* definitely does not saturate on Q if closed & no conv error */
+      if (num_incomplete || a->intdim) { flag_incomplete; return tbool_top; } 
+      else if (!a->closed) { flag_algo; return tbool_top; } 
+      else if (pr->conv) { flag_conv; return tbool_top; }
+      else return tbool_false;
   }
 }
 
 
-tbool_t oct_is_dimension_unconstrained(ap_manager_t* man, const oct_t* a,
+tbool_t oct_is_dimension_unconstrained(ap_manager_t* man, oct_t* a,
 				       ap_dim_t dim)
 {
-  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SAT_INTERVAL,0);
+  oct_internal_t* pr = 
+    oct_init_from_manager(man,AP_FUNID_IS_DIMENSION_UNCONSTRAINED,0);
   arg_assert(dim<a->dim,return tbool_top;);
   if (!a->closed && !a->m)
     /* definitively empty */
@@ -188,14 +190,92 @@ tbool_t oct_is_dimension_unconstrained(ap_manager_t* man, const oct_t* a,
 }
 
 
-/* NOT IMPLEMENTED: always return top */
-tbool_t oct_sat_lincons(ap_manager_t* man, const oct_t* a, 
+/* not very precise for non unit constraints (always top) */
+/* the semantics of non-deterministic expressions (i.e., intervals) is
+   tbool_true   saturates all expressions
+   tbool_false  some expression definitively not saturated
+   tbool_top    may saturate some, may not saturate some
+*/
+tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a, 
 			const ap_lincons0_t* lincons)
 {
-  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SAT_LINCONS,0);
-  ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,pr->funid,
-			     "not implemented");
-  return tbool_top;
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SAT_LINCONS,
+					     2*(a->dim+1));
+  if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
+  if (!a->closed && !a->m) {
+    /* really empty */
+    return tbool_true;
+  }
+  else {
+    bound_t* b = a->closed ? a->closed : a->m;
+    size_t i, ui, uj;
+    ap_constyp_t c = lincons->constyp;
+    uexpr u = uexpr_of_linexpr(pr,pr->tmp,lincons->linexpr0,a->dim);
+    bool r;
+    switch (u.type) {      
+
+    case ZERO:
+      if ((c==AP_CONS_SUPEQ && bound_sgn(pr->tmp[0])<=0) ||
+	  /* [-a,b] >= 0 <=> a <= 0 */
+	  (c==AP_CONS_SUP && bound_sgn(pr->tmp[0])<0) ||
+	  /* [-a,b] > 0 <=> a < 0 */
+	  (c==AP_CONS_EQ && !bound_sgn(pr->tmp[0]) && !bound_sgn(pr->tmp[1]))
+  	  /* [-a,b] = 0 <=> a=b=0 */
+	  )
+	return tbool_true; /* always saturates */
+      else return tbool_false; /* does not always saturate */
+      
+   case UNARY:
+      if (u.coef_i==1) ui = 2*u.i; else ui = 2*u.i+1;
+      bound_mul_2(pr->tmp[0],pr->tmp[0]);
+      bound_mul_2(pr->tmp[1],pr->tmp[1]);
+      bound_badd(pr->tmp[0],b[matpos(ui,ui^1)]);
+      bound_badd(pr->tmp[1],b[matpos(ui^1,ui)]);
+      if (bound_sgn(pr->tmp[0])<=0 &&
+	  /* c_i X_i + [-a,b] >= 0 <=> -c_i X_i + a <= 0 */
+	  (c!=AP_CONS_SUP || bound_sgn(pr->tmp[0])<0) &&
+	  /* c_i X_i + [-a,b] >  0 <=> -c_i X_i + a <  0 */
+	  (c!=AP_CONS_EQ || bound_sgn(pr->tmp[1])<=0)
+	  /* c_i X_i + [-a,b] <= 0 <=>  c_i X_i + b <= 0 */
+	  ) 
+	return tbool_true; /* always saturates */
+      else {
+	/* does not always saturate on Q, if closed and no conv error */
+ 	if (num_incomplete || a->intdim) { flag_incomplete; return tbool_top; }
+	else if (!a->closed) { flag_algo; return tbool_top; }
+	else if (pr->conv) { flag_conv; return tbool_top; }
+	return tbool_false;
+      }
+      
+    case BINARY:
+      if ( u.coef_i==1) ui = 2*u.i; else ui = 2*u.i+1;
+      if ( u.coef_j==1) uj = 2*u.j; else uj = 2*u.j+1;
+      bound_badd(pr->tmp[0],b[matpos(uj,ui^1)]);
+      bound_badd(pr->tmp[1],b[matpos(uj^1,ui)]);
+      if (bound_sgn(pr->tmp[0])<=0 &&
+	  /* c_i X_i + c_j X_j + [-a,b] >= 0 <=> -c_i X_i - c_j X_j + a <= 0 */
+	  (c!=AP_CONS_SUP || bound_sgn(pr->tmp[0])<0) &&
+	  /* c_i X_i + c_j X_j + [-a,b] >  0 <=> -c_i X_i - c_j X_j + a <  0 */
+	  (c!=AP_CONS_EQ || bound_sgn(pr->tmp[1])<=0)
+	  /* c_i X_i + c_j X_j + [-a,b] <= 0 <=>  c_i X_i + c_j X_j + b <= 0 */
+	  )
+	return tbool_true;
+      else {
+	/* does not saturate on Q, when closed and no conv error */
+ 	if (num_incomplete || a->intdim) { flag_incomplete; return tbool_top; }
+	else if (!a->closed) { flag_algo; return tbool_top; }
+	else if (pr->conv) { flag_conv; return tbool_top; }
+	return tbool_false;
+      }
+
+    case OTHER:
+      /* no clue */
+      flag_incomplete;
+      return tbool_top;
+      
+    default: assert(0);
+    }
+  }
 }
 
 
@@ -203,14 +283,12 @@ tbool_t oct_sat_lincons(ap_manager_t* man, const oct_t* a,
 /* Extraction of properties */
 /* ============================================================ */
 
-/* we use only variable bounds and interval arithmetics, 
-   we don't use relational information
-   => this is not very precise...
- */
+/* not very precise for non unit constraints (interval arithmetics) */
 ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
-				 const oct_t* a, const ap_linexpr0_t* expr)
+				 oct_t* a, const ap_linexpr0_t* expr)
 {
-  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_BOUND_LINEXPR,12);
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_BOUND_LINEXPR,
+					     2*(a->dim+5));
   ap_interval_t* r = ap_interval_alloc();
   if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
   if (!a->closed && !a->m) {
@@ -218,45 +296,63 @@ ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
     ap_interval_set_bottom(r);
   }
   else {
-    bound_t* m = a->closed ? a->closed : a->m;
-    size_t i;
-    bounds_of_coeff(pr,pr->tmp[0],pr->tmp[1],expr->cst,true);
-    switch (expr->discr) {
-    case AP_LINEXPR_DENSE:
-      arg_assert(expr->size<=a->dim,ap_interval_free(r);return NULL;);
-      for (i=0;i<expr->size;i++) {
-	bounds_of_coeff(pr,pr->tmp[2],pr->tmp[3],expr->p.coeff[i],false);
-	bounds_mul(pr->tmp[2],pr->tmp[3],
-		   m[matpos(2*i,2*i+1)],m[matpos(2*i+1,2*i)],
-		   pr->tmp[2],pr->tmp[3],pr->tmp+4);
-	bound_add(pr->tmp[0],pr->tmp[0],pr->tmp[2]);
-	bound_add(pr->tmp[1],pr->tmp[1],pr->tmp[3]);
-      }
+    bound_t* b = a->closed ? a->closed : a->m;
+    size_t i, ui, uj;
+    uexpr u = uexpr_of_linexpr(pr,pr->tmp,expr,a->dim);
+    switch (u.type) {      
+    case ZERO:
+      /* always exact */
+      interval_of_bounds(pr,r,pr->tmp[0],pr->tmp[1],false);
       break;
-    case AP_LINEXPR_SPARSE:
-      for (i=0;i<expr->size;i++) {	
-	ap_dim_t d = expr->p.linterm[i].dim;
-	arg_assert(d<a->dim,ap_interval_free(r);return NULL;);
-	bounds_of_coeff(pr,pr->tmp[2],pr->tmp[3],expr->p.linterm[i].coeff,
-			false);
-	bounds_mul(pr->tmp[2],pr->tmp[3],
-		   m[matpos(2*d,2*d+1)],m[matpos(2*d+1,2*d)],
-		   pr->tmp[2],pr->tmp[3],pr->tmp+4);
-	bound_add(pr->tmp[0],pr->tmp[0],pr->tmp[2]);
-	bound_add(pr->tmp[1],pr->tmp[1],pr->tmp[3]);
-      }
+      
+    case UNARY:
+      if (u.coef_i==1) ui = 2*u.i; else ui = 2*u.i+1;
+      bounds_of_coeff(pr,pr->tmp[0],pr->tmp[1],expr->cst,true);
+      bound_badd(pr->tmp[0],b[matpos(ui,ui^1)]);
+      bound_badd(pr->tmp[1],b[matpos(ui^1,ui)]);
+      interval_of_bounds(pr,r,pr->tmp[0],pr->tmp[1],true);
+      /* exact on Q if closed and no conversion error */
+      if (num_incomplete || a->intdim) flag_incomplete;
+      else if (!a->closed) flag_algo;
+      else if (pr->conv) flag_conv;
       break;
-    default: arg_assert(0,ap_interval_free(r);return NULL;);
+      
+    case BINARY:
+      if (u.coef_i==1) ui = 2*u.i; else ui = 2*u.i+1;
+      if (u.coef_j==1) uj = 2*u.j; else uj = 2*u.j+1;
+      bound_badd(pr->tmp[0],b[matpos2(uj,ui^1)]);
+      bound_badd(pr->tmp[1],b[matpos2(uj^1,ui)]);
+      interval_of_bounds(pr,r,pr->tmp[0],pr->tmp[1],false);
+      /* exact on Q if closed and no conversion error */
+      if (num_incomplete || a->intdim) flag_incomplete;
+      else if (!a->closed) flag_algo;
+      else if (pr->conv) flag_conv;
+      break;
+      
+    case OTHER:
+      /* interval approximation */
+      for (i=0;i<a->dim;i++) {
+	bound_div_2(pr->tmp[2*i+2],pr->tmp[2*i+2]);
+	bound_div_2(pr->tmp[2*i+3],pr->tmp[2*i+3]);
+	bounds_mul(pr->tmp[2*i+2],pr->tmp[2*i+3],
+		   b[matpos(2*i,2*i+1)],b[matpos(2*i+1,2*i)],
+		   pr->tmp[2*i+2],pr->tmp[2*i+3],pr->tmp+2*(a->dim+1));
+	bound_badd(pr->tmp[0],pr->tmp[2*i+2]);
+	bound_badd(pr->tmp[1],pr->tmp[2*i+3]);
+      }
+      interval_of_bounds(pr,r,pr->tmp[0],pr->tmp[1],false);
+      /* not optimal, even when closing a */
+      flag_incomplete;
+      break;
+
+    default: assert(0);
     }
-    interval_of_bounds(pr,r,pr->tmp[0],pr->tmp[1],true);
-    /* we are never optimal, even when closing a */
-    flag_incomplete;
   }
   return r;
 }
 
 ap_interval_t* oct_bound_dimension(ap_manager_t* man,
-				   const oct_t* a, ap_dim_t dim)
+				   oct_t* a, ap_dim_t dim)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_BOUND_DIMENSION,0);
   ap_interval_t* r = ap_interval_alloc();
@@ -267,7 +363,7 @@ ap_interval_t* oct_bound_dimension(ap_manager_t* man,
     ap_interval_set_bottom(r);
   }
   else if (a->closed) {
-    /* tightest bounds in Q */
+    /* optimal in Q */
     interval_of_bounds(pr,r,
 		       a->closed[matpos(2*dim,2*dim+1)],
 		       a->closed[matpos(2*dim+1,2*dim)],true);
@@ -275,7 +371,7 @@ ap_interval_t* oct_bound_dimension(ap_manager_t* man,
     else if (pr->conv) flag_conv;
   }
   else {
-    /* no tightest bounds */
+    /* not optimal */
     interval_of_bounds(pr,r,
 		       a->m[matpos(2*dim,2*dim+1)],a->m[matpos(2*dim+1,2*dim)],
 		       true);
@@ -285,7 +381,7 @@ ap_interval_t* oct_bound_dimension(ap_manager_t* man,
 }
 
 
-ap_lincons0_array_t oct_to_lincons_array(ap_manager_t* man, const oct_t* a)
+ap_lincons0_array_t oct_to_lincons_array(ap_manager_t* man, oct_t* a)
 {
   ap_lincons0_array_t ar;
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_TO_LINCONS_ARRAY,0);
@@ -311,7 +407,7 @@ ap_lincons0_array_t oct_to_lincons_array(ap_manager_t* man, const oct_t* a)
   return ar;
 }
 
-ap_interval_t** oct_to_box(ap_manager_t* man, const oct_t* a)
+ap_interval_t** oct_to_box(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_TO_BOX,0);
   ap_interval_t** in = ap_interval_array_alloc(a->dim);
@@ -328,16 +424,16 @@ ap_interval_t** oct_to_box(ap_manager_t* man, const oct_t* a)
     for (i=0;i<a->dim;i++)
       interval_of_bounds(pr,in[i],
 			 m[matpos(2*i,2*i+1)],m[matpos(2*i+1,2*i)],true);
+    man->result.flag_exact = tbool_false;
     if (!a->closed) flag_algo;
     else if (num_incomplete || a->intdim) flag_incomplete;
     else if (pr->conv) flag_conv;
-    else man->result.flag_exact = tbool_false;
   }
   return in;
 }
 
 /* not really implemented (returns either top or bottom) */
-ap_generator0_array_t oct_to_generator_array(ap_manager_t* man, const oct_t* a)
+ap_generator0_array_t oct_to_generator_array(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_TO_GENERATOR_ARRAY,0);
   if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);

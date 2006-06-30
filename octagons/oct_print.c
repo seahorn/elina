@@ -34,8 +34,7 @@ static inline void oct_print_bounds(FILE*stream, oct_internal_t* pr,
     }
 }
 
-void oct_fprint(FILE* stream, ap_manager_t* man, 
-		const oct_t* a,	char** name_of_dim)
+void oct_fprint(FILE* stream, ap_manager_t* man, oct_t* a, char** name_of_dim)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_FPRINT,0);
   if (!a->closed && !a->m) {
@@ -52,7 +51,7 @@ void oct_fprint(FILE* stream, ap_manager_t* man,
 }
 
 void oct_fprintdiff(FILE* stream, ap_manager_t* man,
-		    const oct_t* a1, const oct_t* a2, char** name_of_dim)
+		    oct_t* a1, oct_t* a2, char** name_of_dim)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_FPRINTDIFF,0);
   arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,);
@@ -60,6 +59,7 @@ void oct_fprintdiff(FILE* stream, ap_manager_t* man,
     if (a2->closed || a2->m) {
       fprintf(stream,"octagon1 = empty\noctagon2 =\n");
       oct_print_bounds(stream,pr,a2->m?a2->m:a2->closed,a2->dim,name_of_dim);
+      if (pr->conv) flag_conv;
     }
     else fprintf(stream,"octagon1 = octagon2 = empty\n");
   }
@@ -67,6 +67,7 @@ void oct_fprintdiff(FILE* stream, ap_manager_t* man,
       fprintf(stream,"octagon1 =\n");
       oct_print_bounds(stream,pr,a1->m?a1->m:a1->closed,a1->dim,name_of_dim);
       fprintf(stream,"octagon2 = empty\n");
+      if (pr->conv) flag_conv;
   }
   else {
     bound_t* m1 = a1->m ? a1->m : a1->closed;
@@ -93,10 +94,11 @@ void oct_fprintdiff(FILE* stream, ap_manager_t* man,
 	n++;
       }
     if (!n) fprintf(stream,"octagon1 = octagon2\n");
+    if (pr->conv) flag_conv;
   }
 }
 
-void oct_fdump(FILE* stream, ap_manager_t* man, const oct_t* a)
+void oct_fdump(FILE* stream, ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_FDUMP,0);
   fprintf(stream,"octagon of dim (%lu,%lu)\n",
@@ -127,15 +129,14 @@ void oct_fdump(FILE* stream, ap_manager_t* man, const oct_t* a)
   10:   -   : half matrix, as flat array of bound_t
  */
 
-ap_membuf_t oct_serialize_raw(ap_manager_t* man, const oct_t* a)
+ap_membuf_t oct_serialize_raw(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SERIALIZE_RAW,0);
   ap_membuf_t buf;
   size_t n = 10;
-  if (a->m) 
-    n += bound_serialized_size_array((const bound_t*)a->m,matsize(a->dim));
+  if (a->m) n += bound_serialized_size_array(a->m,matsize(a->dim));
   else if (a->closed) 
-    n += bound_serialized_size_array((const bound_t*)a->closed,matsize(a->dim));
+    n += bound_serialized_size_array(a->closed,matsize(a->dim));
   checked_malloc(buf.ptr,char,n,buf.size=0;return buf;);
   ((unsigned char*)buf.ptr)[0] = num_serialize_id();
   num_dump_word32((char*)buf.ptr+2,a->dim);
@@ -143,16 +144,14 @@ ap_membuf_t oct_serialize_raw(ap_manager_t* man, const oct_t* a)
   n = 10;
   if (a->m) {
     ((char*)buf.ptr)[1] = 1;
-    buf.size = 10 + bound_serialize_array((char*)buf.ptr+10,
-					  (const bound_t*)a->m,
-					  matsize(a->dim));
+    buf.size = 10 + bound_serialize_array
+      ((char*)buf.ptr+10,a->m,matsize(a->dim));
     
   }
   else if (a->closed) {
     ((char*)buf.ptr)[1] = 2;
-    buf.size = 10 + bound_serialize_array((char*)buf.ptr+10,
-					  (const bound_t*)a->closed,
-					  matsize(a->dim));
+    buf.size = 10 + bound_serialize_array
+      ((char*)buf.ptr+10,a->closed,matsize(a->dim));
   }
   else {
     ((char*)buf.ptr)[1] = 0;
