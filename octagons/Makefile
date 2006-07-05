@@ -1,3 +1,11 @@
+# Makefile
+#
+# APRON Library / Octagonal Domain
+#
+# Copyright (C) Antoine Mine' 2006
+
+# This file is part of the APRON Library, released under LGPL license.  
+# Please read the COPYING file packaged in the distribution.
 
 include ../Makefile.config
 
@@ -20,17 +28,10 @@ INSTALLd = install -d
 
 # C compiler and C preprocessor
 CC = gcc
-CPP = gcc -E
 
 # Library creation
 AR = ar
 SHARED = gcc -shared
-
-# LATEX and others
-LATEX = latex
-TEXI2DVI = texi2dvi
-MAKEINFO = makeinfo
-DVIPS = dvips
 
 OCAMLC = ocamlc.opt 
 OCAMLOPT = ocamlopt.opt
@@ -73,55 +74,72 @@ CCSOURCES = oct_hmat.c oct_print.c oct_transfer.c oct_closure.c oct_nary.c \
 
 CCINC = oct.h oct_internal.h setround.h
 
-CCINC_TO_INSTALL = $(CCINC)
-CCBIN_TO_INSTALL =
-CCLIB_TO_INSTALL =
-
-CAML_TO_INSTALL = 
-
+# trigers a whole recompilation
+DEPS = $(APRON_PREFIX)/include/ap_abstract0.h
 
 #---------------------------------------
 # Rules
 #---------------------------------------
 
-# Possible goals:
-# depend doc install
-# and the following one
+root:
+	@echo
+	@echo "Please choose a target from:"
+	@echo
+	@echo " single C library  : Zi Zl Zg Qi Ql Qg Fd Fl"
+	@echo " C & OCaml library : allZi allZl allZg allQi allQl allQg allFd allFl "
+	@echo " all               : to compile everything "
+	@echo " install           : to install what has been compiled"
+	@echo " uninstall         : to uninstall everything"
+	@echo
 
-all: liboct test ml
+all: allZi allZl allZg allQi allQl allQg allFd allFl
 
-liboct: liboctZi.a liboctZl.a liboctZg.a liboctQi.a liboctQl.a liboctQg.a liboctFd.a liboctFl.a
+allZi: Zi octtestZi mlZi
+allZl: Zl octtestZl mlZl
+allZg: Zg octtestZg mlZg
+allQi: Qi octtestQi mlQi
+allQl: Ql octtestQl mlQl
+allQg: Qg octtestQg mlQg
+allFd: Fd octtestFd mlFd
+allFl: Fl octtestFl mlFl
 
-test: testZi testZl testZg testQi testQl testQg testFd testFl
-
-ml: mlZi mlZl mlZg mlQi mlQl mlQg mlFd mlFl
-
+Zi: liboctZi.a
+Zl: liboctZl.a
+Zg: liboctZg.a
+Qi: liboctQi.a
+Ql: liboctQl.a
+Qg: liboctQg.a
+Fd: liboctFd.a
+Fl: liboctFl.a
 
 clean:
-	/bin/rm -f *.[ao] *.so test*
+	/bin/rm -f *.[ao] *.so octtest*
 	/bin/rm -f *.?.tex *.log *.aux *.bbl *.blg *.toc *.dvi *.ps *.pstex*
 	/bin/rm -fr *.cm[ioax] *.cmxa
 	/bin/rm -fr oct_caml.c oct.ml oct.mli octtop* octrun* manager.idl tmp
 	/bin/rm -fr *~ \#*\#
 
-install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
+install:
 	$(INSTALLd) $(INCDIR)/oct $(LIBDIR)
-	$(INSTALL) $(CCINC_TO_INSTALL) $(INCDIR)/oct
-	for i in $(CCLIB_TO_INSTALL); do \
+	$(INSTALL) $(CCINC) $(INCDIR)/oct
+	for i in liboct??.* liboct??_caml.* oct.idl; do \
 		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
 	done
-	for i in $(CCBIN_TO_INSTALL); do \
+	for i in octtest?? octtop?? octrun??; do \
 		if test -f $$i; then $(INSTALL) $$i $(BINDIR); fi; \
 	done
-	for i in $(CAML_TO_INSTALL); do \
+	for i in oct.mli oct.cmi oct??.cma oct??.cmxa oct??.a; do \
 		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
 	done
 
-distclean: clean
-	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(INCDIR)/oct/$$i; done
-	for i in $(CCLIB_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
-	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(BINDIR)/$$i; done
-	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
+uninstall: clean
+	/bin/rm -fr $(INCDIR)/oct
+	/bin/rm -f $(BINDIR)/octtest?? $(BINDIR)/octtop?? $(BINDIR)/octrun??
+	/bin/rm -f $(LIBDIR)/liboct??.* $(LIBDIR)/liboct??_caml.*
+	/bin/rm -f $(LIBDIR)/oct.mli $(LIBDIR)/oct.cmi $(LIBDIR)/oct.idl $(LIBDIR)/oct??.cma $(LIBDIR)/oct??.cmxa $(LIBDIR)/oct??.a
+	/bin/rm -f Makefile.depend
+
+distclean: clean uninstall
 	/bin/rm -f Makefile.depend
 
 #---------------------------------------
@@ -140,30 +158,30 @@ liboct%.a: $(subst .c,%.o,$(CCSOURCES))
 liboct%.so: $(subst .c,%.o,$(CCSOURCES))
 	$(SHARED) -o $@ $^
 
-test%: liboct%.a oct_test%.o
+octtest%: liboct%.a oct_test%.o
 	$(CC) -o $@ oct_test$*.o \
 	-L$(GMP_PREFIX)/lib -lgmp \
 	-L$(POLKA_PREFIX)/lib \
 	-L$(APRON_PREFIX)/lib -lpolkag_debug -lapron \
 	-L. -loct$* -lm
 
-%Zi.o: %.c $(CCINC)
+%Zi.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_LONGINT -c -o $@ $<
-%Zl.o: %.c $(CCINC)
+%Zl.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_LONGLONGINT -c -o $@ $<
-%Zg.o: %.c $(CCINC)
+%Zg.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
 
-%Qi.o: %.c $(CCINC)
+%Qi.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_LONGRAT -c -o $@ $<
-%Ql.o: %.c $(CCINC)
+%Ql.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
-%Qg.o: %.c $(CCINC)
+%Qg.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
 
-%Fd.o: %.c $(CCINC)
+%Fd.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_DOUBLE -c -o $@ $<
-%Fl.o: %.c $(CCINC)
+%Fl.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_LONGDOUBLE -c -o $@ $<
 
 # TODO: mpfr ?
@@ -206,7 +224,7 @@ octrun%: oct.cmo liboct%_caml.a liboct%.a
 
 oct%.cma: oct.cmo liboct%_caml.a liboct%.a
 	$(OCAMLMKLIB) -o oct$* -custom -linkall -verbose $(OCAMLINC) \
-	apron.cmo oct.cmo \
+	oct.cmo \
         -L$(MLGMPIDL_PREFIX)/lib -lgmp_caml \
 	-L$(GMP_PREFIX)/lib -lgmp \
 	-L$(MLCOMMONINTERFACIDL_PREFIX)/lib -lapron_caml \
@@ -214,9 +232,9 @@ oct%.cma: oct.cmo liboct%_caml.a liboct%.a
 	-L. -loct$*_caml -loct$* \
 	-L$(CAMLIDL_PREFIX)/lib/ocaml -lcamlidl
 
-oct%.cmxa: oct.cmx liboct%_caml.a liboct%.a
+oct%.cmxa oct%.a: oct.cmx liboct%_caml.a liboct%.a
 	$(OCAMLMKLIB) -o oct$* -linkall -verbose $(OCAMLINC) \
-	apron.cmx oct.cmx \
+	oct.cmx \
         -L$(MLGMPIDL_PREFIX)/lib -lgmp_caml \
 	-L$(GMP_PREFIX)/lib -lgmp \
 	-L$(MLCOMMONINTERFACIDL_PREFIX)/lib -lapron_caml \
@@ -230,10 +248,11 @@ liboct%_caml.a: oct_caml%.o
 liboct%_caml.so: oct_caml%.o
 	$(SHARED) -o $@ $^
 
-%_caml.c %.ml %.mli: %.idl sedscript_caml manager.idl
+%_caml.c %.ml %.mli: %.idl sedscript_caml $(DEPS)
 	mkdir -p tmp
-	cp $*.idl tmp/$*.idl
-	$(CAMLIDL) -no-include -nocpp -I $(MLAPRONIDL_PREFIX)/lib tmp/$*.idl
+	cp $(MLAPRONIDL_PREFIX)/lib/*.idl tmp/
+	cp $*.idl tmp/
+	cd tmp && $(CAMLIDL) -no-include -nocpp -I $(MLAPRONIDL_PREFIX)/lib $*.idl
 	cp tmp/$*_stubs.c $*_caml.c
 	sed -f sedscript_caml tmp/$*.ml | grep --extended-regexp '^(.)+$$' >$*.ml
 	sed -f sedscript_caml tmp/$*.mli | grep --extended-regexp '^(.)+$$' >$*.mli
@@ -241,19 +260,19 @@ liboct%_caml.so: oct_caml%.o
 manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
 	ln -fs $^ $@
 
-.PRECIOUS: %_caml.c %.ml %.mli liboct%_caml.a liboct%_caml.so
+.PRECIOUS: %_caml.c %.ml %.mli liboct%_caml.a liboct%_caml.so oct.cmx oct.cmo
 
 #---------------------------------------
 # ML generic rules
 #---------------------------------------
 
-%.cmi: %.mli
+%.cmi: %.mli  $(DEPS)
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -c $<
 
-%.cmo: %.ml %.cmi
+%.cmo: %.ml %.cmi  $(DEPS)
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -c $<
 
-%.cmx: %.ml %.cmi
+%.cmx: %.ml %.cmi  $(DEPS)
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -c $<
 
 
