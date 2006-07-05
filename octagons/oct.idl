@@ -1,11 +1,35 @@
 /* -*- mode: c -*- */
 
+/*
+ * oct.idl
+ *
+ * OCaml interface specification for camlidl
+ *
+ * APRON Library / Octagonal Domain
+ *
+ * Copyright (C) Antoine Mine' 2006
+ *
+ */
+
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
+
+quote(C,"/*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*/")
+quote(MLMLI,"(*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*)")
+
 quote(C,"#include \"oct.h\"")
 quote(C,"#include \"oct_internal.h\"")
 quote(C,"#include \"apron_caml.h\"")
 
+quote(C,"#define I0_CHECK_EXC(man) if (man->result.exn!=AP_EXC_NONE){ value v = camlidl_c2ml_manager_struct_ap_exclog_t(man->result.exclog,_ctx); caml_raise_with_arg(*caml_named_value(\"apron exception\"),v); } ")
+
+
 quote(C,"typedef struct oct_internal_t* internal_ptr;")
 
+import "generator0.idl";
+import "abstract0.idl";
+import "scalar.idl";
 import "manager.idl";
 
 typedef [abstract] struct oct_internal_t* internal_ptr;
@@ -19,3 +43,24 @@ if (strcmp(man->library,\"oct\")!=0){\n\
 }\n\
 _res = (internal_ptr)man->internal;\n\
 ");
+
+quote(MLI,"\n(** Approximate a set of generators to an abstract value, with best precision. *)")
+ap_abstract0_ptr ap_abstract0_oct_of_generator_array(ap_manager_ptr man, int v1, int v2, [ref]struct ap_generator0_array_t* v3)
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLI,"\n(** Widening with scalar thresholds. *)")  
+ap_abstract0_ptr ap_abstract0_oct_widening_thresholds(ap_manager_ptr man,ap_abstract0_ptr a1,ap_abstract0_ptr a2,struct ap_scalar_array_t array)
+     quote(call,"_res = ap_abstract0_oct_widening_thresholds(man,a1,a2,(const ap_scalar_t**)array.p,array.size);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLI,"\n(** Standard narrowing. *)")  
+ap_abstract0_ptr ap_abstract0_oct_narrowing(ap_manager_ptr man, ap_abstract0_ptr a1,ap_abstract0_ptr a2)
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLI,"\n(** Perturbation. *)")  
+ap_abstract0_ptr ap_abstract0_oct_add_epsilon(ap_manager_ptr man,ap_abstract0_ptr a,ap_scalar_ptr epsilon)
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+quote(MLI,"\n(** Algorithms. *)")
+const int pre_widening = 99;
+

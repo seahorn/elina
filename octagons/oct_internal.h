@@ -10,8 +10,12 @@
  *
  */
 
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
+
 #ifndef __OCT_INTERNAL_H
-#define __OCT_H
+#define __OCT_INTERNAL_H
 
 #include "oct_fun.h"
 
@@ -400,6 +404,8 @@ static inline void bounds_of_coeff(oct_internal_t* pr,
   }
 }
 
+void bounds_of_generator(oct_internal_t* pr, bound_t* dst, 
+			 const ap_linexpr0_t* e, size_t dim);
 
 /* ============================================================ */
 /* III.3 Conversions to user types */

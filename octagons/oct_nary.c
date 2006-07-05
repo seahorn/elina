@@ -1,13 +1,17 @@
 /*
  * oct_nary.c
  *
- * N-ary octagon functions: meet, join and widening
+ * N-ary octagon functions: meet, join, widening, narrowing & related.
  *
  * APRON Library / Octagonal Domain
  *
  * Copyright (C) Antoine Mine' 2006
  *
  */
+
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
 
 #include "oct.h"
 #include "oct_internal.h"
@@ -284,5 +288,56 @@ ap_abstract0_oct_widening_thresholds(ap_manager_t* man,
   return 
     abstract0_of_oct(man,oct_widening_thresholds
 		     (man,a1->value,a2->value,array,nb));
+}
+
+
+/* ============================================================ */
+/* Perturbation */
+/* ============================================================ */
+
+oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, const ap_scalar_t* epsilon)
+{
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,2);
+  oct_t* r = oct_alloc_internal(pr,a->dim,a->intdim);
+  bound_t* m;
+  if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
+  m = a->closed ? a->closed : a->m;
+  if (m) {
+    size_t i;
+    /* compute max of finite bounds */
+    bound_set_int(pr->tmp[0],0);
+    for (i=0;i<matsize(a->dim);i++) {
+      if (bound_infty(m[i])) continue;
+      if (bound_sgn(m[i])>=0) 
+	bound_max(pr->tmp[0],pr->tmp[0],m[i]);
+      else {
+	bound_neg(pr->tmp[1],m[i]);
+	bound_max(pr->tmp[0],pr->tmp[0],pr->tmp[1]);
+      }
+    }
+    if (bound_sgn(pr->tmp[0])>0) {
+      /* multiply by epsilon */
+      bound_of_scalar(pr,pr->tmp[1],epsilon,false,false);
+      bound_mul(pr->tmp[0],pr->tmp[0],pr->tmp[1]);
+      /* enlarge bounds */
+      r->m = hmat_alloc(pr,r->dim);
+      for (i=0;i<matsize(r->dim);i++)
+	bound_add(r->m[i],m[i],pr->tmp[0]);
+    }
+    else r->m = hmat_copy(pr,m,r->dim);
+  }
+  return r;
+}
+
+ap_abstract0_t* 
+ap_abstract0_oct_add_epsilon(ap_manager_t* man, 
+			     const ap_abstract0_t* a1, 
+			     const ap_scalar_t* epsilon)
+{
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
+  oct_t* a = (oct_t*) (a1->value);
+  arg_assert(man->library==a1->man->library,
+	     return abstract0_of_oct(man,oct_alloc_top(pr,a->dim,a->intdim)););
+  return abstract0_of_oct(man,oct_add_epsilon(man,a,epsilon));
 }
 

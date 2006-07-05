@@ -10,6 +10,10 @@
  *
  */
 
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
+
 #ifndef __OCT_FUN_H
 #define __OCT_FUN_H
 
@@ -371,6 +375,9 @@ oct_t* oct_widening_const_threshold(ap_manager_t* man,
 oct_t* oct_narrowing(ap_manager_t* man, oct_t* a1, oct_t* a2);
   /* Standard narrowing: refine only +oo constraint */
 
+oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, const ap_scalar_t* epsilon);
+  /* Enlarge each bound by epsilon times the maximum finite bound in 
+     the octagon */
 
 /* ============================================================ */
 /* III.7 Topological closure operation */

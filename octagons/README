@@ -1,0 +1,114 @@
+# README
+#
+# Installation documentation
+#
+# APRON Library / Octagonal Domain
+#
+# Copyright (C) Antoine Mine' 2006
+
+# This file is part of the APRON Library, released under LGPL license.
+# Please read the COPYING file packaged in the distribution
+
+This package is a implementation of the octagon abstract domain that
+conforms to the APRON interface.
+It includes both a C and a OCaml interface.
+
+
+DOCUMENTATION
+=============
+
+This file presents installation instructions only.
+Please see the oct_doc.html file for how to use the octagon library.
+Actually, the oct_doc.html only documents only those features that are
+specific to the octagon implementation. For other features, you should read
+the generic APRON documentation.
+
+
+C LIBRARY
+=========
+
+Requirements:
+ * the APRON library (including the apron and num modules)
+ * the GMP library
+
+Provided libraries.
+Several versions of the octagon domain are provided, based on different 
+internal representation for numbers. 
+They are distinguished by a two-letter "numeric suffix":
+ * Zi : integers with a plain "int" representation
+ * Zl : integers with a "long" representation
+ * Zg : arbitrary precision integers using GMP
+ * Qi : rationals with a "int" representation
+ * Ql : rationals with a "long" representation
+ * Qg : arbitrary precision rationals using GMP
+ * Fd : reals with a "double" representation
+ * Fl : reals with a "long double" representation
+
+Given the numeric suffix Xx, the library is named liboctXx.a.
+
+How to compile (given a numeric suffix Xx):
+ 1) the parent directory must contain a Makefile.config file
+ 2) make sure the Makefile.config has the following variables defined:
+    OCT_PREFIX    where to install the octagon library
+    APRON_PREFIX  where the apron module from APRON is installed
+    NUM_PREFIX    where the num module from APRON is installed
+    GMP_PREFIX    where the GMP library is installed
+ 3) "make Xx"
+ 4) "make install" will install the compiled C library(ies) in
+     OCT_PREFIX/lib, and the headers in OCT_PREFIX/include/oct
+
+Note that "make allXx" is a shortcut for "make Xx octtestXx mlXx"
+(including the self-testing utility and OCaml library, see bellow)
+while "make all" is a shortcut for "make allZi allZl ... allFl", that is,
+it builds everything.
+
+Note that "make uninstall" will uninstall all the octagon libraries currently
+exiting in the OCT_PREFIX directory.
+
+
+SELF-TEST
+=========
+
+The distribution contains a self-testing utility.
+Given the numeric suffix Xx, the utility is names octtestXx
+
+Requirements:
+ * All of the above
+ * the newpolka module for APRON
+
+How to use (given a numeric suffix Xx):
+ 1) make sure the Makefile.config file has the POLKA_PREFIX variable defined
+ 2) type "make octtestXx" 
+ 3) run with "./octtestXx"
+
+The self-test compares the result on the octagon domain and the polyhedron
+domain to check for soundness.
+It generates random constraints, and so, its result vary from run to run.
+
+
+OCAML LIBRARY
+=============
+
+Requirements:
+ * OCaml 3.09
+ * the GMP library
+ * the APRON library (including the apron, num, mlgmpidl, and mlapronidl
+   modules)
+ * camlidl
+
+How to compile (given a numeric suffix Xx):
+ 1) make sure the Makefile.config has the following variables defined:
+    CAML_PREFIX        where the standard OCaml distribution is installed
+                       (without the /bin/ocaml suffix)
+    CAMLIDL_PREFIX     where the camlidl distribution is installed
+    MLAPRONIDL_PREFIX  where the OCaml binding for APRON is installed
+    MLGMPIDL_PREFIX    where the OCaml binding for GMP from APRON is installed
+ 2) "make mlXx"
+ 3) "make install" will install the OCaml module(s) in OCT_PREFIX/lib
+
+The library to link with is called octXx.cma, for byte-code, and octXx.cmxa 
+for native code.
+The corresponding module is always called Oct (without numeric suffix).
+Also, a top-level octtopXx and a byte-code run-time octrunXx are built and
+installed in OCT_PREFIX/bin.
+

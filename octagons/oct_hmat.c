@@ -9,6 +9,10 @@
  *
  */
 
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
+
 #include "oct.h"
 #include "oct_internal.h"
 
@@ -51,7 +55,9 @@
 inline bound_t* hmat_alloc(oct_internal_t* pr, size_t dim)
 {
   bound_t* r;
-  checked_malloc(r,bound_t,matsize(dim),return NULL;);
+  size_t sz = matsize(dim);
+  if (!sz) sz = 1; /* make sure we never malloc a O-sized block */
+  checked_malloc(r,bound_t,sz,return NULL;);
   bound_init_array(r,matsize(dim));
   return r;
 }

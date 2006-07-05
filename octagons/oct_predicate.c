@@ -9,6 +9,10 @@
  *
  */
 
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
+
 #include "oct.h"
 #include "oct_internal.h"
 
@@ -392,7 +396,7 @@ ap_lincons0_array_t oct_to_lincons_array(ap_manager_t* man, oct_t* a)
   }
   else {
     /* put non-oo constraint bounds only */
-    bound_t* m = a->m ? a->m : a->closed; /* not closed => less constraints */
+    bound_t* m = a->closed ? a->closed : a->m;
     size_t i,j,n=0;
     ar = ap_lincons0_array_make(matsize(a->dim));
     for (i=0;i<2*a->dim;i++)

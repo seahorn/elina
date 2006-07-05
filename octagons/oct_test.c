@@ -9,6 +9,10 @@
  *
  */
 
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -1455,7 +1459,6 @@ void tests(int algo)
     mp->option.funopt[i].algorithm = algo;
   }
   printf("\nstarting tests with algo=%i\n",algo);
-#if 0
   /* tests */
   test_misc();
   test_serialize();
@@ -1483,7 +1486,6 @@ void tests(int algo)
   test_sat_lincons(expr_oct);
   test_sat_lincons(expr_lin);
   test_sat_lincons(expr_interv);
-#endif
   test_dimadd();
   test_dimrem();
   test_permute();

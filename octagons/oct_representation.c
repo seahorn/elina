@@ -9,6 +9,10 @@
  *
  */
 
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
+
 #include "oct.h"
 #include "oct_internal.h"
 #include "setround.h"
@@ -202,9 +206,9 @@ oct_t* oct_of_generator_array(ap_manager_t* man,
 }
 
 ap_abstract0_t* 
-ap_abstract0_of_generator_array(ap_manager_t* man,
-				size_t intdim, size_t realdim,
-				const ap_generator0_array_t* array)
+ap_abstract0_oct_of_generator_array(ap_manager_t* man,
+				    size_t intdim, size_t realdim,
+				    const ap_generator0_array_t* array)
 {
   return abstract0_of_oct(man,oct_of_generator_array(man,intdim,realdim,array));
 }

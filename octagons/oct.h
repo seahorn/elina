@@ -10,6 +10,10 @@
  *
  */
 
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
+
 #ifndef __OCT_H
 #define __OCT_H
 
@@ -77,6 +81,12 @@ static const int oct_pre_widening = 99;
      sequence will converge. Also, it converges more slowly, and so, gives
      a better precision. */
 
+ap_abstract0_t* 
+ap_abstract0_oct_add_epsilon(ap_manager_t* man, 
+			     const ap_abstract0_t* a, 
+			     const ap_scalar_t* epsilon);
+  /* Enlarge each bound by epsilon times the maximum finite bound in 
+     the octagon */
 
 #ifdef __cplusplus
 }
