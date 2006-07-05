@@ -25,6 +25,9 @@ mlapronidl:
 newpolka:
 	convex polyhedra library
 
+octagons:
+	octagon library
+
 Makefile.config.model:
 	common configuration file model (to be copied to Makefile.config)
 	(installation directories mainly)

@@ -47,3 +47,7 @@ ITV_PREFIX =
 # Where to install and to find OMEGA
 OMEGA_PREFIX = 
 # OMEGA_PREFIX = $(APRON_PREFIX)
+
+# Where to install and to find the octagon library
+OCT_PREFIX = 
+# OCT_PREFIX = $(APRON_PREFIX)
