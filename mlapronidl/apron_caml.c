@@ -77,7 +77,7 @@ int camlidl_apron_linexpr0_ptr_compare(value v1, value v2)
 }
 
 struct custom_operations camlidl_apron_custom_linexpr0_ptr = {
-  NULL,
+  "apl0",
   camlidl_apron_linexpr0_ptr_finalize,
   camlidl_apron_linexpr0_ptr_compare,
   camlidl_apron_linexpr0_ptr_hash,
@@ -99,13 +99,57 @@ void camlidl_apron_abstract0_ptr_finalize(value v)
   ap_abstract0_free(a->man,a);
 }
 
+
+/* global manager used for deserialization */
+static ap_manager_ptr deserialize_man = NULL;
+
+void ap_manager_set_deserialize(ap_manager_ptr man)
+{
+  deserialize_man = man;
+}
+
+ap_manager_ptr ap_manager_get_deserialize(void)
+{
+  return deserialize_man;
+}
+
+static
+void camlidl_apron_abstract0_serialize(value v, unsigned long * w32, unsigned long * w64)
+{
+  ap_abstract0_ptr* p = (ap_abstract0_ptr *) Data_custom_val(v);
+  const ap_abstract0_t* a = *p;
+  ap_membuf_t buf = ap_abstract0_serialize_raw(a->man,a);
+  serialize_int_8(buf.size);
+  serialize_block_1(buf.ptr,buf.size);
+  *w32 = 4;
+  *w64 = 8;
+}
+
+static
+unsigned long camlidl_apron_abstract0_deserialize(void * dst)
+{
+  if (deserialize_man) {
+    size_t size = deserialize_uint_8(), realsize;
+    void* data;
+    ap_abstract0_t* a;
+    data = malloc(size);
+    assert(data);
+    deserialize_block_1(data,size);
+    *((ap_abstract0_ptr*)dst) = 
+      ap_abstract0_deserialize_raw(deserialize_man,data,&realsize);
+    free(data);
+  }
+  else caml_failwith("you must call Apron.Manager.set_deserialize_manager before deserializing abstract elements.");
+  return sizeof(ap_abstract0_ptr);
+}
+
 struct custom_operations camlidl_apron_custom_abstract0_ptr = {
-  NULL,
+  "apa0",
   camlidl_apron_abstract0_ptr_finalize,
   custom_compare_default,
   custom_hash_default,
-  custom_serialize_default,
-  custom_deserialize_default
+  camlidl_apron_abstract0_serialize,
+  camlidl_apron_abstract0_deserialize
 };
 
 /* ********************************************************************** */
@@ -211,10 +255,19 @@ int camlidl_apron_environment_ptr_compare(value v1, value v2)
 }
 
 struct custom_operations camlidl_apron_custom_environment_ptr = {
-  NULL,
+  "ape",
   camlidl_apron_environment_ptr_finalize,
   camlidl_apron_environment_ptr_compare,
   camlidl_apron_environment_ptr_hash,
   custom_serialize_default,
   custom_deserialize_default
 };
+
+/* ********************************************************************** */
+/* init */
+/* ********************************************************************** */
+value camlidl_apron_init(value dummy)
+{
+  register_custom_operations(&camlidl_apron_custom_abstract0_ptr);
+  return Val_unit;
+}

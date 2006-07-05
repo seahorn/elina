@@ -33,6 +33,7 @@ s/ap_funopt_t/funopt/g;
 s/ ap_funopt_/ funopt_/g;
 s/ap_exclog_t/exclog/g;
 s/ap_manager_ptr/t/g;
+s/ap_manager_t/t/g;
 s/external ap_manager_/external /g;
 s/ap_abstract0_ptr/t/g;
 s/external ap_abstract0_/external /g;

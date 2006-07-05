@@ -26,6 +26,7 @@
 #include <caml/callback.h>
 #include <caml/custom.h>
 #include <caml/bigarray.h>
+#include <caml/intext.h>
 
 struct ap_interval_array_t {
   struct ap_interval_t** p;
@@ -41,6 +42,7 @@ typedef struct ap_interval_t* ap_interval_ptr;
 typedef struct ap_scalar_t* ap_scalar_ptr;
 typedef struct ap_linexpr0_t* ap_linexpr0_ptr;
 typedef struct ap_manager_t* ap_manager_ptr;
+typedef struct ap_manager_t* ap_manager_opt_ptr;
 typedef struct ap_environment_t* ap_environment_ptr;
 
 typedef ap_abstract0_t* ap_abstract0_ptr;
@@ -87,6 +89,9 @@ value camlidl_apron_manager_ptr_finalize(ap_manager_ptr* p){
   ap_manager_free(*p);
   return 0;
 }
+
+void ap_manager_set_deserialize(ap_manager_ptr man);
+ap_manager_ptr ap_manager_get_deserialize(void);
 
 /* ********************************************************************** */
 /* abstract0 */
@@ -142,5 +147,10 @@ value camlidl_apron_environment_ptr_c2ml(ap_environment_ptr* p)
   *((ap_environment_ptr *) Data_custom_val(v)) = *p;
   return v;
 }
+
+/* ********************************************************************** */
+/* init */
+/* ********************************************************************** */
+value camlidl_apron_init(value dummy);
 
 #endif

@@ -292,3 +292,11 @@ let string_of_exc = function\n\
 \n\
 let print_tbool fmt x = Format.pp_print_string fmt (string_of_tbool x)\n\
 ")
+
+quote(MLI,"(** Set / get the global manager used for deserialization *)")
+void ap_manager_set_deserialize(ap_manager_ptr man);
+ap_manager_ptr ap_manager_get_deserialize();
+
+/* Init */
+quote(ML,"external init: unit -> unit = \"camlidl_apron_init\"\n")
+quote(ML,"let _ = init()")
