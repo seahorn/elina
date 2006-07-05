@@ -137,9 +137,9 @@ apron.cmx apron.o: $(MLOBJx)
 	$(OCAMLOPT) -pack -o $@ $(MLOBJx)
 
 mpz.idl: $(MLGMPIDL_PREFIX)/lib/mpz.idl
-	ln -s $^ $@
+	ln -fs $^ $@
 mpq.idl: $(MLGMPIDL_PREFIX)/lib/mpq.idl
-	ln -s $^ $@
+	ln -fs $^ $@
 
 #---------------------------------------
 # TEX and HTML rules
