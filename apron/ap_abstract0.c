@@ -293,6 +293,7 @@ ap_dim_t ap_abstract0_check_linexpr_check(ap_dimension_t dimension,
 	break;
       }
     }
+    if (!dim) dim = AP_DIM_MAX;
     break;
   default:
     abort();
@@ -328,7 +329,7 @@ bool ap_abstract0_check_linexpr(ap_funid_t funid, ap_manager_t* man,
   ap_dim_t dim = ap_abstract0_check_linexpr_check(dimension,expr);
   if (dim!=AP_DIM_MAX){
     ap_abstract0_check_linexpr_raise(funid,man,dimension,dim,
-				  "incompatible dimension in the linear expression for the bastract value");
+				  "incompatible dimension in the linear expression for the abstract value");
     return false;
   } else {
     return true;
