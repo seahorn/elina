@@ -663,10 +663,12 @@ void poly_fprint(FILE* stream, ap_manager_t* man, const poly_t* po,
   poly_chernikova(man,po,NULL);
   if (!po->C && !po->F){
     assert(pk->exn == AP_EXC_NONE);
-    fprintf(stream,"empty polyhedron of dim (%d,%d)\n",po->intdim,po->realdim);
+    fprintf(stream,"empty polyhedron of dim (%lu,%lu)\n",
+	    (unsigned long)po->intdim,(unsigned long)po->realdim);
   }
   else {
-    fprintf(stream,"polyhedron of dim (%d,%d)\n",po->intdim,po->realdim);
+    fprintf(stream,"polyhedron of dim (%lu,%lu)\n",
+	    (unsigned long)po->intdim,(unsigned long)po->realdim);
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
       fprintf(stream,"cannot display due to exception\n");
@@ -692,9 +694,11 @@ void poly_fdump(FILE* stream, ap_manager_t* man, const poly_t* po)
 {
   pk_init_from_manager(man,AP_FUNID_FDUMP);
   if (!po->C && !po->F)
-    fprintf(stream,"empty polyhedron of dim (%d,%d)\n",po->intdim,po->realdim);
+    fprintf(stream,"empty polyhedron of dim (%lu,%lu)\n",
+	    (unsigned long)po->intdim,(unsigned long)po->realdim);
   else {
-    fprintf(stream,"polyhedron of dim (%d,%d)\n",po->intdim,po->realdim);
+    fprintf(stream,"polyhedron of dim (%lu,%lu)\n",
+	    (unsigned long)po->intdim,(unsigned long)po->realdim);
     if (po->C){
       fprintf(stream,"Constraints: ");
       matrix_fprint(stream, po->C);
@@ -819,14 +823,14 @@ bool poly_check(pk_internal_t* pk, const poly_t* poly)
     return true;
 
   if (po->C->nbcolumns != nbcols || po->F->nbcolumns != nbcols){
-    fprintf(stderr,"poly_check: po->C->nbcolumns==%d, po->F->nbcolumns==%d\n",
-	    po->C->nbcolumns, po->F->nbcolumns);
+    fprintf(stderr,"poly_check: po->C->nbcolumns==%lu, po->F->nbcolumns==%lu\n",
+	    (unsigned long)po->C->nbcolumns, (unsigned long)po->F->nbcolumns);
     return false;
   }
   if (po->satC){
     if (po->satC->nbrows!=po->F->nbrows){
-      fprintf(stderr,"poly_check: po->satC->nbrows==%d, po->F->nbrows==%d\n",
-	    po->satC->nbrows, po->F->nbrows);
+      fprintf(stderr,"poly_check: po->satC->nbrows==%lu, po->F->nbrows==%lu\n",
+	    (unsigned long)po->satC->nbrows,(unsigned long)po->F->nbrows);
       return false;
     }
     if (!cherni_checksat(pk,true,
@@ -844,8 +848,8 @@ bool poly_check(pk_internal_t* pk, const poly_t* poly)
   }
   if (po->satF){
     if (po->satF->nbrows!=po->C->nbrows){
-      fprintf(stderr,"poly_check: po->satF->nbrows==%d, po->C->nbrows==%d\n",
-	    po->satF->nbrows, po->C->nbrows);
+      fprintf(stderr,"poly_check: po->satF->nbrows==%lu, po->C->nbrows==%lu\n",
+	    (unsigned long)po->satF->nbrows, (unsigned long)po->C->nbrows);
       return false;
     }
     if (!cherni_checksat(pk,false,

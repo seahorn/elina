@@ -39,8 +39,8 @@ bool cherni_checksatmat(pk_internal_t* pk,
       s1 = numint_sgn(pk->cherni_prod);
       s2 = satmat_get(satC,i,j);
       if (s1<0 || (s1!=0 && s2==0) || (s1==0 && s2!=0)){
-	printf("cherni_checksatmat con_to_ray=%d: ray %d, con %d\n",
-	       con_to_ray,i,j.index);
+	printf("cherni_checksatmat con_to_ray=%d: ray %lu, con %lu\n",
+	       con_to_ray,(unsigned long)i,(unsigned long)j.index);
 	printf("Constraints\n"); matrix_print(C);
 	printf("Frames\n"); matrix_print(F);
 	satmat_print(satC);
@@ -81,8 +81,9 @@ bool cherni_checksat(pk_internal_t* pk,
     rank = cherni_gauss(pk,mat,nb);
     if (!( (numint_sgn(F->p[i][0])==0 && nb == C->nbrows)
 	   || (rank==nbcols-2-nblines && nb >= rank))){
-      printf("cherni_checksat con_to_ray=%d: wrong ray %d; expected = %d, effective = (%d<=%d)\n",
-	     con_to_ray,i,nbcols-2-nblines,rank,nb);
+      printf("cherni_checksat con_to_ray=%d: wrong ray %lu; expected = %lu, effective = (%lu<=%lu)\n",
+	     con_to_ray,(unsigned long)i,(unsigned long)(nbcols-2-nblines),
+	     (unsigned long)rank,(unsigned long)nb);
       res = false;
     }
   }
@@ -103,8 +104,8 @@ bool cherni_checksat(pk_internal_t* pk,
     rank = cherni_gauss(pk,mat,nb);
     if (!( (numint_sgn(C->p[j.index][0])==0 && nb == F->nbrows)
 	   || (rank==nbcols-2-nbequations && nb >= rank))){
-      printf("cherni_checksat con_to_ray=%d: wrong con %d; expected = %d, effective = (%d<=%d)\n",
-	     con_to_ray, j.index, nbcols-2-nbequations, rank,nb);
+      printf("cherni_checksat con_to_ray=%d: wrong con %lu; expected = %lu, effective = (%lu<=%lu)\n",
+	     con_to_ray, (unsigned long)j.index, (unsigned long)(nbcols-2-nbequations), (unsigned long)rank,(unsigned long)nb);
       res = false;
     }
   }

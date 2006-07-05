@@ -140,9 +140,10 @@ satmat_t* satmat_copy_extend_columns(const satmat_t* sat, size_t nbcols)
 /* Raw printing function. */
 void satmat_fprint(FILE* stream, const satmat_t* sat)
 {
-  int i;
+  size_t i;
 
-  fprintf(stream,"%d %d\n",sat->nbrows,sat->nbcolumns);
+  fprintf(stream,"%lu %lu\n",
+	  (unsigned long)sat->nbrows,(unsigned long)sat->nbcolumns);
   for (i=0; i<sat->nbrows; i++){
     bitstring_fprint(stream,sat->p[i],sat->nbcolumns);
     fprintf(stream,"\n");

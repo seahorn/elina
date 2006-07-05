@@ -21,10 +21,10 @@ bool manager_check_dim_dim(manager_t* man,
 
     snprintf(str,160,"\
 incompatible dimensions for the two arguments:\n\
-abstract:  (%3d,%3d)\n\
-dimension: %3d\n",
-	     a->intdim,
-	     a->realdim,dim);
+abstract:  (%3lu,%3lu)\n\
+dimension: %3u\n",
+	     (unsigned long)a->intdim,
+	     (unsigned long)a->realdim,dim);
     str2 = strdup(str);
     manager_raise_exception(man,
 			    EXC_INVALID_ARGUMENT,
@@ -46,12 +46,12 @@ bool manager_check_dim_bin(manager_t* man,
 
     snprintf(str,160,"\
 incompatible dimensions for the two arguments:\n\
-first abstract:  (%3d,%3d)\n\
-second abstract: (%3d,%3d)",
-	     pa->intdim,
-	     pa->realdim,
-	     pb->intdim,
-	     pb->realdim);
+first abstract:  (%3lu,%3lu)\n\
+second abstract: (%3lu,%3lu)",
+	     (unsigned long)pa->intdim,
+	     (unsigned long)pa->realdim,
+	     (unsigned long)pb->intdim,
+	     (unsigned long)pb->realdim);
     str2 = strdup(str);
     manager_raise_exception(man,
 			    EXC_INVALID_ARGUMENT,
@@ -92,14 +92,14 @@ bool manager_check_dim_array(manager_t* man,
     }
     else {
       char* str = malloc(160+80*size);
-      int i,count;
+      size_t i,count;
 
       count = sprintf(str,"incompatible dimensions for the array of polyhedra\n");
       for (i=0; i<size; i++){
-	count += sprintf(str+count,"abstract %i: (%3d,%3d)\n",
-			 i,
-			 po[i]->intdim,
-			 po[i]->realdim);
+	count += sprintf(str+count,"abstract %lu: (%3lu,%3lu)\n",
+			 (unsigned long)i,
+			 (unsigned long)po[i]->intdim,
+			 (unsigned long)po[i]->realdim);
       }
       str2 = strdup(str);
       free(str);
@@ -149,9 +149,9 @@ bool manager_check_dim_linexpr(manager_t* man,
     char str[160];
     char* str2;
     count = sprintf(str,"incompatible dimension in the linear expression\n");
-    count += sprintf(str+count,"poly value: (%3d,%3d), dimension %d\n",
-		     a->intdim,
-		     a->realdim,
+    count += sprintf(str+count,"poly value: (%3lu,%3lu), dimension %u\n",
+		     (unsigned long)a->intdim,
+		     (unsigned long)a->realdim,
 		     dim);
     str2 = strdup(str);
     manager_raise_exception(man,

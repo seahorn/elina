@@ -24,7 +24,8 @@ void bitindex_fprint(FILE* stream, const bitindex_t* bi)
     k++;
     m >>= 1;
   } while (m!=0);
-  fprintf(stream,"index=%d, word=%d, bit=%d\n",bi->index,bi->word,k);
+  fprintf(stream,"index=%lu, word=%lu, bit=%d\n",
+	  (unsigned long)bi->index,(unsigned long)bi->word,k);
 }
 void bitindex_print(const bitindex_t* bi)
 {

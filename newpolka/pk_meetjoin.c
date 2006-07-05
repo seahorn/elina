@@ -348,7 +348,7 @@ poly_t* _poly_meet_array(bool meet,
   else {
     matrix_t* C;
     size_t nbrows;
-    int i,j;
+    size_t i,j;
 
     man->result.flag_best = tbool_true;
     man->result.flag_exact = meet ? tbool_true : tbool_top;
@@ -358,7 +358,7 @@ poly_t* _poly_meet_array(bool meet,
     i = 0;
     while (i<size){
       char str[80];
-      sprintf(str,"of the %d argument",i);
+      sprintf(str,"of the %lu argument",(unsigned long)i);
       if (lazy)
 	poly_obtain_C_dual(man,po[i],str,meet);
       else 

@@ -134,8 +134,9 @@ matrix_t* matrix_copy(const matrix_t* mat)
 /* Raw printing function. */
 void matrix_fprint(FILE* stream, const matrix_t* mat)
 {
-  int i,j;
-  fprintf(stream,"%d %d\n", mat->nbrows, mat->nbcolumns);
+  size_t i,j;
+  fprintf(stream,"%lu %lu\n", 
+	  (unsigned long)mat->nbrows, (unsigned long)mat->nbcolumns);
   for (i=0;i<mat->nbrows;i++) {
     for (j=0;j<mat->nbcolumns;j++){
       numint_fprint(stream,mat->p[i][j]);
