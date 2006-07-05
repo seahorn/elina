@@ -1,13 +1,17 @@
 /*
  * oct_transfer.c
  *
- * Assignment and guard transfer functions
+ * Assignment, substitution, guard transfer functions.
  *
  * APRON Library / Octagonal Domain
  *
  * Copyright (C) Antoine Mine' 2006
  *
  */
+
+/* This file is part of the APRON Library, released under LGPL license.  
+   Please read the COPYING file packaged in the distribution.
+*/
 
 #include "oct.h"
 #include "oct_internal.h"
@@ -138,6 +142,7 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
       /*  c_i X_i + [-a,b] >= 0 <=> -c_i X_i <= b */
       if (c==AP_CONS_EQ) bound_bmin(b[matpos(ui^1,ui)],pr->tmp[0]);
       /*  c_i X_i + [-a,b] <= 0 <=>  c_i X_i <= a */
+      if (c==AP_CONS_SUP) *exact = 0; /* not exact for strict constraints */
       break;
 
     case BINARY:
@@ -147,26 +152,33 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
       /*  c_i X_i + c_j X_j + [-a,b] >= 0 <=> -c_i X_i - c_j X_j <= b */
       if (c==AP_CONS_EQ) bound_bmin(b[matpos2(uj^1,ui)],pr->tmp[0]);
       /*  c_i X_i + c_j X_j + [-a,b] <= 0 <=>  c_i X_i + c_j X_j <= a */
+      if (c==AP_CONS_SUP) *exact = 0; /* not exact for strict constraints */
       break;
 
     case OTHER:
       {
 	/* general, approximated case */
    
-	bound_t tmpa, tmpb, Cb;
+	bound_t tmpa, tmpb, Cb, cb;
 	int Cinf = 0;    /* number of infinite upper bounds */
 	size_t Cj1, Cj2; /* variable index with infinite bound */
+	int cinf = 0;    /* number of infinite lower bounds */
+	size_t cj1, cj2; /* variable index with infinite bound */
 	
-	bound_init(tmpa); bound_init(tmpb); bound_init(Cb);
+	bound_init(tmpa); bound_init(tmpb); bound_init(Cb); bound_init(cb);
 
 	/* compute 2 * upper bound, ignoring components leading to +oo */
 	bound_mul_2(Cb,pr->tmp[1]);
 	for (j=0;j<dim;j++) {
 	  bounds_mul(tmpa,tmpb, b[matpos(2*j,2*j+1)],b[matpos(2*j+1,2*j)],
 		     pr->tmp[2*j+2],pr->tmp[2*j+3], pr->tmp+2*(dim+1));
+	  if (bound_infty(tmpa)) { cinf++; cj2 = cj1; cj1 = j; } 
+	  else bound_badd(cb,tmpa);
 	  if (bound_infty(tmpb)) { Cinf++; Cj2 = Cj1; Cj1 = j; } 
 	  else bound_badd(Cb,tmpb);
 	}
+
+	/* upper bound */
 
 	if (bound_infty(Cb)) ;
 
@@ -211,7 +223,7 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 	      !bound_cmp_int(pr->tmp[2*Cj1+2], 1)) uj = 2*Cj1+1;
 	  else if (!bound_cmp_int(pr->tmp[2*Cj1+3], 1) &&
 		   !bound_cmp_int(pr->tmp[2*Cj1+2],-1)) uj = 2*Cj1;
-	  else goto brk;
+	  else goto Cbrk;
 	  for (k=0;k<dim;k++) {
 	    if (k==Cj1) continue;
 	    if (bound_cmp_int(pr->tmp[2*k+2],-1)<=0 && 
@@ -237,20 +249,94 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 	      !bound_cmp_int(pr->tmp[2*Cj1+2], 1)) ui = 2*Cj1+1;
 	  else if (!bound_cmp_int(pr->tmp[2*Cj1+3], 1) &&
 		   !bound_cmp_int(pr->tmp[2*Cj1+2],-1)) ui = 2*Cj1;
-	  else goto brk;
+	  else goto Cbrk;
 	  if (!bound_cmp_int(pr->tmp[2*Cj2+3],-1) &&
 	      !bound_cmp_int(pr->tmp[2*Cj2+2], 1)) uj = 2*Cj2+1;
 	  else if (!bound_cmp_int(pr->tmp[2*Cj2+3], 1) &&
 		   !bound_cmp_int(pr->tmp[2*Cj2+2],-1)) uj = 2*Cj2;
-	  else goto brk;
+	  else goto Cbrk;
 	  bound_div_2(tmpa,Cb);
 	  bound_bmin(b[matpos2(uj^1,ui)],tmpa);
 	}
 
 	else ; /* more than two infinite bounds: do nothing */
 
-	brk:
-	bound_clear(tmpa); bound_clear(tmpb); bound_clear(Cb);
+      Cbrk:
+
+	/* lower bound */
+	if (c==AP_CONS_EQ) {
+
+	if (bound_infty(cb)) ;
+	else if (!cinf) {
+	  for (j=0;j<dim;j++) {
+	    if (bound_cmp_int(pr->tmp[2*j+3],-1)<=0 && 
+		!bound_infty(b[matpos(2*j+1,2*j)])) {
+	      bound_sub(tmpa,cb,b[matpos(2*j+1,2*j)]);
+	      uj = 2*j+1;
+	    }
+	    else if (bound_cmp_int(pr->tmp[2*j+2],-1)<=0 && 
+		     !bound_infty(b[matpos(2*j,2*j+1)])) {
+	      bound_sub(tmpa,cb,b[matpos(2*j,2*j+1)]);
+	      uj = 2*j;
+	    }
+	    else continue;
+	    for (k=j+1;k<dim;k++) {
+	      if (bound_cmp_int(pr->tmp[2*k+3],-1)<=0 && 
+		  !bound_infty(b[matpos(2*k+1,2*k)])) {
+		bound_sub(tmpb,tmpa,b[matpos(2*k+1,2*k)]);
+		bound_div_2(tmpb,tmpb);
+		bound_bmin(b[matpos(2*k,uj)],tmpb);
+	      }
+	      else if (bound_cmp_int(pr->tmp[2*k+2],-1)<=0 && 
+		       !bound_infty(b[matpos(2*k,2*k+1)])) {
+		bound_sub(tmpb,tmpa,b[matpos(2*k,2*k+1)]);
+		bound_div_2(tmpb,tmpb);
+		bound_bmin(b[matpos(2*k+1,uj)],tmpb);
+	      }
+	    }
+	  }
+	}
+	else if (cinf==1) {
+	  if (!bound_cmp_int(pr->tmp[2*cj1+2],-1) &&
+	      !bound_cmp_int(pr->tmp[2*cj1+3], 1)) uj = 2*cj1+1;
+	  else if (!bound_cmp_int(pr->tmp[2*cj1+2], 1) &&
+		   !bound_cmp_int(pr->tmp[2*cj1+3],-1)) uj = 2*cj1;
+	  else goto cbrk;
+	  for (k=0;k<dim;k++) {
+	    if (k==cj1) continue;
+	    if (bound_cmp_int(pr->tmp[2*k+3],-1)<=0 && 
+		!bound_infty(b[matpos(2*k+1,2*k)])) {
+	      bound_sub(tmpb,cb,b[matpos(2*k+1,2*k)]);
+	      bound_div_2(tmpb,tmpb);
+	      bound_bmin(b[matpos2(2*k,uj)],tmpb);
+	    }
+	    else if (bound_cmp_int(pr->tmp[2*k+2],-1)<=0 && 
+		     !bound_infty(b[matpos(2*k,2*k+1)])) {
+	      bound_sub(tmpb,cb,b[matpos(2*k,2*k+1)]);
+	      bound_div_2(tmpb,tmpb);
+	      bound_bmin(b[matpos2(2*k+1,uj)],tmpb);
+	    }
+	  }
+	}
+	else if (cinf==2) {
+	  if (!bound_cmp_int(pr->tmp[2*cj1+2],-1) &&
+	      !bound_cmp_int(pr->tmp[2*cj1+3], 1)) ui = 2*cj1+1;
+	  else if (!bound_cmp_int(pr->tmp[2*cj1+2], 1) &&
+		   !bound_cmp_int(pr->tmp[2*cj1+3],-1)) ui = 2*cj1;
+	  else goto cbrk;
+	  if (!bound_cmp_int(pr->tmp[2*cj2+2],-1) &&
+	      !bound_cmp_int(pr->tmp[2*cj2+3], 1)) uj = 2*cj2+1;
+	  else if (!bound_cmp_int(pr->tmp[2*cj2+2], 1) &&
+		   !bound_cmp_int(pr->tmp[2*cj2+3],-1)) uj = 2*cj2;
+	  else goto cbrk;
+	  bound_div_2(tmpa,cb);
+	  bound_bmin(b[matpos2(uj^1,ui)],tmpa);
+	}
+	}
+
+      cbrk:
+
+	bound_clear(tmpa); bound_clear(tmpb); bound_clear(Cb); bound_clear(cb);
 	*exact = 0;
       }
       break;
