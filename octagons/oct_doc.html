@@ -1,4 +1,14 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!--
+oct_doc.html
+APRON Library / Octagonal Domain
+Documentation
+Copyright (C) Antoine Mine' 2006
+-->
+<!--
+This file is part of the APRON Library, released under LGPL license.  
+Please read the COPYING file packaged in the distribution.
+-->
 <html>
 <head>
 <title>APRON Library - Octagon Domain Implementation</title>
@@ -31,15 +41,33 @@ In dimension two, such invariants have an octagonal shape, hence the name.
 Familiarity is assumed with the generic APRON framework as well as
 the octagon abstract domain (see <a href="#links">external links</a>).
 
+<h2>Installation</h2>
+
+<p>
+Please see the <code>README</code> file included in the
+distribution for installation instructions.
 
 
-<h2>Access to Library Functions</h2>
+<h2>Access to the Library from C</h2>
+
+<p>
+You C program must be linked with the following libraries:
+<ul>
+<li> the octagon library <code>-loctXx</code>
+(where <code>Xx</code> denotes the chosen numeric set;
+<code>Qg</code> for instance);
+<li> the APRON library <code>-lapron</code>;
+<li> the GMP library <code>-lgmp</code>;
+<li> the standard mathematical library <code>-lm</code>.
+</ul>
+It is possible to use additional libraries, such as the POLKA module
+<code>-lpolkag</code>.
 
 <p>
 The standard way to access to the octagon library is through an
 APRON manager. The manager is created as follows:
 <ul>
-<li>include the <code>oct.h</code> file,
+<li>include the <code>oct/oct.h</code> file,
 <li>create an octagon manager 
 <code>ap_manager_t* man = oct_manager_alloc();</code>
 </ul>
@@ -124,12 +152,6 @@ assignments and substitutions of expressions of the form
 <li> getting the bound of a dimension or an expression of the form
 &plusmn;<i>x</i> &plusmn;<i>y</i> + <i>[a,b]</i>,
 &plusmn;<i>x</i> + <i>[a,b]</i>, or <i>[a,b]</i>,
-<li> testing for inclusion, equality, emptiness, or universality,
-<li> testing whether a dimension is unbounded or saturated by a
-given interval,
-<li> testing for saturation by an expression of the form
-&plusmn;<i>x</i> &plusmn;<i>y</i> + <i>[a,b]</i>,
-&plusmn;<i>x</i> + <i>[a,b]</i>, or <i>[a,b]</i>,
 <li> conversions to constraint sets,
 <li> conversions from boxes,
 <li> variable additions, deletions, projections, permutations, and expansions,
@@ -158,8 +180,6 @@ and have no precision guarantees:
 <li> conversions to generator sets (the whole universe is always returned),
 <li> getting the bound of arbitrary expressions
 (interval arithmetics is used),
-<li> testing for saturation by arbitrary constraints
-(always returns don't know).
 </ul>
 
 <p>
@@ -172,6 +192,57 @@ conversion between the underlying numeric type and
 user-provided <code> ap_scalar_t</code> types.
 The octagon library will set the <code>flag_exact</code> and
 <code>flag_best</code> manager flags accordingly in all cases.
+
+<p>
+Note that, due to interval coefficients, expressions may be non-deterministic, 
+that is, correspond to a bunch of expressions.
+In case of assignments, substitutions, or bound determinations of 
+non-deterministic 
+expressions, or conjunctions with non-deterministic constraints, 
+we considers the <i>join</i> of all results, when ranging over the 
+non-deterministic set.
+
+
+
+<h2>Precision of the Predicates</h2>
+
+<p>
+The following predicates are exact, <i>i.e.</i>, they always return
+either <code>tbool_true</code> or <code>tbool_false</code> 
+(provided that <code>algorithm</code> greater or equal than 0,
+that the octagon has no integer dimension, and that the 
+<code>Qg</code> underlying domain is selected):
+<ul>
+<li> testing for inclusion, equality, emptiness, or universality,
+<li> testing whether a dimension is unbounded or saturated by a
+given interval,
+<li> testing for saturation by an expression of the form
+&plusmn;<i>x</i> &plusmn;<i>y</i> + <i>[a,b]</i>,
+&plusmn;<i>x</i> + <i>[a,b]</i>, or <i>[a,b]</i>.
+</ul>
+
+<p>
+Note that, for non-deterministic expressions, <code>tbool_false</code> is 
+returned as long as the saturation is not satisfied for one expression.
+
+<p>
+Testing for the saturation by an arbitrary expression is very imprecise.
+It always return <code>tbool_top</code>.
+
+<p>
+When <code>algorithm</code> is set to a strictly negative value, the
+octagon has an integer dimension, the <code>Qg</code> underlying domain is 
+selected, or the conversion from user-specified <code>scalar_t</code> types
+to internal types resulted in an overapproximation, the predicate is sound
+but not exact: it is a <i>semi-test</i>.
+That is, it mainly returns either
+<code>tbool_true</code> or <code>tbool_top</code>.
+It can conclude that the predicate is definitively <code>tbool_false</code>
+only in very rare cases.
+The octagon library will set the <code>flag_exact</code> and
+<code>flag_best</code> manager flags accordingly in all cases.
+
+
 
 
 
@@ -257,6 +328,9 @@ extra function:
 <ul>
 <li> <code>ap_abstract0_oct_of_generator_array</code> converts a
 generator set to an octagon, with best-precision.
+<li> <code>ap_abstract0_oct_add_epsilon</code> enlarges each constraint bound
+by a user-specified factor of the maximum finite bound present in the
+octagon.
 </ul>
 
 
@@ -295,8 +369,8 @@ arbitrary linear constraints as these are not best-precision operators.
 
 <p>
 The distribution provides a fully automatic test suite with
-<code>test</code>.
-It compares the result of all tranfer functions in the octagon and polyhedron
+<code>octtest</code>.
+It compares the result of all transfer functions in the octagon and polyhedron
 domains, checking for soundness, best-precision and exactness properties.
 
 
@@ -319,6 +393,39 @@ low-level representation of octagons
 Direct access to private fields is not recommended.
 
 
+<h2>Access to the Library from OCaml</h2>
+
+<p>
+Your OCaml program must be linked with the following modules:
+<ul>
+<li> the GMP library <code>gmp.cmxa</code>
+(or <code>gmp.cma</code> for byte-code);
+<li> the APRON library <code>apron.cmx</code>
+(or <code>apron.cmo</code> for byte-code);
+<li> the chosen octagon module, <i>e.g.</i>, <code>octQg.cmxa</code>
+(or <code>octQg.cma</code> for byte-code);
+<li> the standard bigarray library <code>bigarray.cmxa</code>
+(or <code>bigarray.cma</code> for byte-code).
+</ul>
+You may need the specify the include path with <code>-I</code>, depending
+on your installation.
+Also, when linking byte-code, do not forget the <code>-custom</code> option.
+
+<p>
+The octagon library provides an <code>Oct</code> OCaml module.
+The <code>Oct.manager_alloc</code> function returns a new manager that can 
+then be used with the standard <code>Apron.Abstract0</code> module provided by 
+APRON.
+
+<p>
+The <code>Oct</code> module also provides some implementation-specific functions:
+<ul>
+<li> <code>of_generator_array</code> to convert from a set of generators to
+an octagon, with best abstraction,
+<li> the <code>widening_thresholds</code> widening,
+<li> the <code>narrowing</code> standard narrowing,
+<li> the <code>add_epsilon</code> perturbation function.
+</ul>
 
 
 
