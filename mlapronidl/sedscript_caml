@@ -1,7 +1,11 @@
 1 a\\n(* This file is part of the APRON Library, released under LGPL license.\n   Please read the COPYING file packaged in the distribution  *)
 s/mutable_/mutable /g;
 s/mpq_ptr/t/g;
+s/^and ap_scalar_ptr = ap_scalar_t//g;
+s/^and ap_scalar_array_t = ap_scalar_ptr array//g;
 s/ap_scalar_t/t/g;
+s/ap_scalar_ptr/t/g;
+s/Scalar.ap_scalar_array_t/Scalar.t array/g;
 s/^and ap_interval_ptr = ap_interval_t//g;
 s/^and ap_interval_array_t = ap_interval_ptr array//g;
 s/ap_interval_t/t/g;

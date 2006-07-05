@@ -32,7 +32,13 @@ struct ap_interval_array_t {
   size_t size;
 };
 
+struct ap_scalar_array_t {
+  struct ap_scalar_t** p;
+  size_t size;
+};
+
 typedef struct ap_interval_t* ap_interval_ptr;
+typedef struct ap_scalar_t* ap_scalar_ptr;
 typedef struct ap_linexpr0_t* ap_linexpr0_ptr;
 typedef struct ap_manager_t* ap_manager_ptr;
 typedef struct ap_environment_t* ap_environment_ptr;
