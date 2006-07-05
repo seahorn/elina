@@ -54,7 +54,7 @@ exactness flag;
       fflush(stdout);							\
       flag = exact;							\
       
-#define FLAG(m) \   
+#define FLAG(m) \
 if (m->result.flag_exact==tbool_true) ;		      \
  else if (m->result.flag_best==tbool_true)	      \
    { if (flag==exact) flag = best; else flag = none;} \
@@ -1146,8 +1146,8 @@ void test_expand(void)
   printf("\nexpand dimensions\n");
   LOOP {
     size_t dim = 5;
-    size_t d = lrand48() % dim;
-    size_t dd[] = { d, dim, dim+1 };
+    ap_dim_t d = lrand48() % dim;
+    ap_dim_t dd[] = { d, dim, dim+1 };
     size_t n = (lrand48() % 2) + 1;
     oct_t *o1, *o2, *o3;
     ap_abstract0_t *p1, *p2, *p3;
@@ -1160,12 +1160,12 @@ void test_expand(void)
     RESULT(check(o1)); check(o2); check(o3); check(o3);
     if (oct_is_eq(mo,o1,o3)!=tbool_true) {
       ERROR("not eq");
-      fprintf(stderr,"dim %i expanded %i times\n",d,n);
+      fprintf(stderr,"dim %i expanded %i times\n",(int)d,(int)n);
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o3",o3);
     }
     if (ap_abstract0_is_leq(mp,p2,p3)==tbool_false) {
       ERROR("not leq");
-      fprintf(stderr,"dim %i expanded %i times\n",d,n);
+      fprintf(stderr,"dim %i expanded %i times\n",(int)d,(int)n);
       print_oct("o1",o1); print_oct("o2",o2); 
       print_poly("p1",p1); print_poly("p2",p2); print_poly("p3",p3);
     }
@@ -1181,7 +1181,8 @@ void test_fold(void)
 {
   printf("\nfold dimensions\n");
   LOOP {
-    size_t dim = 6, i, dd[3];
+    size_t dim = 6, i;
+    ap_dim_t dd[3];
     oct_t *o1, *o2;
     ap_abstract0_t *p1, *p2, *p3;
     o1 = random_oct(dim,.1);
@@ -1195,7 +1196,7 @@ void test_fold(void)
     RESULT(check(o1)); check(o2);
     if (ap_abstract0_is_leq(mp,p2,p3)==tbool_false) {
       ERROR("not leq");
-      fprintf(stderr,"fold %i,%i,%i\n",dd[0],dd[1],dd[2]);
+      fprintf(stderr,"fold %i,%i,%i\n",(int)dd[0],(int)dd[1],(int)dd[2]);
       print_oct("o1",o1); print_oct("o2",o2); 
       print_poly("p1",p1); print_poly("p2",p2); print_poly("p3",p3);
     }
@@ -1351,7 +1352,7 @@ void test_assign(int subst, exprmode mode)
     RESULT(check(o1));
     if (ap_abstract0_is_leq(mp,p1,p2)!=tbool_true) {
       ERROR("not included in");
-      fprintf(stderr,"x%i %s ",d,subst?"->":"<-");
+      fprintf(stderr,"x%i %s ",(int)d,subst?"->":"<-");
       ap_linexpr0_fprint(stderr,l,NULL);
       fprintf(stderr," / ");
       ap_linexpr0_fprint(stderr,ll,NULL);
@@ -1378,7 +1379,8 @@ void test_par_assign(int subst, exprmode mode)
   printf("\nparallel %s %slinexpr%s\n",subst ? "subst" : "assign",
 	 exprname[mode],mode==expr_unary ? " (* expected)" : "");
   LOOP {
-    size_t dim = 6, i, j, k, d[NB_ASSIGN];
+    size_t dim = 6, i, j, k;
+    ap_dim_t d[NB_ASSIGN];
     oct_t *o, *o1, *o2;
     ap_abstract0_t *p, *p1, *p2;
     ap_linexpr0_t *l[NB_ASSIGN], *ll[NB_ASSIGN];
@@ -1401,7 +1403,7 @@ void test_par_assign(int subst, exprmode mode)
     if (ap_abstract0_is_leq(mp,p1,p2)!=tbool_true) {
       ERROR("not included in");
       for (i=0;i<NB_ASSIGN;i++) {
-	fprintf(stderr,"x%i %s ",d[i],subst?"->":"<-");
+	fprintf(stderr,"x%i %s ",(int)d[i],subst?"->":"<-");
 	ap_linexpr0_fprint(stderr,l[i],NULL);
 	fprintf(stderr," / ");
 	ap_linexpr0_fprint(stderr,ll[i],NULL);

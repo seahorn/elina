@@ -7,7 +7,7 @@ all:
 	(cd num; make all install)
 	(cd newpolka; make allg ml install)
 	(cd itv; make allmpq ml install)
-	(cd octagons; make allFd install)
+	(cd octagons; make allQg allFd install)
 
 clean:
 	(cd apron; make clean)

@@ -307,10 +307,9 @@ oct_t* oct_fold(ap_manager_t* man,
     /* check, assuming tdim[1..(size-1)] is strictly increasing */
     size_t i,j;
     arg_assert(size>0,return NULL;);
-    arg_assert(tdim[0]<a->dim,return NULL;);
     for (i=1;i<size;i++) {
       arg_assert(tdim[i]<a->dim,return NULL;);
-      arg_assert(tdim[i-1]<tdim[i],return NULL;);
+      if (i) arg_assert(tdim[i-1]<tdim[i],return NULL;);
     }
 
     /* merge binary constraints */
