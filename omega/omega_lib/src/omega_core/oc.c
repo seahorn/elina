@@ -63,7 +63,7 @@ simplifyProblem(int verify, int subs, int redundantElimination)
 			nEQs = 0; // discard them
 		else if (!reduceProblem()) {
 			assert(0 && "Added equality constraint to verified problem generates false");
-			Exit(1);
+			exit(1);
 			}
 		}
 	};

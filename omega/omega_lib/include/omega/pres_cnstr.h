@@ -20,6 +20,7 @@ void copy_constraint(Constraint_Handle H, const Constraint_Handle initial);
 
 class Constraint_Handle {
 public:
+  virtual ~Constraint_Handle () {}
   inline Constraint_Handle() {}
   void   update_coef(Variable_ID, coef_t delta);
   void   update_const(coef_t delta);

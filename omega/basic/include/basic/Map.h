@@ -22,6 +22,7 @@ public:
 
 template<class K, class V> class MapElementIterator {
 public:
+  virtual ~MapElementIterator () {}
     MapElementIterator(MapElement<K,V>* j) { i = j;}
     virtual const K &  operator*() const   { return i->k; }
     virtual       K &  operator*()         { return i->k;}

@@ -52,6 +52,7 @@ public:
                void    next() { (*this)++; }
 
   virtual Iterator<T> *new_copy() const = 0;
+  virtual ~Iterator () {}
 };
 
 
@@ -60,6 +61,7 @@ public:
 
 template<class T> class Generator {
 public:
+  virtual ~Generator () {}
     virtual       T    operator*() const = 0;
 
     virtual    void    operator++(int) = 0;

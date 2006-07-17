@@ -895,7 +895,7 @@ void DNF::prefix_print(FILE *out_file, int debug, bool parent_names_setup) {
 
 String Constraint_Handle::print_to_string() const {
     assert(0);
-    Exit(1);
+    exit(1);
     return "FOO";
 }
 
@@ -913,7 +913,7 @@ String GEQ_Handle::print_to_string() const {
 
 String Constraint_Handle::print_term_to_string() const {
     assert(0);
-    Exit(1);
+    exit(1);
     return "FOO";
 }
 

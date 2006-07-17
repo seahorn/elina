@@ -12,7 +12,7 @@ void
 check_number_EQs(int n) {
     if (n < 0) {
 	fprintf(stderr,"ERROR: nEQs < 0??\n");
-	Exit(1);
+	exit(1);
     }
 
     if (n > maxmaxEQs) {
@@ -20,7 +20,7 @@ check_number_EQs(int n) {
 	fprintf(stderr, "An attempt was made to set the number of available equality constraints to %d.\n", n);
 	fprintf(stderr, "The maximum number of equality constraints in a conjunction is %d.\n", maxmaxEQs);
 	fprintf(stderr, "This limit can be changed by redefining maxmaxEQs in oc.h and recompiling.\n\n");
-	Exit(2);
+	exit(2);
     }
 }
 
@@ -28,7 +28,7 @@ void
 check_number_GEQs(int n) {
     if (n < 0) {
 	fprintf(stderr,"ERROR: nGEQs < 0??\n");
-	Exit(1);
+	exit(1);
     }
 
     if (n > maxmaxGEQs) {
@@ -36,7 +36,7 @@ check_number_GEQs(int n) {
 	fprintf(stderr, "An attempt was made to set the number of available inequality constraints to %d.\n", n);
 	fprintf(stderr, "The maximum number of inequality constraints in a conjunction is %d.\n", maxmaxGEQs);
 	fprintf(stderr, "This limit can be changed by redefining maxmaxGEQs in oc.h and recompiling.\n\n");
-	Exit(2);
+	exit(2);
     }
 }
 

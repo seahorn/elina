@@ -75,7 +75,7 @@ public:
     List_Iterator(const List<T> &l);
     List_Iterator();
 private:
-    List_Element<T> &element() { return *i; } ;
+    List_Element<T> &element() { return *(List_Element_Iterator<T>::i); } ;
     friend class List<T>;
 };
 

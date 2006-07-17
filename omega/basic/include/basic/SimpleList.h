@@ -75,7 +75,7 @@ public:
     Simple_List_Iterator(const Simple_List<T> &l);
     Simple_List_Iterator();
 private:
-    List_Element<T> &element() { return *i; } ;
+    List_Element<T> &element() { return *(List_Element_Iterator<T>::i); } ;
     friend class Simple_List<T>;
 };
 

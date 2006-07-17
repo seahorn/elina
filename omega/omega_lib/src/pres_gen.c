@@ -19,7 +19,7 @@ void PresErrAssert(char *t) {
   if(pres_debug) {
     fprintf(DebugFile, "\nERROR: %s\n", t);
   }
-  Exit(1);
+  exit(1);
 }
 
 

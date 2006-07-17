@@ -28,7 +28,7 @@ solve(int desiredResult)
 	Exit(2);
 #endif
 	if (solveDepth > 60)
-	    Exit(2);
+	    exit(2);
 	};
 
     check();

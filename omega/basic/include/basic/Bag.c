@@ -34,8 +34,8 @@ template<class T> Bag<T> & Bag<T>::operator=(const Bag<T> &L) {
 
 
 template<class T> Set<T>::Set(T e) {
-	 assert(contents);
-	 contents->tail = new List_Element<T>(e, 0);
+	 assert((Set<T>::contents));
+	 (Set<T>::contents)->tail = new List_Element<T>(e, 0);
 	}
 	
 
@@ -104,7 +104,7 @@ template<class T> void Bag<T>::insert(T e) {
 		}
 
 template<class T> void Ordered_Bag<T>::insert(T e) {
-		List_Element<T> * p = contents;
+		List_Element<T> * p = Ordered_Bag<T>::contents;
 		while (p->tail && p->tail->head < e) p = p->tail;
 		if (!p->tail || p->tail->head != e) {
 			List_Element<T> * q = new List_Element<T>(e,p->tail);
@@ -120,14 +120,14 @@ template<class T> bool Bag<T>::contains(T e) const {
 		}
 
 template<class T> bool Ordered_Bag<T>::contains(T e) const {
-		List_Element<T> * p = contents;
+		List_Element<T> * p = Ordered_Bag<T>::contents;
 		while (p->tail && p->tail->head < e) p = p->tail;
 		return (p->tail && p->tail->head == e);
 		}
 
 
 template<class T> bool Set<T>::contains (const Set<T>& b) const {
-		List_Element<T> * p = contents;
+		List_Element<T> * p = Set<T>::contents;
 		List_Element<T> * q = b.contents;
 		do {
 		  /* consume matched elements in p and q */
@@ -172,7 +172,7 @@ template<class T> void Bag<T>::operator |= (const Bag<T> & b) {
 
 template<class T> void Ordered_Bag<T>::operator |= (const Ordered_Bag<T> & b) {
 		if (this == &b) return;
-		List_Element<T> * p = contents;
+		List_Element<T> * p = Ordered_Bag<T>::contents;
 		List_Element<T> * q = b.contents->tail;
 
 		while (q) {
@@ -193,7 +193,7 @@ template<class T> void Ordered_Bag<T>::operator |= (const Bag<T> & b) {
 
 template<class T> void Set<T>::operator |= (const Set<T> & b) {
 		if (this == &b) return;
-		List_Element<T> * p = contents;
+		List_Element<T> * p = Set<T>::contents;
 		List_Element<T> * q = b.contents->tail;
 
 		while (q) {
@@ -227,10 +227,10 @@ template<class T> void Set<T>::operator |= (const Bag<T> & b) {
 // delete items also in b
 template<class T> void Set<T>::operator -= (const Set<T> & b) {
 		if (this == &b) {
-			clear();
+			Set<T>::clear();
 			return;
 			}
-		List_Element<T> * p = contents;
+		List_Element<T> * p = Set<T>::contents;
 		List_Element<T> * q = b.contents->tail;
 
 		while (q) {
@@ -250,7 +250,7 @@ template<class T> void Set<T>::operator -= (const Set<T> & b) {
 template<class T> void Set<T>::operator &= (const Set<T> & b)
        {
 		if (this == &b) return;
-                List_Element<T> * p = contents;
+                List_Element<T> * p = Set<T>::contents;
                 List_Element<T> * q = b.contents->tail;
 
                 while (q) {
@@ -276,7 +276,7 @@ template<class T> void Set<T>::operator &= (const Set<T> & b)
 
 
 template<class T> bool Set<T>::operator & (const Set<T>& b) const {
-		List_Element<T> * p = contents;
+		List_Element<T> * p = Set<T>::contents;
 		List_Element<T> * q = b.contents;
 		do {
 		  p = p->tail;
@@ -293,7 +293,7 @@ template<class T> bool Set<T>::operator & (const Set<T>& b) const {
 
 
 template<class T> bool Ordered_Bag<T>::operator == (const Ordered_Bag<T>& b) const {
-		List_Element<T> * p = contents;
+		List_Element<T> * p = Ordered_Bag<T>::contents;
 		List_Element<T> * q = b.contents;
 		while (1) {
 		  p = p->tail;
@@ -310,7 +310,7 @@ template<class T> bool Ordered_Bag<T>::operator != (const Ordered_Bag<T>& b) con
               }
 
 template<class T> bool Ordered_Bag<T>::operator < (const Ordered_Bag<T>& b) const {
-		List_Element<T> * p = contents;
+		List_Element<T> * p = Ordered_Bag<T>::contents;
 		List_Element<T> * q = b.contents;
 		while (1) {
 		  p = p->tail;

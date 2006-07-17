@@ -15,7 +15,7 @@ Variable_ID Rel_Body::get_local(const Variable_ID v)
     if (v->kind() == Input_Var) return input_var(v->get_position());
     if (v->kind() == Output_Var) return output_var(v->get_position());
     assert(0 && "Can only get local for variable with global scope");
-    Exit(1);
+    exit(1);
     return 0;
     }
 

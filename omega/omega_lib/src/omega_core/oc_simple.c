@@ -30,7 +30,7 @@ void checkVars(int nVars)
 	fprintf(stderr, "An attempt was made to create a conjunction with %d variables.\n", nVars);
 	fprintf(stderr, "The current limit on variables in a single conjunction is %d.\n", maxVars);
 	fprintf(stderr, "This limit can be changed by changing the #define of maxVars in oc.h.\n\n");
-	Exit(2);
+	exit(2);
 	}
     } /* checkVars */
 
@@ -1129,7 +1129,7 @@ normalize()
 			    fprintf(outputFile, "too many hash keys generated \n");
 			    fflush(outputFile);
 			    assert(0 && "too many hash keys generated");
-			    Exit(2);
+			    exit(2);
 			    };
 			if (hashCode >= 0)
 			    GEQs[e].key = proto->key;

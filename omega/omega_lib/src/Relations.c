@@ -671,7 +671,7 @@ Relation DeltasToRelation(NOT_CONST Relation &D, int n_inputs, int n_outputs) {
       assert(R.max_ufs_arity() == 0 &&
              "'Deltas' not ready for UFS yet"); // FERD
       fprintf(stderr, "'Deltas' not ready for UFS yet");
-      Exit(1);
+      exit(1);
       }
 
   R = Extend_Domain(R, n_inputs);
@@ -729,7 +729,7 @@ bool prepare_relations_for_composition(Relation &r1,
 		   "Can't compose relation and set with function symbols");
 	    fprintf(stderr,
 		    "Can't compose relation and set with function symbols");
-	    Exit(1);
+	    exit(1);
 	    return false;  // make compiler shut up
 	    }
 	}
@@ -779,7 +779,7 @@ Relation Composition(NOT_CONST Relation &input_r1,
 		r2.print_with_subs(stderr);
 		fprintf(stderr,"\n");
 	        assert(r2.n_set() == r1.n_inp());
-		Exit(1);
+		exit(1);
 		}
 	skip_set_checks++;
 	int i;
@@ -803,7 +803,7 @@ Relation Composition(NOT_CONST Relation &input_r1,
 		   "Can't compose relation and set with function symbols");
 	    fprintf(stderr,
 		    "Can't compose relation and set with function symbols");
-	    Exit(1);
+	    exit(1);
 	    return Identity(0);  // make compiler shut up
 	    }
 	}
@@ -818,7 +818,7 @@ Relation Composition(NOT_CONST Relation &input_r1,
 		r2.print_with_subs(stderr);
 		fprintf(stderr,"\n");
 	        assert(r2.n_out() == r1.n_inp());
-		Exit(1);
+		exit(1);
 		}
 
     int a1 = r1.max_ufs_arity_of_in(), a2 = r2.max_ufs_arity_of_out();

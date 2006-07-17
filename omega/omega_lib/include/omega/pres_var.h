@@ -146,6 +146,7 @@ Variable_ID set_var(int nth);
 
 class Global_Var_Decl {
 public:
+    virtual ~Global_Var_Decl () {}
     Global_Var_Decl(Const_String baseName);
 
     virtual Const_String base_name() const

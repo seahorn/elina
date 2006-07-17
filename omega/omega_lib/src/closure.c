@@ -957,7 +957,7 @@ Relation result;
 
 	fprintf(stderr,
 		"Can't take transitive closure with UFS yet.");
-	Exit(1);
+	exit(1);
 	}
 
     r.simplify(2,2);

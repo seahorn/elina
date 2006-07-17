@@ -18,6 +18,7 @@ public:
     virtual Any_Iterator<T>   any_iterator()     { return Any_Iterator<T>(new_iterator()); }
 
     virtual int size() const = 0;
+    virtual ~Collection () {}
 };
 
 
@@ -35,6 +36,7 @@ public:
     virtual       T &operator[](int)       = 0;
 
     virtual int index(const T &) const = 0;  // Y in X --> X[X.index(Y)] == Y
+    virtual ~Sequence () {}
 };
 
 

@@ -457,7 +457,7 @@ queryCoupledVariable(int i, coef_t *l, coef_t *u, int *couldBeZero, coef_t lower
 	{
 	fprintf(outputFile, "queryCoupledVariablecalled with bad parameters\n");
 	printProblem();
-	Exit(2);
+	exit(2);
 	};
 
     if (forwardingAddress[i] == -1) 
