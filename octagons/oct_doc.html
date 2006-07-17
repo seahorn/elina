@@ -23,7 +23,28 @@ code { color: #f00; }
 
 <h1>APRON Library - Octagon Domain Implementation</h1>
 
-<h2>Introduction</h2>
+<h2>Table of Contents</h2>
+
+<ol>
+<li><a href="#intro">Introduction</a>
+<li><a href="#install">Installation</a>
+<li><a href="#c">Access to the Library from C</a>
+<li><a href="#numeric">Underlying Numeric Set</a>
+<li><a href="#transfer">Precision of the Transfer Functions</a>
+<li><a href="#predicate">Precision of the Predicates</a>
+<li><a href="#algorithm">The algorithm parameter</a>
+<li><a href="#widening">Widenings and Narrowing</a>
+<li><a href="#extra">Additional Transfer Functions</a>
+<li><a href="#unimplemented">Unimplemented Features</a>
+<li><a href="#poly">Conversion with Polyhedra</a>
+<li><a href="#tools">Tools</a>
+<li><a href="#low">Low-level Access</a>
+<li><a href="#ocaml">Access to the Library from OCaml</a>
+<li><a href="#links">Links</a></a>
+<li><a href="#contact">Contact</a>
+</ol>
+
+<h2><a name="intro">Introduction</h2>
 
 <p>
 The <a href="http://apron.cri.ensmp.fr//">APRON</a> project provides a
@@ -41,14 +62,14 @@ In dimension two, such invariants have an octagonal shape, hence the name.
 Familiarity is assumed with the generic APRON framework as well as
 the octagon abstract domain (see <a href="#links">external links</a>).
 
-<h2>Installation</h2>
+<h2><a name="install">Installation</a></h2>
 
 <p>
 Please see the <code>README</code> file included in the
 distribution for installation instructions.
 
 
-<h2>Access to the Library from C</h2>
+<h2><a name="c">Access to the Library from C</a></h2>
 
 <p>
 You C program must be linked with the following libraries:
@@ -83,7 +104,7 @@ Beware that this setting is global: it affects all the computations of the
 process, not only those occurring in the octagon library.
 
 
-<h2>Underlying Numeric Set</h2>
+<h2><a name="numeric">Underlying Numeric Set</a></h2>
 
 <p>
 The octagon library is compiled with a variety of underlying numeric set,
@@ -134,7 +155,7 @@ sound way).
 
 
 
-<h2>Precision of the Transfer Functions</h2>
+<h2><a name="transfer">Precision of the Transfer Functions</a></h2>
 
 <p>
 Exact transfer functions are provided for the class of operations that
@@ -204,7 +225,7 @@ non-deterministic set.
 
 
 
-<h2>Precision of the Predicates</h2>
+<h2><a name="predicate">Precision of the Predicates</a></h2>
 
 <p>
 The following predicates are exact, <i>i.e.</i>, they always return
@@ -246,7 +267,7 @@ The octagon library will set the <code>flag_exact</code> and
 
 
 
-<h2>The algorithm parameter</h2>
+<h2><a name="algorithm">The algorithm parameter</a></h2>
 
 <p>
 The <code>algorithm</code> field in the manager provides an 
@@ -268,7 +289,7 @@ transfer functions have a quadratic worst-case cost
 </ul>
 
 
-<h2>Widenings and Narrowing</h2>
+<h2><a name="widening">Widenings and Narrowing</a></h2>
 
 <p>
 Depending on the <code>algorithm</code> flag, one of the following widening
@@ -314,7 +335,7 @@ no finite bound.
 Thus, it converges in a quadratic number of steps, at worse.
 
 
-<h2>Additional Transfer Functions</h2>
+<h2><a name="extra">Additional Transfer Functions</a></h2>
 
 <p>
 The octagon library provides a few functions not generic enough to be
@@ -335,7 +356,7 @@ octagon.
 
 
 
-<h2>Unimplemented Features</h2>
+<h2><a name="unimplemented">Unimplemented Features</a></h2>
 
 <p>
 The following are not implemented and will raise an
@@ -346,7 +367,7 @@ exception:
 </ul>
 
 
-<h2>Conversion with Polyhedra</h2>
+<h2><a name="poly">Conversion with Polyhedra</a></h2>
 
 <p>
 In order to ensure the best precision, the following conversion procedures
@@ -365,7 +386,7 @@ Do not extract the generators of an octagon or build an octagon from
 arbitrary linear constraints as these are not best-precision operators.
 
 
-<h2>Tools</h2>
+<h2><a name="tools">Tools</a></h2>
 
 <p>
 The distribution provides a fully automatic test suite with
@@ -373,8 +394,12 @@ The distribution provides a fully automatic test suite with
 It compares the result of all transfer functions in the octagon and polyhedron
 domains, checking for soundness, best-precision and exactness properties.
 
+<p>
+<u>NOTE:</u> 
+currently, the test results are only meaningful for the Qg numeric type.
 
-<h2>Low-level Access</h2>
+
+<h2><a name="low">Low-level Access</a></h2>
 
 <p>
 The file <code>oct_fun.h</code> provides a direct access to all the
@@ -393,7 +418,7 @@ low-level representation of octagons
 Direct access to private fields is not recommended.
 
 
-<h2>Access to the Library from OCaml</h2>
+<h2><a name="ocaml">Access to the Library from OCaml</a></h2>
 
 <p>
 Your OCaml program must be linked with the following modules:
@@ -452,7 +477,7 @@ the APRON implementation is based on.
 
 
 
-<h2>Contact</h2>
+<h2><a name="contact">Contact</a></h2>
 
 Main developer: Antoine Min&eacute;
 <a href="mailto:mine@di.ens.fr"><code>mine@di.ens.fr</code></a>.

@@ -85,6 +85,9 @@ The self-test compares the result on the octagon domain and the polyhedron
 domain to check for soundness.
 It generates random constraints, and so, its result vary from run to run.
 
+NOTE: currently, the test results are only meaningful for the Qg numeric
+type.
+
 
 OCAML LIBRARY
 =============
