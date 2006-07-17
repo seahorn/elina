@@ -53,6 +53,7 @@ ICFLAGS = \
 XCFLAGS =
 
 # For debugging purpose
+CFLAGS = $(OPTFLAGS) -DNDEBUG
 CFLAGS_DEBUG = -O0 -g -UNDEBUG
 CFLAGS_PROF = -g -pg
 

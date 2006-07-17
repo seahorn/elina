@@ -46,7 +46,7 @@ ICFLAGS = \
 -Wall -Wconversion -Winline -Wimplicit-function-declaration \
 -std=c99
 
-CFLAGS =  $(ICFLAGS) -O3 -DNDEBUG
+CFLAGS =  $(ICFLAGS) $(OPTFLAGS) -DNDEBUG
 # For debugging purpose
 CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG
 CFLAGS_PROF = -g -pg

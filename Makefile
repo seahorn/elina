@@ -16,6 +16,7 @@ clean:
 	(cd num; make clean)
 	(cd itv; make clean)
 	(cd newpolka; make clean)
+	(cd octagons; make clean)
 
 distclean:
 	(cd apron; make distclean)
@@ -24,6 +25,7 @@ distclean:
 	(cd num; make distclean)
 	(cd itv; make distclean)
 	(cd newpolka; make distclean)
+	(cd octagons; make distclean)
 
 doc:
 	(cd apron; make ps)

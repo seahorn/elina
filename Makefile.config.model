@@ -51,3 +51,7 @@ OMEGA_PREFIX =
 # Where to install and to find the octagon library
 OCT_PREFIX = 
 # OCT_PREFIX = $(APRON_PREFIX)
+
+# Optimization flags (adapt to your architecture)
+OPTFLAGS = -O3
+# OPTFLAGS = -O3 -march=pentium-m -mtune=pentium-m -pipe -mmmx -msse -msse2 -mfpmath=sse -ftracer -funit-at-a-time -funroll-loops -fmove-all-movables -DNDEBUG

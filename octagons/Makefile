@@ -58,7 +58,7 @@ ICFLAGS = \
 -std=c99
 # -Winline
 
-CFLAGS =   -g $(ICFLAGS)
+CFLAGS = $(OPTFLAGS) $(ICFLAGS) -DNDEBUG
 
 # Caml
 OCAMLINC = -I $(MLGMPIDL_PREFIX)/lib -I $(MLAPRONIDL_PREFIX)/lib
