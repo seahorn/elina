@@ -32,6 +32,24 @@ struct ap_interval_array_t {
 quote(MLMLI,"(** Intervals on scalars *)\n\n")
 
 quote(MLI,"\n\
+val of_scalar : Scalar.t -> Scalar.t -> t\n\
+  (** Build an interval from a lower and an upper bound *)\n\
+val of_infsup : Scalar.t -> Scalar.t -> t\n\
+  (** depreciated *)\n\
+\n\
+val of_mpq : Mpq.t -> Mpq.t -> t\n\
+val of_mpqf : Mpqf.t -> Mpqf.t -> t\n\
+val of_int : int -> int -> t\n\
+val of_frac : int -> int -> int -> int -> t\n\
+val of_float : float -> float -> t\n\
+  (** Create an interval from resp. two\n\
+    - multi-precision rationals [Mpq.t] \n\
+    - multi-precision rationals [Mpqf.t] \n\
+    - integers \n\
+    - fractions [x/y] and [z/w]\n\
+    - floats\n\
+  *)\n\
+\n\
 val is_top : t -> bool\n\
   (** Does the interval represent the universe ([[-oo,+oo]]) ? *)\n\
 \n\
@@ -55,9 +73,6 @@ val is_zero : t -> bool\n\
   (** Is the coefficient equal to scalar 0 or interval [0,0] ? *)\n\
 val neg : t -> t\n\
   (** Negation *)\n\
-val of_infsup : Scalar.t -> Scalar.t -> t\n\
-  (** Build an interval from a lower and an upper bound *)\n\
-\n\
 val top : t\n\
 val bottom : t\n\
   (** Top and bottom intervals (using [DOUBLE] coefficients) *)\n\
@@ -74,6 +89,28 @@ val print : Format.formatter -> t -> unit\n\
 ")
 
 quote(ML,"\n\
+let of_scalar inf sup = { inf = inf; sup = sup }\n\
+let of_infsup = of_scalar\n\
+let of_mpq x y = { \n\
+  inf = Scalar.of_mpq x;\n\
+  sup = Scalar.of_mpq y\n\
+}\n\
+let of_mpqf x y = {\n\
+  inf = Scalar.of_mpqf x;\n\
+  sup = Scalar.of_mpqf y\n\
+}\n\
+let of_int x y = {\n\
+  inf = Scalar.of_int x;\n\
+  sup = Scalar.of_int y\n\
+}\n\
+let of_frac x y z w = {\n\
+  inf = Scalar.of_frac x y;\n\
+  sup = Scalar.of_frac z w\n\
+}\n\
+let of_float x y = {\n\
+  inf = Scalar.of_float x;\n\
+  sup = Scalar.of_float y\n\
+}\n\
 let is_top itv =\n\
   Scalar.is_infty itv.inf < 0 && Scalar.is_infty itv.sup > 0\n\
 let is_bottom itv =\n\
@@ -96,7 +133,6 @@ let is_zero itv =\n\
   Scalar.sgn itv.inf=0 && Scalar.sgn itv.sup = 0\n\
 let neg itv = \n\
   { inf = Scalar.neg itv.sup; sup = Scalar.neg itv.inf }\n\
-let of_infsup inf sup = { inf = inf; sup = sup }\n\
 let top = { inf = Scalar.Float neg_infinity; sup = Scalar.Float infinity }\n\
 let bottom = { inf = Scalar.Float infinity; sup = Scalar.Float neg_infinity }\n\
 let set_infsup itv inf sup =\n\

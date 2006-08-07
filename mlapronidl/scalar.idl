@@ -73,6 +73,23 @@ struct ap_scalar_array_t {
 quote(MLMLI,"(** Scalar numbers. See {!Mpqf} for operations on GMP multiprecision rational numbers. *)\n\n")
 
 quote(MLI,"\n\
+val of_mpq : Mpq.t -> t\n\
+val of_mpqf : Mpqf.t -> t\n\
+val of_int : int -> t\n\
+val of_frac : int -> int -> t\n\
+  (** Create a scalar of type [Mpqf] from resp.\n\
+    - A multi-precision rational [Mpq.t] \n\
+    - A multi-precision rational [Mpqf.t] \n\
+    - an integer \n\
+    - a fraction [x/y]\n\
+  *)\n\
+\n\
+val of_float : float -> t\n\
+  (** Create a scalar of type [Float] with the given value *)\n\
+val of_infty : int -> t \n\
+  (** Create a scalar of type [Float] with the value multiplied by\n\
+    infinity (resulting in minus infinity, zero, or infinity \n\
+  *)\n\
 val is_infty : t -> int\n\
   (** Infinity test.\n\
     [is_infty x] returns [-1] if x is [-oo], [1] if x is [+oo], and [0] if [x] is\n\
@@ -109,6 +126,15 @@ val print : Format.formatter -> t -> unit\n\
   (** Print a coefficient *)\n\
 ")
 quote(ML,"\
+let of_mpq x = Mpqf (Mpqf.of_mpq x)\n\
+let of_mpqf x = Mpqf x\n\
+let of_int x = Mpqf(Mpqf.of_int x)\n\
+let of_frac x y = Mpqf(Mpqf.of_frac x y)\n\
+let of_float x = Float(x)\n\
+let of_infty s = \n\
+  if s>0 then Float(Pervasives.infinity)\n\
+  else if s<0 then Float(Pervasives.neg_infinity)\n\
+  else Float(0.0)\n\
 let is_infty scalar =\n\
   match scalar with\n\
   | Mpqf x ->\n\
