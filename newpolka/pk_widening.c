@@ -131,7 +131,6 @@ int esatmat_index_in_sorted_rows(const bitstring_t* const satline,
 
 /* This function defines the standard widening operator.  The resulting
    polyhedron has no frame matrix, unless pa is empty. */
-
 poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_WIDENING);

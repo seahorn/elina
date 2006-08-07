@@ -490,6 +490,8 @@ int cherni_simplify(pk_internal_t* pk,
   const bitindex_t nbrays = bitindex_init(ray->nbrows);
   size_t nbcons = con->nbrows;
 
+  con->_sorted = false;
+
   /* find the first inequality */
   for (nbeq=0; nbeq < nbcons; nbeq ++){
     if (numint_sgn(con->p[nbeq][0])) break;
@@ -755,6 +757,7 @@ void cherni_add_and_minimize(pk_internal_t* pk,
   /* saturation matrix */
   satmat_extend_columns(satC, bitindex_size(C->nbrows));
   /* conversion */
+  F->_sorted = false;
   pk->exn = AP_EXC_NONE;
   po->nbline = cherni_conversion(pk,
 				 C,start,F,satC,po->nbline);

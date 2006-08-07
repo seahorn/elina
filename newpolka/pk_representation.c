@@ -775,6 +775,24 @@ static bool matrix_check2(pk_internal_t* pk, const matrix_t* mat)
   return res;
 }
 
+static bool matrix_check3(pk_internal_t* pk, const matrix_t* mat)
+{
+  int i;
+  bool res;
+
+  if (mat->_sorted==false) 
+    return true;
+
+  res = true;
+  for (i=0; i<mat->nbrows-1; i++){
+    if (vector_compare(pk,mat->p[i],mat->p[i+1],mat->nbcolumns)>0){
+      res = false;
+      break;
+    }
+  }
+  return res;
+}
+
 
 bool poly_check(pk_internal_t* pk, const poly_t* poly)
 {
@@ -806,6 +824,11 @@ bool poly_check(pk_internal_t* pk, const poly_t* poly)
       fprintf(stderr,"poly_check: C not normalized\n");
       return false;
     }
+    res = matrix_check3(pk,po->C);
+    if (!res){
+      fprintf(stderr,"poly_check: C not sorted although _sorted=true\n");
+      return false;
+    }
   }
   if (po->F){
     res = matrix_check1(pk,po->F);
@@ -816,6 +839,11 @@ bool poly_check(pk_internal_t* pk, const poly_t* poly)
     res = matrix_check2(pk,po->F);
     if (!res){
       fprintf(stderr,"poly_check: F not normalized\n");
+      return false;
+    }
+    res = matrix_check3(pk,po->F);
+    if (!res){
+      fprintf(stderr,"poly_check: C not sorted although _sorted=true\n");
       return false;
     }
   }

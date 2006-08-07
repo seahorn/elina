@@ -19,7 +19,7 @@
 poly_t* poly_closure(ap_manager_t* man, bool destructive, poly_t* pa)
 {
   matrix_t* C;
-  bool change;
+  bool change,positivity;
   size_t i;
   poly_t* po;
 
@@ -40,18 +40,36 @@ poly_t* poly_closure(ap_manager_t* man, bool destructive, poly_t* pa)
     return po;
   }
   if (!destructive){
-     po->C = matrix_copy(pa->C);
+    po->C = matrix_copy(pa->C);
   }
   
   C = po->C;
   change = false;
+  positivity = false;
   for (i=0;i<C->nbrows; i++){
     if (numint_sgn(C->p[i][polka_eps])<0){
-      change = true;
-      numint_set_int(C->p[i][polka_eps],0);
+      if (vector_is_positivity_constraint(pk,C->p[i],C->nbcolumns)){
+	/* we keep the positivity constraint epsilon<=1 */
+	positivity = true;
+      }
+      else {
+	change = true;
+	numint_set_int(C->p[i][polka_eps],0);
+      }
     }
   }
+  assert(change || positivity);
   if (change){
+    if (!positivity){
+      numint_t* q;
+      /* we should add it */
+      matrix_realloc_lazy(C,C->nbrows+1);
+      q = C->p[C->nbrows];
+      numint_set_int(q[0],1);
+      numint_set_int(q[polka_cst],1);
+      numint_set_int(q[polka_eps],-1);
+      for (i=3; i<C->nbcolumns; i++) numint_set_int(q[i],0);
+    }
     C->_sorted = false;
     if (destructive){
       if (po->F) matrix_free(po->F);
@@ -63,10 +81,6 @@ poly_t* poly_closure(ap_manager_t* man, bool destructive, poly_t* pa)
       po->status = poly_status_conseps;
       po->nbeq = 0;
       po->nbline = 0;
-    }
-  } else {
-    if (!destructive){
-      poly_set_save_C(po,pa);
     }
   }
   return po;

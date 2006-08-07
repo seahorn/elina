@@ -261,6 +261,7 @@ poly_t* cherni_add_dimensions(pk_internal_t* pk,
     /* Extend constraints */
     if (pa->C){
       po->C = matrix_add_dimensions(pk,destructive,pa->C,dimchange);
+      po->C->_sorted = false;
     }
     /* Extend generators and add new lines */
     if (pa->F){
@@ -280,9 +281,10 @@ poly_t* cherni_add_dimensions(pk_internal_t* pk,
       }
       po->F->_sorted =
 	pa->F->_sorted && 
-	vector_compare(pk,
+	(vector_compare(pk,
 		       (const numint_t*)po->F->p[dimsup-1],
-		       (const numint_t*)po->F->p[dimsup],po->F->nbcolumns);
+		       (const numint_t*)po->F->p[dimsup],po->F->nbcolumns)
+	 < 0);
     }
     if (pa->satC){
       if (destructive){

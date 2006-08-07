@@ -292,6 +292,15 @@ void _poly_meet(bool meet,
 	const poly_t* p = pa; pa=pb; pb=p;
       }
     }
+    else {
+      /* ensure minimization of pa */
+      poly_chernikova_dual(man,pa,"of the first argument",meet);
+      if (pk->exn){
+	assert(pa->C);
+	pk->exn = AP_EXC_NONE;
+	goto _poly_meet_entry0;
+      }
+    }
     /* Now, pa is the start polyhedron */
     poly_obtain_satC(pa);
     poly_obtain_sorted_C(pk,pb);
@@ -304,7 +313,7 @@ void _poly_meet(bool meet,
 /* I.3 Meet/Join array */
 /* ====================================================================== */
 
-static long long int counter = 0;
+long long int meetcount = 0;
 
 poly_t* _poly_meet_array(bool meet,
 			 bool lazy,
@@ -315,7 +324,7 @@ poly_t* _poly_meet_array(bool meet,
   poly_t* poly;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
-  counter++;
+  meetcount++;
 
   man->result.flag_best = tbool_true;
 
@@ -427,7 +436,7 @@ poly_t* _poly_meet_array(bool meet,
     else {
       /* Minimizing and selecting the start polyhedron */
       j = 0; /* The selected start polyhedron */
-      for (i=0; i<size; i++){
+      for (i=1; i<size; i++){
 	assert(po[i]->C && po[i]->F);
 	if (po[i]->nbeq > po[j]->nbeq ||
 	    (po[i]->nbeq == po[j]->nbeq &&
@@ -452,6 +461,8 @@ poly_t* _poly_meet_array(bool meet,
       poly_obtain_satC(po[j]);
       poly->satC = satmat_copy_extend_columns(po[j]->satC,
 					      bitindex_size(C->nbrows));
+      poly->nbeq = po[j]->nbeq;
+      poly->nbline = po[j]->nbline;
       cherni_add_and_minimize(pk,meet,poly,po[j]->C->nbrows);
       if (pk->exn) goto _poly_meet_array_exit0;
       poly->status = 
@@ -462,6 +473,7 @@ poly_t* _poly_meet_array(bool meet,
 	( (poly->status & poly_status_consgauss) |
 	  poly_status_gengauss ) ;
     }
+    assert(poly_check_dual(pk,poly,meet));
     return poly;
   _poly_meet_array_exit0:
     poly->status = 0;

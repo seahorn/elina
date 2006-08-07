@@ -22,7 +22,7 @@ matrix_t* _matrix_alloc_int(size_t nbrows, size_t nbcols, bool s)
 {
   int i;
 
-  assert(nbrows>0 && nbcols>0);
+  assert(nbcols>0 || nbrows==0);
 
   matrix_t* mat = (matrix_t*)malloc(sizeof(matrix_t));
   mat->nbrows = mat->_maxrows = nbrows;
@@ -40,7 +40,7 @@ matrix_t* matrix_alloc(size_t nbrows, size_t nbcols, bool s)
 {
   int i;
 
-  assert(nbrows>0 && nbcols>0);
+  assert(nbcols>0 || nbrows==0);
 
   matrix_t* mat = (matrix_t*)malloc(sizeof(matrix_t));
   mat->nbrows = mat->_maxrows = nbrows;
@@ -368,13 +368,14 @@ void matrix_append_with(matrix_t* mat, const matrix_t* cmat)
   size_t nbrows;
 
   assert (mat->nbcolumns == cmat->nbcolumns);
-
+  
   nbrows = mat->nbrows;
   matrix_realloc_lazy(mat,nbrows+cmat->nbrows);
   for (i=0;i<cmat->nbrows; i++){
     for (l=0; l<cmat->nbcolumns; l++)
       numint_set(mat->p[nbrows+i][l],cmat->p[i][l]);
   }
+  mat->_sorted = false;
 }
 
 /* Given matrices with rows p1,p2,... and q1,q2,...., fills the initial matrix

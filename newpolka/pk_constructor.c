@@ -135,6 +135,7 @@ poly_t* poly_top(ap_manager_t* man, size_t intdim, size_t realdim)
   po = poly_alloc(intdim,realdim);
   poly_set_top(pk,po);
   man->result.flag_exact = man->result.flag_best = tbool_true;
+  assert(poly_check(pk,po));
   return po;
 }
 
