@@ -433,8 +433,9 @@ ap_dim_t ap_environment_dim_of_var(const ap_environment_t* env, ap_var_t name){
     if (res!=NULL){
       return ((long int)res - (long int)env->var_of_dim)/sizeof(ap_var_t);
     }
-    else
+    else {
       return AP_DIM_MAX;
+    }
   }
 }
 
@@ -625,7 +626,7 @@ bool ap_environment_is_eq(const ap_environment_t* env1,
 }
 
 bool ap_environment_is_leq(const ap_environment_t* env1,
-		       const ap_environment_t* env2)
+		           const ap_environment_t* env2)
 {
   bool res = (env1==env2);
   if (!res){
@@ -644,11 +645,11 @@ bool ap_environment_is_leq(const ap_environment_t* env1,
 }
 
 int ap_environment_compare(const ap_environment_t* env1,
-			const ap_environment_t* env2)
+		           const ap_environment_t* env2)
 {
-  ap_dimchange_t* dimchange1;
-  ap_dimchange_t* dimchange2;
-  ap_environment_t* e;
+  ap_dimchange_t* dimchange1=NULL;
+  ap_dimchange_t* dimchange2=NULL;
+  ap_environment_t* e=NULL;
   int res;
 
   e = ap_environment_lce(env1,env2,&dimchange1,&dimchange2);
@@ -693,8 +694,6 @@ ap_dimchange_t* ap_environment_dimchange(const ap_environment_t* env1,
 /*
   Least common environment to two environment.
 
-   - Assume ap_environment_is_eq(env1,env2)==false.
-
    - If environments are not compatible, return NULL
 
    - Compute also in dimchange1 and dimchange2 the conversion transformations.
@@ -709,6 +708,7 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
 {
   size_t size;
   denv_t denv;
+  bool eq1,eq2;
 
   if (ap_environment_check_compatibility(env1,env2))
     return NULL;
@@ -720,8 +720,21 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
   denv.envreal = env_lce(&denv1.envreal, &denv2.envreal);
   size = denv.envint.size+denv.envreal.size;
 
-  if (denv.envint.size==denv1.envint.size &&
-      denv.envreal.size==denv1.envreal.size){
+  eq1 = 
+    denv.envint.size==denv1.envint.size &&
+    denv.envreal.size==denv1.envreal.size;
+  eq2 = 
+    denv.envint.size==denv2.envint.size &&
+    denv.envreal.size==denv2.envreal.size;
+  if (eq1 && eq2){
+    /* env=env1 && env=env2 */
+    *dimchange1 = NULL;
+    *dimchange2 = NULL;
+    env_clear(&denv.envint);
+    env_clear(&denv.envreal);
+    return ap_environment_copy((ap_environment_t*)env1);
+  }
+  else if (eq1){
     /* env=env1 */
     *dimchange1 = NULL;
     *dimchange2 = ap_dimchange_alloc(denv.envint.size-denv2.envint.size,
@@ -734,8 +747,7 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
     env_clear(&denv.envreal);
     return ap_environment_copy((ap_environment_t*)env1);
   }
-  else if (denv.envint.size==denv2.envint.size &&
-	   denv.envreal.size==denv2.envreal.size){
+  else if (eq2){
     /* env=env2 */
     *dimchange2 = NULL;
     *dimchange1 = ap_dimchange_alloc(denv.envint.size-denv1.envint.size,
