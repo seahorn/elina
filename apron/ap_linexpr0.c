@@ -738,7 +738,7 @@ ap_linexpr0_add_dimensions_with(ap_linexpr0_t* expr,
 	ap_dim_t* pdim = &expr->p.linterm[i].dim;
 	if (*pdim==AP_DIM_MAX) 
 	  break;
-	while (k<dimsup && i==dimchange->dim[k]){	
+	while (k<dimsup && *pdim>=dimchange->dim[k]){	
 	  k++;
 	}
 	*pdim += k;
@@ -833,14 +833,15 @@ long ap_linexpr0_hash(const ap_linexpr0_t* expr)
     return ap_coeff_hash(&expr->cst);
   }
   else {
+    const ap_coeff_t* pcoeff;
     size_t i,dec;
-    long res;
+    long res,res1;
     res = expr->size << 8;
     dec = 0;
     for (i=0; i<expr->size; i += (expr->size+7)/8){
-      res += ap_coeff_hash(expr->discr == AP_LINEXPR_DENSE ?
-			&expr->p.coeff[i] :
-			&expr->p.linterm[i].coeff) << dec;
+      pcoeff = ap_linexpr0_coeffref(expr,i);
+      res1 = (pcoeff==NULL) ? 0 : ap_coeff_hash(pcoeff);
+      res += res1<<dec;
       dec++;
     }
     return res;
