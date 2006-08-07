@@ -139,14 +139,7 @@ void camlidl_apron_environment_ptr_ml2c(value v, ap_environment_ptr* p)
   *p = *((ap_environment_ptr *) Data_custom_val(v));
 }
 
-static inline
-value camlidl_apron_environment_ptr_c2ml(ap_environment_ptr* p)
-{
-  value v;
-  v = alloc_custom(&camlidl_apron_custom_environment_ptr, sizeof(ap_environment_ptr), 0,1);
-  *((ap_environment_ptr *) Data_custom_val(v)) = *p;
-  return v;
-}
+value camlidl_apron_environment_ptr_c2ml(ap_environment_ptr* p);
 
 /* ********************************************************************** */
 /* init */

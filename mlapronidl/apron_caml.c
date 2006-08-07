@@ -135,7 +135,7 @@ unsigned long camlidl_apron_abstract0_deserialize(void * dst)
     data = malloc(size);
     assert(data);
     deserialize_block_1(data,size);
-    *((ap_abstract0_ptr*)dst) = 
+    *((ap_abstract0_ptr*)dst) =
       ap_abstract0_deserialize_raw(deserialize_man,data,&realsize);
     free(data);
   }
@@ -153,86 +153,95 @@ struct custom_operations camlidl_apron_custom_abstract0_ptr = {
 };
 
 /* ********************************************************************** */
-/* environment */
+/* variable and environment */
 /* ********************************************************************** */
 
-static value _v_var_hash_default = Val_unit;
-static value _v_var_compare_default = Val_unit;
-static value _v_var_to_string_default = Val_unit;
+static value _v_var_dup = Val_unit;
+static value _v_var_hash = Val_unit;
+static value _v_var_compare = Val_unit;
+static value _v_var_to_string = Val_unit;
 
-static long camlidl_apron_var_hash_default(void* v)
-{
-  value _v_v = (value)v;
-  value _v_res;
+static ap_var_t camlidl_apron_var_copy(ap_var_t p)
+{ return p; }
 
-  Begin_roots1(_v_v)
-  _v_res = callback(_v_var_hash_default,_v_v);
-  End_roots()
-  return Int_val(_v_res);
-}
-static int camlidl_apron_var_compare_default(void* v1, void* v2)
-{
-  value _v_v1 = (value)v1;
-  value _v_v2 = (value)v2;
-  value _v_res;
-
-  Begin_roots2(_v_v1,_v_v2)
-  _v_res = callback2(_v_var_compare_default,_v_v1,_v_v2);
-  End_roots()
-  return Int_val(_v_res);
-}
-static void* camlidl_apron_var_copy_default(void* v)
-{ return v; }
-static void camlidl_apron_var_free_default(void* v)
+static void camlidl_apron_var_free(ap_var_t p)
 { return; }
-static char* camlidl_apron_var_to_string_default(void* v)
+
+static char* camlidl_apron_var_to_string(void* v)
 {
-  value _v_v = (value)v;
-  value _v_res = Val_unit;
+  CAMLparam1(v);
+  CAMLlocal1(_v_res);
   char* str;
   char* str2;
+  int l;
 
-  Begin_roots2(_v_v,_v_res)
-    _v_res = callback(_v_var_to_string_default,_v_v);
-    str = String_val(_v_res);
-    str2 = malloc((strlen(str)+1)*sizeof(char));
-    strcpy(str2,str);
-  End_roots()
-  return str2;
+  _v_res = callback(_v_var_to_string,(value)v);
+  l = string_length(_v_res);
+  str = String_val(_v_res);
+  str2 = malloc((l+1)*sizeof(char));
+  memcpy(str2,str,l+1);
+  CAMLreturn(str2);
+}
+static long camlidl_apron_var_hash(void* v)
+{
+  CAMLparam1(v);
+  CAMLlocal1(_v_res);
+
+  _v_res = callback(_v_var_hash,(value)v);
+  CAMLreturn(Int_val(_v_res));
+}
+static int camlidl_apron_var_compare(void* v1, void* v2)
+{
+  CAMLparam2(v1,v2);
+  CAMLlocal1(_v_res);
+
+  _v_res = callback2(_v_var_compare,(value)v1,(value)v2);
+  CAMLreturn(Int_val(_v_res));
 }
 
-static 
-struct ap_var_operations_t 
-camlidl_apron_var_operations_default = {
-  camlidl_apron_var_compare_default,
-  camlidl_apron_var_copy_default,
-  camlidl_apron_var_free_default,
-  camlidl_apron_var_to_string_default
+static
+struct ap_var_operations_t
+camlidl_apron_var_operations = {
+  camlidl_apron_var_compare,
+  camlidl_apron_var_copy,
+  camlidl_apron_var_free,
+  camlidl_apron_var_to_string
 };
 
 value camlidl_apron_set_var_operations(value v)
 {
   CAMLparam1(v);
-  register_global_root(&_v_var_hash_default);
-  register_global_root(&_v_var_compare_default);
-  register_global_root(&_v_var_to_string_default);
-  _v_var_hash_default = *caml_named_value("ApronVar_hash");
-  _v_var_compare_default = *caml_named_value("ApronVar_compare");
-  _v_var_to_string_default = *caml_named_value("ApronVar_to_string");
-  ap_var_operations = &camlidl_apron_var_operations_default;
+  _v_var_dup = *caml_named_value("ApronVar_dup");
+  register_global_root(&_v_var_dup);
+  _v_var_hash = *caml_named_value("ApronVar_hash");
+  register_global_root(&_v_var_hash);
+  _v_var_compare = *caml_named_value("ApronVar_compare");
+  register_global_root(&_v_var_compare);
+  _v_var_to_string = *caml_named_value("ApronVar_to_string");
+  register_global_root(&_v_var_to_string);
+  ap_var_operations = &camlidl_apron_var_operations;
   CAMLreturn(Val_unit);
 }
 
 static
 void camlidl_apron_environment_ptr_finalize(value v)
 {
+  size_t i;
   ap_environment_t* e = *(ap_environment_ptr *) Data_custom_val(v);
+  if (e->intdim+e->realdim>=1 &&
+      Is_block((value)(e->var_of_dim[0]))){
+    for (i=0;i<e->intdim+e->realdim;i++){
+      caml_remove_global_root((value*)&e->var_of_dim[i]);
+    }
+  }
   ap_environment_free(e);
+  return;
 }
 
 static
 long camlidl_apron_environment_ptr_hash(value v)
 {
+  CAMLparam1(v);
   ap_environment_t* env = *(ap_environment_ptr *) Data_custom_val(v);
   int res;
   size_t size,i,dec;
@@ -241,17 +250,20 @@ long camlidl_apron_environment_ptr_hash(value v)
   size = env->intdim+env->realdim;
   dec = 0;
   for (i=0; i<size; i += (size+2)/3){
-    res += camlidl_apron_var_hash_default(env->var_of_dim[i]) << dec;
+    res += camlidl_apron_var_hash(env->var_of_dim[i]) << dec;
     dec++;
   }
-  return res;
+  CAMLreturn(res);
 }
 static
 int camlidl_apron_environment_ptr_compare(value v1, value v2)
 {
+  CAMLparam2(v1,v2);
+  int res;
   ap_environment_t* env1 = *(ap_environment_ptr *) Data_custom_val(v1);
   ap_environment_t* env2 = *(ap_environment_ptr *) Data_custom_val(v2);
-  return ap_environment_compare(env1,env2);
+  res = ap_environment_compare(env1,env2);
+  CAMLreturn(res);
 }
 
 struct custom_operations camlidl_apron_custom_environment_ptr = {
@@ -262,6 +274,25 @@ struct custom_operations camlidl_apron_custom_environment_ptr = {
   custom_serialize_default,
   custom_deserialize_default
 };
+
+value camlidl_apron_environment_ptr_c2ml(ap_environment_ptr* p)
+{
+  value v;
+  ap_environment_t* env = *p;
+
+  assert(env->count>=1);
+  if (env->count==1 && 
+      env->intdim+env->realdim>=1 &&
+      Is_block(((value)(env->var_of_dim[0])))){
+    size_t i;
+    for (i=0; i<env->intdim+env->realdim;i++){
+      caml_register_global_root((value*)&env->var_of_dim[i]);
+    }
+  }
+   v = alloc_custom(&camlidl_apron_custom_environment_ptr, sizeof(ap_environment_ptr), 0,1);
+  *((ap_environment_ptr *) Data_custom_val(v)) = *p;
+  return v;
+}
 
 /* ********************************************************************** */
 /* init */
