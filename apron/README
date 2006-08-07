@@ -18,7 +18,9 @@ Most useful make targets:
 
   all: clib ps
     everything
-  apron.ps:
+  apronrationale.ps:
+    le rationale pour l'interface
+  apron.ps
   apron.info:
   apron.html:
     the documentation
