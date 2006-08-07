@@ -181,7 +181,7 @@ bool ap_environment_is_leq(const ap_environment_t* env1,
                        const ap_environment_t* env2);
   /* Inclusion test */
 int ap_environment_compare(const ap_environment_t* env1,
-                        const ap_environment_t* env2);
+                           const ap_environment_t* env2);
   /* Return
     - -2 if the environements are not compatible
       (a variable has a different type in the 2 environements)
@@ -215,8 +215,6 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
                                ap_dimchange_t** dimchange2);
   /*
   Least common environment to two environements.
-
-   - Assume ap_environment_is_eq(env1,env2)==false.
 
    - If environments are not compatible
      (a variable has different types in the 2 environements),
