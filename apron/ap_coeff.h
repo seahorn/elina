@@ -17,6 +17,10 @@
 #include "ap_scalar.h"
 #include "ap_interval.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum ap_coeff_discr_t {
   AP_COEFF_SCALAR,
   AP_COEFF_INTERVAL
@@ -121,5 +125,9 @@ long ap_coeff_hash(const ap_coeff_t* coeff);
 void ap_coeff_init(ap_coeff_t* coeff, ap_coeff_discr_t ap_coeff_discr);
 void ap_coeff_init_set(ap_coeff_t* coeff, const ap_coeff_t* coeff2);
 void ap_coeff_clear(ap_coeff_t* coeff);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

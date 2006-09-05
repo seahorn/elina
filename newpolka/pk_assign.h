@@ -14,6 +14,10 @@
 #include "pk_matrix.h"
 #include "pk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 poly_t* poly_asssub_linear_linexpr(bool assign,
 				   ap_manager_t* man,
 				   bool destructive,
@@ -73,5 +77,10 @@ poly_t* poly_substitute_linexpr_array(ap_manager_t* man,
 				      const ap_dim_t* tdim, const ap_linexpr0_t** texpr,
 				      size_t size,
 				      const poly_t* pb);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

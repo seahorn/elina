@@ -11,6 +11,10 @@
 #include "pk_config.h"
 #include "pk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static inline char* strdup(const char* s);
 
 bool manager_check_dim_dim(manager_t* man,
@@ -37,5 +41,8 @@ static inline char* strdup(const char* s){
   return s2;
 }
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

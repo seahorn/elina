@@ -5,6 +5,10 @@
 #include "itv_config.h"
 #include "itv_int.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void itv_bound_linexpr_internal(itv_internal_t* intern,
 				itv_interval_t itvinterval, 
 				const itv_t* a, const ap_linexpr0_t* expr);
@@ -38,4 +42,8 @@ ap_interval_t* itv_bound_linexpr(ap_manager_t* man,
 ap_lincons0_array_t itv_to_lincons_array(ap_manager_t* man, const itv_t* a);
 ap_generator0_array_t itv_to_generator_array(ap_manager_t* man, const itv_t* a);
 ap_interval_t** itv_to_box(ap_manager_t* man, const itv_t* a);
+
+#ifdef __cplusplus
+}
+#endif
 

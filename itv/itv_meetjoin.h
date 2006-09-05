@@ -5,6 +5,10 @@
 #include "itv_config.h"
 #include "itv.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool itv_meet_itvlincons(itv_internal_t* intern,
 			 itv_t* a, itv_lincons_t* cons);
 void itv_meet_itv_lincons_array(itv_internal_t* intern,
@@ -24,3 +28,8 @@ itv_t* itv_meet_lincons_array(ap_manager_t* man,
 itv_t* itv_add_ray_array(ap_manager_t* man,
 			 bool destructive,
 			 itv_t* a, const ap_generator0_array_t* array);
+
+#ifdef __cplusplus
+}
+#endif
+

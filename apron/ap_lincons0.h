@@ -16,6 +16,10 @@
 #include "ap_coeff.h"
 #include "ap_linexpr0.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ====================================================================== */
 /* Datatypes */
 /* ====================================================================== */
@@ -167,5 +171,9 @@ ap_lincons0_t ap_lincons0_permute_dimensions(const ap_lincons0_t* cons,
   return ap_lincons0_make(cons->constyp,
 		       ap_linexpr0_permute_dimensions(cons->linexpr0,perm));
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

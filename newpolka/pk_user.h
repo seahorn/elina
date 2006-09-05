@@ -17,6 +17,10 @@
 #include "pk_vector.h"
 #include "pk_matrix.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Conversions with user datatypes */
 
 void vector_set_linexpr(pk_internal_t* pk,
@@ -46,5 +50,8 @@ ap_generator0_t generator_of_vector(pk_internal_t* pk,
 matrix_t* matrix_of_lincons_array(pk_internal_t* pk, const ap_lincons0_array_t* array, size_t intdim, size_t realdim, bool integer);
 matrix_t* matrix_of_generator_array(pk_internal_t* pk, const ap_generator0_array_t* array, size_t intdim, size_t realdim);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

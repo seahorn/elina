@@ -15,6 +15,14 @@
 #include "pk_matrix.h"
 #include "pk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 poly_t* poly_closure(ap_manager_t* man, bool destructive, poly_t* pa);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -18,6 +18,10 @@
 #include "ap_generator0.h"
 #include "ap_linexpr1.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ====================================================================== */
 /* Datatypes */
 /* ====================================================================== */
@@ -258,5 +262,9 @@ static inline
 void ap_generator1_array_clear_index(ap_generator1_array_t* array, size_t index){
   ap_generator0_clear(&array->generator0_array.p[index]);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

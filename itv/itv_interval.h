@@ -41,6 +41,10 @@ typedef struct itv_lincons_array_t {
 
 #include "itv_internal.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ********************************************************************** */
 /* itv_interval */
 /* ********************************************************************** */
@@ -266,5 +270,9 @@ static inline
 void itv_lincons_init(itv_lincons_t* cons){
   itv_linexpr_init(&cons->itvlinexpr,0);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -8,6 +8,10 @@
 #include <stdio.h>
 #include "ap_global0.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* OCaml interface */
 ap_manager_t* itv_manager_alloc();
 
@@ -147,7 +151,7 @@ tbool_t itv_is_eq(ap_manager_t* man, const itv_t* a1, const itv_t* a2);
 tbool_t itv_sat_lincons(ap_manager_t* man, const itv_t* a, const ap_lincons0_t* cons);
   /* does the itv value satisfy the linear constraint ? */
 
-tbool_t itv_sat_interval(ap_manager_t* man, const 
+tbool_t itv_sat_interval(ap_manager_t* man,
 			 const itv_t* a, 
 			 ap_dim_t dim, const ap_interval_t* interval);
   /* is the dimension included in the interval in the itv value ? */
@@ -342,5 +346,9 @@ itv_t* itv_widening(ap_manager_t* man,
 /* Returns the topological closure of a possibly opened abstract value */
 
 itv_t* itv_closure(ap_manager_t* man, bool destructive, itv_t* a);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

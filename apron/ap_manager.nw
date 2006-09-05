@@ -25,6 +25,11 @@ définition du contexte d'appel, ainsi que des types d'usage généraux.
 #include <stdio.h>
 
 #include "ap_coeff.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 @
 
 %======================================================================
@@ -477,5 +482,9 @@ ap_manager_t* ap_manager_copy(ap_manager_t* man)
 @
 
 <<*>>=
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 @

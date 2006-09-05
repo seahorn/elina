@@ -17,6 +17,10 @@ from one representation to the dual one. */
 #include "pk_matrix.h"
 #include "pk_int.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Functions meant to be internal */
 
 /* ********************************************************************** */
@@ -104,4 +108,9 @@ void cherni_add_and_minimize(pk_internal_t* pk,
 void cherni_buildsatline(pk_internal_t* pk,
 			 const matrix_t* con, const numint_t* tab,
 			 bitstring_t* satline);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

@@ -25,6 +25,10 @@ used.
 #include "pk_vector.h"
 #include "pk_satmat.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct matrix_t {
   /* public part */
   numint_t** p;     /* array of pointers to rows */
@@ -100,5 +104,9 @@ bool matrix_is_row_dummy_constraint(pk_internal_t* pk,
 
 /* Functions meant to be internal */
 matrix_t* _matrix_alloc_int(size_t nr, size_t nc, bool s);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

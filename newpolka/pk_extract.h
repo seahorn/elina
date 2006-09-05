@@ -14,6 +14,10 @@
 #include "pk_matrix.h"
 #include "pk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Bounding the value of a dimension in a matrix of generators.
    mode == 1: sup bound
    mode == -1: inf bound
@@ -70,5 +74,9 @@ ap_interval_t** poly_to_box(ap_manager_t* man,
 */
 ap_generator0_array_t poly_to_generator_array(ap_manager_t* man,
 					  const poly_t* po);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

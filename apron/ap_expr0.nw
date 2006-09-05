@@ -15,7 +15,7 @@
 /* This file is part of the APRON Library, released under LGPL license.  Please
    read the COPYING file packaged in the distribution */
 
-/* GENERATED FROM ap_expr0.nw: DOT NOT MODIFY ! */
+/* GENERATED FROM ap_expr0.nw: DO NOT MODIFY ! */
 
 #ifndef _AP_EXPR0_H_
 #define _AP_EXPR0_H_

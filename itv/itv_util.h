@@ -10,6 +10,10 @@
 #include "manager.h"
 #include "itv.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool manager_check_dim_dim(manager_t* man,
 			     itv_t* a, dim_t dim,
 			     char* prefix);
@@ -24,5 +28,9 @@ bool manager_check_dim_array(manager_t* man,
 bool manager_check_dim_linexpr(manager_t* man,
 				 itv_t* a, linexpr_t* expr,
 				 char* prefix);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

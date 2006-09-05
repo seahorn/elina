@@ -15,6 +15,10 @@
 #include "pk_config.h"
 #include "pk_internal.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Basic Operations */
 numint_t* vector_alloc(size_t size);
 void     vector_realloc(numint_t** q, size_t size, size_t nsize);
@@ -76,5 +80,8 @@ void vector_gcd(pk_internal_t* pk,
 		numint_t* q, size_t size, numint_t gcd);
 
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

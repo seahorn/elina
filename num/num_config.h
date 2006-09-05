@@ -2,6 +2,10 @@
 #ifndef _NUM_CONFIG_H_
 #define _NUM_CONFIG_H_
 
+#ifdef __cplusplus
+#define HAS_BOOL
+#endif
+
 #ifndef HAS_BOOL
 #define HAS_BOOL
 

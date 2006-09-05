@@ -19,6 +19,10 @@
 #ifndef __PK_BIT_H__
 #define __PK_BIT_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef unsigned int bitstring_t;
 typedef struct bitindex_t {
   size_t index;
@@ -51,5 +55,9 @@ void bitstring_fprint(FILE* stream, const bitstring_t* b, size_t size);
 int bitstring_get(const bitstring_t* b, bitindex_t ix);
 void bitstring_set(bitstring_t* b, bitindex_t ix);
 void bitstring_clr(bitstring_t* b, bitindex_t ix);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

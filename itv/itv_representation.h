@@ -5,6 +5,10 @@
 #include "itv_config.h"
 #include "itv.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Internal functions */
 itv_t* itv_alloc(size_t intdim, size_t realdim);
 void itv_init(itv_t* a);
@@ -37,3 +41,6 @@ void itv_printdiff(FILE* stream,
 ap_membuf_t itv_serialize_raw(ap_manager_t* man, const itv_t* a);
 itv_t* itv_deserialize_raw(ap_manager_t* man, void* ptr);
 
+#ifdef __cplusplus
+}
+#endif

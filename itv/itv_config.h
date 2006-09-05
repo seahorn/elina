@@ -6,6 +6,11 @@
 #include "bound.h"
 #include "ap_global0.h"
 
+#ifdef __cplusplus
+#define HAS_BOOL
+extern "C" {
+#endif
+
 int static inline num_size(const num_t a)
 #if defined(NUM_MPQ)
 { return mpz_size(mpq_numref(a)) + mpz_size(mpq_denref(a)); }
@@ -24,6 +29,10 @@ typedef enum bool {
   false=0,
   true=1
 } bool;
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

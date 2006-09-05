@@ -18,6 +18,10 @@
 #include "ap_environment.h"
 #include "ap_linexpr0.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ====================================================================== */
 /* Datatypes */
 /* ====================================================================== */
@@ -289,5 +293,9 @@ bool ap_linexpr1_set_coeff_interval_frac(ap_linexpr1_t* expr, ap_var_t var,
 static inline
 bool ap_linexpr1_set_coeff_interval_double(ap_linexpr1_t* expr, ap_var_t var, double inf, double sup)
   { ap_coeff_t* ecoeff = ap_linexpr1_coeffref(expr,var); if (ecoeff){ ap_coeff_set_interval_double(ecoeff,inf,sup); return false; } else return true; }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

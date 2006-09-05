@@ -20,7 +20,7 @@ sur des objets de niveau 1 en objets de niveau 0.
 /* This file is part of the APRON Library, released under LGPL license.  Please
    read the COPYING file packaged in the distribution */
 
-/* GENERATED FROM ap_abstract1.nw: DOT NOT MODIFY ! */
+/* GENERATED FROM ap_abstract1.nw: DO NOT MODIFY ! */
 
 #ifndef _AP_ABSTRACT1_H_
 #define _AP_ABSTRACT1_H_
@@ -28,6 +28,11 @@ sur des objets de niveau 1 en objets de niveau 0.
 #include "ap_manager.h"
 #include "ap_abstract0.h"
 #include "ap_expr1.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 @
 
 %======================================================================
@@ -557,5 +562,9 @@ ap_abstract1_t ap_abstract1_closure(ap_manager_t* man, bool destructive,  ap_abs
 @
 
 <<*>>=
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 @

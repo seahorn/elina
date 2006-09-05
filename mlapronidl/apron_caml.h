@@ -28,6 +28,10 @@
 #include <caml/bigarray.h>
 #include <caml/intext.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct ap_interval_array_t {
   struct ap_interval_t** p;
   size_t size;
@@ -145,5 +149,9 @@ value camlidl_apron_environment_ptr_c2ml(ap_environment_ptr* p);
 /* init */
 /* ********************************************************************** */
 value camlidl_apron_init(value dummy);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

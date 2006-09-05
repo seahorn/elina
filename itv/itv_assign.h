@@ -5,6 +5,10 @@
 #include "itv.h"
 #include "itv_internal.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 itv_t* itv_assign_linexpr(ap_manager_t* man,
 			  bool destructive,
 			  itv_t* a,
@@ -30,4 +34,8 @@ itv_t* itv_substitute_linexpr_array(ap_manager_t* man,
 				    size_t size,
 				    const itv_t* dest);
 
+
+#ifdef __cplusplus
+}
+#endif
 

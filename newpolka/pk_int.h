@@ -16,6 +16,10 @@ if and only if \verb-satC || satF-. */
 
 #include "pk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum poly_status_t {
   poly_status_conseps=0x1,
   poly_status_consgauss=0x2,
@@ -35,5 +39,9 @@ struct poly_t {
   size_t nbline;
   poly_status_t status;
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -18,6 +18,10 @@
 #include "ap_coeff.h"
 #include "ap_dimension.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ====================================================================== */
 /* Datatypes */
 /* ====================================================================== */
@@ -366,5 +370,8 @@ bool ap_linexpr0_set_coeff_interval_double(ap_linexpr0_t* expr, ap_dim_t dim, do
 
 
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

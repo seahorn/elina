@@ -16,6 +16,10 @@
 
 #include "ap_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 /* ********************************************************************** */
 /* I. Datatypes  */
@@ -140,7 +144,7 @@ void ap_scalar_init(ap_scalar_t* scalar, ap_scalar_discr_t d)
 {
   switch(scalar->discr){
   case AP_SCALAR_MPQ:
-    scalar->val.mpq = malloc(sizeof(mpq_t));
+    scalar->val.mpq = (mpq_ptr)malloc(sizeof(mpq_t));
     mpq_init(scalar->val.mpq);
     break;
   case AP_SCALAR_DOUBLE:
@@ -162,5 +166,9 @@ void ap_scalar_clear(ap_scalar_t* scalar)
 }
 static inline
 void ap_scalar_swap(ap_scalar_t* a, ap_scalar_t* b){ ap_scalar_t t = *a; *a = *b; *b = t; }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

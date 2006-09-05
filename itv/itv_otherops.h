@@ -4,6 +4,10 @@
 
 #include "itv.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 itv_t* itv_forget_array(ap_manager_t* man,
 			bool destructive,
 			itv_t* a,
@@ -25,3 +29,8 @@ itv_t* itv_widening(ap_manager_t* man,
 		    const itv_t* a1, const itv_t* a2);
 
 itv_t* itv_closure(ap_manager_t* man, bool destructive, itv_t* a);
+
+#ifdef __cplusplus
+}
+#endif
+

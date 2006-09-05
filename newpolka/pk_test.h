@@ -13,6 +13,10 @@
 #include "pk_matrix.h"
 #include "pk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Strict behaviour means here that the answer is either tbool_true or
    tbool_false, unless an exception occurs. */
 
@@ -77,5 +81,9 @@ mode for the library.
 bool do_generators_sat_constraint(pk_internal_t* pk, 
 				  const matrix_t* F, 
 				  const numint_t* tab, bool is_strict);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

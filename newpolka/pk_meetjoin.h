@@ -14,6 +14,10 @@
 #include "pk_matrix.h"
 #include "pk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ********************************************************************** */
 /* I. Meet/Join */
 /* ********************************************************************** */
@@ -82,5 +86,9 @@ poly_t* poly_join(ap_manager_t* man, bool destructive, poly_t* a1, const poly_t*
 poly_t* poly_join_array(ap_manager_t* man, const poly_t** po, size_t size);
 poly_t* poly_add_ray_array(ap_manager_t* man, 
 			   bool destructive, poly_t* pa, const ap_generator0_array_t* array);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

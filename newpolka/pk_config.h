@@ -18,6 +18,11 @@
 #include "ap_expr0.h"
 #include "ap_manager.h"
 
+#ifdef __cplusplus
+#define HAS_BOOL
+extern "C" {
+#endif
+
 /* Extension to the num package */
 static inline size_t numint_size(numint_t a)
 #if defined (NUMINT_NATIVE)
@@ -45,7 +50,9 @@ typedef enum bool {
 } bool;
 #endif
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

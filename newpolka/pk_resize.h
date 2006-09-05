@@ -16,6 +16,10 @@ from one representation to the dual one. */
 #include "pk_satmat.h"
 #include "pk_matrix.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ********************************************************************** */
 /*  I. Vectors */
 /* ********************************************************************** */
@@ -69,5 +73,9 @@ poly_t* poly_permute_dimensions(ap_manager_t* man,
 				bool destructive,
 				poly_t* a,
 				const ap_dimperm_t* permutation);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

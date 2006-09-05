@@ -9,6 +9,10 @@
 #include "itv_config.h"
 #include "itv_interval.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 bool expr_is_invertible(ap_dim_t dim,linexpr_t* a);
 void linexpr_invert(linexpr_t* a, ap_dim_t dim, linexpr_t* b);
@@ -22,5 +26,9 @@ struct itv_t {
   size_t intdim;
   size_t realdim;
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

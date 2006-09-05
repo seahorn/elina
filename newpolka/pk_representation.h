@@ -14,6 +14,10 @@
 #include "pk_matrix.h"
 #include "pk_int.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ********************************************************************** */
 /* I. Memory */
 /* ********************************************************************** */
@@ -198,5 +202,8 @@ static inline void poly_obtain_F_dual(ap_manager_t* man, const poly_t* po, char*
 }
 
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

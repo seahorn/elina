@@ -16,6 +16,10 @@
 #include "ap_coeff.h"
 #include "ap_linexpr0.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ====================================================================== */
 /* Datatypes */
 /* ====================================================================== */
@@ -153,5 +157,9 @@ ap_generator0_t ap_generator0_permute_dimensions(const ap_generator0_t* gen,
   return ap_generator0_make(gen->gentyp,
 			 ap_linexpr0_permute_dimensions(gen->linexpr0,perm));
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

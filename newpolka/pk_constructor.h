@@ -14,6 +14,10 @@
 #include "pk_matrix.h"
 #include "pk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Fill the first (pk->dec-1) rows of the matrix with the constraints of the
    universe polyhedron */
 void _matrix_fill_constraint_top(pk_internal_t* pk, matrix_t* C, size_t start);
@@ -87,5 +91,9 @@ poly_t* poly_of_lincons_array(ap_manager_t* man,
 
 /* Return the dimensions of the polyhedra */
 ap_dimension_t poly_dimension(ap_manager_t* man, const poly_t* po);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -18,6 +18,10 @@
 #include <stdlib.h>
 #include "pk_bit.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct satmat_t {
   /* public part */
   bitstring_t** p;
@@ -46,5 +50,9 @@ satmat_t* satmat_transpose(const satmat_t* org, size_t nbcols);
 
 void satmat_exch_rows(satmat_t* sat, size_t l1, size_t l2);
 void satmat_move_rows(satmat_t* sat, size_t destrow, size_t orgrow, size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -18,6 +18,10 @@
 #include "ap_lincons0.h"
 #include "ap_linexpr1.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ====================================================================== */
 /* Datatypes */
 /* ====================================================================== */
@@ -269,5 +273,9 @@ static inline
 void ap_lincons1_array_clear_index(ap_lincons1_array_t* array, size_t index){
   ap_lincons0_clear(&array->lincons0_array.p[index]);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

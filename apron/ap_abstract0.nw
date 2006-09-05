@@ -16,7 +16,7 @@
 /* This file is part of the APRON Library, released under LGPL license.  Please
    read the COPYING file packaged in the distribution */
 
-/* GENERATED FROM ap_abstract0.nw: DOT NOT MODIFY ! */
+/* GENERATED FROM ap_abstract0.nw: DO NOT MODIFY ! */
 
 
 #ifndef _AP_ABSTRACT0_H_
@@ -24,6 +24,10 @@
 
 #include "ap_manager.h"
 #include "ap_expr0.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Generic abstract value at level 0 */
 typedef struct ap_abstract0_t {
@@ -719,5 +723,9 @@ ap_abstract0_t* ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
 
 
 <<*>>=
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 @

@@ -12,6 +12,10 @@
 #include "pk_bit.h"
 #include "pk.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ********************************************************************** */
 /* I. Types */
 /* ********************************************************************** */
@@ -95,5 +99,9 @@ static inline pk_internal_t* pk_init_from_manager(ap_manager_t* man, ap_funid_t 
   man->result.flag_exact = man->result.flag_best = tbool_top;
   return pk;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -16,6 +16,10 @@
 #include "ap_config.h"
 #include "ap_scalar.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct ap_interval_t {
   ap_scalar_t* inf;
   ap_scalar_t* sup;
@@ -107,5 +111,9 @@ ap_interval_t** ap_interval_array_alloc(size_t size);
   /* Allocating an array of intervals, initialized with [0,0] values */
 void ap_interval_array_free(ap_interval_t** array, size_t size);
   /* Clearing and freeing an array of intervals */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

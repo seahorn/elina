@@ -12,6 +12,10 @@
 
 #include "itv_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 ap_manager_t* itv_manager_alloc();
 
 typedef struct itv_internal_t {
@@ -51,6 +55,8 @@ static inline itv_internal_t* itv_init_from_manager(ap_manager_t* man, ap_funid_
   return itv;
 }
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

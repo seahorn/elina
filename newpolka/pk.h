@@ -16,6 +16,10 @@ if and only if \verb-satC || satF-. */
 
 #include "ap_global0.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct poly_t poly_t;
 typedef struct pk_internal_t pk_internal_t;
 
@@ -368,5 +372,9 @@ poly_t* poly_widening(ap_manager_t* man,
 /* Returns the topological closure of a possibly opened abstract value */
 
 poly_t* poly_closure(ap_manager_t* man, bool destructive, poly_t* a);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
