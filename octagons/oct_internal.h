@@ -62,7 +62,7 @@ oct_init_from_manager(ap_manager_t* man, ap_funid_t id, size_t size)
   pr->conv = false;
   if (pr->tmp_size<size) {
     bound_clear_array(pr->tmp,pr->tmp_size);
-    pr->tmp = realloc(pr->tmp,sizeof(bound_t)*size);
+    pr->tmp = (bound_t*)realloc(pr->tmp,sizeof(bound_t)*size);
     assert(pr->tmp);
     pr->tmp_size = size;
     bound_init_array(pr->tmp,pr->tmp_size);

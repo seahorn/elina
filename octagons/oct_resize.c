@@ -142,7 +142,8 @@ oct_t* oct_add_dimensions(ap_manager_t* man,
     
     /* insert variables */
     mm = hmat_alloc_top(pr,a->dim+nb);
-    hmat_addrem_dimensions(mm,m,dimchange->dim,nb,1,a->dim,true);
+    hmat_addrem_dimensions(mm,(const bound_t*)m,dimchange->dim,
+			   nb,1,a->dim,true);
 
     /* set new variables to 0, if necessary */
     if (project) {
@@ -181,7 +182,8 @@ oct_t* oct_remove_dimensions(ap_manager_t* man,
 
     /* remove variables */
     mm = hmat_alloc(pr,a->dim-nb);
-    hmat_addrem_dimensions(mm,m,dimchange->dim,nb,1,a->dim,false);
+    hmat_addrem_dimensions(mm,(const bound_t*)m,dimchange->dim,
+			   nb,1,a->dim,false);
   }
 
   if (a->closed) {
@@ -237,7 +239,7 @@ oct_t* oct_permute_dimensions(ap_manager_t* man,
     
     /* permuted copy */
     mm = hmat_alloc(pr,a->dim);
-    hmat_permute(mm,m,a->dim,a->dim,permutation->dim);
+    hmat_permute(mm,(const bound_t*)m,a->dim,a->dim,permutation->dim);
   }
   /* always exact, respects closure */
   if (a->closed) return oct_set_mat(pr,a,NULL,mm,destructive);
@@ -264,7 +266,7 @@ oct_t* oct_expand(ap_manager_t* man,
   else {
     /* insert n variables at pos */
     mm = hmat_alloc_top(pr,a->dim+n);
-    hmat_addrem_dimensions(mm,m,&pos,1,n,a->dim,true);
+    hmat_addrem_dimensions(mm,(const bound_t*)m,&pos,1,n,a->dim,true);
 
     for (i=0;i<n;i++) {
       /* copy info from dim */
@@ -311,9 +313,9 @@ oct_t* oct_fold(ap_manager_t* man,
       arg_assert(tdim[i]<a->dim,return NULL;);
       if (i) arg_assert(tdim[i-1]<tdim[i],return NULL;);
     }
-
+    
     /* merge binary constraints */
-    bound_set_array(pr->tmp,m,matsize(a->dim));
+    bound_set_array(pr->tmp,(const bound_t*)m,matsize(a->dim));
     for (j=0;j<2*a->dim;j++) {
       bound_t* mm1 = pr->tmp+matpos2(tdim[0]*2  ,j);
       bound_t* mm2 = pr->tmp+matpos2(tdim[0]*2+1,j);
@@ -335,7 +337,8 @@ oct_t* oct_fold(ap_manager_t* man,
 
     /* destroy all dimensions in tdim except the first one */
     mm = hmat_alloc_top(pr,a->dim-size+1);
-    hmat_addrem_dimensions(mm,pr->tmp,tdim+1,size-1,1,a->dim,false);
+    hmat_addrem_dimensions(mm,(const bound_t*)pr->tmp,tdim+1,size-1,1,
+			   a->dim,false);
 
     /* reset diagonal elements */
     bound_set_int(mm[matpos(tdim[0]*2  ,tdim[0]*2  )],0);

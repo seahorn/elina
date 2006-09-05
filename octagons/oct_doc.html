@@ -28,7 +28,7 @@ code { color: #f00; }
 <ol>
 <li><a href="#intro">Introduction</a>
 <li><a href="#install">Installation</a>
-<li><a href="#c">Access to the Library from C</a>
+<li><a href="#c">Access to the Library from C and C++</a>
 <li><a href="#numeric">Underlying Numeric Set</a>
 <li><a href="#transfer">Precision of the Transfer Functions</a>
 <li><a href="#predicate">Precision of the Predicates</a>
@@ -69,10 +69,10 @@ Please see the <code>README</code> file included in the
 distribution for installation instructions.
 
 
-<h2><a name="c">Access to the Library from C</a></h2>
+<h2><a name="c">Access to the Library from C and C++</a></h2>
 
 <p>
-You C program must be linked with the following libraries:
+You C or C++ program must be linked with the following libraries:
 <ul>
 <li> the octagon library <code>-loctXx</code>
 (where <code>Xx</code> denotes the chosen numeric set;
@@ -88,7 +88,7 @@ It is possible to use additional libraries, such as the POLKA module
 The standard way to access to the octagon library is through an
 APRON manager. The manager is created as follows:
 <ul>
-<li>include the <code>oct/oct.h</code> file,
+<li>include the <code>oct.h</code> file,
 <li>create an octagon manager 
 <code>ap_manager_t* man = oct_manager_alloc();</code>
 </ul>
@@ -402,7 +402,7 @@ currently, the test results are only meaningful for the Qg numeric type.
 <h2><a name="low">Low-level Access</a></h2>
 
 <p>
-The file <code>oct_fun.h</code> provides a direct access to all the
+The file <code>oct/oct_fun.h</code> provides a direct access to all the
 octagon functions, without the abstraction provided by the manager.
 Note that these functions perform less sanity checks, and so, may not be
 as safe.
@@ -411,7 +411,7 @@ generic <code>ap_abstract0_t*</code> is done using the
 <code>abstract0_of_oct</code> and <code>oct_of_abstract0</code> functions.
 
 <p>
-The file <code>oct_internal.h</code> must be included to access to the
+The file <code>oct/oct_internal.h</code> must be included to access to the
 low-level representation of octagons 
 <code>struct oct_t</code> and manager-specific data
 <code>struct _oct_internal_t</code>.

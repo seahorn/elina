@@ -52,11 +52,11 @@ ap_abstract0_oct_of_generator_array(ap_manager_t* man,
 				    const ap_generator0_array_t* array);
   
 ap_abstract0_t* 
-ap_abstract0_oct_widening_thresholds( ap_manager_t* man,
-				      const ap_abstract0_t* a1,
-				      const ap_abstract0_t* a2,
-				      const ap_scalar_t** arr,
-				      size_t nb );
+ap_abstract0_oct_widening_thresholds(ap_manager_t* man,
+				     const ap_abstract0_t* a1,
+				     const ap_abstract0_t* a2,
+				     const ap_scalar_t** arr,
+				     size_t nb );
   /* Widening with threshold.
      array is assumed to contain nb thresholds, sorted in increasing order. */
 

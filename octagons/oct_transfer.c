@@ -160,10 +160,10 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 	/* general, approximated case */
    
 	bound_t tmpa, tmpb, Cb, cb;
-	int Cinf = 0;    /* number of infinite upper bounds */
-	size_t Cj1, Cj2; /* variable index with infinite bound */
-	int cinf = 0;    /* number of infinite lower bounds */
-	size_t cj1, cj2; /* variable index with infinite bound */
+	int Cinf = 0;            /* number of infinite upper bounds */
+	size_t Cj1 = 0, Cj2 = 0; /* variable index with infinite bound */
+	int cinf = 0;            /* number of infinite lower bounds */
+	size_t cj1 = 0, cj2 = 0; /* variable index with infinite bound */
 	
 	bound_init(tmpa); bound_init(tmpb); bound_init(Cb); bound_init(cb);
 
@@ -259,7 +259,7 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 	  bound_bmin(b[matpos2(uj^1,ui)],tmpa);
 	}
 
-	else ; /* more than two infinite bounds: do nothing */
+        /* if more than two infinite bounds: do nothing */
 
       Cbrk:
 
@@ -526,9 +526,9 @@ static void hmat_assign(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
     /* general, approximated case */
 
     bound_t tmpa, tmpb, Cb, cb;
-    int Cinf = 0;  /* number of infinite upper bounds */
-    int cinf = 0;  /* number of infinite lower bounds */
-    size_t Ci, ci; /* variable index with infinite bound */
+    int Cinf = 0;          /* number of infinite upper bounds */
+    int cinf = 0;          /* number of infinite lower bounds */
+    size_t Ci = 0, ci = 0; /* variable index with infinite bound */
 
     bound_init(tmpa); bound_init(tmpb); bound_init(Cb); bound_init(cb);
 
@@ -813,7 +813,7 @@ oct_t* oct_substitute_linexpr(ap_manager_t* man,
   if (!m) return oct_set_mat(pr,a,NULL,NULL,destructive); /* empty */
   if (!destructive) m = hmat_copy(pr,m,a->dim);
 
-  if (hmat_subst(pr,u,m,a->dim,d,m2)) {
+  if (hmat_subst(pr,u,m,a->dim,d,(const bound_t*)m2)) {
     /* empty */
     if (!destructive) hmat_free(pr,m,a->dim);
     return oct_set_mat(pr,a,NULL,NULL,destructive);
@@ -877,7 +877,7 @@ oct_t* oct_assign_linexpr_array(ap_manager_t* man,
 
   /* add temporary dimensions to hold destination variables */
   mm = hmat_alloc_top(pr,a->dim+size);
-  bound_set_array(mm,m,matsize(a->dim));
+  bound_set_array(mm,(const bound_t*)m,matsize(a->dim));
 
   /* coefs in expr for temporary dimensions are set to 0 */
   for (i=0;i<2*size;i++)
@@ -905,7 +905,7 @@ oct_t* oct_assign_linexpr_array(ap_manager_t* man,
     d[a->dim+i] = tdim[i];
     d[tdim[i]] = a->dim;
   }
-  hmat_permute(m,mm,a->dim,a->dim+size,d);
+  hmat_permute(m,(const bound_t*)mm,a->dim,a->dim+size,d);
   hmat_free(pr,mm,a->dim+size);
 
   /* intersect with dest */
@@ -958,7 +958,7 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
 
   /* add temporary dimensions to hold destination variables */
   mm = hmat_alloc_top(pr,a->dim+size);
-  bound_set_array(mm,m,matsize(a->dim));
+  bound_set_array(mm,(const bound_t*)m,matsize(a->dim));
 
   /* susbstitute org with temp variables */
   for (i=0;i<size;i++) {
@@ -984,7 +984,7 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
   for (i=0;i<size;i++) {
     uexpr u = uexpr_of_linexpr(pr,pr->tmp,texpr[i],a->dim);
     if (u.type==BINARY || u.type==OTHER) inexact = 1;
-    if (hmat_subst(pr,u,mm,a->dim+size,a->dim+i,m2)) {
+    if (hmat_subst(pr,u,mm,a->dim+size,a->dim+i,(const bound_t*)m2)) {
       /* empty */
       hmat_free(pr,mm,a->dim+size);
       return oct_set_mat(pr,a,NULL,NULL,destructive);
@@ -1003,7 +1003,7 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
 
   /* remove temp */
   if (!destructive) m = hmat_copy(pr,mm,a->dim);
-  else bound_set_array(m,mm,matsize(a->dim));
+  else bound_set_array(m,(const bound_t*)mm,matsize(a->dim));
   hmat_free(pr,mm,a->dim+size);
 
   /* intersect with dest */

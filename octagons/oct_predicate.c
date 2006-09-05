@@ -277,7 +277,9 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
       flag_incomplete;
       return tbool_top;
       
-    default: assert(0);
+    default: 
+      assert(0);
+      return tbool_top; /* unreachable */
     }
   }
 }

@@ -365,10 +365,10 @@ oct_t* oct_fold(ap_manager_t* man,
 oct_t* oct_widening(ap_manager_t* man, oct_t* a1, oct_t* a2);
   /* Standard widening: set unstable constraints to +oo */
   
-oct_t* oct_widening_threshold(ap_manager_t* man,
-			      oct_t* a1, oct_t* a2,
-			      const ap_scalar_t** array,
-			      size_t nb);
+oct_t* oct_widening_thresholds(ap_manager_t* man,
+			       oct_t* a1, oct_t* a2,
+			       const ap_scalar_t** array,
+			       size_t nb);
   /* Widening with threshold.
      array is assumed to contain nb thresholds, sorted in increasing order. */
 

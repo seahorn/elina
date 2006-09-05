@@ -237,7 +237,7 @@ ap_abstract0_t* random_poly(int dim)
   for (i=0;i<dim;i++)
     ar.p[i] = random_generator(dim,
 			       (lrand48()%100>=90)?AP_GEN_RAY:AP_GEN_VERTEX);
-  p = ap_abstract0_of_box(mp,0,dim,t);
+  p = ap_abstract0_of_box(mp,0,dim,(const ap_interval_t**)t);
   ap_abstract0_add_ray_array(mp,true,p,&ar);
   /*ap_generator0_array_fprint(stderr,&ar,NULL);*/
   ap_generator0_array_clear(&ar);
@@ -360,7 +360,7 @@ void test_misc(void)
     if (oct_is_eq(mo,o,c)==tbool_false)     printf("oct_is_eq failed #17\n");
     if (oct_is_eq(mo,o,l)==tbool_false)     printf("oct_is_eq failed #18\n");
     oct_size(mo,o);
-    oct_close(mo,o);
+    oct_close(pr,o);
     // not implemented
     //oct_minimize(mo,o);
     //oct_canonicalize(mo,o);
@@ -573,9 +573,9 @@ void test_box_conversion(void)
     ap_interval_t **b,**b2;
     o = random_oct(dim,.1);
     b = oct_to_box(mo,o); FLAG(mo);
-    o2 = oct_of_box(mo,0,dim,b); FLAG(mo);
+    o2 = oct_of_box(mo,0,dim,(const ap_interval_t**)b); FLAG(mo);
     b2 = oct_to_box(mo,o2); FLAG(mo);
-    o3 = oct_of_box(mo,0,dim,b2); FLAG(mo);
+    o3 = oct_of_box(mo,0,dim,(const ap_interval_t**)b2); FLAG(mo);
     RESULT(check(o)); check(o2);
     if (oct_is_leq(mo,o,o2)==tbool_false || oct_is_leq(mo,o2,o3)==tbool_false) {
       ERROR("not included in"); 
@@ -775,7 +775,8 @@ void test_meet_array(void)
       { o[i] = random_oct(dim,.2); p[i] = poly_of_oct(o[i]); }
     oo = oct_meet_array(mo,o,NB_MEET); FLAG(mo);
     pp = poly_of_oct(oo);
-    ppp = ap_abstract0_meet_array(mp,p,NB_MEET); FLAG(mp);
+    ppp = ap_abstract0_meet_array(mp,(const ap_abstract0_t**)p,NB_MEET); 
+    FLAG(mp);
     RESULT(check(oo));
     for (i=0;i<NB_MEET;i++)
       if (oct_is_leq(mo,oo,o[i])==tbool_false) ERROR("not lower bound");
@@ -800,7 +801,7 @@ void test_add_lincons(exprmode mode)
     ap_lincons0_array_t arr = ap_lincons0_array_make(nb);
     o = random_oct(dim,.2);
     p = poly_of_oct(o);
-     if (lrand48()%10>=8) oct_close(mo,o);
+     if (lrand48()%10>=8) oct_close(pr,o);
     for (i=0;i<nb;i++) {
       ar.p[i] = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ:
 				 (lrand48()%100>=90)?AP_CONS_SUP:
@@ -971,7 +972,8 @@ void test_join_array(void)
       { o[i] = random_oct(dim,.1); p[i] = poly_of_oct(o[i]); }
     oo = oct_join_array(mo,o,NB_JOIN); FLAG(mo);
     pp = poly_of_oct(oo);
-    ppp = ap_abstract0_join_array(mp,p,NB_JOIN); FLAG(mp);
+    ppp = ap_abstract0_join_array(mp,(const ap_abstract0_t**)p,NB_JOIN); 
+    FLAG(mp);
     ps = ap_abstract0_join(mp,false,p[0],p[1]);
     for (i=2;i<NB_JOIN;i++) ps = ap_abstract0_join(mp,true,ps,p[i]);
     ooo = oct_of_poly(ps);
@@ -1017,7 +1019,7 @@ void test_add_ray(void)
     ap_generator0_array_t ar = ap_generator0_array_make(nb);
     o = random_oct(dim,.1);
     p = poly_of_oct(o);
-    if (lrand48()%10>=8) oct_close(mo,o);
+    if (lrand48()%10>=8) oct_close(pr,o);
     for (i=0;i<nb;i++)
       ar.p[i] = random_generator(dim,
 				 (lrand48()%100>=80)?AP_GEN_LINE:AP_GEN_RAY);
@@ -1057,7 +1059,7 @@ void test_dimadd(void)
     ap_dimchange_t* a = ap_dimchange_alloc(0,3);
     ap_dimchange_t* r = ap_dimchange_alloc(0,a->realdim);
     o1 = random_oct(dim,.1);
-    if (lrand48()%10>=8) oct_close(mo,o1);
+    if (lrand48()%10>=8) oct_close(pr,o1);
     for (i=0;i<a->realdim;i++) {
       a->dim[i] = lrand48()%3;
       if (i) a->dim[i] += a->dim[i-1];
@@ -1085,7 +1087,7 @@ void test_dimrem(void)
     ap_dimchange_t* a = ap_dimchange_alloc(0,3);
     ap_dimchange_t* r = ap_dimchange_alloc(0,a->realdim);
     o1 = random_oct(dim,.1);
-    if (lrand48()%10>=8) oct_close(mo,o1);
+    if (lrand48()%10>=8) oct_close(pr,o1);
     for (i=0;i<r->realdim;i++) {
       r->dim[i] = lrand48()%3 + 1;
       if (i) r->dim[i] += r->dim[i-1];
@@ -1117,7 +1119,7 @@ void test_permute(void)
     ap_dimperm_t* p = ap_dimperm_alloc(dim);
     ap_dimperm_t* q = ap_dimperm_alloc(dim);
     o1 = random_oct(dim,.1);
-    if (lrand48()%10>=8) oct_close(mo,o1);
+    if (lrand48()%10>=8) oct_close(pr,o1);
 
     /* random permutation */
     ap_dimperm_set_id(p);
@@ -1256,7 +1258,7 @@ void test_widening_thrs(void)
     o2 = random_oct(dim,.1);
     ap_scalar_t* t[10];
     for (n=0;n<10;n++) t[n]=ap_scalar_alloc_set_double((lrand48()%30-15)*0.25);
-    o = oct_widening_thresholds(mo,o1,o2,t,10);
+    o = oct_widening_thresholds(mo,o1,o2,(const ap_scalar_t**)t,10);
     RESULT(check(o));
     if (oct_is_leq(mo,o1,o)==tbool_false || oct_is_leq(mo,o2,o)==tbool_false) {
       ERROR("not upper bound");
@@ -1273,7 +1275,7 @@ void test_widening_thrs(void)
     for (n=0;n<10;n++) t[n]=ap_scalar_alloc_set_double((lrand48()%30-15)*0.25);
     for (;nb>0;nb--) {
       oct_t* o2 = random_oct(dim,.1);
-      oct_t* o = oct_widening_thresholds(mo,o1,o2,t,10);
+      oct_t* o = oct_widening_thresholds(mo,o1,o2,(const ap_scalar_t**)t,10);
       oct_free(mo,o2);
       if (oct_is_leq(mo,o,o1)) { oct_free(mo,o); break; }
       oct_free(mo,o1); o1 = o;
@@ -1342,7 +1344,7 @@ void test_assign(int subst, exprmode mode)
     ap_linexpr0_t* ll = random_from_linexpr(l);
     o = random_oct(dim,.1);
     p = poly_of_oct(o);
-    if (lrand48()%10>=8) oct_close(mo,o);
+    if (lrand48()%10>=8) oct_close(pr,o);
     o1 = subst ? oct_substitute_linexpr(mo,false,o,d,l,NULL) : oct_assign_linexpr(mo,false,o,d,l,NULL);
     FLAG(mo);
     p1 = subst ? ap_abstract0_substitute_linexpr(mp,false,p,d,ll,NULL) : ap_abstract0_assign_linexpr(mp,false,p,d,ll,NULL);;
@@ -1392,10 +1394,14 @@ void test_par_assign(int subst, exprmode mode)
       if (!i) d[i] = lrand48()%(dim-NB_ASSIGN);
       else d[i] = d[i-1] + 1 + (lrand48()%(dim-NB_ASSIGN+i-d[i-1]));
     }
-    if (lrand48()%10>=8) oct_close(mo,o);
-    o1 = subst ? oct_substitute_linexpr_array(mo,false,o,d,l,NB_ASSIGN,NULL) : oct_assign_linexpr_array(mo,false,o,d,l,NB_ASSIGN,NULL);
+    if (lrand48()%10>=8) oct_close(pr,o);
+    o1 = subst ? 
+      oct_substitute_linexpr_array(mo,false,o,d,(const ap_linexpr0_t**)l,NB_ASSIGN,NULL) : 
+      oct_assign_linexpr_array(mo,false,o,d,(const ap_linexpr0_t**)l,NB_ASSIGN,NULL);
     FLAG(mo);
-    p1 = subst ? ap_abstract0_substitute_linexpr_array(mp,false,p,d,ll,NB_ASSIGN,NULL) : ap_abstract0_assign_linexpr_array(mp,false,p,d,ll,NB_ASSIGN,NULL);
+    p1 = subst ? 
+      ap_abstract0_substitute_linexpr_array(mp,false,p,d,(const ap_linexpr0_t**)ll,NB_ASSIGN,NULL) : 
+      ap_abstract0_assign_linexpr_array(mp,false,p,d,(const ap_linexpr0_t**)ll,NB_ASSIGN,NULL);
     FLAG(mp);
     p2 = poly_of_oct(o1);
     o2 = oct_of_poly(p1);
@@ -1436,10 +1442,12 @@ void test_par_assign2(int subst, exprmode mode)
     oct_t *o, *o1, *o2;
     ap_linexpr0_t* l = random_linexpr(mode,dim);
     o = random_oct(dim,.1);
-    if (lrand48()%10>=8) oct_close(mo,o);
+    if (lrand48()%10>=8) oct_close(pr,o);
     o1 = subst ? oct_substitute_linexpr(mo,false,o,d,l,NULL) : oct_assign_linexpr(mo,false,o,d,l,NULL);
     FLAG(mo);
-    o2 = subst ? oct_substitute_linexpr_array(mo,false,o,&d,&l,1,NULL) : oct_assign_linexpr_array(mo,false,o,&d,&l,1,NULL);
+    o2 = subst ? 
+      oct_substitute_linexpr_array(mo,false,o,&d,(const ap_linexpr0_t**)&l,1,NULL) :
+      oct_assign_linexpr_array(mo,false,o,&d,(const ap_linexpr0_t**)&l,1,NULL);
     FLAG(mo);
     check(o1); check(o2);
     if (oct_is_eq(mo,o1,o2)==tbool_true) RESULT('=');
