@@ -77,7 +77,7 @@ numerical variables.
 * Interface of level 1::
 * NewPolka:: Convex polyhedra abstract domain.
 * Itv::      Interval abstract domain.
-* Oct::      Octagons abstract domain (to come).
+* Oct::      Octagon abstract domain.
 * Examples::
 * Appendices::
 @end menu
@@ -3336,10 +3336,10 @@ This implies calls to @code{ap_abstract0_bound_dimension}.
 
 @c *******************************************************************
 @node Oct, Examples, Itv, Top
-@chapter Oct: octagons abstract domain
+@chapter Oct: octagon abstract domain
 @c *******************************************************************
 
-To come.
+@uref{oct_doc.html}
 
 @c *******************************************************************
 @node Examples, Appendices, Oct, Top

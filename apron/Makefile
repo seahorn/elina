@@ -81,10 +81,10 @@ csrc: $(H_FILES)
 #---------------------------------------
 
 tar: $(NOWEB_FILES) $(H_FILES) $(C_FILES) apron.texi apronrationale.tex Makefile README
-	(cd ..; tar zcvf $(HOME)/apron.tgz $(^:%=apron/%))
+	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
 dist: $(NOWEB_FILES) apron.texi apronrationale.tex Makefile COPYING README $(TEX_FILES) $(H_FILES) $(C_FILES) apronrationale.dvi apron.info apron.dvi html
-	(cd ..; tar zcvf $(HOME)/apron.tgz $(^:%=apron/%))
+	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
 clean:
 	/bin/rm -f $(NOWEB_FILES:%.nw=%.h) $(TEX_FILES)
@@ -123,10 +123,11 @@ apronrationale.dvi: apronrationale.tex $(TEX_FILES)
 	$(LATEX) $^
 
 apron.info: apron.texi
-	makeinfo -o $@ $<
+	makeinfo -I../newpolka -I ../itv -o $@ $<
 
 html: apron.texi
 	texi2html -split=section -nonumber -menu -subdir=html $<
+	cp -f ../octagons/oct_doc.html html
 
 
 #---------------------------------------

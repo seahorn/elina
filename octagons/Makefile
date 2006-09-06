@@ -143,6 +143,9 @@ uninstall: clean
 distclean: clean uninstall
 	/bin/rm -f Makefile.depend
 
+dist: Makefile COPYING README oct_doc.html sedscript_caml $(CCSOURCES) $(CCINC) oct.h oct_test.c oct.idl
+	(cd ..; tar zcvf octagons.tgz $(^:%=octagons/%))
+
 #---------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES
 #---------------------------------------

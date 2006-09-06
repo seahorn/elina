@@ -115,7 +115,7 @@ distclean: clean
 	/bin/rm -f Makefile.depend
 
 dist: $(CCSRC) Makefile sedscript_caml itv.texi itv.idl itv.ml itv.mli itv_caml.c COPYING README
-	(cd ..; tar zcvf $(HOME)/itv.tgz $(^:%=itv/%))
+	(cd ..; tar zcvf itv.tgz $(^:%=itv/%))
 
 #---------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES

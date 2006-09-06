@@ -31,3 +31,25 @@ doc:
 	(cd apron; make ps)
 	(cd mlgmpidl; make doc)
 	(cd mlapronidl; make doc)
+
+
+
+# make distribution, update to reflect current version
+
+PKGNAME  = apron-0.9.2
+PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model
+PKGDIRS  = apron mlapronidl num mlgmpidl octagons itv newpolka
+
+dist:
+	$(MAKE)
+	$(MAKE) doc
+	mkdir -p $(PKGNAME)
+	$(MAKE) $(foreach pkg,$(PKGDIRS),pkg_$(pkg))
+	cp $(PKGFILES) $(PKGNAME)
+	tar vczf $(PKGNAME).tgz $(PKGNAME)
+	rm -rf $(PKGNAME)
+
+pkg_%:
+	(cd $*; $(MAKE) dist)
+	(cd $(PKGNAME); tar xzf ../$*.tgz)
+	rm -rf $*.tgz

@@ -125,7 +125,7 @@ distclean: clean
 	/bin/rm -f Makefile.depend
 
 dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polka_caml.c COPYING README
-	(cd ..; tar zcvf $(HOME)/newpolka.tgz $(^:%=newpolka/%))
+	(cd ..; tar zcvf newpolka.tgz $(^:%=newpolka/%))
 
 #---------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES
@@ -199,7 +199,7 @@ libpolka_caml_debug.a: polka_caml_debug.o
 	sed -f sedscript_caml tmp/$*.ml >$*.ml
 	sed -f sedscript_caml tmp/$*.mli >$*.mli
 
-manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
+manager.idl: ../mlapronidl/manager.idl
 	ln -fs $^ $@
 
 #---------------------------------------
