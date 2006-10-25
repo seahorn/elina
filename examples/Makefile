@@ -46,7 +46,7 @@ C: example1g
 
 ml: mlexample1g 
 
-mlexample1g.opt: mlexample1.cmx
+mlexample%g.opt: mlexample%.cmx
 	$(OCAMLOPT) $(OCAMLINC) -o $@ \
 	bigarray.cmxa gmp.cmxa apron.cmx itv.cmx polka.cmx $< \
 	-cclib "$(LCFLAGS) -L$(ITV_PREFIX)/lib" \
@@ -56,12 +56,22 @@ mlexample1g.opt: mlexample1.cmx
 	-cclib " -lpolka_caml_debug -lpolkag_debug" \
 	-cclib "-L$(CAMLIDL_PREFIX)/lib/ocaml -lcamlidl"
 
-mlexample1g: mlexample1.cmo itvpolkarung
+%g: %.cmo itvpolkarung
 	$(OCAMLC) $(OCAMLINC) -g -use-runtime itvpolkarung -o $@ \
 	bigarray.cma gmp.cma apron.cmo itv.cmo polka.cmo $<
 
 itvpolkarung:
 	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ \
+	bigarray.cma gmp.cma apron.cmo itv.cmo polka.cmo \
+	-cclib "$(LCFLAGS) -L$(ITV_PREFIX)/lib" \
+	-cclib "-lgmp_caml_debug -lgmp" \
+	-cclib " -lapron_caml_debug -lapron_debug" \
+	-cclib " -litv_caml_debug -litvmpq_debug" \
+	-cclib " -lpolka_caml_debug -lpolkag_debug" \
+	-cclib "-L$(CAMLIDL_PREFIX)/lib/ocaml -lcamlidl"
+
+itvpolkatopg:
+	ocamlmktop $(OCAMLINC) -verbose -custom -o $@ \
 	bigarray.cma gmp.cma apron.cmo itv.cmo polka.cmo \
 	-cclib "$(LCFLAGS) -L$(ITV_PREFIX)/lib" \
 	-cclib "-lgmp_caml_debug -lgmp" \
@@ -79,7 +89,7 @@ itvpolkarung:
 #
 
 clean:
-	rm -f example1g itvpolkarung *.cm[ioxa] *.o mlexample1g
+	rm -f example1g itvpolkarung *.cm[ioxa] *.o mlexample1g mlexample2g
 
 dist: example1.c mlexample1.ml Makefile README
 	(cd ..; tar zcvf $(HOME)/examples.tgz $(^:%=examples/%))

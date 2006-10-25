@@ -3,7 +3,7 @@
    read the COPYING file packaged in the distribution. *)
 
 (*
-itvpolkatopg -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib -I $POLKA_INSTALL/lib -I $ITV_INSTALL/lib
+$MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib -I $POLKA_INSTALL/lib -I $ITV_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cmo";;
@@ -34,14 +34,24 @@ let generator1_array_print fmt x =
   Generator1.array_print fmt x
 ;;
 
+let var_x = Var.of_string "x";;
+let var_y = Var.of_string "y";;
+let var_z = Var.of_string "z";;
+let var_w = Var.of_string "w";;
+let var_u = Var.of_string "u";;
+let var_v = Var.of_string "v";;
+let var_a = Var.of_string "a";;
+let var_b = Var.of_string "b";;
+
+
 let ex1 (man:Manager.t) : Abstract1.t =
   printf "Using Library: %s, version %s@." (Manager.get_library man) (Manager.get_version man);
 
   let env = Environment.make
-    [| "x";"y";"z";"w"|]
-    [|"u";"v";"a";"b"|]
+    [|var_x; var_y; var_z; var_w|]
+    [|var_u; var_v; var_a; var_b|]
   in
-  let env2 = Environment.make [| "x";"y";"z";"w"|] [||]
+  let env2 = Environment.make [|var_x; var_y; var_z; var_w|] [||]
   in
   printf "env=%a@.env2=%a@."
     (fun x -> Environment.print x) env
@@ -54,8 +64,8 @@ let ex1 (man:Manager.t) : Abstract1.t =
   let expr = Linexpr1.make env in
   Linexpr1.set_array expr
     [|
-      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 1 2)), "x");
-      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 2 3)), "y")
+      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 1 2)), var_x);
+      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 2 3)), var_y)
     |]
     (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (1)))))
     ;
@@ -65,8 +75,8 @@ let ex1 (man:Manager.t) : Abstract1.t =
   let expr = Linexpr1.make env in
   Linexpr1.set_array expr
     [|
-      (Coeff.Scalar (Scalar.Float (-1.0)), "z");
-      (Coeff.Scalar (Scalar.Float (-2.0)), "w")
+      (Coeff.Scalar (Scalar.Float (-1.0)), var_z);
+      (Coeff.Scalar (Scalar.Float (-2.0)), var_w)
     |]
     (Some (Coeff.Scalar (Scalar.Float (4.0))))
   ;
@@ -75,8 +85,8 @@ let ex1 (man:Manager.t) : Abstract1.t =
   let expr = Linexpr1.make env2 in
   Linexpr1.set_array expr
     [|
-      (Coeff.Scalar (Scalar.Float 1.0), "z");
-      (Coeff.Scalar (Scalar.Float 2.0), "w")
+      (Coeff.Scalar (Scalar.Float 1.0), var_z);
+      (Coeff.Scalar (Scalar.Float 2.0), var_w)
     |]
     (Some 
       (Coeff.Interval
@@ -90,7 +100,7 @@ let ex1 (man:Manager.t) : Abstract1.t =
   let cons = Lincons1.make (Linexpr1.make env) Lincons1.SUPEQ in
   Lincons1.set_array cons
     [|
-      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 1)), "u")
+      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 1)), var_u)
     |]
     None
   ;
@@ -98,7 +108,7 @@ let ex1 (man:Manager.t) : Abstract1.t =
   let cons = Lincons1.make (Linexpr1.make env) Lincons1.SUPEQ in
   Lincons1.set_array cons
     [|
-      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (-1))), "u")
+      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (-1))), var_u)
     |]
     (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 5))))
   ;
@@ -128,7 +138,7 @@ let ex1 (man:Manager.t) : Abstract1.t =
   done;
   (* 2. dimensions *)
   (* 3. of box *)
-  let abs2 = Abstract1.of_box man env [| "x";"y";"z";"w"; "u";"v";"a";"b"|]
+  let abs2 = Abstract1.of_box man env [|var_x; var_y; var_z; var_w; var_u; var_v; var_a; var_b|]
     box.Abstract1.interval_array 
   in
   printf "abs2=%a@." Abstract1.print abs2;
@@ -140,10 +150,10 @@ let ex1 (man:Manager.t) : Abstract1.t =
 
   printf "abs=%a@." 
     Abstract1.print abs;
-  let p2 = Abstract1.expand man abs "y" [|"y1";"y2"|] in
+  let p2 = Abstract1.expand man abs (var_y) [|Var.of_string "y1"; Var.of_string "y2"|] in
   printf "p2=expand(abs,y,[y1,y2]))=%a@."
     Abstract1.print p2; 
-  let p2 = Abstract1.expand man abs "u" [|"u1";"u2"|] in
+  let p2 = Abstract1.expand man abs (var_u) [|Var.of_string "u1"; Var.of_string "u2"|] in
   printf "p2=expand(abs,u,[u1,u2]))=%a@."
     Abstract1.print p2; 
   abs
