@@ -11,18 +11,13 @@ quote(C, "\n\
 ")
 
 import "dim.idl";
+import "var.idl";
 
 
 quote(C,"enum typvar {\n\
   INT,REAL\n\
 };\n\
 ")
-
-typedef [mltype("Var.t"),
-	 abstract,
-	 c2ml(camlidl_apron_environment_var_c2ml),
-	 ml2c(camlidl_apron_environment_var_ml2c)]
-void* ap_var_t;
 
 enum typvar {
   INT,REAL
@@ -35,27 +30,6 @@ struct ap_environment_ptr ap_environment_ptr;
 
 quote(MLMLI,"(** Environments binding dimensions to names *)")
 
-quote(MLI,"\n\
-val var_compare : var -> var -> int\n\
-val var_to_string : var -> string\n\
-val var_hash : var -> int\n\
-")
-quote(ML,"\n\
-let var_compare = Var.compare\n\
-let var_to_string = Var.to_string\n\
-let var_hash = Var.hash\n\
-")
-
-quote(ML,"\n\
-external set_var_operations : unit -> unit = \"camlidl_apron_set_var_operations\"\n\
-let _ = \n\
-  Callback.register \"ApronVar_dup\" Obj.dup;\n\
-  Callback.register \"ApronVar_hash\" Var.hash;\n\
-  Callback.register \"ApronVar_compare\" Var.compare;\n\
-  Callback.register \"ApronVar_to_string\" Var.to_string;\n\
-  set_var_operations()\n\
-")
-
 quote(MLI,"\n(** Making an environment from a set of integer and real variables. Raise [Failure] in case of name conflict. *)")
 
 ap_environment_ptr ap_environment_make([size_is(intdim)]ap_var_t* name_of_intdim,
@@ -63,7 +37,6 @@ ap_environment_ptr ap_environment_make([size_is(intdim)]ap_var_t* name_of_intdim
 				 [size_is(realdim)]ap_var_t* name_of_realdim,
 				 int realdim)
      quote(call,"\n\
-{ int i; for (i=0;i<intdim;i++) caml_register_global_root(&name_of_intdim[i]);for (i=0;i<realdim;i++) caml_register_global_root(&name_of_realdim[i]);}\n\
 _res = ap_environment_alloc(name_of_intdim,intdim,name_of_realdim,realdim);\n\
 if (_res==NULL){\n\
   camlidl_free(_ctx);\n\
@@ -80,9 +53,7 @@ ap_environment_ptr ap_environment_add(ap_environment_ptr e,
 				[size_is(realdim)]ap_var_t* name_of_realdim,
 				int realdim)
      quote(call,"\n\
-Begin_roots2(_v_name_of_intdim,_v_name_of_realdim)\n\
 _res = ap_environment_add(e,name_of_intdim,intdim,name_of_realdim,realdim);\n\
-End_roots()\n\
 if (_res==NULL){\n\
   camlidl_free(_ctx);\n\
   caml_failwith(\"Environment.add: duplicated variable names\");\n\
@@ -97,9 +68,7 @@ ap_environment_ptr ap_environment_remove(ap_environment_ptr e,
 				   [size_is(realdim)]ap_var_t* name_of_realdim,
 				   int realdim)
      quote(call,"\n\
-Begin_roots2(_v_name_of_intdim,_v_name_of_realdim)\n\
 _res = ap_environment_remove(e,name_of_intdim,intdim,name_of_realdim,realdim);\n\
-End_roots()\n\
 if (_res==NULL){\n\
   camlidl_free(_ctx);\n\
   caml_failwith(\"Environment.remove: unknown variable names\");\n\
@@ -111,19 +80,12 @@ quote(MLI,"\n(** Test equality if two environments *)")
 boolean ap_environment_equal(ap_environment_ptr env1,
 			     ap_environment_ptr env2)
   quote(call,"\n\
-Begin_roots2(_v_env1,_v_env2)\n\
 _res = ap_environment_is_eq(env1,env2);\n\
-End_roots()\n\
 ");
 
 quote(MLI,"\n(** Compare two environment. [compare env1 env2] return [-2] if the environements are not compatible (a variable has different types in the 2 environements), [-1] if [env1] is a subset of env2, [0] if equality,  [+1] if env1 is a superset of env2, and [+2] otherwise (the lce exists and is a strict superset of both) *)")
 int ap_environment_compare(ap_environment_ptr env1,
-			ap_environment_ptr env2)
-  quote(call,"\n\
-Begin_roots2(_v_env1,_v_env2)\n\
-_res = ap_environment_compare(env1,env2);\n\
-End_roots()\n\
-");
+			   ap_environment_ptr env2);
 
 quote(MLI,"\n(** Return the dimension of the environment *)")
 struct ap_dimension_t ap_environment_dimension(ap_environment_ptr e)
@@ -138,9 +100,7 @@ enum typvar ap_environment_typ_of_var(ap_environment_ptr e, ap_var_t var)
   quote(call,"\n\
   {\n\
     ap_dim_t dim;\n\
-    Begin_roots2(_v_e,_v_var)\n\
     dim = ap_environment_dim_of_var(e,var);\n\
-    End_roots()\n\
     if (dim==AP_DIM_MAX)\n\
       caml_failwith(\"Environment.dim_of_var: unknown variable in the environment\");\n\
     _res =\n\
@@ -169,9 +129,7 @@ _res = e->var_of_dim[dim];");
 quote(MLI,"\n(** Return the dimension associated to the given variable in the environment. Raise [Failure] if the variable does not belong to the environment. *)")
 ap_dim_t ap_environment_dim_of_var(ap_environment_ptr e, ap_var_t var)
      quote(call,"\n\
-Begin_roots2(_v_e,_v_var)\n\
 _res = ap_environment_dim_of_var(e,var);\n\
-End_roots()\n\
 if (_res==AP_DIM_MAX){\n\
    caml_failwith(\"Environment.dim_of_var: unknown variable in the environment\");\n\
 }");

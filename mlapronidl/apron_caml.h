@@ -47,6 +47,13 @@ typedef struct ap_scalar_t* ap_scalar_ptr;
 typedef struct ap_linexpr0_t* ap_linexpr0_ptr;
 typedef struct ap_manager_t* ap_manager_ptr;
 typedef struct ap_manager_t* ap_manager_opt_ptr;
+
+typedef struct apron_var_t {
+  char* name;
+  size_t count;
+} apron_var_t;
+typedef struct apron_var_t* apron_var_ptr;
+
 typedef struct ap_environment_t* ap_environment_ptr;
 
 typedef ap_abstract0_t* ap_abstract0_ptr;
@@ -122,21 +129,81 @@ value camlidl_apron_abstract0_ptr_c2ml(ap_abstract0_ptr* p)
 }
 
 /* ********************************************************************** */
+/* Variable */
+/* ********************************************************************** */
+
+static inline
+apron_var_ptr ap_var_of_string(char* name)
+{
+  apron_var_ptr p = malloc(sizeof(apron_var_t));
+  p->name = malloc((1+strlen(name))*sizeof(char));
+  strcpy(p->name,name);
+  p->count=1;
+  return p;
+}
+
+static inline
+int ap_var_compare(apron_var_ptr p1, apron_var_ptr p2)
+{
+  return (p1==p2) ? 0 : strcmp(p1->name,p2->name);
+}
+static inline
+apron_var_ptr ap_var_copy(apron_var_ptr p){
+  p->count++; 
+  return p; 
+}
+static inline
+void ap_var_free(apron_var_ptr p){
+  if (p->count<=1){
+    free(p->name);
+    free(p);
+  }
+}
+static inline
+char* ap_var_to_string(apron_var_ptr p)
+{
+  size_t l;
+  char* res;
+
+  l = strlen(p->name)+1;
+  res = malloc(l*sizeof(char));
+  strcpy(res,p->name);
+  return res;
+}
+static 
+inline
+long ap_var_hash(apron_var_ptr p)
+{
+  unsigned char* str;
+  unsigned long res = 0;
+
+  for (str=(unsigned char*)p->name; (*str)!=0; str++){
+    res = res * 19 + (*str);
+  }
+  return res;
+}
+
+static inline
+void camlidl_apron_var_ptr_ml2c(value v, ap_var_t* p){
+  *p = *((ap_var_t *) Data_custom_val(v));
+}
+extern struct custom_operations camlidl_apron_custom_var_ptr;
+static inline
+value camlidl_apron_var_ptr_c2ml(ap_var_t* p)
+{
+  value v;
+
+  v = alloc_custom(&camlidl_apron_custom_var_ptr, sizeof(apron_var_ptr), 0,1);
+  *((apron_var_ptr *) Data_custom_val(v)) = *p;
+  return v;
+}
+
+
+/* ********************************************************************** */
 /* environment */
 /* ********************************************************************** */
 
 extern struct custom_operations camlidl_apron_custom_environment_ptr;
-
-static inline
-void camlidl_apron_environment_var_ml2c(value v, ap_var_t* p){
-  *p = (ap_var_t)v;
-}
-
-static inline
-value camlidl_apron_environment_var_c2ml(ap_var_t* p){
-  return (value)(*p);
-}
-
 static inline
 void camlidl_apron_environment_ptr_ml2c(value v, ap_environment_ptr* p)
 {

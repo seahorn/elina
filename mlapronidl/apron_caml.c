@@ -153,87 +153,67 @@ struct custom_operations camlidl_apron_custom_abstract0_ptr = {
 };
 
 /* ********************************************************************** */
-/* variable and environment */
+/* variable */
 /* ********************************************************************** */
-
-static value _v_var_dup = Val_unit;
-static value _v_var_hash = Val_unit;
-static value _v_var_compare = Val_unit;
-static value _v_var_to_string = Val_unit;
-
-static ap_var_t camlidl_apron_var_copy(ap_var_t p)
-{ return p; }
-
-static void camlidl_apron_var_free(ap_var_t p)
-{ return; }
-
-static char* camlidl_apron_var_to_string(void* v)
-{
-  CAMLparam1(v);
-  CAMLlocal1(_v_res);
-  char* str;
-  char* str2;
-  int l;
-
-  _v_res = callback(_v_var_to_string,(value)v);
-  l = string_length(_v_res);
-  str = String_val(_v_res);
-  str2 = malloc((l+1)*sizeof(char));
-  memcpy(str2,str,l+1);
-  CAMLreturn(str2);
-}
-static long camlidl_apron_var_hash(void* v)
-{
-  CAMLparam1(v);
-  CAMLlocal1(_v_res);
-
-  _v_res = callback(_v_var_hash,(value)v);
-  CAMLreturn(Int_val(_v_res));
-}
-static int camlidl_apron_var_compare(void* v1, void* v2)
-{
-  CAMLparam2(v1,v2);
-  CAMLlocal1(_v_res);
-
-  _v_res = callback2(_v_var_compare,(value)v1,(value)v2);
-  CAMLreturn(Int_val(_v_res));
-}
-
 static
 struct ap_var_operations_t
-camlidl_apron_var_operations = {
-  camlidl_apron_var_compare,
-  camlidl_apron_var_copy,
-  camlidl_apron_var_free,
-  camlidl_apron_var_to_string
+camlidl_apron_var_ptr_operations = {
+  ap_var_compare,
+  ap_var_copy,
+  ap_var_free,
+  ap_var_to_string
 };
-
 value camlidl_apron_set_var_operations(value v)
 {
   CAMLparam1(v);
-  _v_var_dup = *caml_named_value("ApronVar_dup");
-  register_global_root(&_v_var_dup);
-  _v_var_hash = *caml_named_value("ApronVar_hash");
-  register_global_root(&_v_var_hash);
-  _v_var_compare = *caml_named_value("ApronVar_compare");
-  register_global_root(&_v_var_compare);
-  _v_var_to_string = *caml_named_value("ApronVar_to_string");
-  register_global_root(&_v_var_to_string);
-  ap_var_operations = &camlidl_apron_var_operations;
+  ap_var_operations = &camlidl_apron_var_ptr_operations;
   CAMLreturn(Val_unit);
 }
 
 static
+void camlidl_apron_var_ptr_finalize(value v)
+{
+  apron_var_ptr e = *(apron_var_ptr *) Data_custom_val(v);
+  ap_var_free(e);
+  return;
+}
+
+static
+long camlidl_apron_var_ptr_hash(value v)
+{
+  CAMLparam1(v);
+  apron_var_ptr e = *(apron_var_ptr *) Data_custom_val(v);
+  int res = ap_var_hash(e);
+  CAMLreturn(res);
+}
+static
+int camlidl_apron_var_ptr_compare(value v1, value v2)
+{
+  CAMLparam2(v1,v2);
+  int res;
+  apron_var_ptr e1 = *(apron_var_ptr *) Data_custom_val(v1);
+  apron_var_ptr e2 = *(apron_var_ptr *) Data_custom_val(v2);
+  res = ap_var_compare(e1,e2);
+  CAMLreturn(res);
+}
+
+struct custom_operations camlidl_apron_custom_var_ptr = {
+  "ape",
+  camlidl_apron_var_ptr_finalize,
+  camlidl_apron_var_ptr_compare,
+  camlidl_apron_var_ptr_hash,
+  custom_serialize_default,
+  custom_deserialize_default
+};
+
+/* ********************************************************************** */
+/* environment */
+/* ********************************************************************** */
+
+static
 void camlidl_apron_environment_ptr_finalize(value v)
 {
-  size_t i;
   ap_environment_t* e = *(ap_environment_ptr *) Data_custom_val(v);
-  if (e->intdim+e->realdim>=1 &&
-      Is_block((value)(e->var_of_dim[0]))){
-    for (i=0;i<e->intdim+e->realdim;i++){
-      caml_remove_global_root((value*)&e->var_of_dim[i]);
-    }
-  }
   ap_environment_free(e);
   return;
 }
@@ -250,7 +230,7 @@ long camlidl_apron_environment_ptr_hash(value v)
   size = env->intdim+env->realdim;
   dec = 0;
   for (i=0; i<size; i += (size+2)/3){
-    res += camlidl_apron_var_hash(env->var_of_dim[i]) << dec;
+    res += ap_var_hash(env->var_of_dim[i]) << dec;
     dec++;
   }
   CAMLreturn(res);
@@ -278,17 +258,7 @@ struct custom_operations camlidl_apron_custom_environment_ptr = {
 value camlidl_apron_environment_ptr_c2ml(ap_environment_ptr* p)
 {
   value v;
-  ap_environment_t* env = *p;
 
-  assert(env->count>=1);
-  if (env->count==1 && 
-      env->intdim+env->realdim>=1 &&
-      Is_block(((value)(env->var_of_dim[0])))){
-    size_t i;
-    for (i=0; i<env->intdim+env->realdim;i++){
-      caml_register_global_root((value*)&env->var_of_dim[i]);
-    }
-  }
    v = alloc_custom(&camlidl_apron_custom_environment_ptr, sizeof(ap_environment_ptr), 0,1);
   *((ap_environment_ptr *) Data_custom_val(v)) = *p;
   return v;

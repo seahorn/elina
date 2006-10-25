@@ -44,7 +44,7 @@ val set_array : t -> (Coeff.t * Var.t) array -> Coeff.t option -> unit\n\
   (** Set simultaneously a number of coefficients, as [set_list]. *)\n\
 \n\
 (** Iter the function on the pair coefficient/variable of the linear expression *)\n\
-val iter: (Coeff.t -> Environment.var -> unit) -> t -> unit\n\
+val iter: (Coeff.t -> Var.t -> unit) -> t -> unit\n\
 \n\
 (** Get the constant *)\n\
 val get_cst: t -> Coeff.t\n\
@@ -59,16 +59,12 @@ struct ap_coeff_t ap_linexpr1_get_coeff([ref]struct ap_linexpr1_t* a, ap_var_t v
 {\n\
   bool b;\n\
   ap_coeff_init(&_res,AP_COEFF_SCALAR);\n\
-  Begin_roots2(_v_a,_v_var)\n\
   b = ap_linexpr1_get_coeff(&_res,a,var);\n\
-  End_roots()\n\
   if (b){\n\
     char str[160];\n\
     char* name;\n\
     ap_coeff_clear(&_res);\n\
-    Begin_roots1(_v_var)\n\
     name = ap_var_operations->to_string(var);\n\
-    End_roots()
     snprintf(str,159,\"Linexpr1.get_coeff: unknown variable %s in the environment\",name);\n\
     free(name);\n\
     caml_failwith(str);\n\
@@ -82,15 +78,11 @@ void ap_linexpr1_set_coeff([ref]struct ap_linexpr1_t* a, ap_var_t var,
      quote(call, "\n\
 {\n\
   bool b;\n\
-  Begin_roots3(_v_a,_v_var,_v_coeff)\n\
   b = ap_linexpr1_set_coeff(a,var,coeff);\n\
-  End_roots()\n\
   if (b){\n\
     char str[160];\n\
     char* name;\n\
-    Begin_roots1(_v_var)\n\
     name = ap_var_operations->to_string(var);\n\
-    End_roots()\n\
     snprintf(str,159,\"Linexpr1.set_coeff: unknown variable %s in the environment\",name);\n\
     free(name);\n\
     caml_failwith(str);\n\
@@ -104,9 +96,7 @@ struct ap_linexpr1_t ap_linexpr1_extend_environment(const struct ap_linexpr1_t l
      quote(call,"\n\
 {\n\
   bool b;\n\
-  Begin_roots2(_v_linexpr,_v_env)\n\
   b = ap_linexpr1_extend_environment(&_res,&linexpr,env);\n\
-  End_roots()\n\
   if (b) caml_failwith(\"Linexpr1.extend_environment: new environment is not a superenvironment\");\n\
 }\n\
 ")
@@ -118,17 +108,13 @@ void ap_linexpr1_extend_environment_with(struct ap_linexpr1_t linexpr,
 {\n\
   if (linexpr.env!=env){ \n\
     bool b;\n\
-    Begin_roots2(_v_linexpr,_v_env)\n\
     ap_environment_copy(linexpr.env); /* to protect it */ \n\
     b = ap_linexpr1_extend_environment_with(&linexpr,env);\n\
-    End_roots()\n\
     if (b){ \n\
       ap_environment_free(linexpr.env); \n\
       caml_failwith(\"Linexpr1.extend_environment_with: new environment is not a superenvironment\");\n\
     }\n\
-    Begin_roots2(_v_linexpr,_v_env)\n\
     Store_field(_v_linexpr,1,_v_env);\n\
-    End_roots()\n\
     ap_environment_free(env);\n\
   }\n\
 }\n\
@@ -194,5 +180,7 @@ let iter f expr =\n\
     end)\n\
     expr.linexpr0\n\
 let print fmt expr =\n\
-  Linexpr0.print (fun dim -> Environment.var_of_dim expr.env dim) fmt expr.linexpr0\n\
+  Linexpr0.print\n\
+   (fun dim -> Var.to_string (Environment.var_of_dim expr.env dim))\n\
+   fmt expr.linexpr0\n \
 ")
