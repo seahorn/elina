@@ -49,7 +49,7 @@ numerical variables.
 
 @title APRON
 @subtitle The APRON library
-@subtitle Edition 0.9.0, June 2005
+@subtitle Edition 0.9.3, October 2006
 
 @author by Bertrand Jeannet and the APRON team
 @c Include the Distribution inside the titlepage so
@@ -408,7 +408,7 @@ Print @var{op} on the stream @var{stream}.
 @example
 typedef struct ap_interval_t @{
   ap_scalar_t* inf;
-  ap_sacalr_t* sup;
+  ap_scalar_t* sup;
 @} ap_interval_t;
 @end example
 Intervals on scalars.

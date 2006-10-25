@@ -36,7 +36,7 @@ doc:
 
 # make distribution, update to reflect current version
 
-PKGNAME  = apron-0.9.2
+PKGNAME  = apron-0.9.3
 PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model
 PKGDIRS  = apron mlapronidl num mlgmpidl octagons itv newpolka
 
