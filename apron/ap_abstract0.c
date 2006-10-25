@@ -1335,7 +1335,7 @@ ap_abstract0_t* ap_abstract0_widening_threshold(ap_manager_t* man,
     size = array->size;
     i = j = 0;
     while (i<size-j){
-      if (ptr2(man,a2->value,array->p[i])==tbool_true){
+      if (ptr2(man,a2->value,&array->p[i])==tbool_true){
 	i++;
       } 
       else {
