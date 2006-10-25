@@ -125,11 +125,13 @@ bool cherni_checksat(pk_internal_t* pk,
 
 void cherni_resize(matrix_t* mat, satmat_t* sat)
 {
-  size_t currentsize = mat->nbrows;
-  size_t addsize = mat->nbrows < 20 ? 10 : mat->nbrows / 2;
+  assert(mat->nbrows==sat->nbrows);
+  size_t nbrows = mat->nbrows;
+  size_t currentsize = mat->_maxrows >= sat->_maxrows ? mat->_maxrows : sat->_maxrows;
+  size_t addsize = currentsize < 20 ? 10 : currentsize / 2;
   matrix_realloc(mat, currentsize+addsize);
   satmat_realloc(sat, currentsize+addsize);
-  mat->nbrows = sat->nbrows = currentsize;
+  mat->nbrows = sat->nbrows = nbrows;
   return;
 }
 
@@ -187,10 +189,10 @@ size_t cherni_conversion(pk_internal_t* pk,
 
     /* Scalar product and index: */
     /*
-    We compute for the new considered constraint its scalar products
-    with each frame and put them into the first coefficient of the
-    frames. Moreover we set index_non_zero to the index of the
-    first frame that does not saturate the constraint.
+      We compute for the new considered constraint its scalar products
+      with each frame and put them into the first coefficient of the
+      frames. Moreover we set index_non_zero to the index of the
+      first frame that does not saturate the constraint.
     */
 
     index_non_zero = nbrows;
@@ -244,7 +246,7 @@ size_t cherni_conversion(pk_internal_t* pk,
 	satmat_exch_rows(satc, nbline, nbrows);
       }
 
-     bitindex_inc(&k);
+      bitindex_inc(&k);
     }
 
     else {
@@ -253,11 +255,11 @@ size_t cherni_conversion(pk_internal_t* pk,
       /*
 	Rays are sorted as follows:
 	- nbline<= i < equal_bound:
-	  saturate the constraint;
+	saturate the constraint;
 	- equal_bound <= i < sup_bound:
-	  verify it;
+	verify it;
 	- sup_bound <= i < nbrows:
-	  do not verify it.
+	do not verify it.
       */
 
       equal_bound=nbline;
@@ -297,11 +299,13 @@ size_t cherni_conversion(pk_internal_t* pk,
 		 including equalities */
 	      nbcommonconstraints=0;
 	      for (w=0; w<k.word; w++) {
-		aux = bitstringp[w] = satc->p[i][w] | satc->p[j][w];
+		aux = satc->p[i][w] | satc->p[j][w];
+		bitstringp[w] = aux;
 		for (m=bitstring_msb; m!=0; m>>=1)
 		  if ((aux & m)==0) nbcommonconstraints++;
 	      }
-	      aux = bitstringp[k.word] = satc->p[i][k.word] | satc->p[j][k.word];
+	      aux = satc->p[i][k.word] | satc->p[j][k.word];
+	      bitstringp[k.word] = aux;
 	      for (m=bitstring_msb; m!=k.bit; m>>=1){
 		if ((aux & m)==0) nbcommonconstraints++;
 	      }
@@ -325,7 +329,7 @@ size_t cherni_conversion(pk_internal_t* pk,
 		    pk->exn = AP_EXC_OUT_OF_SPACE;
 		    goto cherni_conversion_exit0;
 		  }
-		  if (nbrows==matrix_get_maxrows(ray) || nbrows==satc->_maxrows){
+		  if (nbrows>=matrix_get_maxrows(ray) || nbrows>=satc->_maxrows){
 		    /* resize output matrices */
 		    cherni_resize(ray,satc);
 		  }
@@ -333,8 +337,12 @@ size_t cherni_conversion(pk_internal_t* pk,
 		  matrix_combine_rows(pk,ray,j,i,nbrows,0);
 		  if (pk->exn) goto cherni_conversion_exit0;
 		  /* New row in saturation matrix */
-		  for (w=0; w<=k.word; w++) satc->p[nbrows][w] = bitstringp[w];
-		  for (w=k.word+1; w<satnbcols; w++) satc->p[nbrows][w] = 0;
+		  for (w=0; w<=k.word; w++){
+		    satc->p[nbrows][w] = bitstringp[w];
+		  }
+		  for (w=k.word+1; w<satnbcols; w++){
+		    satc->p[nbrows][w] = 0;
+		  }
 		  nbrows ++; ray->nbrows ++; satc->nbrows ++;
 		}
 	      }
@@ -728,7 +736,6 @@ void cherni_minimize(pk_internal_t* pk,
    account. The function takes into account the constraints numbered from start
    and returns with a minimized polyhedron. */
    
-
 void cherni_add_and_minimize(pk_internal_t* pk, 
 			     bool con_to_ray,
 			     poly_t* po,
@@ -740,6 +747,8 @@ void cherni_add_and_minimize(pk_internal_t* pk,
   matrix_t* F;
   satmat_t* satC;
   size_t nbrows,nbcols;
+
+  assert(bitindex_size(po->C->nbrows)==po->satC->nbcolumns);
 
   C = po->C;
   F = po->F;

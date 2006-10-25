@@ -137,6 +137,7 @@ void vector_remove_dimensions(pk_internal_t* pk,
     }
     numint_set(newq[pk->dec+i],q[pk->dec+i+k]);
   }
+  vector_normalize(pk,newq,size-dimsup);
 }
 
 /* ====================================================================== */

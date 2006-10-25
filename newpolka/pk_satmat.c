@@ -82,10 +82,12 @@ void satmat_realloc2(satmat_t* sat, size_t nbcols)
 {
   int i;
 
-  for (i=0; i<sat->_maxrows; i++){
-    sat->p[i] = bitstring_realloc(sat->p[i],nbcols);
+  if (nbcols!=sat->nbcolumns){
+    for (i=0; i<sat->_maxrows; i++){
+      sat->p[i] = bitstring_realloc(sat->p[i],nbcols);
+    }
+    sat->nbcolumns = nbcols;
   }
-  sat->nbcolumns = nbcols;
 }
 
 /* Create a copy of the matrix of size nbrows (and not
@@ -108,7 +110,7 @@ void satmat_extend_columns(satmat_t* sat, size_t nbcols)
   int i,j;
 
   if (nbcols != sat->nbcolumns){
-    for (i=0; i<sat->nbrows; i++){
+    for (i=0; i<sat->_maxrows; i++){
       sat->p[i] = bitstring_realloc(sat->p[i],nbcols);
       for (j=sat->nbcolumns; j<nbcols; j++){
 	sat->p[i][j] = 0;

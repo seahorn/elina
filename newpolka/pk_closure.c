@@ -33,6 +33,9 @@ poly_t* poly_closure(ap_manager_t* man, bool destructive, poly_t* pa)
   else
     poly_chernikova(man,pa,"of the argument");
   
+  if (!pa->C && !pa->F){
+    return destructive ? pa : poly_copy(man,pa);
+  }
   po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
   if (pk->exn){
     poly_set_top(pk,po);
@@ -62,9 +65,11 @@ poly_t* poly_closure(ap_manager_t* man, bool destructive, poly_t* pa)
   if (change){
     if (!positivity){
       numint_t* q;
+      size_t nbrows;
       /* we should add it */
+      nbrows = C->nbrows;
       matrix_realloc_lazy(C,C->nbrows+1);
-      q = C->p[C->nbrows];
+      q = C->p[nbrows];
       numint_set_int(q[0],1);
       numint_set_int(q[polka_cst],1);
       numint_set_int(q[polka_eps],-1);

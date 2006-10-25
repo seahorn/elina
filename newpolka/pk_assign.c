@@ -53,6 +53,8 @@ matrix_t* matrix_assign_variable(pk_internal_t* pk,
     destructive ? 
     mat :
     _matrix_alloc_int(mat->nbrows,mat->nbcolumns,false);
+
+  nmat->_sorted = false;
   
   for (i=0; i<mat->nbrows; i++){
     /* product for var column */
@@ -122,6 +124,8 @@ matrix_t* matrix_substitute_variable(pk_internal_t* pk,
     mat :
     _matrix_alloc_int(mat->nbrows,mat->nbcolumns,false);
 
+  nmat->_sorted = false;
+  
   for (i=0; i<mat->nbrows; i++) {
     if (numint_sgn(mat->p[i][var])) {
       /* The substitution must be done */
