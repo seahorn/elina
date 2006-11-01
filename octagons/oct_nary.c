@@ -221,6 +221,7 @@ oct_t* oct_widening_thresholds(ap_manager_t* man,
     for (i=0;i<matsize(r->dim);i++) 
       if (bound_cmp(m1[i],m2[i])>=0) bound_set(r->m[i],m1[i]);
       else {
+#if 0
 	/* dichotomy on array */
 	size_t low=0, hi=nb;
 	while (low<hi) {
@@ -229,6 +230,12 @@ oct_t* oct_widening_thresholds(ap_manager_t* man,
 	  else hi=med;
 	}
 	bound_set(r->m[i],pr->tmp[low]);
+#else
+	size_t j;
+	for (j=0;j<nb;j++)
+	  if (bound_cmp(m2[i],pr->tmp[j])<=0) break;
+	bound_set(r->m[i],pr->tmp[j]);
+#endif
       }
     /* warn user for conv errors in thresolds */
     if (pr->conv) flag_conv;
@@ -300,8 +307,7 @@ oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, const ap_scalar_t* epsilon)
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,2);
   oct_t* r = oct_alloc_internal(pr,a->dim,a->intdim);
   bound_t* m;
-  if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
-  m = a->closed ? a->closed : a->m;
+  m = a->m ? a->m : a->closed;
   if (m) {
     size_t i;
     /* compute max of finite bounds */
@@ -315,16 +321,13 @@ oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, const ap_scalar_t* epsilon)
 	bound_max(pr->tmp[0],pr->tmp[0],pr->tmp[1]);
       }
     }
-    if (bound_sgn(pr->tmp[0])>0) {
-      /* multiply by epsilon */
-      bound_of_scalar(pr,pr->tmp[1],epsilon,false,false);
-      bound_mul(pr->tmp[0],pr->tmp[0],pr->tmp[1]);
-      /* enlarge bounds */
-      r->m = hmat_alloc(pr,r->dim);
-      for (i=0;i<matsize(r->dim);i++)
-	bound_add(r->m[i],m[i],pr->tmp[0]);
-    }
-    else r->m = hmat_copy(pr,m,r->dim);
+    /* multiply by epsilon */
+    bound_of_scalar(pr,pr->tmp[1],epsilon,false,false);
+    bound_mul(pr->tmp[0],pr->tmp[0],pr->tmp[1]);
+    /* enlarge bounds */
+    r->m = hmat_alloc(pr,r->dim);
+    for (i=0;i<matsize(r->dim);i++)
+      bound_add(r->m[i],m[i],pr->tmp[0]);
   }
   return r;
 }
@@ -339,5 +342,60 @@ ap_abstract0_oct_add_epsilon(ap_manager_t* man,
   arg_assert(man->library==a1->man->library,
 	     return abstract0_of_oct(man,oct_alloc_top(pr,a->dim,a->intdim)););
   return abstract0_of_oct(man,oct_add_epsilon(man,a,epsilon));
+}
+
+
+oct_t* oct_add_epsilon_bin(ap_manager_t* man, oct_t* a1, oct_t* a2, 
+			   const ap_scalar_t* epsilon)
+{
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,2);
+  oct_t* r;
+  arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,return NULL;);
+  if (!a1->closed && !a1->m)
+    /* a1 definitively closed */
+    r = oct_copy_internal(pr,a2);
+  else if (!a2->closed && !a2->m)
+   /* a2 definitively closed */
+    r = oct_copy_internal(pr,a1);
+  else {
+    bound_t* m1 = a1->m ? a1->m : a1->closed;
+    bound_t* m2 = a2->m ? a2->m : a2->closed;
+    size_t i;
+    r = oct_alloc_internal(pr,a1->dim,a1->intdim);
+    r->m = hmat_alloc(pr,r->dim);
+    /* get max abs of non +oo coefs in m2, times epsilon */
+    bound_set_int(pr->tmp[0],0);
+    for (i=0;i<matsize(a1->dim);i++) {
+      if (bound_infty(m2[i])) continue;
+      if (bound_sgn(m2[i])>=0) 
+	bound_max(pr->tmp[0],pr->tmp[0],m2[i]);
+      else {
+	bound_neg(pr->tmp[1],m2[i]);
+	bound_max(pr->tmp[0],pr->tmp[0],pr->tmp[1]);
+      }
+    }
+    /* multiply by epsilon */
+    bound_of_scalar(pr,pr->tmp[1],epsilon,false,false);
+    bound_mul(pr->tmp[0],pr->tmp[0],pr->tmp[1]);
+    /* enlarge unstable coefficients in a1 */
+    for (i=0;i<matsize(a1->dim);i++)
+      if (bound_cmp(m1[i],m2[i])<0) bound_add(r->m[i],m2[i],pr->tmp[0]);
+      else bound_set(r->m[i],m1[i]);
+  }
+  return r;
+}
+
+ap_abstract0_t* 
+ap_abstract0_oct_add_epsilon_bin(ap_manager_t* man, 
+				 const ap_abstract0_t* a1, 
+				 const ap_abstract0_t* a2, 
+				 const ap_scalar_t* epsilon)
+{
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
+  oct_t* a = (oct_t*) (a1->value);
+  arg_assert(man->library==a1->man->library &&
+	     man->library==a2->man->library,
+	     return abstract0_of_oct(man,oct_alloc_top(pr,a->dim,a->intdim)););
+  return abstract0_of_oct(man,oct_add_epsilon_bin(man,a1->value,a2->value,epsilon));
 }
 

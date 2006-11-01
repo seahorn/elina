@@ -379,6 +379,12 @@ oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, const ap_scalar_t* epsilon);
   /* Enlarge each bound by epsilon times the maximum finite bound in 
      the octagon */
 
+oct_t* oct_add_epsilon_bin(ap_manager_t* man, oct_t* a1, oct_t* a2, 
+			   const ap_scalar_t* epsilon);
+  /* Enlarge each bound from a1 by epsilon times the maximum finite bound in 
+     a2. Only bounds in a1 that are not stable in a2 are enlared. */
+
+
 /* ============================================================ */
 /* III.7 Topological closure operation */
 /* ============================================================ */

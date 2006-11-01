@@ -164,10 +164,11 @@ liboct%.so: $(subst .c,%.o,$(CCSOURCES))
 
 octtest%: liboct%.a oct_test%.o
 	$(CC) -o $@ oct_test$*.o \
+	-L. -loct$* \
+	-L$(POLKA_PREFIX)/lib -lpolkag_debug \
+	-L$(APRON_PREFIX)/lib -lapron \
 	-L$(GMP_PREFIX)/lib -lgmp \
-	-L$(POLKA_PREFIX)/lib \
-	-L$(APRON_PREFIX)/lib -lpolkag_debug -lapron \
-	-L. -loct$* -lm
+	-lm
 
 %Zi.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_LONGINT -c -o $@ $<

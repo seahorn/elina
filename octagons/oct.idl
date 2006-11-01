@@ -66,6 +66,10 @@ ap_abstract0_ptr ap_abstract0_oct_add_epsilon(ap_manager_ptr man,ap_abstract0_pt
      quote(dealloc,"I0_CHECK_EXC(man)");
 quote(MLI,"(** Perturbation. *)\n\n")  
 
+ap_abstract0_ptr ap_abstract0_oct_add_epsilon_bin(ap_manager_ptr man,ap_abstract0_ptr a1,ap_abstract0_ptr a2,ap_scalar_ptr epsilon)
+     quote(dealloc,"I0_CHECK_EXC(man)");
+quote(MLI,"(** Perturbation. *)\n\n")  
+
 const int pre_widening = 99;
 quote(MLI,"(** Algorithms. *)\n\n")
 

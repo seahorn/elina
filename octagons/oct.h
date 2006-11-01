@@ -88,6 +88,14 @@ ap_abstract0_oct_add_epsilon(ap_manager_t* man,
   /* Enlarge each bound by epsilon times the maximum finite bound in 
      the octagon */
 
+ap_abstract0_t* 
+ap_abstract0_oct_add_epsilon_bin(ap_manager_t* man, 
+				 const ap_abstract0_t* a1, 
+				 const ap_abstract0_t* a2, 
+				 const ap_scalar_t* epsilon);
+  /* Enlarge each bound from a1 by epsilon times the maximum finite bound in 
+     a2. Only those bounds in a1 that are not stable in a2 are enlared. */
+
 #ifdef __cplusplus
 }
 #endif
