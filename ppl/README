@@ -1,0 +1,34 @@
+# README
+#
+# APRON Library / Parma Polyhedra Library
+#
+# Copyright (C) Antoine Mine' 2006
+
+# This file is part of the APRON Library, released under LGPL license.
+# Please read the COPYING file packaged in the distribution
+
+This package is a wrapper for the the Parma Polyhedra Library.
+
+Requirements:
+- APRON
+- PPL library version 0.9, with gmp support
+- for ppl_test: NewPolka APRON module
+
+What are provided:
+- a manager to access the C_Polyhedron and NCC_Polyhedron classes
+- C++ exceptions are mapped back to APRON exceptions
+- flag_exact and flag_best are correcty sets
+- all the widenings are available through the algorithm parameter
+- functions not availble in PPL are emulated (e.g., _array and _parallel 
+  functions)
+- a unit testing program ppl_test for regression testing; it works by
+  comparing the result of PPL and NewPolka on random polyhedra
+
+Limitations:
+- no support for intervals in linear expressions and constraints
+- no support for other domains in PPL (Grid, BD_Shape)
+- the precision of flag_exact and flag_best could be inproved
+- integer dimensions are abstracted as real ones; the functions will set
+  flag_exact and flag_best to top whenever intdim>0
+- only PPL 0.9 was tested, other PPL version might not work
+
