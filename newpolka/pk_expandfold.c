@@ -211,9 +211,9 @@ matrix_t* matrix_fold(pk_internal_t* pk,
   nbcols = F->nbcolumns;
   col = pk->dec + tdim[0];
 
-  nF = destructive ? F : matrix_alloc( size*nbrows,
-				       nbcols - dimsup,
-				       false );
+  nF = matrix_alloc( size*nbrows,
+		     nbcols - dimsup,
+		     false );
   dimchange = ap_dimchange_alloc(0,dimsup);
   for (i=0;i<dimsup;i++){
     dimchange->dim[i]=tdim[i+1];
@@ -239,7 +239,7 @@ matrix_t* matrix_fold(pk_internal_t* pk,
   nF->nbrows = row;
   nF->_sorted = false;
   if (destructive){
-    matrix_resize(nF,-(int)dimsup);
+    matrix_free(F);
   }
   ap_dimchange_free(dimchange);
   return nF;

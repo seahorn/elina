@@ -137,7 +137,6 @@ void vector_remove_dimensions(pk_internal_t* pk,
     }
     numint_set(newq[pk->dec+i],q[pk->dec+i+k]);
   }
-  vector_normalize(pk,newq,size-dimsup);
 }
 
 /* ====================================================================== */
@@ -199,6 +198,7 @@ matrix_t* matrix_remove_dimensions(pk_internal_t* pk,
 			     (const numint_t*)mat->p[i],
 			     mat->nbcolumns,
 			     dimchange);
+    vector_normalize(pk,nmat->p[i],nmat->nbcolumns);
   }
   if (destructive){
     matrix_resize(nmat, -(int)dimsup);
