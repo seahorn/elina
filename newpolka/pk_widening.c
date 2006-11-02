@@ -135,13 +135,13 @@ poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_WIDENING);
   bool widening_affine = pk->funopt->algorithm<=0;
-  poly_chernikova(man,pa,"of the first argument");
+  poly_chernikova2(man,pa,"of the first argument");
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     man->result.flag_best = man->result.flag_exact = tbool_false;
     return poly_top(man,pa->intdim,pa->realdim);
   }
-  poly_chernikova(man,pb,"of the second argument");
+  poly_chernikova2(man,pb,"of the second argument");
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     man->result.flag_best = man->result.flag_exact = tbool_false;
