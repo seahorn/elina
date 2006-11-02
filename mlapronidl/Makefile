@@ -19,16 +19,16 @@ BINDIR = $(PREFIX)/bin
 #---------------------------------------
 # CAML part
 #---------------------------------------
-OCAMLC = ocamlc.opt
-OCAMLOPT = ocamlopt.opt
-OCAMLDEP = ocamldep
-OCAMLLEX = ocamllex.opt
-OCAMLYACC = ocamlyacc
+OCAMLC = $(CAML_PREFIX)/bin/ocamlc.opt
+OCAMLOPT = $(CAML_PREFIX)/bin/ocamlopt.opt
+OCAMLDEP = $(CAML_PREFIX)/bin/ocamldep
+OCAMLLEX = $(CAML_PREFIX)/bin/ocamllex.opt
+OCAMLYACC = $(CAML_PREFIX)/bin/ocamlyacc
 OCAMLINC = -I $(MLGMPIDL_PREFIX)/lib
 OCAMLFLAGS = -g
 OCAMLOPTFLAGS = -for-pack Apron -inline 20
 
-CAMLIDL = camlidl
+CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 M4 = m4
 
 #---------------------------------------
