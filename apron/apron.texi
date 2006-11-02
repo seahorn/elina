@@ -2,7 +2,7 @@
 @c -*-texinfo-*-
 @c %**start of header
 @setfilename apron.info
-@settitle APRON 0.9.0
+@settitle APRON 0.9.3
 @c @setcontentsaftertitlepage
 @c include version.texi
 @iftex
@@ -1860,6 +1860,9 @@ abstract value@var{a}
 @deftypefun ap_interval_t* ap_abstract0_bound_linexpr (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, const ap_linexpr0_t* @var{expr})
 Return the interval taken by a linear expression @var{expr} over
 the abstract value @var{a}.
+
+This function allows to solve a Linear Programming (LP) problem, but
+depending on the underlying domain the solution may be not optimal.
 @end deftypefun
 
 @deftypefun ap_interval_t** ap_abstract0_to_box (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
@@ -3137,6 +3140,9 @@ value @var{a}.
 @deftypefun ap_interval_t* ap_abstract1_bound_linexpr (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, const ap_linexpr1_t* @var{expr})
 Return the interval taken by a linear expression @var{expr} over
 the abstract value @var{a}.
+
+This function allows to solve a Linear Programming (LP) problem, but
+depending on the underlying domain the solution may be not optimal.
 @end deftypefun
 
 @deftypefun ap_box1_t ap_abstract1_to_box (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})

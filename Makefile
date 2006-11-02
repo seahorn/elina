@@ -17,6 +17,7 @@ clean:
 	(cd itv; make clean)
 	(cd newpolka; make clean)
 	(cd octagons; make clean)
+	(cd examples; make clean)
 
 distclean:
 	(cd apron; make distclean)
@@ -26,8 +27,10 @@ distclean:
 	(cd itv; make distclean)
 	(cd newpolka; make distclean)
 	(cd octagons; make distclean)
+	(cd examples; make distclean)
 
 doc:
+	(hyperlatex index.tex)
 	(cd apron; make ps)
 	(cd mlgmpidl; make doc)
 	(cd mlapronidl; make doc)
@@ -38,7 +41,7 @@ doc:
 
 PKGNAME  = apron-0.9.3
 PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model
-PKGDIRS  = apron mlapronidl num mlgmpidl octagons itv newpolka
+PKGDIRS  = apron mlapronidl num mlgmpidl octagons itv newpolka examples
 
 dist:
 	$(MAKE)

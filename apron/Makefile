@@ -70,7 +70,7 @@ ap_abstract1.c
 # Rules
 #---------------------------------------
 
-all: clib ps
+all: clib
 
 clib: $(H_FILES) libapron.a libapron_debug.a
 

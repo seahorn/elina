@@ -33,11 +33,11 @@ CC = gcc
 AR = ar
 SHARED = gcc -shared
 
-OCAMLC = ocamlc.opt 
-OCAMLOPT = ocamlopt.opt
-OCAMLMKTOP = ocamlmktop
-OCAMLMKLIB = ocamlmklib
-CAMLIDL = camlidl
+OCAMLC = $(CAML_PREFIX)/bin/ocamlc.opt 
+OCAMLOPT = $(CAML_PREFIX)/bin/ocamlopt.opt
+OCAMLMKTOP = $(CAML_PREFIX)/bin/ocamlmktop
+OCAMLMKLIB = $(CAML_PREFIX)/bin/ocamlmklib
+CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 
 #---------------------------------------
 # Flags

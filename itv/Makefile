@@ -28,13 +28,13 @@ MAKEINFO = makeinfo
 DVIPS = dvips
 
 # For the OCAML interface
-OCAMLDEP = ocamldep
-OCAMLC = ocamlc.opt
-OCAMLOPT = ocamlopt.opt
-OCAMLLEX = ocamllex.opt
-OCAMLYACC = ocamlyacc
-OCAMLMKTOP = ocamlmktop
-CAMLIDL = camlidl
+OCAMLDEP = $(CAML_INSTALL)/bin/ocamldep
+OCAMLC = $(CAML_INSTALL)/bin/ocamlc.opt
+OCAMLOPT = $(CAML_INSTALL)/bin/ocamlopt.opt
+OCAMLLEX = $(CAML_INSTALL)/bin/ocamllex.opt
+OCAMLYACC = $(CAML_INSTALL)/bin/ocamlyacc
+OCAMLMKTOP = $(CAML_INSTALL)/bin/ocamlmktop
+CAMLIDL = $(CAMLIDL_INSTALL)/bin/camlidl
 
 
 #---------------------------------------

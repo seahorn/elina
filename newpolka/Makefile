@@ -27,10 +27,10 @@ TEXI2DVI = texi2dvi
 MAKEINFO = makeinfo
 DVIPS = dvips
 
-OCAMLC = ocamlc.opt 
-OCAMLOPT = ocamlopt.opt
-OCAMLMKTOP = ocamlmktop
-CAMLIDL = camlidl
+OCAMLC = $(CAML_PREFIX)/bin/ocamlc.opt 
+OCAMLOPT = $(CAML_PREFIX)/bin/ocamlopt.opt
+OCAMLMKTOP = $(CAML_PREFIX)/bin/ocamlmktop
+CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 
 #---------------------------------------
 # Flags

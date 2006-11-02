@@ -30,7 +30,7 @@ OCAMLINC = \
 
 OCAMLFLAGS = $(OCAMLINC)
 
-all: C
+all: C ml
 
 # C examples
 
@@ -91,10 +91,7 @@ itvpolkatopg:
 clean:
 	rm -f example1g itvpolkarung *.cm[ioxa] *.o mlexample1g mlexample2g
 
-dist: example1.c mlexample1.ml Makefile README
-	(cd ..; tar zcvf $(HOME)/examples.tgz $(^:%=examples/%))
+distclean: clean
 
-
-
-
-
+dist: example1.c mlexample1.ml mlexample2.ml Makefile README
+	(cd ..; tar zcvf examples.tgz $(^:%=examples/%))
