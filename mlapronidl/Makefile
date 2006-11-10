@@ -24,6 +24,7 @@ OCAMLOPT = $(CAML_PREFIX)/bin/ocamlopt.opt
 OCAMLDEP = $(CAML_PREFIX)/bin/ocamldep
 OCAMLLEX = $(CAML_PREFIX)/bin/ocamllex.opt
 OCAMLYACC = $(CAML_PREFIX)/bin/ocamlyacc
+OCAMLDOC = $(CAML_PREFIX)/bin/ocamldoc.opt
 OCAMLINC = -I $(MLGMPIDL_PREFIX)/lib
 OCAMLFLAGS = -g
 OCAMLOPTFLAGS = -for-pack Apron -inline 20
@@ -49,18 +50,18 @@ CFLAGS_PROF = $(CFLAGS) -g -pg
 # Latex part
 #---------------------------------------
 LATEX=latex
-DVIPS=dvips
+DVIPDF=dvipdf
 
 #---------------------------------------
 # Files
 #---------------------------------------
 
-IDLMODULES0 = scalar interval coeff dim linexpr0 lincons0 generator0 manager abstract0
-IDLMODULES1 = var environment linexpr1 lincons1 generator1 abstract1
-IDLMODULES = $(IDLMODULES0) $(IDLMODULES1)
-MLMODULES0 = $(IDLMODULES0)
-MLMODULES1 = $(IDLMODULES1)
-MLMODULES = $(MLMODULES0) $(MLMODULES1)
+IDLMODULES = \
+scalar interval coeff \
+dim linexpr0 lincons0 generator0 manager abstract0 \
+var linexpr1 lincons1 generator1 abstract1
+
+MLMODULES = $(IDLMODULES)
 
 MLSRC = $(MLMODULES:%=%.mli) $(MLMODULES:%=%.ml)
 MLINT = $(MLMODULES:%=%.cmi)
@@ -69,7 +70,7 @@ MLOBJx = $(MLMODULES:%=%.cmx)
 MLLIB_TOINSTALL = $(MLMODULES:%=%.mli) $(MLINT) apron.cmi apron.cmo
 MLLIB_TOINSTALLx = apron.cmx apron.o
 CCMODULES = apron_caml $(IDLMODULES:%=%_caml)
-CCSRC = $(CCMODULES:%=%.c)
+CCSRC = apron_caml.h $(CCMODULES:%=%.c)
 CCLIB_TOINSTALL = libapron_caml.a libapron_caml_debug.a
 CCINC_TOINSTALL = apron_caml.h
 
@@ -79,8 +80,6 @@ CCINC_TOINSTALL = apron_caml.h
 
 all: $(MLSRC) $(MLINT) $(MLOBJ) $(MLOBJx) apron.cmi apron.cmx libapron_caml.a libapron_caml_debug.a
 
-mlsrc: $(MLSRC)
-
 mldep: $(MLSRC)
 	ocamldep $(OCAMLINC) $(MLSRC)
 
@@ -88,10 +87,10 @@ mldep: $(MLSRC)
 # Misc rules
 #---------------------------------------
 
-tar: $(IDLMODULES:%=%.idl) apron_caml.c apron_caml.h Makefile README mlapronidl.tex sedscript_caml
+tar: $(IDLMODULES:%=%.idl) apron_caml.c apron_caml.h macros.m4 Makefile COPYING README mlapronidl.tex sedscript_caml
 	(cd ..; tar zcvf mlapronidl.tgz $(^:%=mlapronidl/%))
 
-dist: $(IDLMODULES:%=%.idl) $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c) macros.m4 apron_caml.c apron_caml.h Makefile COPYING README mlapronidl.tex sedscript_caml mlapronidl.dvi html
+dist: $(IDLMODULES:%=%.idl) $(MLSRC) $(CCSRC) macros.m4 apron_caml.c apron_caml.h Makefile COPYING README mlapronidl.tex sedscript_caml mlapronidl.pdf html
 	(cd ..; tar zcvf mlapronidl.tgz $(^:%=mlapronidl/%))
 
 clean:
@@ -136,30 +135,33 @@ apron.cmo apron.cmi: $(MLOBJ)
 apron.cmx apron.o: $(MLOBJx)
 	$(OCAMLOPT) -pack -o $@ $(MLOBJx)
 
-mpz.idl: $(MLGMPIDL_PREFIX)/lib/mpz.idl
+mpz.idl: ../mlgmpidl/mpz.idl
 	ln -fs $^ $@
-mpq.idl: $(MLGMPIDL_PREFIX)/lib/mpq.idl
+mpq.idl: ../mlgmpidl/mpq.idl
 	ln -fs $^ $@
 
 #---------------------------------------
 # TEX and HTML rules
 #---------------------------------------
 
-.PHONY: mlapronidl.dvi html
+.PHONY: html
 
-doc: mlapronidl.dvi html
+mlapronidl.pdf: mlapronidl.dvi
+	$(DVIPDF) mlapronidl.dvi
 
 mlapronidl.dvi: $(MLMODULES:%=%.mli)
-	ocamldoc $(OCAMLINC) \
+	$(OCAMLDOC) $(OCAMLINC) \
 	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -o ocamldoc.tex $^ ../octagons/oct.mli ../itv/itv.mli ../newpolka/polka.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpq.mli ../mlgmpidl/mpz.mli ../mlgmpidl/gmp_random.mli
 	latex mlapronidl
 	makeindex mlapronidl
 	latex mlapronidl
 	latex mlapronidl
 
+
+
 html: $(MLMODULES:%=%.mli)
 	mkdir -p html
-	ocamldoc $(OCAMLINC) -html -d html -colorize-code $^ ../octagons/oct.mli ../itv/itv.mli ../newpolka/polka.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpq.mli ../mlgmpidl/mpz.mli ../mlgmpidl/gmp_random.mli
+	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code $^ ../octagons/oct.mli ../itv/itv.mli ../newpolka/polka.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpq.mli ../mlgmpidl/mpz.mli ../mlgmpidl/gmp_random.mli
 
 #--------------------------------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES
@@ -182,14 +184,7 @@ html: $(MLMODULES:%=%.mli)
 # IDL generic rules
 #---------------------------------------
 
-#abstract%_caml.c abstract%.ml abstract%.mli: abstract%.idl sedscript_caml macros.m4
-#	cp abstract$*.idl tmp/abstract$*.idl
-#	$(CAMLIDL) -no-include  -prepro "$(M4) macros.m4" -I $(SRCDIR) tmp/abstract$*.idl
-#	cp tmp/abstract$*_stubs.c abstract$*_caml.c
-#	sed -f sedscript_caml tmp/abstract$*.mli >abstract$*.mli
-#	sed -f sedscript_caml tmp/abstract$*.ml >abstract$*.ml
-
-%.mli %_caml.c %.ml: %.idl sedscript_caml
+%.mli %_caml.c %.ml: %.idl sedscript_caml mpz.idl mpq.idl
 	mkdir -p tmp
 	cp $*.idl tmp/$*.idl
 	$(CAMLIDL) -no-include -prepro "$(M4) --prefix-builtins macros.m4" -I $(SRCDIR) tmp/$*.idl

@@ -9,6 +9,82 @@
 
 #include "pk.h"
 
+void ex2(ap_manager_t* man)
+{
+  ap_var_t name_of_dim[6] = {    
+    "x","y","z","u","w","v"
+  };
+  ap_var_t tab[2] = {    
+    "x","y"
+  };
+  ap_environment_t* env = ap_environment_alloc(NULL,0,name_of_dim,6);
+
+  /* =================================================================== */
+  /* Creation of polyhedra 
+     -39x + 40y >= 0
+     -6x - 20y + 85 >= 0
+     x >= 0  */
+  /* =================================================================== */
+
+  /* 0. Create the array */
+  ap_lincons1_array_t array = ap_lincons1_array_make(env,3);
+
+  /* 1.a Creation of constraint -39x + 40y >= 0 */
+  ap_linexpr1_t expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
+  ap_lincons1_t cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+    /* Now expr is memory-managed by cons */ 
+
+  /* 1.b Fill the constraint */ 
+  ap_lincons1_set_list(&cons,
+		       AP_COEFF_S_INT,-39,"x",
+		       AP_COEFF_S_INT,40,"y",
+		       AP_CST_S_INT,0,
+		       AP_END);
+  /* 1.c Put in the array */
+  ap_lincons1_array_set(&array,0,&cons);
+    /* Now cons is memory-managed by array */ 
+
+  /* 2.a Creation of an inequality constraint -6x - 20y + 85 >= 0 */
+  expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+    /* The old cons is not lost, because it is stored in the array.
+       It would be an error to clear it (same for expr). */
+  /* 2.b Fill the constraint */ 
+  ap_lincons1_set_list(&cons,
+		       AP_COEFF_S_INT,-6,"x",
+		       AP_COEFF_S_INT,-20,"y",
+		       AP_CST_S_INT,85,
+		       AP_END);
+  /* 2.c Put in the array */
+  ap_lincons1_array_set(&array,1,&cons);
+
+  /* 3.a Creation of an inequality constraint x >= 0 */
+  expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,1);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+    /* The old cons is not lost, because it is stored in the array.
+       It would be an error to clear it (same for expr). */
+  /* 3.b Fill the constraint */ 
+  ap_lincons1_set_list(&cons,
+		       AP_COEFF_S_INT,1,"x",
+		       AP_CST_S_INT,0,
+		       AP_END);
+  /* 3.c Put in the array */
+  ap_lincons1_array_set(&array,2,&cons);
+  
+  ap_abstract1_t abs = ap_abstract1_of_lincons_array(man,env,&array);
+  fprintf(stdout,"Abstract value:\n");
+  ap_abstract1_fprint(stdout,man,&abs);
+  ap_abstract1_t abs2 = ap_abstract1_fold(man,false,&abs,tab,2);
+  fprintf(stdout,"Abstract value 2:\n");
+  ap_abstract1_fprint(stdout,man,&abs2);
+
+  ap_lincons1_array_clear(&array);
+  ap_abstract1_clear(man,&abs);
+  ap_abstract1_clear(man,&abs2);
+  ap_environment_free(env);
+}
+
+
 void ex1(ap_manager_t* man)
 {
   ap_var_t name_of_dim[6] = {    
@@ -181,4 +257,5 @@ void main()
 {
   ap_manager_t* man = pk_manager_alloc(true);
   ex1(man);
+  ex2(man);
 }

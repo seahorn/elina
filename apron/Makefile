@@ -31,7 +31,7 @@ CFLAGS_PROF = $(CFLAGS) -g -pg
 # Latex part
 #---------------------------------------
 LATEX=latex
-DVIPS=dvips
+DVIPDF=dvipdf
 
 #---------------------------------------
 # Files
@@ -70,11 +70,11 @@ ap_abstract1.c
 # Rules
 #---------------------------------------
 
-all: clib
+all: lib
 
-clib: $(H_FILES) libapron.a libapron_debug.a
+lib: $(H_FILES) libapron.a libapron_debug.a
 
-csrc: $(H_FILES)
+src: $(H_FILES)
 
 #---------------------------------------
 # Misc rules
@@ -83,7 +83,7 @@ csrc: $(H_FILES)
 tar: $(NOWEB_FILES) $(H_FILES) $(C_FILES) apron.texi apronrationale.tex Makefile README
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
-dist: $(NOWEB_FILES) apron.texi apronrationale.tex Makefile COPYING README $(TEX_FILES) $(H_FILES) $(C_FILES) apronrationale.dvi apron.info apron.dvi html
+dist: $(NOWEB_FILES) $(TEX_FILES) $(H_FILES) $(C_FILES) apron.texi apronrationale.tex Makefile COPYING README apronrationale.pdf apron.info apron.dvi html
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
 clean:
@@ -107,25 +107,29 @@ distclean:
 # Latex rules
 #---------------------------------------
 
-.PHONY : apronrationale.dvi apron.info apron.dvi html
+.PHONY : apronrationale.dvi html
 
-ps: apronrationale.dvi
-	$(DVIPS) apronrationale -o
+apronrationale.pdf: apronrationale.dvi
+	$(DVIPDF) apronrationale -o
+
+apronrationale.dvi: apronrationale.tex $(TEX_FILES)
+	$(LATEX) $^
 
 newpolka.texi: ../newpolka/newpolka.texi
 	ln -s $< $@
 itv.texi: ../itv/itv.texi
 	ln -s $< $@
+
+apron.pdf: apron.dvi
+	$(DVIPDF) apron.dvi
+
 apron.dvi: apron.texi newpolka.texi itv.texi
 	texi2dvi -o $@ $<
 
-apronrationale.dvi: apronrationale.tex $(TEX_FILES)
-	$(LATEX) $^
+apron.info: apron.texi newpolka.texi itv.texi
+	makeinfo -o $@ $<
 
-apron.info: apron.texi
-	makeinfo -I../newpolka -I ../itv -o $@ $<
-
-html: apron.texi
+html: apron.texi newpolka.texi itv.texi
 	texi2html -split=section -nonumber -menu -subdir=html $<
 	cp -f ../octagons/oct_doc.html html
 
@@ -141,7 +145,7 @@ libapron_debug.a: $(C_FILES:%.c=%_debug.o)
 
 .PHONY : dep
 
-cdep: $(H_FILES)
+dep: $(H_FILES)
 	for i in $(C_FILES); do			\
 		cpp -MM $$i;			\
 	done
@@ -158,7 +162,7 @@ cdep: $(H_FILES)
 
 %.h: %.nw
 	notangle -L'#line %L "$(SRCDIR)/%F"%N' $^ >$@
-#	notangle $^ >$@
+
 %.tex: %.nw
 	LC_ALL=C noweave -n $^ >$@
 

@@ -1,13 +1,22 @@
 # $Id$
 
 all:
-	(cd apron; make all install)
-	(cd mlgmpidl; make all debug install)
-	(cd mlapronidl; make all install)
-	(cd num; make all install)
-	(cd newpolka; make allg ml install)
-	(cd itv; make allmpq ml install)
-	(cd octagons; make allQg allFd install)
+	(cd apron; make all)
+	(cd mlgmpidl; make all)
+	(cd mlapronidl; make all)
+	(cd num; make all)
+	(cd newpolka; make allg ml)
+	(cd itv; make allmpq ml)
+	(cd octagons; make allQg allFd)
+
+install:
+	(cd apron; make install)
+	(cd mlgmpidl; make install)
+	(cd mlapronidl; make install)
+	(cd num; make install)
+	(cd newpolka; make install)
+	(cd itv; make install)
+	(cd octagons; make install)
 
 clean:
 	(cd apron; make clean)
@@ -29,13 +38,11 @@ distclean:
 	(cd octagons; make distclean)
 	(cd examples; make distclean)
 
-doc:
+doc: 
 	(hyperlatex index.tex)
-	(cd apron; make ps)
-	(cd mlgmpidl; make doc)
-	(cd mlapronidl; make doc)
-
-
+	(cd apron; make html apron.pdf)
+	(cd mlgmpidl; make html mlgmpidl.pdf)
+	(cd mlapronidl; make html mlapronidl.pdf)
 
 # make distribution, update to reflect current version
 
@@ -44,7 +51,7 @@ PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model
 PKGDIRS  = apron mlapronidl num mlgmpidl octagons itv newpolka examples
 
 dist:
-	$(MAKE)
+	$(MAKE) all
 	$(MAKE) doc
 	mkdir -p $(PKGNAME)
 	$(MAKE) $(foreach pkg,$(PKGDIRS),pkg_$(pkg))

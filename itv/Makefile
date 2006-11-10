@@ -28,13 +28,13 @@ MAKEINFO = makeinfo
 DVIPS = dvips
 
 # For the OCAML interface
-OCAMLDEP = $(CAML_INSTALL)/bin/ocamldep
-OCAMLC = $(CAML_INSTALL)/bin/ocamlc.opt
-OCAMLOPT = $(CAML_INSTALL)/bin/ocamlopt.opt
-OCAMLLEX = $(CAML_INSTALL)/bin/ocamllex.opt
-OCAMLYACC = $(CAML_INSTALL)/bin/ocamlyacc
-OCAMLMKTOP = $(CAML_INSTALL)/bin/ocamlmktop
-CAMLIDL = $(CAMLIDL_INSTALL)/bin/camlidl
+OCAMLDEP = $(CAML_PREFIX)/bin/ocamldep
+OCAMLC = $(CAML_PREFIX)/bin/ocamlc.opt
+OCAMLOPT = $(CAML_PREFIX)/bin/ocamlopt.opt
+OCAMLLEX = $(CAML_PREFIX)/bin/ocamllex.opt
+OCAMLYACC = $(CAML_PREFIX)/bin/ocamlyacc
+OCAMLMKTOP = $(CAML_PREFIX)/bin/ocamlmktop
+CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 
 
 #---------------------------------------
@@ -82,11 +82,11 @@ CAML_TO_INSTALL = itv.idl itv.ml itv.mli itv.cmi itv.cmo itv.cmx itv.o libitv_ca
 # depend doc install
 # and the following one
 
-all: allmpq ml
-
-ml: itv.mli itv.cmi itv.cmo itv.cmx libitv_caml.a libitv_caml_debug.a
+all: allmpq
 
 allmpq: libitvmpq.a libitvmpq_debug.a
+
+ml: itv.mli itv.cmi itv.cmo itv.cmx libitv_caml.a libitv_caml_debug.a
 
 clean:
 	/bin/rm -f *.[ao] *.cm[ioax] testg test*_caml* code2latex
