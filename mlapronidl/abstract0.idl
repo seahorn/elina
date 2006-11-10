@@ -26,7 +26,7 @@ typedef [abstract,
 	 ml2c(camlidl_apron_abstract0_ptr_ml2c)]
 struct ap_abstract0_ptr ap_abstract0_ptr;
 
-quote(MLI,"(** Abstract value of level 0 *)")
+quote(MLI,"(** APRON Abstract value of level 0 *)")
 
 quote(MLI,"\n(** TO BE DOCUMENTED *)")
 void ap_abstract0_set_gc(int size)
@@ -60,7 +60,7 @@ quote(MLI,"\n(** Put the abstract value in canonical form. (not yet clear defini
 void ap_abstract0_canonicalize(ap_manager_ptr man, ap_abstract0_ptr a)
   quote(dealloc,"I0_CHECK_EXC(man)");
 
-quote(MLI,"\n(** [approximate abs alg] perform some transformation on the abstract value, guided by the argument [alg]. The transformation may lose information.  The argument [alg] overrides the field algorithm of the structure of type [Manager.funopt] associated to ap_abstract0_approximate (commodity feature).*)")
+quote(MLI,"\n(** [approximate man abs alg] perform some transformation on the abstract value, guided by the argument [alg]. The transformation may lose information.  The argument [alg] overrides the field algorithm of the structure of type [Manager.funopt] associated to ap_abstract0_approximate (commodity feature).*)")
 void ap_abstract0_approximate(ap_manager_ptr man, ap_abstract0_ptr a, int v)
   quote(dealloc,"I0_CHECK_EXC(man)");
 
@@ -100,8 +100,6 @@ quote(MLMLI,"(* ****************************************************************
 quote(MLMLI,"(* ============================================================ *)")
 quote(MLMLI,"(** {3 Basic constructors} *)")
 quote(MLMLI,"(* ============================================================ *)")
-
-quote(MLI,"(** All these functions request explicitly a manager in their arguments. *)\n")
 
 quote(MLI,"\n(** Create a bottom (empty) value with the given number of integer and real variables *)")
 ap_abstract0_ptr ap_abstract0_bottom(ap_manager_ptr man, int v1, int v2)
@@ -178,7 +176,7 @@ quote(MLI,"\n(** Return the interval of variation of the dimension in the abstra
 [ref]struct ap_interval_t* ap_abstract0_bound_dimension(ap_manager_ptr man, ap_abstract0_ptr a, ap_dim_t v)
      quote(dealloc,"ap_interval_free(_res); I0_CHECK_EXC(man)");
 
-quote(MLI,"\n(** Return the interval of variation of the linear expression in the abstract value. *)")
+quote(MLI,"\n(** Return the interval of variation of the linear expression in the abstract value.\n\nImplement a form of linear programming, where the argument linear expression is the one to optimize under the constraints induced by the abstract value. *)")
 [ref]struct ap_interval_t* ap_abstract0_bound_linexpr(ap_manager_ptr man, ap_abstract0_ptr a, ap_linexpr0_ptr v)
      quote(dealloc,"ap_interval_free(_res); I0_CHECK_EXC(man)");
 
@@ -368,7 +366,7 @@ quote(MLMLI,"(* ============================================================ *)"
 quote(MLMLI,"(** {3 Projections} *)")
 quote(MLMLI,"(* ============================================================ *)")
 
-quote(MLI,"(** These functions implements forgeting (existential quantification) of (array of) variables. Both functional and side-effect versions are provided. The Boolean, if true, adds a projection onto 0-plane. *)\n\n")
+quote(MLI,"(** These functions implements forgeting (existential quantification) of (array of) dimensions. Both functional and side-effect versions are provided. The Boolean, if true, adds a projection onto 0-plane. *)\n\n")
 
 ap_abstract0_ptr ap_abstract0_forget_array(ap_manager_ptr man, ap_abstract0_ptr a, [size_is(v2)]ap_dim_t* v1, int v2, boolean v3)
      quote(call,"_res = ap_abstract0_forget_array(man,false,a,v1,v2,v3);")
@@ -459,7 +457,7 @@ ap_abstract0_ptr ap_abstract0_expand(ap_manager_ptr man, ap_abstract0_ptr a,
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI," \
-  (** Folding: [fold a tdim] fold the dimensions in the array tdim of size n>=1\n\
+  (** Folding: [fold a tdim] fold the dimensions in the array [tdim] of size n>=1\n\
     and put the result in the first dimension of the array. The other\n\
     dimensions of the array are then removed (using\n\
     ap_abstract0_permute_remove_dimensions).\n\

@@ -13,7 +13,7 @@ import "manager.idl";
 
 typedef [abstract] struct pk_internal_t* internal_ptr;
 
-quote(MLMLI,"(** Polka: Convex Polyhedra abstract domain *)")
+quote(MLMLI,"(** POLKA: Convex Polyhedra abstract domain *)")
 
 quote(MLI,"\n\n(** Create a NewPolka manager. A true Boolean enables strict constraints. *)")
 ap_manager_ptr pk_manager_alloc(boolean strict);

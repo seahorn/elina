@@ -16,8 +16,8 @@ special options.
 @end menu
 
 @c ===================================================================
-@node Use of NewPolka, Allocating NewPolka managers and setting options, , NewPolka 
-@section Use of NewPolka
+@node Use of NewPolka, Allocating NewPolka managers and setting options
+@subsection Use of NewPolka
 @c ===================================================================
 
 To use @sc{NewPolka} in C, add
@@ -57,8 +57,8 @@ Also, all library are available in debug mode
 (@samp{libpolkai_debug.a}, ....
 
 @c ===================================================================
-@node Allocating NewPolka managers and setting options,  , Use of NewPolka, NewPolka
-@section Allocating NewPolka managers and setting options
+@node Allocating NewPolka managers and setting options,  , Use of NewPolka
+@subsection Allocating NewPolka managers and setting options
 @c ===================================================================
 
 @deftp datatype pk_internal_t

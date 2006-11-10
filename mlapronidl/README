@@ -26,11 +26,6 @@ Lincons1   : interval) linear constraints, level 1
 Generator1 : generators, level 1
 Abstract1  : abstract values, level 1
 
-By default, variables (Var.t) are implemented as strings. To
-change this, one need to manually replace the default file var.ml
-by a user-defined one. The module Environment ensures that the new
-Var module offers a compatible signature.
-
 REQUIREMENTS
 ============
 M4 preprocessor (standard on any UNIX system)
@@ -67,3 +62,52 @@ The documentation (currently very sketchy) is generated with ocamldoc.
 ----------------
 
 'make clean' and 'make distclean' have the usual behaviour.
+
+COMPILATION AND LINKING
+=======================
+
+To make things clearer, we assume an example file 'example.ml' which uses both
+NewPolka (convex polyhedra) and Itv (intervals) libraries, in their versions
+where integers (resp. rationals) are GMP integers (resp.  rationals). We assume
+that C and OCaml interface and library files are located in directory
+$APRON/lib.
+
+The native-code compilation command looks like
+
+ocamlopt -I $APRON/lib -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa itv.cmxa polka.cmxa -cclib "-lpolkag -litvmpq"
+
+Comments:
+
+1. You need at least the libraries 'bigarray' (standard OCaml
+  distribution), 'gmp', and 'apron' (standard APRON distribution),
+  plus the one implementing an effective abstract domains: here,
+  'itv', and 'polka'.
+
+2. The C libraries associated to those OCaml libraries
+  ('gmp_caml', 'itv_caml', ...)  are automatically looked for,
+  with the exception of the libraries implementing abstract
+  domains ('polkag', 'itvmpq'). The reason is that most of these
+  libraries may be compiled with different internal
+  representations and/or options, while their interface remains
+  the same.
+
+The byte-code compilation process looks like
+
+ocamlc -I $APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma itv.cma polka.cma -cclib "-lpolkag -litvmpq"
+ 
+ocamlc -I $APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma itv.cma polka.cma -cclib "-lpolkag -litvmpq" example.ml
+
+Comments:
+1. One first build a custom bytecode interpreter that includes the
+   new native-code needed;
+2. One then compile the 'example.ml' file.
+
+The automatic search for C libraries associated to these OCaml
+libraries can be disabled by the option '-noautolink' supported by
+both 'ocamlc' and 'ocamlopt' commands. For instance, the command
+for native-code compilation can alternatively looks like:
+
+ocamlopt -I $APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa itv.cmxa polka.cmxa -cclib "-lpolkag -polka_caml -litvmpq -litv_caml -lapron_caml -lapron -lgmp_caml -LGMP/lib -lgmp" 
+
+The option '-verbose' helps to understand what is happening in
+case of problem.

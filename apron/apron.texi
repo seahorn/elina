@@ -67,19 +67,16 @@ numerical variables.
 @end ifnothtml
 
 @menu
-* Copying::
-* Introduction to APRON::
-* Installing APRON::
-* APRON Basics::
-* Scalars & Intervals & Coefficients::
-* Managers::
-* Interface of level 0::
-* Interface of level 1::
-* NewPolka:: Convex polyhedra abstract domain.
-* Itv::      Interval abstract domain.
-* Oct::      Octagon abstract domain.
-* Examples::
-* Appendices::
+* Copying::                     
+* Introduction to APRON::       
+* Installing APRON::            
+* APRON Basics::                
+* Managers and Abstract Domains::  
+* Scalars & Intervals & Coefficients::  
+* Level 1 of the interface::    
+* Level 0 of the interface::    
+* Examples::                    
+* Appendices::                  
 @end menu
 
 @c *******************************************************************
@@ -149,12 +146,12 @@ shared between the underlying implementations.
 You should look at @file{../README}, @file{README} and @file{Makefile} files.
 
 @c *******************************************************************
-@node APRON Basics, Scalars & Intervals & Coefficients, Installing APRON, Top
+@node APRON Basics, Managers and Abstract Domains, Installing APRON, Top
 @chapter APRON Basics
 @c *******************************************************************
 @menu
-* Headers and Libraries::
-* C Programming Conventions::
+* Headers and Libraries::       
+* C Programming Conventions::   
 @end menu
 
 @c ===================================================================
@@ -164,17 +161,27 @@ You should look at @file{../README}, @file{README} and @file{Makefile} files.
 
 Declarations needed to use an underlying library via APRON are
 collected in the C include files @file{ap_global0.h} and
-@file{ap_global1.h}. They respectively refer to the level 0 and the
-level 1 of the interface.
+@file{ap_global1.h}. They respectively refer to the level 0 and
+the level 1 of the interface. One can also refer to single APRON
+modules with their corresponding include files @file{ap_dimension.h},
+@file{ap_lincons0.h}, ...
 
-Note that the header files @file{<stdio.h>}, @file{stdlib.h} and
-@file{<stdarg.h>} will be required.
+Notice that header files @file{<stdio.h>},
+@file{stdlib.h} and @file{<stdarg.h>} will be required.
 
 Last, you should also include the header files of the underlying
 libraries you want to use it via APRON.
 
-All programs using APRON must link against the @file{libapron}
-library.
+All programs using APRON must link against the @file{libapron} and
+@file{libgmp} libraries, and the underlying libraries you want to
+use it via APRON.
+
+For instance, if some file @file{test.c} uses the POLKA library via APRON, the
+compilation command should look like @samp{gcc -IGMP/include
+-IAPRON/include -IPOLKA/include -L/GMP/lib -L/APRON/lib
+-LPOLKA/lib -o testg test.c -lpolkag -lapron -lgmp}, assuming that
+the POLKA library is used in its 'g' version (internal number
+representation is GMP integer.
 
 @c ===================================================================
 @node C Programming Conventions,  , Headers and Libraries, APRON Basics
@@ -222,477 +229,15 @@ deallocate the memory pointed by @var{arg}.
 @end itemize
 
 @c *******************************************************************
-@node Scalars & Intervals & Coefficients, Managers, APRON Basics, Top
-@chapter Scalars & Intervals & coefficients
-@c *******************************************************************
-
-@emph{Scalars} are scalar numbers, implemented either as an (inexact)
-floating point type or an (exact) rational type.  @emph{Intervals} are
-intervals built on scalars.  @emph{Coefficients} are either scalars or
-intervals.
-
-@menu
-* Scalars::
-* Intervals::
-* Coefficients::
-@end menu
-
-@c ===================================================================
-@node Scalars, Intervals, Scalars & Intervals & Coefficients, Scalars & Intervals & Coefficients
-@section Scalars (@file{ap_scalar.h})
-@c ===================================================================
-
-@deftp datatype ap_scalar_discr_t
-@example
-typedef enum ap_scalar_discr_t @{
-  AP_SCALAR_DOUBLE, /* floating-point with double */
-  AP_SCALAR_MPQ     /* rational with multi-precision GMP */
-@} ap_scalar_discr_t;
-@end example
-Discriminant indicating the underlying type of a scalar number.
-@end deftp
-
-@deftp datatype ap_scalar_t
-@example
-typedef struct ap_scalar_t @{
-  ap_scalar_discr_t discr;
-  union @{
-    double dbl;
-    mpq_ptr mpq; /* +infty coded by 1/0, -infty coded by -1/0 */
-  @} val;
-@} ap_scalar_t;
-@end example
-A scalar number is either a double, or a multi-precision rational, as
-implemented by GMP.
-@end deftp
-
-@menu
-* Initializing scalars::
-* Assigning scalars::
-* Converting scalars::
-* Comparing scalars::
-* Other operations on scalars::
-@end menu
-
-
-@c -------------------------------------------------------------------
-@node Initializing scalars, Assigning scalars, Scalars, Scalars
-@subsection Initializing scalars
-@c -------------------------------------------------------------------
-@deftypefun void ap_scalar_alloc ()
-Allocate a scalar, of default type DOUBLE (the most economical)
-@end deftypefun
-
-@deftypefun void ap_scalar_free (ap_scalar_t* @var{op})
-Deallocate a scalar.
-@end deftypefun
-
-@deftypefun void ap_scalar_reinit (ap_scalar_t* @var{op}, ap_scalar_discr_t @var{discr})
-Change the type of an already allocated scalar (mainly for internal
-use)
-@end deftypefun
-
-@deftypefun void ap_scalar_init (ap_scalar_t* @var{op}, ap_scalar_discr_t @var{discr})
-@deftypefunx void ap_scalar_clear (ap_scalar_t* @var{op})
-Initialize and clear a scalar \`a la GMP (internal use).
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Assigning scalars, Converting scalars, Initializing scalars, Scalars
-@subsection Assigning scalars
-@c -------------------------------------------------------------------
-@deftypefun void ap_scalar_set (ap_scalar_t* @var{rop}, ap_scalar_t* @var{op})
-Set the value of @var{rop} from @var{op}.
-@end deftypefun
-
-@deftypefun void ap_scalar_set_mpq (ap_scalar_t* @var{rop}, const mpq_t @var{mpq})
-@deftypefunx void ap_scalar_set_int (ap_scalar_t* @var{rop}, long int @var{i})
-
-@deftypefunx void ap_scalar_set_frac (ap_scalar_t* @var{rop}, long int @var{i}, unsigned long int @var{j})
-Change the type of @var{rop} to MPQ and set its value to
-resp. @var{mpq}, @var{i}, and @var{i}/@var{j}.
-@end deftypefun
-
-@deftypefun void ap_scalar_set_double (ap_scalar_t* @var{rop}, double @var{k})
-Change the type of @var{rop} to DOUBLE and set its value to @var{k}.
-@end deftypefun
-
-@deftypefun void ap_scalar_set_infty (ap_scalar_t* @var{rop}, int @var{sgn})
-Set the value of @var{rop} to @var{sgn}*infinity. Keep the type of the
-@var{rop}.
-@end deftypefun
-
-@deftypefun ap_scalar_t* ap_scalar_alloc_set (ap_scalar_t* @var{op})
-@deftypefunx ap_scalar_t* ap_scalar_alloc_set_mpq (const mpq_t @var{mpq})
-@deftypefunx ap_scalar_t* ap_scalar_alloc_set_double (double @var{k})
-Combined allocation and assignement.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Converting scalars, Comparing scalars, Assigning scalars, Scalars
-@subsection Converting scalars
-@c -------------------------------------------------------------------
-@deftypefun void ap_mpq_set_scalar (mpq_t @var{mpq}, const ap_scalar_t* @var{op}, int @var{round})
-Set @var{mpq} with the value of @var{op}, possibly converting from
-DOUBLE type.
-
-@var{round} currently unused.
-@end deftypefun
-
-@deftypefun double ap_scalar_get_double (const ap_scalar_t* @var{op}, int @var{round})
-Return the value of @var{op} in DOUBLE type, possibly converting from
-MPQ type.
-
-Conversion may be not exact. @var{round} currently unused.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Comparing scalars, Other operations on scalars, Converting scalars, Scalars
-@subsection Comparing scalars
-@c -------------------------------------------------------------------
-@deftypefun int ap_scalar_infty (const ap_scalar_t* @var{op})
-Return @code{-1} if @var{op} is set to +infty, @code{-1} if set to
--infty, and @code{0} otherwise.
-@end deftypefun
-
-@deftypefun int ap_scalar_sgn (const ap_scalar_t* @var{op})
-Return the sign of @var{op} (@code{+1}, @code{0} or @code{-1}).
-@end deftypefun
-
-@deftypefun int ap_scalar_cmp (const ap_scalar_t* @var{op1}, const ap_scalar_t* @var{op2})
-@deftypefunx int ap_scalar_cmp_int (const ap_scalar_t* @var{op1}, int @var{op2})
-Exact comparison between two scalars (resp. a scalar and an integer).
-
-Return @code{-1} if @var{op1} is less than @var{op2}, @code{0} if they
-are equal, and @code{+1} if @code{op1} is greater than @var{op2}.
-@end deftypefun
-
-@deftypefun bool ap_scalar_equal (const ap_scalar_t* @var{op1}, const ap_scalar_t* @var{op2});
-@deftypefunx bool ap_scalar_equal_int (const ap_scalar_t* @var{op1}, int @var{op2});
-Equality test between two scalars (resp. a scalar and an integer).
-
-Return @code{true} if equality.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Other operations on scalars,  , Comparing scalars, Scalars
-@subsection Other operations on scalars
-@c -------------------------------------------------------------------
-
-@deftypefun void ap_scalar_neg (ap_scalar_t* @var{rop}, const ap_scalar_t* @var{op})
-Negation.
-@end deftypefun
-
-@deftypefun void ap_scalar_inv (ap_scalar_t* @var{rop}, const ap_scalar_t* @var{op})
-Inversion. Not exact for DOUBLE type.
-@end deftypefun
-
-@deftypefun void ap_scalar_swap (ap_scalar_t* @var{op1}, ap_scalar_t* @var{op2})
-Exchange the values of @var{op1} and @var{op2}.
-@end deftypefun
-
-@deftypefun int ap_scalar_hash (const ap_scalar_t* @var{op})
-Return an hash code (for instance for OCaml interface).
-@end deftypefun
-
-@deftypefun void ap_scalar_fprint (FILE* @var{stream}, const ap_scalar_t* @var{op})
-Print @var{op} on the stream @var{stream}.
-@end deftypefun
-
-@c ===================================================================
-@node Intervals, Coefficients, Scalars, Scalars & Intervals & Coefficients
-@section Intervals (@file{ap_interval.h})
-@c ===================================================================
-
-@deftp datatype ap_interval_t
-@example
-typedef struct ap_interval_t @{
-  ap_scalar_t* inf;
-  ap_scalar_t* sup;
-@} ap_interval_t;
-@end example
-Intervals on scalars.
-@end deftp
-
-@menu
-* Initializing intervals::
-* Assigning intervals::
-* Comparing intervals::
-* Other operations on intervals::
-* Array of intervals::
-@end menu
-
-
-@c -------------------------------------------------------------------
-@node Initializing intervals, Assigning intervals, Intervals, Intervals
-@subsection Initializing intervals
-@c -------------------------------------------------------------------
-@deftypefun void ap_interval_alloc ()
-Allocate an interval (with scalars of default type DOUBLE, the most
-economical).
-@end deftypefun
-
-@deftypefun void ap_interval_free (ap_interval_t* @var{op})
-Deallocate an interval.
-@end deftypefun
-
-@deftypefun void ap_interval_reinit (ap_interval_t* @var{op}, ap_scalar_discr_t @var{discr})
-Change the type of the bounds of the interval (mainly for internal
-use).
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Assigning intervals, Comparing intervals, Initializing intervals, Intervals
-@subsection Assigning intervals
-@c -------------------------------------------------------------------
-@deftypefun void ap_interval_set (ap_interval_t* @var{rop}, ap_interval_t* @var{op})
-Set the value of @var{rop} from @var{op}.
-@end deftypefun
-
-@deftypefun void ap_interval_set_scalar (ap_interval_t* @var{rop}, ap_scalar_t* @var{inf}, ap_scalar_t* @var{sup})
-Set the value of @var{rop} from the interval [@var{inf},@var{sup}].
-@end deftypefun
-
-@deftypefun void ap_interval_set_mpq (ap_interval_t* @var{rop}, mpq_t @var{inf}, mpq_t @var{sup})
-@deftypefunx void ap_interval_set_int (ap_interval_t* @var{rop}, int @var{inf}, int @var{sup})
-@deftypefunx void ap_interval_set_frac (ap_interval_t* @var{rop}, int @var{numinf}, int @var{deninf}, int @var{numsup}, int @var{densup})
-Set the value of @var{rop} from the interval [@var{inf},@var{sup}] or
-[@var{numinf}/@var{deninf},@var{numsup}/@var{densup}]. The scalars are
-of type MPQ.
-@end deftypefun
-
-@deftypefun void ap_interval_set_double (ap_interval_t* @var{rop}, double @var{inf}, double @var{sup})
-Set the value of @var{rop} from the interval [@var{inf},@var{sup}].
-The scalars are of type DOUBLE.
-@end deftypefun
-
-@deftypefun void ap_interval_set_top (ap_interval_t* @var{op})
-@deftypefunx void ap_interval_set_bottom (ap_interval_t* @var{op})
-Set the value of @var{rop} resp. to the top interval [-oo,+oo] or to
-the empty interval [+1,-1].
-@end deftypefun
-
-@deftypefun ap_interval_t* ap_interval_alloc_set (ap_interval_t* @var{op})
-Combined allocation and assignement.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Comparing intervals, Other operations on intervals, Assigning intervals, Intervals
-@subsection Comparing intervals
-@c -------------------------------------------------------------------
-@deftypefun bool ap_interval_is_top (const ap_interval_t* @var{op})
-@deftypefunx bool ap_interval_is_bottom (const ap_interval_t* @var{op})
-Return @code{true} if the interval is resp. the universe interval
-([-oo,+oo]) or an empty interval.
-@end deftypefun
-
-@deftypefun bool ap_interval_is_leq (const ap_interval_t* @var{op1}, const ap_interval_t* @var{op2})
-Inclusion test.
-
-Return true if the interval @var{op1} is included in @var{op2}.
-@end deftypefun
-
-@deftypefun bool ap_interval_equal (const ap_interval_t* @var{op1}, const ap_interval_t* @var{op2})
-Equality test.
-
-Return true if the interval @var{op1} is included in @var{op2}.
-@end deftypefun
-
-@deftypefun int ap_interval_cmp (const ap_interval_t* @var{op1}, const ap_interval_t* @var{op2})
-Non-total comparison.
-@table @code
-@item 0 equality
-@item -1 @var{op1} included in @var{op2}
-@item +1 @var{op2} included in @var{op1}
-@item -2 @var{op1.inf} less than @var{op2.inf}
-@item +2 @var{op1.inf} greater than @var{op2.inf}
-@end table
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Other operations on intervals, Array of intervals, Comparing intervals, Intervals
-@subsection Other operations on intervals
-@c -------------------------------------------------------------------
-
-@deftypefun void ap_interval_neg (ap_interval_t* @var{rop}, const ap_interval_t* @var{op})
-Negation.
-@end deftypefun
-
-@deftypefun void ap_interval_swap (ap_interval_t* @var{op1}, ap_interval_t* @var{op2})
-Exchange the values of @var{op1} and @var{op2}.
-@end deftypefun
-
-@deftypefun int ap_interval_hash (const ap_interval_t* @var{op})
-Return an hash code (for instance for OCaml interface).
-@end deftypefun
-
-@deftypefun void ap_interval_fprint (FILE* @var{stream}, const ap_interval_t* @var{op})
-Print @var{op} on the stream @var{stream}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Array of intervals,  , Other operations on intervals, Intervals
-@subsection Array of intervals
-@c -------------------------------------------------------------------
-@deftypefun ap_interval_t** ap_interval_array_alloc (size_t @var{size})
-Allocate an array of intervals, initialized with [0,0] values.
-@end deftypefun
-
-@deftypefun void ap_interval_array_free (ap_interval_t** @var{array}, size_t @var{size})
-Clearing and deallocating an array of intervals.
-@end deftypefun
-
-@c ===================================================================
-@node Coefficients,  , Intervals, Scalars & Intervals & Coefficients
-@section Coefficients (@file{ap_coeff.h})
-@c ===================================================================
-@deftp datatype ap_coeff_discr_t
-@example
-typedef enum ap_coeff_discr_t @{ AP_COEFF_SCALAR, AP_COEFF_INTERVAL @}
-ap_coeff_discr_t;
-@end example
-Discriminant indicating the underlying type of a coefficient.
-@end deftp
-
-@deftp datatype ap_coeff_t
-@example
-typedef struct ap_coeff_t @{
-  ap_coeff_discr_t discr;
-  union @{
-    ap_scalar_t* scalar;
-    ap_interval_t* interval;
-  @} val;
-@} ap_coeff_t;
-@end example
-A coefficient is either a scalar or an interval.
-@end deftp
-
-@menu
-* Initializing coefficients::
-* Assigning coefficients::
-* Comparing coefficients::
-* Other operations on coefficients::
-@end menu
-
-
-@c -------------------------------------------------------------------
-@node Initializing coefficients, Assigning coefficients, Coefficients, Coefficients
-@subsection Initializing coefficients
-@c -------------------------------------------------------------------
-
-@deftypefun void ap_coeff_alloc (ap_coeff_discr_t @var{discr})
-Allocate a coefficient, using @var{discr} to specify the type of
-coefficient (scalar or interval).
-@end deftypefun
-
-@deftypefun void ap_coeff_free (ap_coeff_t* @var{op})
-Deallocate a coefficient.
-@end deftypefun
-
-@deftypefun void ap_coeff_reinit (ap_coeff_t* @var{op}, ap_coeff_discr_t @var{discr1}, ap_scalar_discr_t @var{discr2})
-Changing the type of the coefficient and also the type of the
-underlting scalar(s).
-@end deftypefun
-
-@deftypefun void ap_coeff_reduce (ap_coeff_t* @var{op})
-If the coefficient is an interval [a;a], convert it to a scalar. */
-@end deftypefun
-
-@deftypefun void ap_coeff_init (ap_coeff_t* @var{rop}, ap_coeff_discr_t @var{discr})
-@deftypefunx void ap_coeff_init_set (ap_coeff_t* @var{rop}, const ap_coeff_t* @var{op})
-@deftypefunx void ap_coeff_clear (ap_coeff_t* @var{rop})
-Initialize, initialize and assign, and clear a scalar \`a la GMP (internal use).
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Assigning coefficients, Comparing coefficients, Initializing coefficients, Coefficients
-@subsection Assigning coefficients
-@c -------------------------------------------------------------------
-@deftypefun void ap_coeff_set (ap_coeff_t* @var{rop}, ap_coeff_t* @var{op})
-Set the value of @var{rop} from @var{op}.
-@end deftypefun
-
-@deftypefun void ap_coeff_set_scalar (ap_coeff_t* @var{rop}, ap_scalar_t* @var{op})
-@deftypefunx void ap_coeff_set_scalar_mpq (ap_coeff_t* @var{rop}, const mpq_t @var{mpq})
-@deftypefunx void ap_coeff_set_scalar_int (ap_coeff_t* @var{rop}, long int @var{i})
-@deftypefunx void ap_coeff_set_scalar_frac (ap_coeff_t* @var{rop}, long int @var{i}, unsigned long int @var{j})
-@deftypefunx void ap_coeff_set_scalar_double (ap_coeff_t* @var{rop}, double @var{k})
-Set the type of @var{rop} to scalar, and sets its value as the
-functions @code{ap_scalar_set_XXX}.
-@end deftypefun
-
-@deftypefun void ap_coeff_set_interval (ap_coeff_t* @var{rop}, ap_interval_t* @var{op})
-@deftypefunx void ap_coeff_set_interval_scalar (ap_coeff_t* @var{rop}, ap_scalar_t* @var{inf}, ap_scalar_t* @var{sup})
-@deftypefunx void ap_coeff_set_interval_mpq (ap_coeff_t* @var{rop}, mpq_t @var{inf}, mpq_t @var{sup})
-@deftypefunx void ap_coeff_set_interval_int (ap_coeff_t* @var{rop}, int @var{inf}, int @var{sup})
-@deftypefunx void ap_coeff_set_interval_frac (ap_coeff_t* @var{rop}, int @var{numinf}, int @var{deninf}, int @var{numsup}, int @var{densup})
-@deftypefunx void ap_coeff_set_interval_double (ap_coeff_t* @var{rop}, double @var{inf}, double @var{sup})
-Set the type of @var{rop} to interval, and sets its value as the
-functions @code{ap_interval_set_XXX}.
-@end deftypefun
-
-@deftypefun ap_coeff_t* ap_coeff_alloc_set (const ap_coeff_t* @var{op})
-
-@deftypefunx ap_coeff_t* ap_coeff_alloc_set_scalar (const ap_scalar_t* @var{scalar})
-@deftypefunx ap_coeff_t* ap_coeff_alloc_set_interval (const ap_interval_t* @var{interval})
-Combined allocation and assignement.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Comparing coefficients, Other operations on coefficients, Assigning coefficients, Coefficients
-@subsection Comparing coefficients
-@c -------------------------------------------------------------------
-
-@deftypefun int ap_coeff_cmp (const ap_coeff_t* @var{op1}, const ap_coeff_t* @var{op2})
-Non-total comparison.
-@itemize
-@item If @var{op1} and @var{op2} are scalars, corresponds to @code{ap_scalar_cmp}.
-@item If @var{op1} and @var{op2} are intervals, corresponds to @code{ap_interval_cmp}.
-@item otherwise, -3 if the first is a scalar, 3 otherwise
-@end itemize
-@end deftypefun
-
-@deftypefun bool ap_coeff_equal (const ap_coeff_t* @var{op1}, const ap_coeff_t* @var{op2})
-Equality test.
-@end deftypefun
-
-@deftypefun bool ap_coeff_zero (const ap_coeff_t* @var{op})
-Return true iff coeff is a zero scalar or an interval with zero
-bounds.
-@end deftypefun
-
-
-@c -------------------------------------------------------------------
-@node Other operations on coefficients,  , Comparing coefficients, Coefficients
-@subsection Other operations on coefficients
-@c -------------------------------------------------------------------
-
-@deftypefun void ap_coeff_neg (ap_coeff_t* @var{rop}, const ap_coeff_t* @var{op})
-Negation.
-@end deftypefun
-
-@deftypefun void ap_coeff_swap (ap_coeff_t* @var{op1}, ap_coeff_t* @var{op2})
-Exchange the values of @var{op1} and @var{op2}.
-@end deftypefun
-
-@deftypefun int ap_coeff_hash (const ap_coeff_t* @var{op})
-Return an hash code (for instance for OCaml interface).
-@end deftypefun
-
-@deftypefun void ap_coeff_fprint (FILE* @var{stream}, const ap_coeff_t* @var{op})
-Print @var{op} on the stream @var{stream}.
-@end deftypefun
-
-@c *******************************************************************
-@node Managers, Interface of level 0, Scalars & Intervals & Coefficients, Top
-@chapter Managers (@file{ap_manager.h})
+@node Managers and Abstract Domains, Scalars & Intervals & Coefficients, APRON Basics, Top
+@chapter Managers and Abstract Domains
 @c *******************************************************************
 
 APRON makes use of a global manager for:
 
 @itemize
 @item
-selecting an effective unerlying library/abstract domain;
+selecting an effective underlying library/abstract domain;
 @item
 controlling various options;
 @item
@@ -707,14 +252,26 @@ not be shared between threads (make copies to transmit information).
 Managers are allocated by the underlying libraries/abstract domains, but are freed via an APRON function.
 
 @menu
+* Managers::                    
+* NewPolka::                    
+* Itv::                         
+* Oct::                         
+@end menu
+
+@c ===================================================================
+@node Managers, NewPolka, Managers and Abstract Domains, Managers and Abstract Domains
+@section Managers (@file{ap_manager.h})
+@c ===================================================================
+
+@menu
 * APRON Global Datatypes::      
 * Functions related to managers::  
 @end menu
 
-@c ===================================================================
+@c -------------------------------------------------------------------
 @node APRON Global Datatypes, Functions related to managers, Managers, Managers
-@section Datatypes
-@c ===================================================================
+@subsection Datatypes
+@c -------------------------------------------------------------------
 
 @deftp datatype tbool_t
 @example
@@ -868,10 +425,10 @@ typedef struct ap_funopt_t @{
 @end example
 @end deftp
 
-@c ===================================================================
+@c -------------------------------------------------------------------
 @node Functions related to managers,  , APRON Global Datatypes, Managers
-@section Functions related to managers
-@c ===================================================================
+@subsection Functions related to managers
+@c -------------------------------------------------------------------
 
 @deftypefun void ap_manager_free (ap_manager_t* @var{man})
 Free a manager (dereference a counter, and possibly deallocate).
@@ -920,9 +477,1750 @@ Get the full log of exceptions. The first one in the list is the last
 raised one.
 @end deftypefun
 
+@c ===================================================================
+@node NewPolka, Itv, Managers, Managers and Abstract Domains
+@section NewPolka (@file{pk.h}): convex polyhedra abstract domain
+@c ===================================================================
+
+@include newpolka.texi
+
+@c ===================================================================
+@node Itv, Oct, NewPolka, Managers and Abstract Domains
+@section Itv (@file{itv.h}): intervals abstract domain
+@c ===================================================================
+
+@include itv.texi
+
+@c ===================================================================
+@node Oct,  , Itv, Managers and Abstract Domains
+@section Oct: octagon abstract domain
+@c ===================================================================
+
+@uref{oct_doc.html}
+
 @c *******************************************************************
-@node Interface of level 0, Interface of level 1, Managers, Top
-@chapter Interface of level 0
+@node Scalars & Intervals & Coefficients, Level 1 of the interface, Managers and Abstract Domains, Top
+@chapter Scalars & Intervals & coefficients
+@c *******************************************************************
+
+@emph{Scalars} are scalar numbers, implemented either as an (inexact)
+floating point type or an (exact) rational type.  @emph{Intervals} are
+intervals built on scalars.  @emph{Coefficients} are either scalars or
+intervals.
+
+@menu
+* Scalars::                     
+* Intervals::                   
+* Coefficients::                
+@end menu
+
+@c ===================================================================
+@node Scalars, Intervals, Scalars & Intervals & Coefficients, Scalars & Intervals & Coefficients
+@section Scalars (@file{ap_scalar.h})
+@c ===================================================================
+
+@deftp datatype ap_scalar_discr_t
+@example
+typedef enum ap_scalar_discr_t @{
+  AP_SCALAR_DOUBLE, /* floating-point with double */
+  AP_SCALAR_MPQ     /* rational with multi-precision GMP */
+@} ap_scalar_discr_t;
+@end example
+Discriminant indicating the underlying type of a scalar number.
+@end deftp
+
+@deftp datatype ap_scalar_t
+@example
+typedef struct ap_scalar_t @{
+  ap_scalar_discr_t discr;
+  union @{
+    double dbl;
+    mpq_ptr mpq; /* +infty coded by 1/0, -infty coded by -1/0 */
+  @} val;
+@} ap_scalar_t;
+@end example
+A scalar number is either a double, or a multi-precision rational, as
+implemented by GMP.
+@end deftp
+
+@menu
+* Initializing scalars::        
+* Assigning scalars::           
+* Converting scalars::          
+* Comparing scalars::           
+* Other operations on scalars::  
+@end menu
+
+
+@c -------------------------------------------------------------------
+@node Initializing scalars, Assigning scalars, Scalars, Scalars
+@subsection Initializing scalars
+@c -------------------------------------------------------------------
+@deftypefun void ap_scalar_alloc ()
+Allocate a scalar, of default type DOUBLE (the most economical)
+@end deftypefun
+
+@deftypefun void ap_scalar_free (ap_scalar_t* @var{op})
+Deallocate a scalar.
+@end deftypefun
+
+@deftypefun void ap_scalar_reinit (ap_scalar_t* @var{op}, ap_scalar_discr_t @var{discr})
+Change the type of an already allocated scalar (mainly for internal
+use)
+@end deftypefun
+
+@deftypefun void ap_scalar_init (ap_scalar_t* @var{op}, ap_scalar_discr_t @var{discr})
+@deftypefunx void ap_scalar_clear (ap_scalar_t* @var{op})
+Initialize and clear a scalar \`a la GMP (internal use).
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Assigning scalars, Converting scalars, Initializing scalars, Scalars
+@subsection Assigning scalars
+@c -------------------------------------------------------------------
+@deftypefun void ap_scalar_set (ap_scalar_t* @var{rop}, ap_scalar_t* @var{op})
+Set the value of @var{rop} from @var{op}.
+@end deftypefun
+
+@deftypefun void ap_scalar_set_mpq (ap_scalar_t* @var{rop}, const mpq_t @var{mpq})
+@deftypefunx void ap_scalar_set_int (ap_scalar_t* @var{rop}, long int @var{i})
+
+@deftypefunx void ap_scalar_set_frac (ap_scalar_t* @var{rop}, long int @var{i}, unsigned long int @var{j})
+Change the type of @var{rop} to MPQ and set its value to
+resp. @var{mpq}, @var{i}, and @var{i}/@var{j}.
+@end deftypefun
+
+@deftypefun void ap_scalar_set_double (ap_scalar_t* @var{rop}, double @var{k})
+Change the type of @var{rop} to DOUBLE and set its value to @var{k}.
+@end deftypefun
+
+@deftypefun void ap_scalar_set_infty (ap_scalar_t* @var{rop}, int @var{sgn})
+Set the value of @var{rop} to @var{sgn}*infinity. Keep the type of the
+@var{rop}.
+@end deftypefun
+
+@deftypefun ap_scalar_t* ap_scalar_alloc_set (ap_scalar_t* @var{op})
+@deftypefunx ap_scalar_t* ap_scalar_alloc_set_mpq (const mpq_t @var{mpq})
+@deftypefunx ap_scalar_t* ap_scalar_alloc_set_double (double @var{k})
+Combined allocation and assignement.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Converting scalars, Comparing scalars, Assigning scalars, Scalars
+@subsection Converting scalars
+@c -------------------------------------------------------------------
+@deftypefun void ap_mpq_set_scalar (mpq_t @var{mpq}, const ap_scalar_t* @var{op}, int @var{round})
+Set @var{mpq} with the value of @var{op}, possibly converting from
+DOUBLE type.
+
+@var{round} currently unused.
+@end deftypefun
+
+@deftypefun double ap_scalar_get_double (const ap_scalar_t* @var{op}, int @var{round})
+Return the value of @var{op} in DOUBLE type, possibly converting from
+MPQ type.
+
+Conversion may be not exact. @var{round} currently unused.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Comparing scalars, Other operations on scalars, Converting scalars, Scalars
+@subsection Comparing scalars
+@c -------------------------------------------------------------------
+@deftypefun int ap_scalar_infty (const ap_scalar_t* @var{op})
+Return @code{-1} if @var{op} is set to +infty, @code{-1} if set to
+-infty, and @code{0} otherwise.
+@end deftypefun
+
+@deftypefun int ap_scalar_sgn (const ap_scalar_t* @var{op})
+Return the sign of @var{op} (@code{+1}, @code{0} or @code{-1}).
+@end deftypefun
+
+@deftypefun int ap_scalar_cmp (const ap_scalar_t* @var{op1}, const ap_scalar_t* @var{op2})
+@deftypefunx int ap_scalar_cmp_int (const ap_scalar_t* @var{op1}, int @var{op2})
+Exact comparison between two scalars (resp. a scalar and an integer).
+
+Return @code{-1} if @var{op1} is less than @var{op2}, @code{0} if they
+are equal, and @code{+1} if @code{op1} is greater than @var{op2}.
+@end deftypefun
+
+@deftypefun bool ap_scalar_equal (const ap_scalar_t* @var{op1}, const ap_scalar_t* @var{op2});
+@deftypefunx bool ap_scalar_equal_int (const ap_scalar_t* @var{op1}, int @var{op2});
+Equality test between two scalars (resp. a scalar and an integer).
+
+Return @code{true} if equality.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Other operations on scalars,  , Comparing scalars, Scalars
+@subsection Other operations on scalars
+@c -------------------------------------------------------------------
+
+@deftypefun void ap_scalar_neg (ap_scalar_t* @var{rop}, const ap_scalar_t* @var{op})
+Negation.
+@end deftypefun
+
+@deftypefun void ap_scalar_inv (ap_scalar_t* @var{rop}, const ap_scalar_t* @var{op})
+Inversion. Not exact for DOUBLE type.
+@end deftypefun
+
+@deftypefun void ap_scalar_swap (ap_scalar_t* @var{op1}, ap_scalar_t* @var{op2})
+Exchange the values of @var{op1} and @var{op2}.
+@end deftypefun
+
+@deftypefun int ap_scalar_hash (const ap_scalar_t* @var{op})
+Return an hash code (for instance for OCaml interface).
+@end deftypefun
+
+@deftypefun void ap_scalar_fprint (FILE* @var{stream}, const ap_scalar_t* @var{op})
+Print @var{op} on the stream @var{stream}.
+@end deftypefun
+
+@c ===================================================================
+@node Intervals, Coefficients, Scalars, Scalars & Intervals & Coefficients
+@section Intervals (@file{ap_interval.h})
+@c ===================================================================
+
+@deftp datatype ap_interval_t
+@example
+typedef struct ap_interval_t @{
+  ap_scalar_t* inf;
+  ap_scalar_t* sup;
+@} ap_interval_t;
+@end example
+Intervals on scalars.
+@end deftp
+
+@menu
+* Initializing intervals::      
+* Assigning intervals::         
+* Comparing intervals::         
+* Other operations on intervals::  
+* Array of intervals::          
+@end menu
+
+
+@c -------------------------------------------------------------------
+@node Initializing intervals, Assigning intervals, Intervals, Intervals
+@subsection Initializing intervals
+@c -------------------------------------------------------------------
+@deftypefun void ap_interval_alloc ()
+Allocate an interval (with scalars of default type DOUBLE, the most
+economical).
+@end deftypefun
+
+@deftypefun void ap_interval_free (ap_interval_t* @var{op})
+Deallocate an interval.
+@end deftypefun
+
+@deftypefun void ap_interval_reinit (ap_interval_t* @var{op}, ap_scalar_discr_t @var{discr})
+Change the type of the bounds of the interval (mainly for internal
+use).
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Assigning intervals, Comparing intervals, Initializing intervals, Intervals
+@subsection Assigning intervals
+@c -------------------------------------------------------------------
+@deftypefun void ap_interval_set (ap_interval_t* @var{rop}, ap_interval_t* @var{op})
+Set the value of @var{rop} from @var{op}.
+@end deftypefun
+
+@deftypefun void ap_interval_set_scalar (ap_interval_t* @var{rop}, ap_scalar_t* @var{inf}, ap_scalar_t* @var{sup})
+Set the value of @var{rop} from the interval [@var{inf},@var{sup}].
+@end deftypefun
+
+@deftypefun void ap_interval_set_mpq (ap_interval_t* @var{rop}, mpq_t @var{inf}, mpq_t @var{sup})
+@deftypefunx void ap_interval_set_int (ap_interval_t* @var{rop}, int @var{inf}, int @var{sup})
+@deftypefunx void ap_interval_set_frac (ap_interval_t* @var{rop}, int @var{numinf}, int @var{deninf}, int @var{numsup}, int @var{densup})
+Set the value of @var{rop} from the interval [@var{inf},@var{sup}] or
+[@var{numinf}/@var{deninf},@var{numsup}/@var{densup}]. The scalars are
+of type MPQ.
+@end deftypefun
+
+@deftypefun void ap_interval_set_double (ap_interval_t* @var{rop}, double @var{inf}, double @var{sup})
+Set the value of @var{rop} from the interval [@var{inf},@var{sup}].
+The scalars are of type DOUBLE.
+@end deftypefun
+
+@deftypefun void ap_interval_set_top (ap_interval_t* @var{op})
+@deftypefunx void ap_interval_set_bottom (ap_interval_t* @var{op})
+Set the value of @var{rop} resp. to the top interval [-oo,+oo] or to
+the empty interval [+1,-1].
+@end deftypefun
+
+@deftypefun ap_interval_t* ap_interval_alloc_set (ap_interval_t* @var{op})
+Combined allocation and assignement.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Comparing intervals, Other operations on intervals, Assigning intervals, Intervals
+@subsection Comparing intervals
+@c -------------------------------------------------------------------
+@deftypefun bool ap_interval_is_top (const ap_interval_t* @var{op})
+@deftypefunx bool ap_interval_is_bottom (const ap_interval_t* @var{op})
+Return @code{true} if the interval is resp. the universe interval
+([-oo,+oo]) or an empty interval.
+@end deftypefun
+
+@deftypefun bool ap_interval_is_leq (const ap_interval_t* @var{op1}, const ap_interval_t* @var{op2})
+Inclusion test.
+
+Return true if the interval @var{op1} is included in @var{op2}.
+@end deftypefun
+
+@deftypefun bool ap_interval_equal (const ap_interval_t* @var{op1}, const ap_interval_t* @var{op2})
+Equality test.
+
+Return true if the interval @var{op1} is included in @var{op2}.
+@end deftypefun
+
+@deftypefun int ap_interval_cmp (const ap_interval_t* @var{op1}, const ap_interval_t* @var{op2})
+Non-total comparison.
+@table @code
+@item 0 equality
+@item -1 @var{op1} included in @var{op2}
+@item +1 @var{op2} included in @var{op1}
+@item -2 @var{op1.inf} less than @var{op2.inf}
+@item +2 @var{op1.inf} greater than @var{op2.inf}
+@end table
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Other operations on intervals, Array of intervals, Comparing intervals, Intervals
+@subsection Other operations on intervals
+@c -------------------------------------------------------------------
+
+@deftypefun void ap_interval_neg (ap_interval_t* @var{rop}, const ap_interval_t* @var{op})
+Negation.
+@end deftypefun
+
+@deftypefun void ap_interval_swap (ap_interval_t* @var{op1}, ap_interval_t* @var{op2})
+Exchange the values of @var{op1} and @var{op2}.
+@end deftypefun
+
+@deftypefun int ap_interval_hash (const ap_interval_t* @var{op})
+Return an hash code (for instance for OCaml interface).
+@end deftypefun
+
+@deftypefun void ap_interval_fprint (FILE* @var{stream}, const ap_interval_t* @var{op})
+Print @var{op} on the stream @var{stream}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Array of intervals,  , Other operations on intervals, Intervals
+@subsection Array of intervals
+@c -------------------------------------------------------------------
+@deftypefun ap_interval_t** ap_interval_array_alloc (size_t @var{size})
+Allocate an array of intervals, initialized with [0,0] values.
+@end deftypefun
+
+@deftypefun void ap_interval_array_free (ap_interval_t** @var{array}, size_t @var{size})
+Clearing and deallocating an array of intervals.
+@end deftypefun
+
+@c ===================================================================
+@node Coefficients,  , Intervals, Scalars & Intervals & Coefficients
+@section Coefficients (@file{ap_coeff.h})
+@c ===================================================================
+@deftp datatype ap_coeff_discr_t
+@example
+typedef enum ap_coeff_discr_t @{ AP_COEFF_SCALAR, AP_COEFF_INTERVAL @}
+ap_coeff_discr_t;
+@end example
+Discriminant indicating the underlying type of a coefficient.
+@end deftp
+
+@deftp datatype ap_coeff_t
+@example
+typedef struct ap_coeff_t @{
+  ap_coeff_discr_t discr;
+  union @{
+    ap_scalar_t* scalar;
+    ap_interval_t* interval;
+  @} val;
+@} ap_coeff_t;
+@end example
+A coefficient is either a scalar or an interval.
+@end deftp
+
+@menu
+* Initializing coefficients::   
+* Assigning coefficients::      
+* Comparing coefficients::      
+* Other operations on coefficients::  
+@end menu
+
+
+@c -------------------------------------------------------------------
+@node Initializing coefficients, Assigning coefficients, Coefficients, Coefficients
+@subsection Initializing coefficients
+@c -------------------------------------------------------------------
+
+@deftypefun void ap_coeff_alloc (ap_coeff_discr_t @var{discr})
+Allocate a coefficient, using @var{discr} to specify the type of
+coefficient (scalar or interval).
+@end deftypefun
+
+@deftypefun void ap_coeff_free (ap_coeff_t* @var{op})
+Deallocate a coefficient.
+@end deftypefun
+
+@deftypefun void ap_coeff_reinit (ap_coeff_t* @var{op}, ap_coeff_discr_t @var{discr1}, ap_scalar_discr_t @var{discr2})
+Changing the type of the coefficient and also the type of the
+underlting scalar(s).
+@end deftypefun
+
+@deftypefun void ap_coeff_reduce (ap_coeff_t* @var{op})
+If the coefficient is an interval [a;a], convert it to a scalar. */
+@end deftypefun
+
+@deftypefun void ap_coeff_init (ap_coeff_t* @var{rop}, ap_coeff_discr_t @var{discr})
+@deftypefunx void ap_coeff_init_set (ap_coeff_t* @var{rop}, const ap_coeff_t* @var{op})
+@deftypefunx void ap_coeff_clear (ap_coeff_t* @var{rop})
+Initialize, initialize and assign, and clear a scalar \`a la GMP (internal use).
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Assigning coefficients, Comparing coefficients, Initializing coefficients, Coefficients
+@subsection Assigning coefficients
+@c -------------------------------------------------------------------
+@deftypefun void ap_coeff_set (ap_coeff_t* @var{rop}, ap_coeff_t* @var{op})
+Set the value of @var{rop} from @var{op}.
+@end deftypefun
+
+@deftypefun void ap_coeff_set_scalar (ap_coeff_t* @var{rop}, ap_scalar_t* @var{op})
+@deftypefunx void ap_coeff_set_scalar_mpq (ap_coeff_t* @var{rop}, const mpq_t @var{mpq})
+@deftypefunx void ap_coeff_set_scalar_int (ap_coeff_t* @var{rop}, long int @var{i})
+@deftypefunx void ap_coeff_set_scalar_frac (ap_coeff_t* @var{rop}, long int @var{i}, unsigned long int @var{j})
+@deftypefunx void ap_coeff_set_scalar_double (ap_coeff_t* @var{rop}, double @var{k})
+Set the type of @var{rop} to scalar, and sets its value as the
+functions @code{ap_scalar_set_XXX}.
+@end deftypefun
+
+@deftypefun void ap_coeff_set_interval (ap_coeff_t* @var{rop}, ap_interval_t* @var{op})
+@deftypefunx void ap_coeff_set_interval_scalar (ap_coeff_t* @var{rop}, ap_scalar_t* @var{inf}, ap_scalar_t* @var{sup})
+@deftypefunx void ap_coeff_set_interval_mpq (ap_coeff_t* @var{rop}, mpq_t @var{inf}, mpq_t @var{sup})
+@deftypefunx void ap_coeff_set_interval_int (ap_coeff_t* @var{rop}, int @var{inf}, int @var{sup})
+@deftypefunx void ap_coeff_set_interval_frac (ap_coeff_t* @var{rop}, int @var{numinf}, int @var{deninf}, int @var{numsup}, int @var{densup})
+@deftypefunx void ap_coeff_set_interval_double (ap_coeff_t* @var{rop}, double @var{inf}, double @var{sup})
+Set the type of @var{rop} to interval, and sets its value as the
+functions @code{ap_interval_set_XXX}.
+@end deftypefun
+
+@deftypefun ap_coeff_t* ap_coeff_alloc_set (const ap_coeff_t* @var{op})
+
+@deftypefunx ap_coeff_t* ap_coeff_alloc_set_scalar (const ap_scalar_t* @var{scalar})
+@deftypefunx ap_coeff_t* ap_coeff_alloc_set_interval (const ap_interval_t* @var{interval})
+Combined allocation and assignement.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Comparing coefficients, Other operations on coefficients, Assigning coefficients, Coefficients
+@subsection Comparing coefficients
+@c -------------------------------------------------------------------
+
+@deftypefun int ap_coeff_cmp (const ap_coeff_t* @var{op1}, const ap_coeff_t* @var{op2})
+Non-total comparison.
+@itemize
+@item If @var{op1} and @var{op2} are scalars, corresponds to @code{ap_scalar_cmp}.
+@item If @var{op1} and @var{op2} are intervals, corresponds to @code{ap_interval_cmp}.
+@item otherwise, -3 if the first is a scalar, 3 otherwise
+@end itemize
+@end deftypefun
+
+@deftypefun bool ap_coeff_equal (const ap_coeff_t* @var{op1}, const ap_coeff_t* @var{op2})
+Equality test.
+@end deftypefun
+
+@deftypefun bool ap_coeff_zero (const ap_coeff_t* @var{op})
+Return true iff coeff is a zero scalar or an interval with zero
+bounds.
+@end deftypefun
+
+
+@c -------------------------------------------------------------------
+@node Other operations on coefficients,  , Comparing coefficients, Coefficients
+@subsection Other operations on coefficients
+@c -------------------------------------------------------------------
+
+@deftypefun void ap_coeff_neg (ap_coeff_t* @var{rop}, const ap_coeff_t* @var{op})
+Negation.
+@end deftypefun
+
+@deftypefun void ap_coeff_swap (ap_coeff_t* @var{op1}, ap_coeff_t* @var{op2})
+Exchange the values of @var{op1} and @var{op2}.
+@end deftypefun
+
+@deftypefun int ap_coeff_hash (const ap_coeff_t* @var{op})
+Return an hash code (for instance for OCaml interface).
+@end deftypefun
+
+@deftypefun void ap_coeff_fprint (FILE* @var{stream}, const ap_coeff_t* @var{op})
+Print @var{op} on the stream @var{stream}.
+@end deftypefun
+
+@c *******************************************************************
+@node Level 1 of the interface, Level 0 of the interface, Scalars & Intervals & Coefficients, Top
+@chapter Level 1 of the interface
+@c *******************************************************************
+
+This interface of level 1 is defined in @file{ap_global1.h}.
+
+@menu
+* Variables and related operations::  
+* Environements::               
+* Linear expressions of level 1::  
+* Linear constraints of level 1::  
+* Generators of level 1::       
+* Abstract values and operations of level 1::  
+@end menu
+
+@noindent
+The main functions brought by level 1 are
+
+@itemize
+@item
+to convert variables to dimensions, thanks to the addition of
+environements to objects;
+@item
+to redimension (abstract values), expressions, constraints and
+generators defined on different environements.
+@end itemize
+
+The policy for redimensioning is the following one:
+
+@itemize
+@item
+For functions taking one abstract value and one expression (or
+constraint or generator, or array of ...), the environement of the
+expression should be a sub-environement of the environement of the
+abstract value. The environement of the result is the environement of
+the argument abstract value.
+@item
+For functions taking several abstract values, their environements
+should be the same. Otherwise, it is up to the user to move them to a
+common super-environement (see @ref{Environements} and @ref{Change of environements of abstract values of level 1}).
+@end itemize
+
+@c ===================================================================
+@node Variables and related operations, Environements, Level 1 of the interface, Level 1 of the interface
+@section Variables and related operations (@file{ap_var.h})
+@c ===================================================================
+
+A variable is not necessarily a name, it can be a more complex
+structured datatype, depending on the application. That is the
+motivation to make it a parameter of the interface.
+
+The abstract type @code{ap_var_t} is equipped with a total
+ordering function, a copy function, and a free function.  The
+parametrization of the interface is performed via a global
+variable pointing to a @code{ap_var_operations_t} structure,
+containing the above-mentione doperations on @code{ap_var_t} objects.
+This means that this type should be fixed once, and that in a
+multitreaded application all threads should share the same
+@code{ap_var_t} type.
+
+By default, @code{ap_var_t} is a C string (@code{char*}), and the
+global variable @code{ap_var_operations} is properly initialized.
+
+@deftp datatype ap_var_t
+@example
+typedef void* ap_var_t;
+@end example
+Datatype for ``variables''. It is assumed to be of size
+@code{sizeof(void*)}.
+@end deftp
+
+@deftp datatype ap_var_operations_t
+@example
+typedef struct ap_var_operations_t @{
+  int (*compare)(ap_var_t v1, ap_var_t v2); /* Total ordering function */
+  ap_var_t (*copy)(ap_var_t var);           /* Duplication function */
+  void (*free)(ap_var_t var);               /* Deallocation function */
+  char* (*to_string)(ap_var_t var); /* Conversion to a dynamically allocated string,
+				       which should be deallocated with free after use */
+@} ap_var_operations_t;
+@end example
+Datatype for defining the operations on ``variables''.
+@end deftp
+
+@deftypevar ap_var_operations_t var_operations_default
+Default manager, where @code{ap_var_t} is assumed to be @code{char*}.
+@end deftypevar
+
+@deftypevar ap_var_operations_t* var_operations
+Global pointer to the manager in use, by default points to @code{ap_var_operations_default}.
+@end deftypevar
+
+@c ===================================================================
+@node Environements, Linear expressions of level 1, Variables and related operations, Level 1 of the interface
+@section Environements (@file{ap_environment.h})
+@c ===================================================================
+
+Environments bind variables (of level 1) to dimensions (of level 0).
+
+@deftp datatype ap_environment_t
+Internal datatype for environments.
+
+For information, the definition is:
+@example
+typedef struct ap_environment_t @{
+  ap_var_t* var_of_dim;
+  /*
+    Array of size intdim+realdim, indexed by dimensions.
+    - It should not contain identical strings..
+    - Slice [0..intdim-1] is lexicographically sorted,
+      and denotes integer variables.
+    - Slice [intdim..intdim+realdim-1] is lexicographically sorted,
+      and denotes real variables.
+    - The memory allocated for the variables are attached to the structure
+      (they are freed when the structure is no longer in use)
+  */
+  size_t intdim; /* Number of integer variables */
+  size_t realdim;/* Number of real variables */
+  size_t count; /* For reference counting */
+@} ap_environment_t;
+@end example
+@end deftp
+
+@deftypefun void ap_environment_free (ap_environment_t* @var{env})
+@deftypefunx ap_environment_t* ap_environment_copy (ap_environment_t* @var{env})
+Respectively free and duplicate an environment.
+
+(@code{copy} is cheap, as environments are managed with reference
+counters).
+@end deftypefun
+
+@deftypefun void ap_environment_fdump (FILE* @var{stream}, ap_environment_t* @var{env})
+Print an environement under the form:
+@example
+  environment: dim = (..,..), count = ..
+  0: name0
+  1: name1
+  ...
+@end example
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_environment_alloc_empty ()
+Build an empty environement.
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_environment_alloc (ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
+Build an environement from an array of integer and an array of real variables.
+
+@var{var_of_intdim} is an array of variables of size @var{intdim},
+@var{var_of_realdim} is an array of variables of size
+@var{realdim}. Pointers to arrays may be @code{NULL} if their size is
+0.
+
+Variables are duplicated in the result, so it is the responsability of
+the user to free the variables he provides.
+
+If some variables are duplicated, return @code{NULL}.
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_environment_add (const ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
+@deftypefunx ap_environment_t* ap_environment_remove (const ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
+Resp. add or remove new variables to an existing environement, with a
+functional semantics. Same conventions as for
+@code{ap_environment_alloc} function apply. If the result is non-sense,
+return @code{NULL}.
+@end deftypefun
+
+@deftypefun ap_dim_t ap_environment_dim_of_var (const ap_environment_t* @var{env}, ap_var_t @var{var})
+Convert a variable in its corresponding dimension in the environement @var{env}. If @var{var} is unknown in @var{env}, return @code{AP_DIM_MAX}.
+@end deftypefun
+@deftypefun ap_dim_t ap_environment_var_of_dim (const ap_environment_t* @var{env}, ap_dim_t @var{dim})
+Return the variable associated to the dimension @var{dim} in the environement @var{env}. There is no bound check here.
+@end deftypefun
+
+The remaining functions are much less useful for normal user.
+
+@deftypefun bool ap_environment_is_eq (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2})
+@deftypefunx bool ap_environment_is_leq (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2})
+Resp. test the equality and the inclusion of two environements.
+@end deftypefun
+@deftypefun int ap_environment_compare (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2})
+Return:
+@table @code
+@item -2
+if the environements are not compatible (a variable has a different
+type in the 2 environements);
+@item -1
+if @var{env1} is a subset of (included in) @var{env2};
+@item 0
+if they are equal;
+@item +1
+if @var{env1} is a superset of @var{env2};
+@item +2
+otherwise: the least common environement exists and is a strict
+superset of both environements.
+@end table
+@end deftypefun
+
+@deftypefun ap_dimchange_t* ap_environment_dimchange (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env})
+Compute the transformation for converting from an environment
+@var{env1} to a superenvironment @var{env}.  Return NULL if @var{env}
+is not a superenvironment.
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_environment_lce (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2}, ap_dimchange_t** @var{dimchange1}, ap_dimchange_t** @var{dimchange2})
+Least common environement to two enviroenments.
+@itemize
+@item
+Assume @code{ap_environment_is_eq(env1,env2)==false}
+@item
+If environements are not compatible (a variable has different types in
+the 2 environements), return NULL
+@item
+Compute also in @var{dimchange1} and @var{dimchange2} the conversion transformations to the lce.
+@item
+If no dimensions to add to @var{env1}, this implies that @var{env} is
+actually @var{env1}. In this case,
+@code{*dimchange1==NULL}. Otherwise, the function allocates the
+@code{*dimchange1} with @code{ap_dimchange_alloc}.
+@end itemize
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_environment_lce_array (const ap_environment_t** @var{tenv}, size_t @var{size}, ap_dimchange_t*** @var{ptdimchange})
+Least common environement to an array of environements.
+@itemize
+@item
+Assume the size @var{size} of the array @var{tenv} is at least one;
+@item
+If all input environements are the same, @code{*ptdimchange==NULL}.
+Otherwise, compute in @code{*ptdimchange} the conversion permutations
+@item
+If no dimensions to add to @code{tenv[i]}, this implies that the
+result is actually @code{tenv[i]}. In this case,
+@code{(*ptdimchange)[i]==NULL}. Otherwise, the function allocates the
+@code{(*ptdimchange)[i]} with @code{ap_dimchange_alloc}.
+@end itemize
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_environment_rename (ap_environment_t* @var{env}, ap_var_t* @var{tvar1}, ap_var_t* @var{tvar2}, size_t @var{size}, ap_dimperm_t* @var{perm})
+Rename the variables in the environement.  @var{size} is the common
+size of arrays @var{tvar1} and @var{tvar2}, and @var{perm} is a
+result-parameter pointing to an @emph{existing but not initialized}
+object of type @code{ap_dimperm_t}.
+
+The function applies the variable substitution @code{tvar1[i]->tvar2[i]}
+to the environement, and returns the resulting environement and the
+allocated transformation permutation in @code{*perm}.
+
+If the parameters are not valid, return @code{NULL} with
+@code{perm->dim==NULL}.
+@end deftypefun
+
+@c ===================================================================
+@node Linear expressions of level 1, Linear constraints of level 1, Environements, Level 1 of the interface
+@section Linear expressions of level 1 (@file{ap_linexpr1.h})
+@c ===================================================================
+
+@deftp datatype ap_linexpr1_t
+(Internal) type of interval linear expressions.
+
+Linear expressions of level 1 are created as objects of type
+@code{ap_linexpr1_t}, not as pointers of type @code{ap_linexpr1_t*}.
+
+For information:
+@example
+typedef struct ap_linexpr1_t @{
+  ap_linexpr0_t* linexpr0;
+  ap_environment_t* env;
+@} ap_linexpr1_t;
+@end example
+@end deftp
+
+@menu
+* Allocating linear expressions of level 1::  
+* Tests on linear expressions of level 1::  
+* Access to linear expressions of level 1::  
+* Change of dimensions and permutations of linear expressions of level 1::  
+@end menu
+
+@c -------------------------------------------------------------------
+@node Allocating linear expressions of level 1, Tests on linear expressions of level 1, Linear expressions of level 1, Linear expressions of level 1
+@subsection Allocating linear expressions of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_linexpr1_t ap_linexpr1_make (ap_environment_t* @var{env}, ap_linexpr_discr_t @var{lin_discr}, size_t @var{size})
+Build a linear expressions on the environement @var{env}, with by
+default coefficients of type SCALAR and DOUBLE.
+
+If @var{lin_discr} selects a dense representation, the size of the
+expression is the size of the environement. Otherwise, the initial
+size is given by @var{size} and the expression may be resized lazily.
+@end deftypefun
+
+@deftypefun void ap_linexpr1_minimize (ap_linexpr1_t* @var{expr})
+Reduce the coefficients (transform intervals into scalars when
+possible).  In case of sparse representation, also remove zero
+coefficients.
+@end deftypefun
+
+@deftypefun ap_linexpr1_t ap_linexpr1_copy (const ap_linexpr1_t* @var{expr})
+Duplication.
+@end deftypefun
+
+@deftypefun void ap_linexpr1_clear (ap_linexpr1_t @var{expr})
+Clear the linear expression.
+@end deftypefun
+
+@deftypefun void ap_linexpr1_fprint (FILE* @var{stream}, const ap_linexpr1_t* @var{expr})
+Print the linear expression on stream @var{stream}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Tests on linear expressions of level 1, Access to linear expressions of level 1, Allocating linear expressions of level 1, Linear expressions of level 1
+@subsection Tests on linear expressions of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun bool ap_linexpr1_is_integer (const ap_linexpr1_t* @var{expr})
+Does the expression depends only on integer variables ?
+@end deftypefun
+
+@deftypefun bool ap_linexpr1_is_real (const ap_linexpr1_t* @var{expr})
+Does the expression depends only on real variables ?
+@end deftypefun
+
+@deftypefun bool ap_linexpr1_is_linear (const ap_linexpr1_t* @var{expr})
+Return true iff all involved coefficients are scalars.
+@end deftypefun
+
+@deftypefun bool ap_linexpr1_is_quasilinear (const ap_linexpr1_t* @var{expr})
+Return true iff all involved coefficients but the constant are scalars.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Access to linear expressions of level 1, Change of dimensions and permutations of linear expressions of level 1, Tests on linear expressions of level 1, Linear expressions of level 1
+@subsection Access to linear expressions of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_environment_t* ap_linexpr1_envref (const ap_linexpr1_t* @var{expr})
+Get a reference to the underlying environment. Do not free it.
+@end deftypefun
+@deftypefun size_t ap_linexpr1_linexpr0ref (const ap_linexpr1_t* @var{expr})
+Get a reference to the underlying linear expression of level 0. Do not
+free it.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@subsubsection Getting references
+
+@deftypefun ap_coefft* ap_linexpr1_cstref (ap_linexpr1_t* @var{e})
+Get a reference to the constant. Do not free it.
+@end deftypefun
+
+@deftypefun ap_coefft* ap_linexpr1_coeffref (ap_linexpr1_t* @var{e}, ap_var_t @var{var})
+Get a reference to the coefficient associated to the variable
+@var{var} in expression @var{e}.
+
+Do not free it. In case of sparse representation, possibly induce the
+addition of a new linear term.
+
+Return NULL if @var{var} is unknown in the environement of @var{e}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@subsubsection Getting values
+
+@deftypefun void ap_linexpr1_get_cst (ap_coefft* @var{coeff}, const ap_linexpr1_t* @var{e})
+Assign to @var{coeff} the constant coefficient of @var{e}.
+@end deftypefun
+
+@deftypefun bool ap_linexpr1_get_coeff (ap_coefft* @var{coeff}, const ap_linexpr1_t* @var{e}, ap_var_t @var{var})
+Assign to @var{coeff} the coefficient of variable @var{var} in the expression @var{e}.
+
+Return true in case @code{ap_linexpr1_coeffref(e,dim)} returns NULL.
+@end deftypefun
+
+@defmac ap_linexpr1_ForeachLinterm (ap_linexpr1_t* @var{e}, size_t @var{i}, ap_ap_var_t @var{var}, ap_coeff_t* @var{coeff})
+Iterator on the coefficients associated to variables.
+
+@code{ap_linexpr1_ForeachLinterm(E,I,VAR,COEFF)@{ body @}}
+executes the body for each pair (@var{coeff},@var{var}) in the
+expression @var{e}. @var{coeff} is a reference to the coefficient
+associated to variable @var{var} in @var{e}. @var{i} is an
+auxiliary variable used internally by the macro.
+@end defmac
+
+@c -------------------------------------------------------------------
+@subsubsection Assigning values with a list of arguments
+
+@deftypefun bool ap_linexpr1_set_list (ap_linexpr1_t* @var{e}, ...)
+This function assign the linear expression @var{e} from a list of tags
+of type @code{ap_coefftag_t}, each followed by a number of arguments
+as specified in the definition of the type @code{ap_coefftag_t}
+(@pxref{Access to linear expressions of level 0}). The list should end
+with the tag @code{AP_COEFF_END}. The only difference with level 0 is that variables replace dimensions in the list.
+
+Return @code{true} in case @code{ap_linexpr1_coeffref (e,dim)}
+returns NULL for one of the variables involved.
+
+Here is a typical example, in the case where @code{ap_var_t} is actually @code{char*} (the default):
+@example
+ap_linexpr1_set_list(e,
+		     AP_COEFF_S_INT, 3, "x",
+		     AP_COEFF_S_FRAC, 3,2, "y",
+		     AP_COEFF_S_DOUBLE, 4.1, "z",
+		     AP_CST_I_DOUBLE, -2.4, 3.6,
+		     AP_END); /* Do not forget the last tatg ! */
+@end example
+which transforms an null expression into @code{3 x + 3/2 y + 4.1 z + [-2.4,3.6]}
+and is equivalent to:
+@example
+ap_linexpr1_set_coeff_scalar_int(e, "x", 3);
+ap_linexpr1_set_coeff_scalar_frac(e, "y", 3,2);
+ap_linexpr1_set_coeff_scalar_double(e, "z", 4.1);
+ap_linexpr1_set_cst_interval_double(e, -2.4, 3.6);
+@end example
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@subsubsection Assigning values
+
+@deftypefun void ap_linexpr1_set_cst (ap_linexpr1_t* @var{e}, const ap_coefft* @var{coeff})
+@deftypefunx void ap_linexpr1_set_cst_scalar (ap_linexpr1_t* @var{e}, const ap_scalar_t* @var{scalar})
+@deftypefunx void ap_linexpr1_set_cst_scalar_int (ap_linexpr1_t* @var{e}, int @var{num})
+@deftypefunx void ap_linexpr1_set_cst_scalar_frac (ap_linexpr1_t* @var{e}, int @var{num}, unsigned int @var{den})
+@deftypefunx void ap_linexpr1_set_cst_scalar_double (ap_linexpr1_t* @var{e}, double @var{num})
+@deftypefunx void ap_linexpr1_set_cst_interval (ap_linexpr1_t* @var{e}, const ap_interval_t* @var{itv})
+@deftypefunx void ap_linexpr1_set_cst_interval_scalar (ap_linexpr1_t* @var{e}, const ap_scalar_t* @var{inf}, const ap_scalar_t* @var{sup})
+@deftypefunx void ap_linexpr1_set_cst_interval_int (ap_linexpr1_t* @var{e}, int @var{inf}, int @var{sup})
+@deftypefunx void ap_linexpr1_set_cst_interval_frac (ap_linexpr1_t* @var{e}, int @var{numinf}, unsigned int @var{deninf}, int @var{numsup}, unsigned int @var{densup})
+@deftypefunx void ap_linexpr1_set_cst_interval_double (ap_linexpr1_t* @var{e}, double @var{inf}, double @var{sup})
+Set the constant coefficient of expression @var{e}.
+@end deftypefun
+
+@deftypefun bool ap_linexpr1_set_coeff (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_coefft* @var{coeff})
+@deftypefunx bool ap_linexpr1_set_coeff_scalar (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_scalar_t* @var{scalar})
+@deftypefunx bool ap_linexpr1_set_coeff_scalar_int (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, int @var{num})
+@deftypefunx bool ap_linexpr1_set_coeff_scalar_frac (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, int @var{num}, unsigned int @var{den})
+@deftypefunx bool ap_linexpr1_set_coeff_scalar_double (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, double @var{num})
+@deftypefunx bool ap_linexpr1_set_coeff_interval (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_interval_t* @var{itv})
+@deftypefunx bool ap_linexpr1_set_coeff_interval_scalar (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_scalar_t* @var{inf}, const ap_scalar_t* @var{sup})
+@deftypefunx bool ap_linexpr1_set_coeff_interval_int (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, int @var{inf}, int @var{sup})
+@deftypefunx bool ap_linexpr1_set_coeff_interval_frac (ap_linexpr1_t* @var{e}, ap_var_t @var{var},int @var{numinf}, unsigned int @var{deninf}, int @var{numsup}, unsigned int @var{densup})
+@deftypefunx void ap_linexpr1_set_coeff_interval_double (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, double @var{inf}, double @var{sup})
+Set the coefficient of the variable @var{var} of expression @var{e}.
+
+Return @code{true} in case @code{ap_linexpr1_coeffref(e,var)} returns NULL.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Change of dimensions and permutations of linear expressions of level 1,  , Access to linear expressions of level 1, Linear expressions of level 1
+@subsection Change of dimensions and permutations of linear expressions of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun bool ap_linexpr1_extend_environment (ap_linexpr1_t* @var{nexpr}, const ap_linexpr1_t* @var{expr}, ap_environment_t* @var{nenv})
+@deftypefunx bool ap_linexpr1_extend_environment_with (ap_linexpr1_t* @var{expr}, ap_environment_t* @var{nenv})
+Change the current environment of the expression @var{expr} with a
+super-environment @var{nenv}.  Return @code{true} if @var{nenv} is not
+a superenvironment.
+
+The first version store the result in the uninitialized @code{*nexpr}, the second one updates in-place its argument.
+@end deftypefun
+
+@c ===================================================================
+@node Linear constraints of level 1, Generators of level 1, Linear expressions of level 1, Level 1 of the interface
+@section Linear constraints of level 1 (@file{ap_lincons1.h})
+@c ===================================================================
+
+@deftp datatype ap_lincons1_t
+Datatype for constraints.
+
+For information:
+@example
+typedef struct ap_lincons1_t @{
+  ap_lincons0_t lincons0;
+  ap_environment_t* env;
+@} ap_lincons1_t;
+@end example
+
+Constraints are meant to be manipulated freely via their
+components. Creating the constraint @code{[1,2]x + 5/2 y >=0} and then
+freeing it can be done with
+@example
+ap_lincons1_t cons = ap_lincons1_make(AP_CONS_SUPEQ,
+				      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2));
+ap_lincons1_set_list(&cons,
+		     AP_COEFF_I_INT, 1,2, "x",
+		     AP_COEFF_S_FRAC, 5,2, "y",
+		     AP_END);
+ap_lincons1_clear(&cons);
+@end example
+@end deftp
+
+
+@deftp datatype ap_lincons1_array_t
+@example
+typedef struct ap_lincons1_array_t @{
+  ap_lincons0_array_t lincons0_array;
+  ap_environment_t* env;
+@} ap_lincons1_array_t;
+@end example
+Datatype for arrays of constraints.
+
+Arrays at level 1 cannot be accessed directly, for example by writing
+@code{array->p[i]}, but should instead be accessed with functions
+@code{ap_lincons1_array_get} and @code{ap_lincons1_array_set}.
+@end deftp
+
+@menu
+* Allocating linear constraints of level 1::  
+* Tests on linear constraints of level 1::  
+* Access to linear constraints of level 1::  
+* Change of dimensions and permutations of linear constraints of level 1::  
+* Arrays of linear constraints of level 1::  
+@end menu
+
+@c -------------------------------------------------------------------
+@node Allocating linear constraints of level 1, Tests on linear constraints of level 1, Linear constraints of level 1, Linear constraints of level 1
+@subsection Allocating linear constraints of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_lincons1_t ap_lincons1_make (ap_constyp_t @var{constyp}, ap_linexpr1_t* @var{linexpr})
+Create a constraint of type @var{constyp} with the expression @var{linexpr}.
+
+The expression is not duplicated, just pointed to, so it becomes
+managed via the constraint.
+@end deftypefun
+
+@deftypefun ap_lincons1_t ap_lincons1_make_unsat (ap_environment_t* @var{env})
+Create the constraint @code{-1>=0}.
+@end deftypefun
+
+@deftypefun ap_lincons1_t ap_lincons1_copy (const ap_lincons1_t* @var{cons})
+Duplication
+@end deftypefun
+
+@deftypefun void ap_lincons1_clear (ap_lincons1_t* @var{cons})
+Clear the constraint and set pointers to NULL.
+@end deftypefun
+
+@deftypefun void ap_lincons1_fprint (FILE* @var{stream}, const ap_lincons1_t* @var{cons});
+Print the linear constraint on stream @var{stream}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Tests on linear constraints of level 1, Access to linear constraints of level 1, Allocating linear constraints of level 1, Linear constraints of level 1
+@subsection Tests on linear constraints of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun bool ap_lincons1_is_unsat (const ap_lincons1_t* @var{cons})
+Return @code{true} if the constraint is not satisfiable (@code{b>=0}
+or @code{[a,b]>=0} with b negative).
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Access to linear constraints of level 1, Change of dimensions and permutations of linear constraints of level 1, Tests on linear constraints of level 1, Linear constraints of level 1
+@subsection Access to linear constraints of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_environment_t* ap_lincons1_envref (const ap_lincons1_t* @var{cons})
+Get a reference to the environment. Do not free it.
+@end deftypefun
+
+@deftypefun ap_constyp_t* ap_lincons1_constypref (ap_lincons1_t* @var{cons})
+Get a reference to the type of constraint. You may use the reference
+to modify the constraint type.
+@end deftypefun
+
+@deftypefun ap_linexpr1_t ap_lincons1_linexpr1ref (const ap_lincons1_t* @var{cons})
+Get a reference to the underlying expression of the constraint.  Do
+not free it: nothing is duplicated.  Modifying the argument or the
+result is equivalent, except for change of dimensions/environement.
+@end deftypefun
+
+@deftypefun void ap_lincons1_get_cst (ap_coeff_t* @var{coeff}, const ap_lincons1_t* @var{cons})
+@deftypefunx void ap_lincons1_set_cst (ap_lincons1_t* @var{cons}, const ap_coeff_t* cst)
+@deftypefunx bool ap_lincons1_get_coeff (ap_coeff_t* @var{coeff}, const ap_lincons1_t* cons, ap_var_t @var{var})
+@deftypefunx bool ap_lincons1_set_coeff (ap_lincons1_t* @var{cons}, ap_var_t @var{var}, const ap_coeff_t* @var{coeff})
+@deftypefunx bool ap_lincons1_set_list (ap_lincons1_t* @var{cons}, ...)
+@deftypefunx ap_coeff_t* ap_lincons1_cstref (ap_lincons1_t* @var{cons})
+@deftypefunx ap_coeff_t* ap_lincons1_coeffref (ap_lincons1_t* @var{cons}, ap_var_t @var{var})
+Identical to corresponding @code{ap_linexpr1_XXX} functions
+(@pxref{Access to linear expressions of level 1}).
+@end deftypefun
+
+@deftypefun ap_lincons0_t* ap_lincons1_lincons0ref (ap_lincons1_t* @var{cons})
+Return underlying constraint of level 0.
+Do not free it: nothing is duplicated.
+Modifying the argument or the result is equivalent, except for
+change of dimensions/envionment.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Change of dimensions and permutations of linear constraints of level 1, Arrays of linear constraints of level 1, Access to linear constraints of level 1, Linear constraints of level 1
+@subsection Change of dimensions and permutations of linear constraints of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun bool ap_lincons1_extend_environment (ap_lincons1_t* @var{ncons}, const ap_lincons1_t* @var{cons}, ap_environment_t* @var{nenv})
+@deftypefunx bool ap_lincons1_extend_environment_with (ap_lincons1_t* @var{cons}, ap_environment_t* @var{nenv})
+Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Arrays of linear constraints of level 1,  , Change of dimensions and permutations of linear constraints of level 1, Linear constraints of level 1
+@subsection Arrays of linear constraints of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_lincons1_array_t ap_lincons1_array_make (ap_environment_t* @var{env}, size_t @var{size})
+Allocate an array of constraints of size @var{size}, defined on the
+environement @var{env}.
+
+The constraints are initialized with NULL pointers for underlying
+expressions.
+@end deftypefun
+
+@deftypefun void ap_lincons1_array_clear (ap_lincons1_array_t* @var{array})
+Clear the constraints of the array, and then the array itself.
+@end deftypefun
+
+@deftypefun void ap_lincons1_array_fprint (FILE* @var{stream}, const ap_lincons1_array_t* @var{array})
+Print the array on the stream.
+@end deftypefun
+
+@deftypefun size_t ap_lincons1_array_size (const ap_lincons1_array_t* @var{array})
+Return the size of the array.
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_lincons1_array_envref (const ap_lincons1_array_t* @var{array})
+Get a reference to the environment. Do not free it.
+@end deftypefun
+
+@deftypefun ap_lincons1_t ap_lincons1_array_get (const ap_lincons1_array_t* @var{array}, size_t @var{index})
+Return the linear constraint of the given index Nothing is duplicated,
+and the result should never be cleared.  Modifying the argument or the
+result is equivalent, except for change of environments
+@end deftypefun
+
+@deftypefun bool ap_lincons1_array_set (ap_lincons1_array_t* @var{array}, size_t @var{index}, const ap_lincons1_t* @var{cons})
+Fill the index of the array with the constraint.  Assumes
+@code{array->env==cons->env}.  Nothing is duplicated.  The argument should
+never be cleared. (its environment is dereferenced).  If a constraint
+was already stored, it is first cleared.  Return true iff problem
+(index or @code{array->env!=cons->env})
+@end deftypefun
+
+@deftypefun void ap_lincons1_array_clear_index (ap_lincons1_array_t* @var{array}, size_t @var{index})
+Clear the constraint at index index.
+@end deftypefun
+
+@deftypefun bool ap_lincons1_array_extend_environment_with (ap_lincons1_array_t* @var{array}, ap_environment_t* @var{nenv})
+@deftypefunx bool ap_lincons1_array_extend_environment (ap_lincons1_array_t* narray, const ap_lincons1_array_t* @var{array}, ap_environment_t* @var{nenv})
+Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
+@end deftypefun
+
+@c ===================================================================
+@node Generators of level 1, Abstract values and operations of level 1, Linear constraints of level 1, Level 1 of the interface
+@section generators of level 1 (@file{ap_generator1.h})
+@c ===================================================================
+
+@deftp datatype ap_generator1_t
+Datatype for generators.
+
+For information:
+@example
+typedef struct ap_generator1_t @{
+  ap_generator0_t generator0;
+  ap_environment_t* env;
+@} ap_generator1_t;
+@end example
+
+Generators are meant to be manipulated freely via their components. Creating the ray generator @code{x+2/3y} and then freeing it can be done with
+@example
+ap_generator1_t gen = ap_generator1_make(AP_GEN_RAY,
+				      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2));
+ap_generator1_set_list(&gen,
+		     AP_COEFF_S_INT, 1, "x",
+		     AP_COEFF_S_FRAC, 2,3, "y",
+		     AP_END);
+ap_generator1_clear(&gen);
+@end example
+@end deftp
+
+
+@deftp datatype ap_generator1_array_t
+@example
+typedef struct ap_generator1_array_t @{
+  ap_generator0_array_t generator0_array;
+  ap_environment_t* env;
+@} ap_generator1_array_t;
+@end example
+Datatype for arrays of generators.
+
+Arrays at level 1 cannot be accessed directly, for example by writing
+@code{array->p[i]}, but should instead be accessed with functions
+@code{ap_generator1_array_get} and @code{ap_generator1_array_set}.
+@end deftp
+
+@menu
+* Allocating generators of level 1::  
+* Access to generators of level 1::  
+* Change of dimensions and permutations of generators of level 1::  
+* Arrays of generators of level 1::  
+@end menu
+
+@c -------------------------------------------------------------------
+@node Allocating generators of level 1, Access to generators of level 1, Generators of level 1, Generators of level 1
+@subsection Allocating generators of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_generator1_t ap_generator1_make (ap_gentyp_t @var{gentyp}, ap_linexpr1_t* @var{linexpr})
+Create a generator of type @var{gentyp} with the expression @var{linexpr}.
+
+The expression is not duplicated, just pointed to, so it becomes
+managed via the generator.
+@end deftypefun
+
+@deftypefun ap_generator1_t ap_generator1_copy (const ap_generator1_t* @var{gen})
+Duplication
+@end deftypefun
+
+@deftypefun void ap_generator1_clear (ap_generator1_t* @var{gen})
+Clear the generator and set pointers to NULL.
+@end deftypefun
+
+@deftypefun void ap_generator1_fprint (FILE* @var{stream}, const ap_generator1_t* @var{gen});
+Print the linear generator on stream @var{stream}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Access to generators of level 1, Change of dimensions and permutations of generators of level 1, Allocating generators of level 1, Generators of level 1
+@subsection Access to generators of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_environment_t* ap_generator1_envref (const ap_generator1_t* @var{gen})
+Get a reference to the environment. Do not free it.
+@end deftypefun
+
+@deftypefun ap_gentyp_t* ap_generator1_gentypref (ap_generator1_t* @var{gen})
+Get a reference to the type of generator. You may use the reference
+to modify the generator type.
+@end deftypefun
+
+@deftypefun ap_linexpr1_t ap_generator1_linexpr1ref (const ap_generator1_t* @var{gen})
+Get a reference to the underlying expression of the generator.  Do
+not free it: nothing is duplicated.  Modifying the argument or the
+result is equivalent, except for change of dimensions/environement.
+@end deftypefun
+
+@deftypefun void ap_generator1_get_cst (ap_coeff_t* @var{coeff}, const ap_generator1_t* @var{gen})
+@deftypefunx void ap_generator1_set_cst (ap_generator1_t* @var{gen}, const ap_coeff_t* cst)
+@deftypefunx bool ap_generator1_get_coeff (ap_coeff_t* @var{coeff}, const ap_generator1_t* gen, ap_var_t @var{var})
+@deftypefunx bool ap_generator1_set_coeff (ap_generator1_t* @var{gen}, ap_var_t @var{var}, const ap_coeff_t* @var{coeff})
+@deftypefunx bool ap_generator1_set_list (ap_generator1_t* @var{gen}, ...)
+@deftypefunx ap_coeff_t* ap_generator1_cstref (ap_generator1_t* @var{gen})
+@deftypefunx ap_coeff_t* ap_generator1_coeffref (ap_generator1_t* @var{gen}, ap_var_t @var{var})
+Identical to corresponding @code{ap_linexpr1_XXX} functions
+(@pxref{Access to linear expressions of level 1}).
+@end deftypefun
+
+@deftypefun ap_generator0_t* ap_generator1_generator0ref (ap_generator1_t* @var{gen})
+Return underlying generator of level 0.
+Do not free it: nothing is duplicated.
+Modifying the argument or the result is equivalent, except for
+change of dimensions/envionment.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Change of dimensions and permutations of generators of level 1, Arrays of generators of level 1, Access to generators of level 1, Generators of level 1
+@subsection Change of dimensions and permutations of generators of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun bool ap_generator1_extend_environment (ap_generator1_t* @var{ngen}, const ap_generator1_t* @var{gen}, ap_environment_t* @var{nenv})
+@deftypefunx bool ap_generator1_extend_environment_with (ap_generator1_t* @var{gen}, ap_environment_t* @var{nenv})
+Identical to corresponding @code{ap_linexpr1_XXX} functions
+(@pxref{Change of dimensions and permutations of linear expressions of level 1}).
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Arrays of generators of level 1,  , Change of dimensions and permutations of generators of level 1, Generators of level 1
+@subsection Arrays of generators of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_generator1_array_t ap_generator1_array_make (ap_environment_t* @var{env}, size_t @var{size})
+Allocate an array of generators of size @var{size}, defined on the
+environement @var{env}.
+
+The generators are initialized with NULL pointers for underlying
+expressions.
+@end deftypefun
+
+@deftypefun void ap_generator1_array_clear (ap_generator1_array_t* @var{array})
+Clear the generators of the array, and then the array itself.
+@end deftypefun
+
+@deftypefun void ap_generator1_array_fprint (FILE* @var{stream}, const ap_generator1_array_t* @var{array})
+Print the array on the stream.
+@end deftypefun
+
+@deftypefun size_t ap_generator1_array_size (const ap_generator1_array_t* @var{array})
+Return the size of the array.
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_generator1_array_envref (const ap_generator1_array_t* @var{array})
+Get a reference to the environment. Do not free it.
+@end deftypefun
+
+@deftypefun ap_generator1_t ap_generator1_array_get (const ap_generator1_array_t* @var{array}, size_t @var{index})
+Return the linear generator of the given index Nothing is duplicated,
+and the result should never be cleared.  Modifying the argument or the
+result is equivalent, except for change of environments
+@end deftypefun
+
+@deftypefun bool ap_generator1_array_set (ap_generator1_array_t* @var{array}, size_t @var{index}, const ap_generator1_t* @var{gen})
+Fill the index of the array with the generator.  Assumes
+@code{array->env==gen->env}.  Nothing is duplicated.  The argument should
+never be cleared. (its environment is dereferenced).  If a generator
+was already stored, it is first cleared.  Return true iff problem
+(index or @code{array->env!=gen->env})
+@end deftypefun
+
+@deftypefun void ap_generator1_array_clear_index (ap_generator1_array_t* @var{array}, size_t @var{index})
+Clear the generator at index index.
+@end deftypefun
+
+@deftypefun bool ap_generator1_array_extend_environment_with (ap_generator1_array_t* @var{array}, ap_environment_t* @var{nenv})
+@deftypefunx bool ap_generator1_array_extend_environment (ap_generator1_array_t* narray, const ap_generator1_array_t* @var{array}, ap_environment_t* @var{nenv})
+Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
+@end deftypefun
+
+@c ===================================================================
+@node Abstract values and operations of level 1,  , Generators of level 1, Level 1 of the interface
+@section Abstract values and operations of level 1 (@file{ap_abstract1.h})
+@c ===================================================================
+
+@deftp datatype ap_abstract1_t
+Datatype for abstract values at level 1.
+
+For information:
+@example
+typedef struct ap_abstract1_t @{
+  ap_abstract0_t* abstract0;
+  ap_environment_t* env;
+@} ap_abstract1_t;
+  /* data structure invariant:
+     ap_abstract0_integer_dimension(man,abstract0)== env->intdim &&
+     ap_abstract0_real_dimension(man,abstract0)== env->realdim */
+@end example
+@end deftp
+
+@deftp datatype ap_box1_t
+@example
+typedef struct ap_box1_t @{
+  ap_interval_t** p;
+  ap_environment_t* env;
+@} ap_box1_t;
+void ap_box1_fprint(FILE* stream, const ap_box1_t* box);
+void ap_box1_clear(ap_box1_t* box);
+@end example
+@end deftp
+
+Most operations are offered in 2 versions: @emph{functional} or
+@emph{destructive} @xref{Abstract values and operations of level 0}.
+
+We remind the policy for redimensioning (@pxref{Level 1 of the interface}):
+
+@itemize
+@item
+For functions taking one abstract value and one expression (or
+constraint or generator, or array of ...), the environement of the
+expression should be a sub-environement of the environement of the
+abstract value. The environement of the result is the environement of
+the argument abstract value.
+@item
+For functions taking several abstract values, their environements
+should be the same. Otherwise, it is up to the user to move them to a
+common super-environement (@pxref{Environements}).
+@end itemize
+
+@menu
+* Allocating abstract values of level 1::  
+* Control of internal representation of abstract values of level 1::  
+* Printing abstract values of level 1::  
+* Serialization of abstract values of level 1::  Constructors, Accessors, Tests and Extraction of properties
+
+* Constructors for abstract values of level 1::  
+* Accessors for abstract values of level 1::  
+* Tests on abstract values of level 1::  
+* Extraction of properties of abstract values of level 1::  Operations
+
+* Meet and Join of abstract values of level 1::  
+* Assignements and Substitutions of abstract values of level 1::  
+* Existential quantification of abstract values of level 1::  
+* Change of environements of abstract values of level 1::  
+* Expansion and Folding of dimensions in abstract values of level 1::  
+* Widening of abstract values of level 1::  
+* Topological closure of abstract values of level 1::  Additional functions
+
+* Additional functions on abstract values of level 1::  
+@end menu
+
+@c -------------------------------------------------------------------
+@node Allocating abstract values of level 1, Control of internal representation of abstract values of level 1, Abstract values and operations of level 1, Abstract values and operations of level 1
+@subsection Allocating abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_abstract1_t ap_abstract1_copy (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Return a copy of @var{a}, on which destructive update does not
+affect @var{a}.
+@end deftypefun
+
+@deftypefun void ap_abstract1_clear (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
+Free all the memory used by @var{a}.
+@end deftypefun
+
+@deftypefun size_t ap_abstract1_size (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Return the abstract size of @var{a}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Control of internal representation of abstract values of level 1, Printing abstract values of level 1, Allocating abstract values of level 1, Abstract values and operations of level 1
+@subsection Control of internal representation of abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun void ap_abstract1_minimize (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Minimize the size of the representation of @var{a}.  This may result in
+a later recomputation of internal information.
+@end deftypefun
+
+@deftypefun void ap_abstract1_canonicalize (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Put @var{a} in canonical form. (not yet clear definition).
+@end deftypefun
+
+@deftypefun void ap_abstract1_approximate (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, int @var{algorithm})
+Perform some transformation on @var{a}, guided by the field
+algorithm.
+
+The transformation may lose information.  The argument
+@var{algorithm} overrides the field algorithm of the structure of
+type @code{ap_funopt_t} associated to
+@code{ap_abstract1_approximate}.
+@end deftypefun
+
+@deftypefun tbool_t ap_abstract1_is_minimal (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefunx tbool_t ap_abstract1_is_canonical (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Test whether @var{a} is in minimal or in canonical form.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Printing abstract values of level 1, Serialization of abstract values of level 1, Control of internal representation of abstract values of level 1, Abstract values and operations of level 1
+@subsection Printing abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun void ap_abstract1_fprint (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Print @var{a} in a pretty way on the stream.
+@end deftypefun
+
+@deftypefun void ap_abstract1_fprintdiff (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+Print the difference between @var{a1} (old value) and @var{a2} (new
+value). The meaning of difference is library dependent.
+@end deftypefun
+
+@deftypefun void ap_abstract1_fdump (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Dump the internal representation of @var{a} for debugging
+purposes.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Serialization of abstract values of level 1, Constructors for abstract values of level 1, Printing abstract values of level 1, Abstract values and operations of level 1
+@subsection Serialization of abstract values of level 1
+@c -------------------------------------------------------------------
+@deftypefun ap_membuf_t ap_abstract1_serialize_raw (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Allocate a memory buffer (with @code{malloc}), output @var{a}
+in raw binary format to it and return a pointer on the memory
+buffer and the number of bytes written.  It is the user
+responsability to free the memory afterwards (with @code{free}).
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_deserialize_raw (ap_manager_t* @var{man}, void* @var{ptr}, size_t* @var{size})
+Return the abstract value read in raw binary format from the
+buffer pointed by @var{ptr} and store in size the number of bytes
+read.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Constructors for abstract values of level 1, Accessors for abstract values of level 1, Serialization of abstract values of level 1, Abstract values and operations of level 1
+@subsection Constructors for abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_abstract1_t ap_abstract1_bottom (ap_manager_t* @var{man}, ap_environment_t* @var{env})
+@deftypefunx ap_abstract1_t ap_abstract1_top (ap_manager_t* @var{man}, ap_environment_t* @var{env})
+Create resp. a bottom (empty) value and a top (universe) value defined
+on the environement @var{env}.
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_of_box (ap_manager_t* @var{man}, ap_environment_t* @var{env}, ap_var_t* @var{tvar}, ap_interval_t** @var{tinterval}, size_t @var{size})
+Abstract an hypercube defined by the arrays @var{tvar} and
+@var{tintnerval} of size @var{size}.
+
+If no inclusion is specified for a variable in the environement, its
+value is no constrained in the resulting abstract value.
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_of_lincons_array (ap_manager_t* @var{man}, ap_environment_t* @var{env}, const ap_lincons1_array_t* @var{array})
+Abstract a convex polyhedra defined by the array @var{array} of
+(interval) linear constraints. The environement of the array should be
+a subset of the environement @var{env}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Accessors for abstract values of level 1, Tests on abstract values of level 1, Constructors for abstract values of level 1, Abstract values and operations of level 1
+@subsection Accessors for abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_dimension_t ap_abstract1_environement (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Get a reference to the environement of @var{a}. Do not free it.
+@end deftypefun
+
+@deftypefun ap_manager_t* ap_abstract1_manager (const ap_abstract1_t* @var{a})
+Get a reference to the manager contained in @var{a}.
+Do not free it.
+@end deftypefun
+
+@deftypefun ap_dimension_t ap_abstract1_abstract0 (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Get a reference to the underlying abstract value of level 0 in
+@var{a}. Do not free it.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Tests on abstract values of level 1, Extraction of properties of abstract values of level 1, Accessors for abstract values of level 1, Abstract values and operations of level 1
+@subsection Tests on abstract values of level 1
+@c -------------------------------------------------------------------
+
+If any of the following functions returns tbool_top, this means that
+an exception has occured, or that the exact computation was
+considered too expensive to be performed (according to the options).
+
+@deftypefun tbool_t ap_abstract1_is_bottom (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefunx tbool_t ap_abstract1_is_top (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Emtpiness and universality tests.
+@end deftypefun
+
+@deftypefun tbool_t ap_abstract1_is_leq (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+@deftypefunx tbool_t ap_abstract1_is_eq (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+Inclusion and equality tests.
+@end deftypefun
+
+@deftypefun tbool_t ap_abstract1_sat_interval (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var}, const ap_interval_t* @var{interval})
+Is the variable @var{var} included in the interval @var{interval} in the abstract value @var{a} ?
+@end deftypefun
+
+@deftypefun tbool_t ap_abstract1_sat_lincons (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, const ap_lincons1_t* @var{lincons})
+Does the abstract value @var{a} satisfy the (interval) linear constraint @var{lincons} ?
+@end deftypefun
+
+@deftypefun tbool_t ap_abstract1_is_variable_unconstrained (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var})
+Is the dimension @var{dim} unconstrained in the abstract value @var{a} ?
+If it is the case, we have @code{forget(man,a,dim) == a}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Extraction of properties of abstract values of level 1, Meet and Join of abstract values of level 1, Tests on abstract values of level 1, Abstract values and operations of level 1
+@subsection Extraction of properties of abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_interval_t* ap_abstract1_bound_variable (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var})
+Return the interval taken by the variable @var{var} over the abstract
+value @var{a}.
+@end deftypefun
+
+@deftypefun ap_interval_t* ap_abstract1_bound_linexpr (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, const ap_linexpr1_t* @var{expr})
+Return the interval taken by a linear expression @var{expr} over
+the abstract value @var{a}.
+
+This function allows to solve a Linear Programming (LP) problem, but
+depending on the underlying domain the solution may be not optimal.
+@end deftypefun
+
+@deftypefun ap_box1_t ap_abstract1_to_box (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Convert @var{a} to an interval/hypercube.
+@end deftypefun
+
+@deftypefun ap_lincons1_array_t ap_abstract1_to_lincons_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Convert @var{a} to a convex polyhedra (conjunction of linear
+constraints).
+
+The constraints are normally guaranteed to be really linear
+(without intervals).
+@end deftypefun
+
+@deftypefun ap_generator1_array_t ap_abstract1_to_generator_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+Convert @var{a} to an array of generators.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Meet and Join of abstract values of level 1, Assignements and Substitutions of abstract values of level 1, Extraction of properties of abstract values of level 1, Abstract values and operations of level 1
+@subsection Meet and Join of abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_abstract1_t ap_abstract1_meet (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+
+@deftypefunx ap_abstract1_t ap_abstract1_join (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+Meet and Join of 2 abstract values
+@end deftypefun
+
+
+@deftypefun ap_abstract1_t ap_abstract1_meet_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{array}, size_t @var{size})
+
+@deftypefunx ap_abstract1_t ap_abstract1_join_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{array}, size_t @var{size})
+Meet and Join of the array @var{array} of abstract values of size
+@var{size}.
+
+Raise an @code{AP_EXC_INVALID_ARGUMENT} exception if
+@code{size==1} (no way to define the environement of the result
+in such a case).
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_meet_lincons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_lincons1_array_t* @var{array})
+Meet of the abstract value @var{a} with the set of constraints
+@var{array}.
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_add_ray_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_generator1_array_t* @var{array})
+Generalized time elapse operator.
+
+@var{array} is supposed to contain only rays or lines, no vertices.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Assignements and Substitutions of abstract values of level 1, Existential quantification of abstract values of level 1, Meet and Join of abstract values of level 1, Abstract values and operations of level 1
+@subsection Assignements and Substitutions of abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, const ap_linexpr1_t* @var{expr}, const ap_abstract1_t* @var{dest})
+@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, const ap_linexpr1_t* @var{expr}, const ap_abstract1_t* @var{dest})
+Assignement and Substitution of the dimension @var{dim} by the (interval)
+linear expression @var{expr} in abstract value @var{org}.
+
+@var{dest} is an optional argument. If not NULL, semantically
+speaking, the result of the transformation is intersected with
+@var{dest}. This is useful for precise backward transformations in
+lattices like intervals or octagons.
+@end deftypefun
+
+
+@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, const ap_var_t* @var{tvar}, const ap_linexpr1_t* @var{texpr}, size_t @var{size}, const ap_abstract1_t* @var{dest})
+@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, const ap_var_t* @var{tvar}, const ap_linexpr1_t* @var{texpr}, size_t @var{size}, const ap_abstract1_t* @var{dest})
+Parallel Assignement and Substitution of several variables by
+linear expressions in abstract value @var{org}.
+
+@var{dest} is an optional argument. If not NULL, semantically speaking,
+the result of the transformation is intersected with @var{dest}. This is
+useful for precise backward transformations in lattices like intervals or
+octagons.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Existential quantification of abstract values of level 1, Change of environements of abstract values of level 1, Assignements and Substitutions of abstract values of level 1, Abstract values and operations of level 1
+@subsection Existential quantification of abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_abstract1_t ap_abstract1_forget_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_var_t* @var{tvar}, size_t @var{size}, bool @var{project})
+Forget (@code{project=false}) or Project (@code{project=true}) the
+array of variables @var{tvar} of size @var{size} in the abstract
+value @var{a}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Change of environements of abstract values of level 1, Expansion and Folding of dimensions in abstract values of level 1, Existential quantification of abstract values of level 1, Abstract values and operations of level 1
+@subsection Change of environements of abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_abstract1_t ap_abstract1_change_environment (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_environment_t* @var{nenv}, bool @var{project})
+Change the environement of the abstract values.  Variables that are
+removed are first existentially quantified, and variables that are
+introduced are either unconstrained (@code{project==false}) or
+initialized to 0 (@code{project==false}).
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_minimize_environment (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a})
+Remove from the environment of the abstract value and from the
+abstract value itself variables that are unconstrained in it.
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_rename_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_var_t* @var{tvar}, ap_var_t* @var{ntvar}, size_t @var{size})
+Parallel renaming of the environment of the abstract value. The new
+variables should not interfere with the variables that are not
+renamed.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Expansion and Folding of dimensions in abstract values of level 1, Widening of abstract values of level 1, Change of environements of abstract values of level 1, Abstract values and operations of level 1
+@subsection Expansion and Folding of dimensions of abstract values of level 1
+@c -------------------------------------------------------------------
+
+Formally, expanding @code{z} into @code{z} and @code{w} in
+abstract value (predicate) @code{P} is defined by
+@math{expand(P(x,y,z),z,w) = P(x,y,z) and P(x,y,w)}.
+
+Conversely, folding @code{z} and @code{w} into @code{z} in
+abstract value (predicate) @code{Q} is defined by
+@math{fold(Q(x,y,z,w),z,w) = (exists w: Q(x,y,z,w)) or (exists z:Q(x,y,z,w)[z<-w])}.
+
+@deftypefun ap_abstract1_t ap_abstract1_expand (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_var_t @var{var}, ap_var_t* @var{tvar}, size_t @var{size})
+Expand the variable @var{var} into itself + the @var{size} additional
+variables of the array @var{tvar}, which are given the same type as
+@var{var}.  The additional variables are added to the environment of
+the argument for making the environment of the result, so they should
+not belong to the initial environement.
+
+It results in @code{size+1} unrelated variables having same relations
+with other dimensions.
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_fold (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_var_t* @var{tvar}, size_t @var{size})
+Fold the variables in the array @var{tvar} of size @var{size}>=1 and
+put the result in the first variable in the array. The other variables
+of the array are then forgot and removed from the environement.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Widening of abstract values of level 1, Topological closure of abstract values of level 1, Expansion and Folding of dimensions in abstract values of level 1, Abstract values and operations of level 1
+@subsection Widening of abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_abstract1_t ap_abstract1_widening (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+Widening of @var{a1} with @var{a2}. @var{a1} is supposed to be
+included in @var{a2}.
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_widening_threshold (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2}, ap_lincons1_array_t* @var{array})
+Widening with threshold.
+
+Intersect the result of the standard widening with all the
+constraints in @var{array} that are satisfied by both @var{a1} and
+@var{a2}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Topological closure of abstract values of level 1, Additional functions on abstract values of level 1, Widening of abstract values of level 1, Abstract values and operations of level 1
+@subsection Topological closure of abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_abstract1_t* ap_abstract1_closure (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a})
+Relax strict constraints into non strict constraints.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Additional functions on abstract values of level 1,  , Topological closure of abstract values of level 1, Abstract values and operations of level 1
+@subsection Additional functions on abstract values of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_linexpr1_t ap_abstract1_quasilinear_of_intervallinear (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})
+Evaluate the interval linear expression @var{expr} on the abstract
+value @var{a} and approximate it by a quasilinear expression.
+
+This implies calls to @code{ap_abstract0_bound_dimension}.
+@end deftypefun
+
+@c *******************************************************************
+@node Level 0 of the interface, Examples, Level 1 of the interface, Top
+@chapter Level 0 of the interface
 @c *******************************************************************
 
 This interface of level 0 is defined in @file{ap_global0.h}.
@@ -934,15 +2232,15 @@ new library/abstract domain, or who want to build a composite domain
 from existing ones.
 
 @menu
-* Dimensions and related operations::
-* Linear expressions of level 0::
-* Linear constraints of level 0::
-* Generators of level 0::
-* Abstract values and operations of level 0::
+* Dimensions and related operations::  
+* Linear expressions of level 0::  
+* Linear constraints of level 0::  
+* Generators of level 0::       
+* Abstract values and operations of level 0::  
 @end menu
 
 @c ===================================================================
-@node Dimensions and related operations, Linear expressions of level 0, Interface of level 0, Interface of level 0
+@node Dimensions and related operations, Linear expressions of level 0, Level 0 of the interface, Level 0 of the interface
 @section Dimensions and related operations (@file{ap_dimension.h})
 @c ===================================================================
 
@@ -1023,8 +2321,8 @@ Represents the permutation @code{i -> dimperm.p[i]} for
 @end deftp
 
 @menu
-* Manipulating changes of dimensions::
-* Manipulating permutations of dimensions::
+* Manipulating changes of dimensions::  
+* Manipulating permutations of dimensions::  
 @end menu
 
 @c -------------------------------------------------------------------
@@ -1088,7 +2386,7 @@ be equal.
 @end deftypefun
 
 @c ===================================================================
-@node Linear expressions of level 0, Linear constraints of level 0, Dimensions and related operations, Interface of level 0
+@node Linear expressions of level 0, Linear constraints of level 0, Dimensions and related operations, Level 0 of the interface
 @section Linear expressions of level 0 (@file{ap_linexpr0.h})
 @c ===================================================================
 
@@ -1108,11 +2406,11 @@ are of type @code{coeff_t}.
 @end deftp
 
 @menu
-* Allocating linear expressions of level 0::
-* Tests on linear expressions of level 0::
-* Access to linear expressions of level 0::
-* Change of dimensions and permutations of linear expressions of level 0::
-* Other functions on linear expressions of level 0::
+* Allocating linear expressions of level 0::  
+* Tests on linear expressions of level 0::  
+* Access to linear expressions of level 0::  
+* Change of dimensions and permutations of linear expressions of level 0::  
+* Other functions on linear expressions of level 0::  
 @end menu
 
 @c -------------------------------------------------------------------
@@ -1371,7 +2669,7 @@ Use the (partial order) comparison function on coefficients
 
 
 @c ===================================================================
-@node Linear constraints of level 0, Generators of level 0, Linear expressions of level 0, Interface of level 0
+@node Linear constraints of level 0, Generators of level 0, Linear expressions of level 0, Level 0 of the interface
 @section Linear constraints of level 0 (@file{ap_lincons0.h})
 @c ===================================================================
 
@@ -1425,10 +2723,10 @@ One can assign a constraint to the index @var{index} by writing:
 @end deftp
 
 @menu
-* Allocating linear constraints of level 0::
-* Tests on linear constraints of level 0::
-* Arrays of linear constraints of level 0::
-* Change of dimensions and permutations of linear constraints of level 0::
+* Allocating linear constraints of level 0::  
+* Tests on linear constraints of level 0::  
+* Arrays of linear constraints of level 0::  
+* Change of dimensions and permutations of linear constraints of level 0::  
 @end menu
 
 @c -------------------------------------------------------------------
@@ -1517,7 +2815,7 @@ Extension to arrays of the corresponding functions on constraints.
 @end deftypefun
 
 @c ===================================================================
-@node Generators of level 0, Abstract values and operations of level 0, Linear constraints of level 0, Interface of level 0
+@node Generators of level 0, Abstract values and operations of level 0, Linear constraints of level 0, Level 0 of the interface
 @section Generators of level 0 (@file{ap_generator0.h})
 @c ===================================================================
 
@@ -1559,9 +2857,9 @@ Datatype for arrays of generators.
 @end deftp
 
 @menu
-* Allocating generators of level 0::
-* Arrays of generators of level 0::
-* Change of dimensions and permutations of generators of level 0::
+* Allocating generators of level 0::  
+* Arrays of generators of level 0::  
+* Change of dimensions and permutations of generators of level 0::  
 @end menu
 
 @c -------------------------------------------------------------------
@@ -1642,7 +2940,7 @@ Extension to arrays of the corresponding functions on generators.
 @end deftypefun
 
 @c ===================================================================
-@node Abstract values and operations of level 0,  , Generators of level 0, Interface of level 0
+@node Abstract values and operations of level 0,  , Generators of level 0, Level 0 of the interface
 @section Abstract values and operations of level 0 (@file{ap_abstract0.h})
 @c ===================================================================
 
@@ -1669,31 +2967,25 @@ arguments is neither (semantically) modified nor deallocated.
 @end itemize
 
 @menu
-* Allocating abstract values of level 0::
-* Control of internal representation of abstract values of level 0::
-* Printing abstract values of level 0::
-* Serialization of abstract values of level 0::
+* Allocating abstract values of level 0::  
+* Control of internal representation of abstract values of level 0::  
+* Printing abstract values of level 0::  
+* Serialization of abstract values of level 0::  Constructors, Accessors, Tests and Extraction of properties
 
-Constructors, Accessors, Tests and Extraction of properties
+* Constructors for abstract values of level 0::  
+* Accessors for abstract values of level 0::  
+* Tests on abstract values of level 0::  
+* Extraction of properties of abstract values of level 0::  Operations
 
-* Constructors for abstract values of level 0::
-* Accessors for abstract values of level 0::
-* Tests on abstract values of level 0::
-* Extraction of properties of abstract values of level 0::
+* Meet and Join of abstract values of level 0::  
+* Assignements and Substitutions of abstract values of level 0::  
+* Existential quantification of abstract values of level 0::  
+* Change and permutation of dimensions of abstract values of level 0::  
+* Expansion and Folding of dimensions in abstract values of level 0::  
+* Widening of abstract values of level 0::  
+* Topological closure of abstract values of level 0::  Additional functions
 
-Operations
-
-* Meet and Join of abstract values of level 0::
-* Assignements and Substitutions of abstract values of level 0::
-* Existential quantification of abstract values of level 0::
-* Change and permutation of dimensions of abstract values of level 0::
-* Expansion and Folding of dimensions in abstract values of level 0::
-* Widening of abstract values of level 0::
-* Topological closure of abstract values of level 0::
-
-Additional functions
-
-* Additional functions on abstract values of level 0::
+* Additional functions on abstract values of level 0::  
 @end menu
 
 @c -------------------------------------------------------------------
@@ -2062,1293 +3354,7 @@ This implies calls to @code{ap_abstract0_bound_dimension}.
 
 
 @c *******************************************************************
-@node Interface of level 1, NewPolka, Interface of level 0, Top
-@chapter Interface of level 1
-@c *******************************************************************
-
-This interface of level 1 is defined in @file{ap_global1.h}.
-
-@menu
-* Variables and related operations::
-* Environements::
-* Linear expressions of level 1::
-* Linear constraints of level 1::
-* Generators of level 1::
-* Abstract values and operations of level 1::
-@end menu
-
-@noindent
-The main functions brought by level 1 are
-
-@itemize
-@item
-to convert variables to dimensions, thanks to the addition of
-environements to objects;
-@item
-to redimension (abstract values), expressions, constraints and
-generators defined on different environements.
-@end itemize
-
-The policy for redimensioning is the following one:
-
-@itemize
-@item
-For functions taking one abstract value and one expression (or
-constraint or generator, or array of ...), the environement of the
-expression should be a sub-environement of the environement of the
-abstract value. The environement of the result is the environement of
-the argument abstract value.
-@item
-For functions taking several abstract values, their environements
-should be the same. Otherwise, it is up to the user to move them to a
-common super-environement (see @ref{Environements} and @ref{Change of environements of abstract values of level 1}).
-@end itemize
-
-@c ===================================================================
-@node Variables and related operations, Environements, Interface of level 1, Interface of level 1
-@section Variables and related operations (@file{ap_var.h})
-@c ===================================================================
-
-A variable is not necessarily a name, it can be a more complex
-structured datatype, depending on the application. That is the
-motivation to make it a parameter of the interface.
-
-The abstract type @code{ap_var_t} is equipped with a total
-ordering function, a copy function, and a free function.  The
-parametrization of the interface is performed via a global
-variable pointing to a @code{ap_var_operations_t} structure,
-containing the above-mentione doperations on @code{ap_var_t} objects.
-This means that this type should be fixed once, and that in a
-multitreaded application all threads should share the same
-@code{ap_var_t} type.
-
-By default, @code{ap_var_t} is a C string (@code{char*}), and the
-global variable @code{ap_var_operations} is properly initialized.
-
-@deftp datatype ap_var_t
-@example
-typedef void* ap_var_t;
-@end example
-Datatype for ``variables''. It is assumed to be of size
-@code{sizeof(void*)}.
-@end deftp
-
-@deftp datatype ap_var_operations_t
-@example
-typedef struct ap_var_operations_t @{
-  int (*compare)(ap_var_t v1, ap_var_t v2); /* Total ordering function */
-  ap_var_t (*copy)(ap_var_t var);           /* Duplication function */
-  void (*free)(ap_var_t var);               /* Deallocation function */
-  char* (*to_string)(ap_var_t var); /* Conversion to a dynamically allocated string,
-				       which should be deallocated with free after use */
-@} ap_var_operations_t;
-@end example
-Datatype for defining the operations on ``variables''.
-@end deftp
-
-@deftypevar ap_var_operations_t var_operations_default
-Default manager, where @code{ap_var_t} is assumed to be @code{char*}.
-@end deftypevar
-
-@deftypevar ap_var_operations_t* var_operations
-Global pointer to the manager in use, by default points to @code{ap_var_operations_default}.
-@end deftypevar
-
-@c ===================================================================
-@node Environements, Linear expressions of level 1, Variables and related operations, Interface of level 1
-@section Environements (@file{ap_environment.h})
-@c ===================================================================
-
-Environments bind variables (of level 1) to dimensions (of level 0).
-
-@deftp datatype ap_environment_t
-Internal datatype for environments.
-
-For information, the definition is:
-@example
-typedef struct ap_environment_t @{
-  ap_var_t* var_of_dim;
-  /*
-    Array of size intdim+realdim, indexed by dimensions.
-    - It should not contain identical strings..
-    - Slice [0..intdim-1] is lexicographically sorted,
-      and denotes integer variables.
-    - Slice [intdim..intdim+realdim-1] is lexicographically sorted,
-      and denotes real variables.
-    - The memory allocated for the variables are attached to the structure
-      (they are freed when the structure is no longer in use)
-  */
-  size_t intdim; /* Number of integer variables */
-  size_t realdim;/* Number of real variables */
-  size_t count; /* For reference counting */
-@} ap_environment_t;
-@end example
-@end deftp
-
-@deftypefun void ap_environment_free (ap_environment_t* @var{env})
-@deftypefunx ap_environment_t* ap_environment_copy (ap_environment_t* @var{env})
-Respectively free and duplicate an environment.
-
-(@code{copy} is cheap, as environments are managed with reference
-counters).
-@end deftypefun
-
-@deftypefun void ap_environment_fdump (FILE* @var{stream}, ap_environment_t* @var{env})
-Print an environement under the form:
-@example
-  environment: dim = (..,..), count = ..
-  0: name0
-  1: name1
-  ...
-@end example
-@end deftypefun
-
-@deftypefun ap_environment_t* ap_environment_alloc_empty ()
-Build an empty environement.
-@end deftypefun
-
-@deftypefun ap_environment_t* ap_environment_alloc (ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
-Build an environement from an array of integer and an array of real variables.
-
-@var{var_of_intdim} is an array of variables of size @var{intdim},
-@var{var_of_realdim} is an array of variables of size
-@var{realdim}. Pointers to arrays may be @code{NULL} if their size is
-0.
-
-Variables are duplicated in the result, so it is the responsability of
-the user to free the variables he provides.
-
-If some variables are duplicated, return @code{NULL}.
-@end deftypefun
-
-@deftypefun ap_environment_t* ap_environment_add (const ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
-@deftypefunx ap_environment_t* ap_environment_remove (const ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
-Resp. add or remove new variables to an existing environement, with a
-functional semantics. Same conventions as for
-@code{ap_environment_alloc} function apply. If the result is non-sense,
-return @code{NULL}.
-@end deftypefun
-
-@deftypefun ap_dim_t ap_environment_dim_of_var (const ap_environment_t* @var{env}, ap_var_t @var{var})
-Convert a variable in its corresponding dimension in the environement @var{env}. If @var{var} is unknown in @var{env}, return @code{AP_DIM_MAX}.
-@end deftypefun
-@deftypefun ap_dim_t ap_environment_var_of_dim (const ap_environment_t* @var{env}, ap_dim_t @var{dim})
-Return the variable associated to the dimension @var{dim} in the environement @var{env}. There is no bound check here.
-@end deftypefun
-
-The remaining functions are much less useful for normal user.
-
-@deftypefun bool ap_environment_is_eq (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2})
-@deftypefunx bool ap_environment_is_leq (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2})
-Resp. test the equality and the inclusion of two environements.
-@end deftypefun
-@deftypefun int ap_environment_compare (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2})
-Return:
-@table @code
-@item -2
-if the environements are not compatible (a variable has a different
-type in the 2 environements);
-@item -1
-if @var{env1} is a subset of (included in) @var{env2};
-@item 0
-if they are equal;
-@item +1
-if @var{env1} is a superset of @var{env2};
-@item +2
-otherwise: the least common environement exists and is a strict
-superset of both environements.
-@end table
-@end deftypefun
-
-@deftypefun ap_dimchange_t* ap_environment_dimchange (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env})
-Compute the transformation for converting from an environment
-@var{env1} to a superenvironment @var{env}.  Return NULL if @var{env}
-is not a superenvironment.
-@end deftypefun
-
-@deftypefun ap_environment_t* ap_environment_lce (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2}, ap_dimchange_t** @var{dimchange1}, ap_dimchange_t** @var{dimchange2})
-Least common environement to two enviroenments.
-@itemize
-@item
-Assume @code{ap_environment_is_eq(env1,env2)==false}
-@item
-If environements are not compatible (a variable has different types in
-the 2 environements), return NULL
-@item
-Compute also in @var{dimchange1} and @var{dimchange2} the conversion transformations to the lce.
-@item
-If no dimensions to add to @var{env1}, this implies that @var{env} is
-actually @var{env1}. In this case,
-@code{*dimchange1==NULL}. Otherwise, the function allocates the
-@code{*dimchange1} with @code{ap_dimchange_alloc}.
-@end itemize
-@end deftypefun
-
-@deftypefun ap_environment_t* ap_environment_lce_array (const ap_environment_t** @var{tenv}, size_t @var{size}, ap_dimchange_t*** @var{ptdimchange})
-Least common environement to an array of environements.
-@itemize
-@item
-Assume the size @var{size} of the array @var{tenv} is at least one;
-@item
-If all input environements are the same, @code{*ptdimchange==NULL}.
-Otherwise, compute in @code{*ptdimchange} the conversion permutations
-@item
-If no dimensions to add to @code{tenv[i]}, this implies that the
-result is actually @code{tenv[i]}. In this case,
-@code{(*ptdimchange)[i]==NULL}. Otherwise, the function allocates the
-@code{(*ptdimchange)[i]} with @code{ap_dimchange_alloc}.
-@end itemize
-@end deftypefun
-
-@deftypefun ap_environment_t* ap_environment_rename (ap_environment_t* @var{env}, ap_var_t* @var{tvar1}, ap_var_t* @var{tvar2}, size_t @var{size}, ap_dimperm_t* @var{perm})
-Rename the variables in the environement.  @var{size} is the common
-size of arrays @var{tvar1} and @var{tvar2}, and @var{perm} is a
-result-parameter pointing to an @emph{existing but not initialized}
-object of type @code{ap_dimperm_t}.
-
-The function applies the variable substitution @code{tvar1[i]->tvar2[i]}
-to the environement, and returns the resulting environement and the
-allocated transformation permutation in @code{*perm}.
-
-If the parameters are not valid, return @code{NULL} with
-@code{perm->dim==NULL}.
-@end deftypefun
-
-@c ===================================================================
-@node Linear expressions of level 1, Linear constraints of level 1, Environements, Interface of level 1
-@section Linear expressions of level 1 (@file{ap_linexpr1.h})
-@c ===================================================================
-
-@deftp datatype ap_linexpr1_t
-(Internal) type of interval linear expressions.
-
-Linear expressions of level 1 are created as objects of type
-@code{ap_linexpr1_t}, not as pointers of type @code{ap_linexpr1_t*}.
-
-For information:
-@example
-typedef struct ap_linexpr1_t @{
-  ap_linexpr0_t* linexpr0;
-  ap_environment_t* env;
-@} ap_linexpr1_t;
-@end example
-@end deftp
-
-@menu
-* Allocating linear expressions of level 1::
-* Tests on linear expressions of level 1::
-* Access to linear expressions of level 1::
-* Change of dimensions and permutations of linear expressions of level 1::
-@end menu
-
-@c -------------------------------------------------------------------
-@node Allocating linear expressions of level 1, Tests on linear expressions of level 1, Linear expressions of level 1, Linear expressions of level 1
-@subsection Allocating linear expressions of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_linexpr1_t ap_linexpr1_make (ap_environment_t* @var{env}, ap_linexpr_discr_t @var{lin_discr}, size_t @var{size})
-Build a linear expressions on the environement @var{env}, with by
-default coefficients of type SCALAR and DOUBLE.
-
-If @var{lin_discr} selects a dense representation, the size of the
-expression is the size of the environement. Otherwise, the initial
-size is given by @var{size} and the expression may be resized lazily.
-@end deftypefun
-
-@deftypefun void ap_linexpr1_minimize (ap_linexpr1_t* @var{expr})
-Reduce the coefficients (transform intervals into scalars when
-possible).  In case of sparse representation, also remove zero
-coefficients.
-@end deftypefun
-
-@deftypefun ap_linexpr1_t ap_linexpr1_copy (const ap_linexpr1_t* @var{expr})
-Duplication.
-@end deftypefun
-
-@deftypefun void ap_linexpr1_clear (ap_linexpr1_t @var{expr})
-Clear the linear expression.
-@end deftypefun
-
-@deftypefun void ap_linexpr1_fprint (FILE* @var{stream}, const ap_linexpr1_t* @var{expr})
-Print the linear expression on stream @var{stream}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Tests on linear expressions of level 1, Access to linear expressions of level 1, Allocating linear expressions of level 1, Linear expressions of level 1
-@subsection Tests on linear expressions of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun bool ap_linexpr1_is_integer (const ap_linexpr1_t* @var{expr})
-Does the expression depends only on integer variables ?
-@end deftypefun
-
-@deftypefun bool ap_linexpr1_is_real (const ap_linexpr1_t* @var{expr})
-Does the expression depends only on real variables ?
-@end deftypefun
-
-@deftypefun bool ap_linexpr1_is_linear (const ap_linexpr1_t* @var{expr})
-Return true iff all involved coefficients are scalars.
-@end deftypefun
-
-@deftypefun bool ap_linexpr1_is_quasilinear (const ap_linexpr1_t* @var{expr})
-Return true iff all involved coefficients but the constant are scalars.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Access to linear expressions of level 1, Change of dimensions and permutations of linear expressions of level 1, Tests on linear expressions of level 1, Linear expressions of level 1
-@subsection Access to linear expressions of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_environment_t* ap_linexpr1_envref (const ap_linexpr1_t* @var{expr})
-Get a reference to the underlying environment. Do not free it.
-@end deftypefun
-@deftypefun size_t ap_linexpr1_linexpr0ref (const ap_linexpr1_t* @var{expr})
-Get a reference to the underlying linear expression of level 0. Do not
-free it.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@subsubsection Getting references
-
-@deftypefun ap_coefft* ap_linexpr1_cstref (ap_linexpr1_t* @var{e})
-Get a reference to the constant. Do not free it.
-@end deftypefun
-
-@deftypefun ap_coefft* ap_linexpr1_coeffref (ap_linexpr1_t* @var{e}, ap_var_t @var{var})
-Get a reference to the coefficient associated to the variable
-@var{var} in expression @var{e}.
-
-Do not free it. In case of sparse representation, possibly induce the
-addition of a new linear term.
-
-Return NULL if @var{var} is unknown in the environement of @var{e}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@subsubsection Getting values
-
-@deftypefun void ap_linexpr1_get_cst (ap_coefft* @var{coeff}, const ap_linexpr1_t* @var{e})
-Assign to @var{coeff} the constant coefficient of @var{e}.
-@end deftypefun
-
-@deftypefun bool ap_linexpr1_get_coeff (ap_coefft* @var{coeff}, const ap_linexpr1_t* @var{e}, ap_var_t @var{var})
-Assign to @var{coeff} the coefficient of variable @var{var} in the expression @var{e}.
-
-Return true in case @code{ap_linexpr1_coeffref(e,dim)} returns NULL.
-@end deftypefun
-
-@defmac ap_linexpr1_ForeachLinterm (ap_linexpr1_t* @var{e}, size_t @var{i}, ap_ap_var_t @var{var}, ap_coeff_t* @var{coeff})
-Iterator on the coefficients associated to variables.
-
-@code{ap_linexpr1_ForeachLinterm(E,I,VAR,COEFF)@{ body @}}
-executes the body for each pair (@var{coeff},@var{var}) in the
-expression @var{e}. @var{coeff} is a reference to the coefficient
-associated to variable @var{var} in @var{e}. @var{i} is an
-auxiliary variable used internally by the macro.
-@end defmac
-
-@c -------------------------------------------------------------------
-@subsubsection Assigning values with a list of arguments
-
-@deftypefun bool ap_linexpr1_set_list (ap_linexpr1_t* @var{e}, ...)
-This function assign the linear expression @var{e} from a list of tags
-of type @code{ap_coefftag_t}, each followed by a number of arguments
-as specified in the definition of the type @code{ap_coefftag_t}
-(@pxref{Access to linear expressions of level 0}). The list should end
-with the tag @code{AP_COEFF_END}. The only difference with level 0 is that variables replace dimensions in the list.
-
-Return @code{true} in case @code{ap_linexpr1_coeffref (e,dim)}
-returns NULL for one of the variables involved.
-
-Here is a typical example, in the case where @code{ap_var_t} is actually @code{char*} (the default):
-@example
-ap_linexpr1_set_list(e,
-		     AP_COEFF_S_INT, 3, "x",
-		     AP_COEFF_S_FRAC, 3,2, "y",
-		     AP_COEFF_S_DOUBLE, 4.1, "z",
-		     AP_CST_I_DOUBLE, -2.4, 3.6,
-		     AP_END); /* Do not forget the last tatg ! */
-@end example
-which transforms an null expression into @code{3 x + 3/2 y + 4.1 z + [-2.4,3.6]}
-and is equivalent to:
-@example
-ap_linexpr1_set_coeff_scalar_int(e, "x", 3);
-ap_linexpr1_set_coeff_scalar_frac(e, "y", 3,2);
-ap_linexpr1_set_coeff_scalar_double(e, "z", 4.1);
-ap_linexpr1_set_cst_interval_double(e, -2.4, 3.6);
-@end example
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@subsubsection Assigning values
-
-@deftypefun void ap_linexpr1_set_cst (ap_linexpr1_t* @var{e}, const ap_coefft* @var{coeff})
-@deftypefunx void ap_linexpr1_set_cst_scalar (ap_linexpr1_t* @var{e}, const ap_scalar_t* @var{scalar})
-@deftypefunx void ap_linexpr1_set_cst_scalar_int (ap_linexpr1_t* @var{e}, int @var{num})
-@deftypefunx void ap_linexpr1_set_cst_scalar_frac (ap_linexpr1_t* @var{e}, int @var{num}, unsigned int @var{den})
-@deftypefunx void ap_linexpr1_set_cst_scalar_double (ap_linexpr1_t* @var{e}, double @var{num})
-@deftypefunx void ap_linexpr1_set_cst_interval (ap_linexpr1_t* @var{e}, const ap_interval_t* @var{itv})
-@deftypefunx void ap_linexpr1_set_cst_interval_scalar (ap_linexpr1_t* @var{e}, const ap_scalar_t* @var{inf}, const ap_scalar_t* @var{sup})
-@deftypefunx void ap_linexpr1_set_cst_interval_int (ap_linexpr1_t* @var{e}, int @var{inf}, int @var{sup})
-@deftypefunx void ap_linexpr1_set_cst_interval_frac (ap_linexpr1_t* @var{e}, int @var{numinf}, unsigned int @var{deninf}, int @var{numsup}, unsigned int @var{densup})
-@deftypefunx void ap_linexpr1_set_cst_interval_double (ap_linexpr1_t* @var{e}, double @var{inf}, double @var{sup})
-Set the constant coefficient of expression @var{e}.
-@end deftypefun
-
-@deftypefun bool ap_linexpr1_set_coeff (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_coefft* @var{coeff})
-@deftypefunx bool ap_linexpr1_set_coeff_scalar (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_scalar_t* @var{scalar})
-@deftypefunx bool ap_linexpr1_set_coeff_scalar_int (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, int @var{num})
-@deftypefunx bool ap_linexpr1_set_coeff_scalar_frac (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, int @var{num}, unsigned int @var{den})
-@deftypefunx bool ap_linexpr1_set_coeff_scalar_double (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, double @var{num})
-@deftypefunx bool ap_linexpr1_set_coeff_interval (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_interval_t* @var{itv})
-@deftypefunx bool ap_linexpr1_set_coeff_interval_scalar (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_scalar_t* @var{inf}, const ap_scalar_t* @var{sup})
-@deftypefunx bool ap_linexpr1_set_coeff_interval_int (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, int @var{inf}, int @var{sup})
-@deftypefunx bool ap_linexpr1_set_coeff_interval_frac (ap_linexpr1_t* @var{e}, ap_var_t @var{var},int @var{numinf}, unsigned int @var{deninf}, int @var{numsup}, unsigned int @var{densup})
-@deftypefunx void ap_linexpr1_set_coeff_interval_double (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, double @var{inf}, double @var{sup})
-Set the coefficient of the variable @var{var} of expression @var{e}.
-
-Return @code{true} in case @code{ap_linexpr1_coeffref(e,var)} returns NULL.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Change of dimensions and permutations of linear expressions of level 1,  , Access to linear expressions of level 1, Linear expressions of level 1
-@subsection Change of dimensions and permutations of linear expressions of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun bool ap_linexpr1_extend_environment (ap_linexpr1_t* @var{nexpr}, const ap_linexpr1_t* @var{expr}, ap_environment_t* @var{nenv})
-@deftypefunx bool ap_linexpr1_extend_environment_with (ap_linexpr1_t* @var{expr}, ap_environment_t* @var{nenv})
-Change the current environment of the expression @var{expr} with a
-super-environment @var{nenv}.  Return @code{true} if @var{nenv} is not
-a superenvironment.
-
-The first version store the result in the uninitialized @code{*nexpr}, the second one updates in-place its argument.
-@end deftypefun
-
-@c ===================================================================
-@node Linear constraints of level 1, Generators of level 1, Linear expressions of level 1, Interface of level 1
-@section Linear constraints of level 1 (@file{ap_lincons1.h})
-@c ===================================================================
-
-@deftp datatype ap_lincons1_t
-Datatype for constraints.
-
-For information:
-@example
-typedef struct ap_lincons1_t @{
-  ap_lincons0_t lincons0;
-  ap_environment_t* env;
-@} ap_lincons1_t;
-@end example
-
-Constraints are meant to be manipulated freely via their
-components. Creating the constraint @code{[1,2]x + 5/2 y >=0} and then
-freeing it can be done with
-@example
-ap_lincons1_t cons = ap_lincons1_make(AP_CONS_SUPEQ,
-				      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2));
-ap_lincons1_set_list(&cons,
-		     AP_COEFF_I_INT, 1,2, "x",
-		     AP_COEFF_S_FRAC, 5,2, "y",
-		     AP_END);
-ap_lincons1_clear(&cons);
-@end example
-@end deftp
-
-
-@deftp datatype ap_lincons1_array_t
-@example
-typedef struct ap_lincons1_array_t @{
-  ap_lincons0_array_t lincons0_array;
-  ap_environment_t* env;
-@} ap_lincons1_array_t;
-@end example
-Datatype for arrays of constraints.
-
-Arrays at level 1 cannot be accessed directly, for example by writing
-@code{array->p[i]}, but should instead be accessed with functions
-@code{ap_lincons1_array_get} and @code{ap_lincons1_array_set}.
-@end deftp
-
-@menu
-* Allocating linear constraints of level 1::
-* Tests on linear constraints of level 1::
-* Access to linear constraints of level 1::
-* Change of dimensions and permutations of linear constraints of level 1::
-* Arrays of linear constraints of level 1::
-@end menu
-
-@c -------------------------------------------------------------------
-@node Allocating linear constraints of level 1, Tests on linear constraints of level 1, Linear constraints of level 1, Linear constraints of level 1
-@subsection Allocating linear constraints of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_lincons1_t ap_lincons1_make (ap_constyp_t @var{constyp}, ap_linexpr1_t* @var{linexpr})
-Create a constraint of type @var{constyp} with the expression @var{linexpr}.
-
-The expression is not duplicated, just pointed to, so it becomes
-managed via the constraint.
-@end deftypefun
-
-@deftypefun ap_lincons1_t ap_lincons1_make_unsat (ap_environment_t* @var{env})
-Create the constraint @code{-1>=0}.
-@end deftypefun
-
-@deftypefun ap_lincons1_t ap_lincons1_copy (const ap_lincons1_t* @var{cons})
-Duplication
-@end deftypefun
-
-@deftypefun void ap_lincons1_clear (ap_lincons1_t* @var{cons})
-Clear the constraint and set pointers to NULL.
-@end deftypefun
-
-@deftypefun void ap_lincons1_fprint (FILE* @var{stream}, const ap_lincons1_t* @var{cons});
-Print the linear constraint on stream @var{stream}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Tests on linear constraints of level 1, Access to linear constraints of level 1, Allocating linear constraints of level 1, Linear constraints of level 1
-@subsection Tests on linear constraints of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun bool ap_lincons1_is_unsat (const ap_lincons1_t* @var{cons})
-Return @code{true} if the constraint is not satisfiable (@code{b>=0}
-or @code{[a,b]>=0} with b negative).
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Access to linear constraints of level 1, Change of dimensions and permutations of linear constraints of level 1, Tests on linear constraints of level 1, Linear constraints of level 1
-@subsection Access to linear constraints of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_environment_t* ap_lincons1_envref (const ap_lincons1_t* @var{cons})
-Get a reference to the environment. Do not free it.
-@end deftypefun
-
-@deftypefun ap_constyp_t* ap_lincons1_constypref (ap_lincons1_t* @var{cons})
-Get a reference to the type of constraint. You may use the reference
-to modify the constraint type.
-@end deftypefun
-
-@deftypefun ap_linexpr1_t ap_lincons1_linexpr1ref (const ap_lincons1_t* @var{cons})
-Get a reference to the underlying expression of the constraint.  Do
-not free it: nothing is duplicated.  Modifying the argument or the
-result is equivalent, except for change of dimensions/environement.
-@end deftypefun
-
-@deftypefun void ap_lincons1_get_cst (ap_coeff_t* @var{coeff}, const ap_lincons1_t* @var{cons})
-@deftypefunx void ap_lincons1_set_cst (ap_lincons1_t* @var{cons}, const ap_coeff_t* cst)
-@deftypefunx bool ap_lincons1_get_coeff (ap_coeff_t* @var{coeff}, const ap_lincons1_t* cons, ap_var_t @var{var})
-@deftypefunx bool ap_lincons1_set_coeff (ap_lincons1_t* @var{cons}, ap_var_t @var{var}, const ap_coeff_t* @var{coeff})
-@deftypefunx bool ap_lincons1_set_list (ap_lincons1_t* @var{cons}, ...)
-@deftypefunx ap_coeff_t* ap_lincons1_cstref (ap_lincons1_t* @var{cons})
-@deftypefunx ap_coeff_t* ap_lincons1_coeffref (ap_lincons1_t* @var{cons}, ap_var_t @var{var})
-Identical to corresponding @code{ap_linexpr1_XXX} functions
-(@pxref{Access to linear expressions of level 1}).
-@end deftypefun
-
-@deftypefun ap_lincons0_t* ap_lincons1_lincons0ref (ap_lincons1_t* @var{cons})
-Return underlying constraint of level 0.
-Do not free it: nothing is duplicated.
-Modifying the argument or the result is equivalent, except for
-change of dimensions/envionment.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Change of dimensions and permutations of linear constraints of level 1, Arrays of linear constraints of level 1, Access to linear constraints of level 1, Linear constraints of level 1
-@subsection Change of dimensions and permutations of linear constraints of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun bool ap_lincons1_extend_environment (ap_lincons1_t* @var{ncons}, const ap_lincons1_t* @var{cons}, ap_environment_t* @var{nenv})
-@deftypefunx bool ap_lincons1_extend_environment_with (ap_lincons1_t* @var{cons}, ap_environment_t* @var{nenv})
-Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Arrays of linear constraints of level 1,  , Change of dimensions and permutations of linear constraints of level 1, Linear constraints of level 1
-@subsection Arrays of linear constraints of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_lincons1_array_t ap_lincons1_array_make (ap_environment_t* @var{env}, size_t @var{size})
-Allocate an array of constraints of size @var{size}, defined on the
-environement @var{env}.
-
-The constraints are initialized with NULL pointers for underlying
-expressions.
-@end deftypefun
-
-@deftypefun void ap_lincons1_array_clear (ap_lincons1_array_t* @var{array})
-Clear the constraints of the array, and then the array itself.
-@end deftypefun
-
-@deftypefun void ap_lincons1_array_fprint (FILE* @var{stream}, const ap_lincons1_array_t* @var{array})
-Print the array on the stream.
-@end deftypefun
-
-@deftypefun size_t ap_lincons1_array_size (const ap_lincons1_array_t* @var{array})
-Return the size of the array.
-@end deftypefun
-
-@deftypefun ap_environment_t* ap_lincons1_array_envref (const ap_lincons1_array_t* @var{array})
-Get a reference to the environment. Do not free it.
-@end deftypefun
-
-@deftypefun ap_lincons1_t ap_lincons1_array_get (const ap_lincons1_array_t* @var{array}, size_t @var{index})
-Return the linear constraint of the given index Nothing is duplicated,
-and the result should never be cleared.  Modifying the argument or the
-result is equivalent, except for change of environments
-@end deftypefun
-
-@deftypefun bool ap_lincons1_array_set (ap_lincons1_array_t* @var{array}, size_t @var{index}, const ap_lincons1_t* @var{cons})
-Fill the index of the array with the constraint.  Assumes
-@code{array->env==cons->env}.  Nothing is duplicated.  The argument should
-never be cleared. (its environment is dereferenced).  If a constraint
-was already stored, it is first cleared.  Return true iff problem
-(index or @code{array->env!=cons->env})
-@end deftypefun
-
-@deftypefun void ap_lincons1_array_clear_index (ap_lincons1_array_t* @var{array}, size_t @var{index})
-Clear the constraint at index index.
-@end deftypefun
-
-@deftypefun bool ap_lincons1_array_extend_environment_with (ap_lincons1_array_t* @var{array}, ap_environment_t* @var{nenv})
-@deftypefunx bool ap_lincons1_array_extend_environment (ap_lincons1_array_t* narray, const ap_lincons1_array_t* @var{array}, ap_environment_t* @var{nenv})
-Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
-@end deftypefun
-
-@c ===================================================================
-@node Generators of level 1, Abstract values and operations of level 1, Linear constraints of level 1, Interface of level 1
-@section generators of level 1 (@file{ap_generator1.h})
-@c ===================================================================
-
-@deftp datatype ap_generator1_t
-Datatype for generators.
-
-For information:
-@example
-typedef struct ap_generator1_t @{
-  ap_generator0_t generator0;
-  ap_environment_t* env;
-@} ap_generator1_t;
-@end example
-
-Generators are meant to be manipulated freely via their components. Creating the ray generator @code{x+2/3y} and then freeing it can be done with
-@example
-ap_generator1_t gen = ap_generator1_make(AP_GEN_RAY,
-				      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2));
-ap_generator1_set_list(&gen,
-		     AP_COEFF_S_INT, 1, "x",
-		     AP_COEFF_S_FRAC, 2,3, "y",
-		     AP_END);
-ap_generator1_clear(&gen);
-@end example
-@end deftp
-
-
-@deftp datatype ap_generator1_array_t
-@example
-typedef struct ap_generator1_array_t @{
-  ap_generator0_array_t generator0_array;
-  ap_environment_t* env;
-@} ap_generator1_array_t;
-@end example
-Datatype for arrays of generators.
-
-Arrays at level 1 cannot be accessed directly, for example by writing
-@code{array->p[i]}, but should instead be accessed with functions
-@code{ap_generator1_array_get} and @code{ap_generator1_array_set}.
-@end deftp
-
-@menu
-* Allocating generators of level 1::
-* Access to generators of level 1::
-* Change of dimensions and permutations of generators of level 1::
-* Arrays of generators of level 1::
-@end menu
-
-@c -------------------------------------------------------------------
-@node Allocating generators of level 1, Access to generators of level 1, Generators of level 1, Generators of level 1
-@subsection Allocating generators of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_generator1_t ap_generator1_make (ap_gentyp_t @var{gentyp}, ap_linexpr1_t* @var{linexpr})
-Create a generator of type @var{gentyp} with the expression @var{linexpr}.
-
-The expression is not duplicated, just pointed to, so it becomes
-managed via the generator.
-@end deftypefun
-
-@deftypefun ap_generator1_t ap_generator1_copy (const ap_generator1_t* @var{gen})
-Duplication
-@end deftypefun
-
-@deftypefun void ap_generator1_clear (ap_generator1_t* @var{gen})
-Clear the generator and set pointers to NULL.
-@end deftypefun
-
-@deftypefun void ap_generator1_fprint (FILE* @var{stream}, const ap_generator1_t* @var{gen});
-Print the linear generator on stream @var{stream}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Access to generators of level 1, Change of dimensions and permutations of generators of level 1, Allocating generators of level 1, Generators of level 1
-@subsection Access to generators of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_environment_t* ap_generator1_envref (const ap_generator1_t* @var{gen})
-Get a reference to the environment. Do not free it.
-@end deftypefun
-
-@deftypefun ap_gentyp_t* ap_generator1_gentypref (ap_generator1_t* @var{gen})
-Get a reference to the type of generator. You may use the reference
-to modify the generator type.
-@end deftypefun
-
-@deftypefun ap_linexpr1_t ap_generator1_linexpr1ref (const ap_generator1_t* @var{gen})
-Get a reference to the underlying expression of the generator.  Do
-not free it: nothing is duplicated.  Modifying the argument or the
-result is equivalent, except for change of dimensions/environement.
-@end deftypefun
-
-@deftypefun void ap_generator1_get_cst (ap_coeff_t* @var{coeff}, const ap_generator1_t* @var{gen})
-@deftypefunx void ap_generator1_set_cst (ap_generator1_t* @var{gen}, const ap_coeff_t* cst)
-@deftypefunx bool ap_generator1_get_coeff (ap_coeff_t* @var{coeff}, const ap_generator1_t* gen, ap_var_t @var{var})
-@deftypefunx bool ap_generator1_set_coeff (ap_generator1_t* @var{gen}, ap_var_t @var{var}, const ap_coeff_t* @var{coeff})
-@deftypefunx bool ap_generator1_set_list (ap_generator1_t* @var{gen}, ...)
-@deftypefunx ap_coeff_t* ap_generator1_cstref (ap_generator1_t* @var{gen})
-@deftypefunx ap_coeff_t* ap_generator1_coeffref (ap_generator1_t* @var{gen}, ap_var_t @var{var})
-Identical to corresponding @code{ap_linexpr1_XXX} functions
-(@pxref{Access to linear expressions of level 1}).
-@end deftypefun
-
-@deftypefun ap_generator0_t* ap_generator1_generator0ref (ap_generator1_t* @var{gen})
-Return underlying generator of level 0.
-Do not free it: nothing is duplicated.
-Modifying the argument or the result is equivalent, except for
-change of dimensions/envionment.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Change of dimensions and permutations of generators of level 1, Arrays of generators of level 1, Access to generators of level 1, Generators of level 1
-@subsection Change of dimensions and permutations of generators of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun bool ap_generator1_extend_environment (ap_generator1_t* @var{ngen}, const ap_generator1_t* @var{gen}, ap_environment_t* @var{nenv})
-@deftypefunx bool ap_generator1_extend_environment_with (ap_generator1_t* @var{gen}, ap_environment_t* @var{nenv})
-Identical to corresponding @code{ap_linexpr1_XXX} functions
-(@pxref{Change of dimensions and permutations of linear expressions of level 1}).
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Arrays of generators of level 1,  , Change of dimensions and permutations of generators of level 1, Generators of level 1
-@subsection Arrays of generators of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_generator1_array_t ap_generator1_array_make (ap_environment_t* @var{env}, size_t @var{size})
-Allocate an array of generators of size @var{size}, defined on the
-environement @var{env}.
-
-The generators are initialized with NULL pointers for underlying
-expressions.
-@end deftypefun
-
-@deftypefun void ap_generator1_array_clear (ap_generator1_array_t* @var{array})
-Clear the generators of the array, and then the array itself.
-@end deftypefun
-
-@deftypefun void ap_generator1_array_fprint (FILE* @var{stream}, const ap_generator1_array_t* @var{array})
-Print the array on the stream.
-@end deftypefun
-
-@deftypefun size_t ap_generator1_array_size (const ap_generator1_array_t* @var{array})
-Return the size of the array.
-@end deftypefun
-
-@deftypefun ap_environment_t* ap_generator1_array_envref (const ap_generator1_array_t* @var{array})
-Get a reference to the environment. Do not free it.
-@end deftypefun
-
-@deftypefun ap_generator1_t ap_generator1_array_get (const ap_generator1_array_t* @var{array}, size_t @var{index})
-Return the linear generator of the given index Nothing is duplicated,
-and the result should never be cleared.  Modifying the argument or the
-result is equivalent, except for change of environments
-@end deftypefun
-
-@deftypefun bool ap_generator1_array_set (ap_generator1_array_t* @var{array}, size_t @var{index}, const ap_generator1_t* @var{gen})
-Fill the index of the array with the generator.  Assumes
-@code{array->env==gen->env}.  Nothing is duplicated.  The argument should
-never be cleared. (its environment is dereferenced).  If a generator
-was already stored, it is first cleared.  Return true iff problem
-(index or @code{array->env!=gen->env})
-@end deftypefun
-
-@deftypefun void ap_generator1_array_clear_index (ap_generator1_array_t* @var{array}, size_t @var{index})
-Clear the generator at index index.
-@end deftypefun
-
-@deftypefun bool ap_generator1_array_extend_environment_with (ap_generator1_array_t* @var{array}, ap_environment_t* @var{nenv})
-@deftypefunx bool ap_generator1_array_extend_environment (ap_generator1_array_t* narray, const ap_generator1_array_t* @var{array}, ap_environment_t* @var{nenv})
-Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
-@end deftypefun
-
-@c ===================================================================
-@node Abstract values and operations of level 1,  , Generators of level 1, Interface of level 1
-@section Abstract values and operations of level 1 (@file{ap_abstract1.h})
-@c ===================================================================
-
-@deftp datatype ap_abstract1_t
-Datatype for abstract values at level 1.
-
-For information:
-@example
-typedef struct ap_abstract1_t @{
-  ap_abstract0_t* abstract0;
-  ap_environment_t* env;
-@} ap_abstract1_t;
-  /* data structure invariant:
-     ap_abstract0_integer_dimension(man,abstract0)== env->intdim &&
-     ap_abstract0_real_dimension(man,abstract0)== env->realdim */
-@end example
-@end deftp
-
-@deftp datatype ap_box1_t
-@example
-typedef struct ap_box1_t @{
-  ap_interval_t** p;
-  ap_environment_t* env;
-@} ap_box1_t;
-void ap_box1_fprint(FILE* stream, const ap_box1_t* box);
-void ap_box1_clear(ap_box1_t* box);
-@end example
-@end deftp
-
-Most operations are offered in 2 versions: @emph{functional} or
-@emph{destructive} @xref{Abstract values and operations of level 0}.
-
-We remind the policy for redimensioning (@pxref{Interface of level 1}):
-
-@itemize
-@item
-For functions taking one abstract value and one expression (or
-constraint or generator, or array of ...), the environement of the
-expression should be a sub-environement of the environement of the
-abstract value. The environement of the result is the environement of
-the argument abstract value.
-@item
-For functions taking several abstract values, their environements
-should be the same. Otherwise, it is up to the user to move them to a
-common super-environement (@pxref{Environements}).
-@end itemize
-
-@menu
-
-* Allocating abstract values of level 1::
-* Control of internal representation of abstract values of level 1::
-* Printing abstract values of level 1::
-* Serialization of abstract values of level 1::
-
-Constructors, Accessors, Tests and Extraction of properties
-
-* Constructors for abstract values of level 1::
-* Accessors for abstract values of level 1::
-* Tests on abstract values of level 1::
-* Extraction of properties of abstract values of level 1::
-
-Operations
-
-* Meet and Join of abstract values of level 1::
-* Assignements and Substitutions of abstract values of level 1::
-* Existential quantification of abstract values of level 1::
-* Change of environements of abstract values of level 1::
-* Expansion and Folding of dimensions in abstract values of level 1::
-* Widening of abstract values of level 1::
-* Topological closure of abstract values of level 1::
-
-Additional functions
-
-* Additional functions on abstract values of level 1::
-@end menu
-
-@c -------------------------------------------------------------------
-@node Allocating abstract values of level 1, Control of internal representation of abstract values of level 1, Abstract values and operations of level 1, Abstract values and operations of level 1
-@subsection Allocating abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_abstract1_t ap_abstract1_copy (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Return a copy of @var{a}, on which destructive update does not
-affect @var{a}.
-@end deftypefun
-
-@deftypefun void ap_abstract1_clear (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
-Free all the memory used by @var{a}.
-@end deftypefun
-
-@deftypefun size_t ap_abstract1_size (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Return the abstract size of @var{a}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Control of internal representation of abstract values of level 1, Printing abstract values of level 1, Allocating abstract values of level 1, Abstract values and operations of level 1
-@subsection Control of internal representation of abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun void ap_abstract1_minimize (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Minimize the size of the representation of @var{a}.  This may result in
-a later recomputation of internal information.
-@end deftypefun
-
-@deftypefun void ap_abstract1_canonicalize (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Put @var{a} in canonical form. (not yet clear definition).
-@end deftypefun
-
-@deftypefun void ap_abstract1_approximate (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, int @var{algorithm})
-Perform some transformation on @var{a}, guided by the field
-algorithm.
-
-The transformation may lose information.  The argument
-@var{algorithm} overrides the field algorithm of the structure of
-type @code{ap_funopt_t} associated to
-@code{ap_abstract1_approximate}.
-@end deftypefun
-
-@deftypefun tbool_t ap_abstract1_is_minimal (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-@deftypefunx tbool_t ap_abstract1_is_canonical (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Test whether @var{a} is in minimal or in canonical form.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Printing abstract values of level 1, Serialization of abstract values of level 1, Control of internal representation of abstract values of level 1, Abstract values and operations of level 1
-@subsection Printing abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun void ap_abstract1_fprint (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Print @var{a} in a pretty way on the stream.
-@end deftypefun
-
-@deftypefun void ap_abstract1_fprintdiff (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
-Print the difference between @var{a1} (old value) and @var{a2} (new
-value). The meaning of difference is library dependent.
-@end deftypefun
-
-@deftypefun void ap_abstract1_fdump (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Dump the internal representation of @var{a} for debugging
-purposes.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Serialization of abstract values of level 1, Constructors for abstract values of level 1, Printing abstract values of level 1, Abstract values and operations of level 1
-@subsection Serialization of abstract values of level 1
-@c -------------------------------------------------------------------
-@deftypefun ap_membuf_t ap_abstract1_serialize_raw (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Allocate a memory buffer (with @code{malloc}), output @var{a}
-in raw binary format to it and return a pointer on the memory
-buffer and the number of bytes written.  It is the user
-responsability to free the memory afterwards (with @code{free}).
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_deserialize_raw (ap_manager_t* @var{man}, void* @var{ptr}, size_t* @var{size})
-Return the abstract value read in raw binary format from the
-buffer pointed by @var{ptr} and store in size the number of bytes
-read.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Constructors for abstract values of level 1, Accessors for abstract values of level 1, Serialization of abstract values of level 1, Abstract values and operations of level 1
-@subsection Constructors for abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_abstract1_t ap_abstract1_bottom (ap_manager_t* @var{man}, ap_environment_t* @var{env})
-@deftypefunx ap_abstract1_t ap_abstract1_top (ap_manager_t* @var{man}, ap_environment_t* @var{env})
-Create resp. a bottom (empty) value and a top (universe) value defined
-on the environement @var{env}.
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_of_box (ap_manager_t* @var{man}, ap_environment_t* @var{env}, ap_var_t* @var{tvar}, ap_interval_t** @var{tinterval}, size_t @var{size})
-Abstract an hypercube defined by the arrays @var{tvar} and
-@var{tintnerval} of size @var{size}.
-
-If no inclusion is specified for a variable in the environement, its
-value is no constrained in the resulting abstract value.
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_of_lincons_array (ap_manager_t* @var{man}, ap_environment_t* @var{env}, const ap_lincons1_array_t* @var{array})
-Abstract a convex polyhedra defined by the array @var{array} of
-(interval) linear constraints. The environement of the array should be
-a subset of the environement @var{env}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Accessors for abstract values of level 1, Tests on abstract values of level 1, Constructors for abstract values of level 1, Abstract values and operations of level 1
-@subsection Accessors for abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_dimension_t ap_abstract1_environement (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Get a reference to the environement of @var{a}. Do not free it.
-@end deftypefun
-
-@deftypefun ap_manager_t* ap_abstract1_manager (const ap_abstract1_t* @var{a})
-Get a reference to the manager contained in @var{a}.
-Do not free it.
-@end deftypefun
-
-@deftypefun ap_dimension_t ap_abstract1_abstract0 (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Get a reference to the underlying abstract value of level 0 in
-@var{a}. Do not free it.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Tests on abstract values of level 1, Extraction of properties of abstract values of level 1, Accessors for abstract values of level 1, Abstract values and operations of level 1
-@subsection Tests on abstract values of level 1
-@c -------------------------------------------------------------------
-
-If any of the following functions returns tbool_top, this means that
-an exception has occured, or that the exact computation was
-considered too expensive to be performed (according to the options).
-
-@deftypefun tbool_t ap_abstract1_is_bottom (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-@deftypefunx tbool_t ap_abstract1_is_top (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Emtpiness and universality tests.
-@end deftypefun
-
-@deftypefun tbool_t ap_abstract1_is_leq (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
-@deftypefunx tbool_t ap_abstract1_is_eq (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
-Inclusion and equality tests.
-@end deftypefun
-
-@deftypefun tbool_t ap_abstract1_sat_interval (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var}, const ap_interval_t* @var{interval})
-Is the variable @var{var} included in the interval @var{interval} in the abstract value @var{a} ?
-@end deftypefun
-
-@deftypefun tbool_t ap_abstract1_sat_lincons (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, const ap_lincons1_t* @var{lincons})
-Does the abstract value @var{a} satisfy the (interval) linear constraint @var{lincons} ?
-@end deftypefun
-
-@deftypefun tbool_t ap_abstract1_is_variable_unconstrained (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var})
-Is the dimension @var{dim} unconstrained in the abstract value @var{a} ?
-If it is the case, we have @code{forget(man,a,dim) == a}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Extraction of properties of abstract values of level 1, Meet and Join of abstract values of level 1, Tests on abstract values of level 1, Abstract values and operations of level 1
-@subsection Extraction of properties of abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_interval_t* ap_abstract1_bound_variable (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var})
-Return the interval taken by the variable @var{var} over the abstract
-value @var{a}.
-@end deftypefun
-
-@deftypefun ap_interval_t* ap_abstract1_bound_linexpr (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, const ap_linexpr1_t* @var{expr})
-Return the interval taken by a linear expression @var{expr} over
-the abstract value @var{a}.
-
-This function allows to solve a Linear Programming (LP) problem, but
-depending on the underlying domain the solution may be not optimal.
-@end deftypefun
-
-@deftypefun ap_box1_t ap_abstract1_to_box (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Convert @var{a} to an interval/hypercube.
-@end deftypefun
-
-@deftypefun ap_lincons1_array_t ap_abstract1_to_lincons_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Convert @var{a} to a convex polyhedra (conjunction of linear
-constraints).
-
-The constraints are normally guaranteed to be really linear
-(without intervals).
-@end deftypefun
-
-@deftypefun ap_generator1_array_t ap_abstract1_to_generator_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-Convert @var{a} to an array of generators.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Meet and Join of abstract values of level 1, Assignements and Substitutions of abstract values of level 1, Extraction of properties of abstract values of level 1, Abstract values and operations of level 1
-@subsection Meet and Join of abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_abstract1_t ap_abstract1_meet (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
-
-@deftypefunx ap_abstract1_t ap_abstract1_join (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
-Meet and Join of 2 abstract values
-@end deftypefun
-
-
-@deftypefun ap_abstract1_t ap_abstract1_meet_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{array}, size_t @var{size})
-
-@deftypefunx ap_abstract1_t ap_abstract1_join_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{array}, size_t @var{size})
-Meet and Join of the array @var{array} of abstract values of size
-@var{size}.
-
-Raise an @code{AP_EXC_INVALID_ARGUMENT} exception if
-@code{size==1} (no way to define the environement of the result
-in such a case).
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_meet_lincons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_lincons1_array_t* @var{array})
-Meet of the abstract value @var{a} with the set of constraints
-@var{array}.
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_add_ray_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_generator1_array_t* @var{array})
-Generalized time elapse operator.
-
-@var{array} is supposed to contain only rays or lines, no vertices.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Assignements and Substitutions of abstract values of level 1, Existential quantification of abstract values of level 1, Meet and Join of abstract values of level 1, Abstract values and operations of level 1
-@subsection Assignements and Substitutions of abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, const ap_linexpr1_t* @var{expr}, const ap_abstract1_t* @var{dest})
-@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, const ap_linexpr1_t* @var{expr}, const ap_abstract1_t* @var{dest})
-Assignement and Substitution of the dimension @var{dim} by the (interval)
-linear expression @var{expr} in abstract value @var{org}.
-
-@var{dest} is an optional argument. If not NULL, semantically
-speaking, the result of the transformation is intersected with
-@var{dest}. This is useful for precise backward transformations in
-lattices like intervals or octagons.
-@end deftypefun
-
-
-@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, const ap_var_t* @var{tvar}, const ap_linexpr1_t* @var{texpr}, size_t @var{size}, const ap_abstract1_t* @var{dest})
-@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, const ap_var_t* @var{tvar}, const ap_linexpr1_t* @var{texpr}, size_t @var{size}, const ap_abstract1_t* @var{dest})
-Parallel Assignement and Substitution of several variables by
-linear expressions in abstract value @var{org}.
-
-@var{dest} is an optional argument. If not NULL, semantically speaking,
-the result of the transformation is intersected with @var{dest}. This is
-useful for precise backward transformations in lattices like intervals or
-octagons.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Existential quantification of abstract values of level 1, Change of environements of abstract values of level 1, Assignements and Substitutions of abstract values of level 1, Abstract values and operations of level 1
-@subsection Existential quantification of abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_abstract1_t ap_abstract1_forget_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_var_t* @var{tvar}, size_t @var{size}, bool @var{project})
-Forget (@code{project=false}) or Project (@code{project=true}) the
-array of variables @var{tvar} of size @var{size} in the abstract
-value @var{a}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Change of environements of abstract values of level 1, Expansion and Folding of dimensions in abstract values of level 1, Existential quantification of abstract values of level 1, Abstract values and operations of level 1
-@subsection Change of environements of abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_abstract1_t ap_abstract1_change_environment (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_environment_t* @var{nenv}, bool @var{project})
-Change the environement of the abstract values.  Variables that are
-removed are first existentially quantified, and variables that are
-introduced are either unconstrained (@code{project==false}) or
-initialized to 0 (@code{project==false}).
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_minimize_environment (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a})
-Remove from the environment of the abstract value and from the
-abstract value itself variables that are unconstrained in it.
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_rename_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_var_t* @var{tvar}, ap_var_t* @var{ntvar}, size_t @var{size})
-Parallel renaming of the environement of the abstract value. The new
-variables should not interfere with the variables that are not
-renamed.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Expansion and Folding of dimensions in abstract values of level 1, Widening of abstract values of level 1, Change of environements of abstract values of level 1, Abstract values and operations of level 1
-@subsection Expansion and Folding of dimensions of abstract values of level 1
-@c -------------------------------------------------------------------
-
-Formally, expanding @code{z} into @code{z} and @code{w} in
-abstract value (predicate) @code{P} is defined by
-@math{expand(P(x,y,z),z,w) = P(x,y,z) and P(x,y,w)}.
-
-Conversely, folding @code{z} and @code{w} into @code{z} in
-abstract value (predicate) @code{Q} is defined by
-@math{fold(Q(x,y,z,w),z,w) = (exists w: Q(x,y,z,w)) or (exists z:Q(x,y,z,w)[z<-w])}.
-
-@deftypefun ap_abstract1_t ap_abstract1_expand (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_var_t @var{var}, ap_var_t* @var{tvar}, size_t @var{size})
-Expand the variable @var{var} into itself + the @var{size} additional
-variables of the array @var{tvar}, which are given the same type as
-@var{var}.  The additional variables are added to the environment of
-the argument for making the environment of the result, so they should
-not belong to the initial environement.
-
-It results in @code{size+1} unrelated variables having same relations
-with other dimensions.
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_fold (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_var_t* @var{tvar}, size_t @var{size})
-Fold the variables in the array @var{tvar} of size @var{size}>=1 and
-put the result in the first variable in the array. The other variables
-of the array are then forgot and removed from the environement.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Widening of abstract values of level 1, Topological closure of abstract values of level 1, Expansion and Folding of dimensions in abstract values of level 1, Abstract values and operations of level 1
-@subsection Widening of abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_abstract1_t ap_abstract1_widening (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
-Widening of @var{a1} with @var{a2}. @var{a1} is supposed to be
-included in @var{a2}.
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_widening_threshold (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2}, ap_lincons1_array_t* @var{array})
-Widening with threshold.
-
-Intersect the result of the standard widening with all the
-constraints in @var{array} that are satisfied by both @var{a1} and
-@var{a2}.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Topological closure of abstract values of level 1, Additional functions on abstract values of level 1, Widening of abstract values of level 1, Abstract values and operations of level 1
-@subsection Topological closure of abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_abstract1_t* ap_abstract1_closure (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a})
-Relax strict constraints into non strict constraints.
-@end deftypefun
-
-@c -------------------------------------------------------------------
-@node Additional functions on abstract values of level 1,  , Topological closure of abstract values of level 1, Abstract values and operations of level 1
-@subsection Additional functions on abstract values of level 1
-@c -------------------------------------------------------------------
-
-@deftypefun ap_linexpr1_t ap_abstract1_quasilinear_of_intervallinear (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})
-Evaluate the interval linear expression @var{expr} on the abstract
-value @var{a} and approximate it by a quasilinear expression.
-
-This implies calls to @code{ap_abstract0_bound_dimension}.
-@end deftypefun
-
-@c *******************************************************************
-@node NewPolka, Itv, Interface of level 1, Top
-@chapter NewPolka: convex polyhedra abstract domain
-@c *******************************************************************
-
-@include newpolka.texi
-
-@c *******************************************************************
-@node Itv, Oct, NewPolka, Top
-@chapter Itv: intervals abstract domain
-@c *******************************************************************
-
-@include itv.texi
-
-@c *******************************************************************
-@node Oct, Examples, Itv, Top
-@chapter Oct: octagon abstract domain
-@c *******************************************************************
-
-@uref{oct_doc.html}
-
-@c *******************************************************************
-@node Examples, Appendices, Oct, Top
+@node Examples, Appendices, Level 0 of the interface, Top
 @chapter Examples
 @c *******************************************************************
 
@@ -3367,9 +3373,9 @@ distribution, or click on the links below:
 @c *******************************************************************
 
 @menu
-* C Datatype Index::
-* C Variable Index::
-* C Function Index::
+* C Datatype Index::            
+* C Variable Index::            
+* C Function Index::            
 @end menu
 
 @c ===================================================================

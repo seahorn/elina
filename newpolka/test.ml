@@ -111,7 +111,7 @@ let mine3 man =
     [((Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 5 2))),0)]
     (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (-1)))))
   ;
-  let poly2 = Abstract0.assign_linexpr poly 0 expr None in
+  let poly2 = Abstract0.assign_linexpr man poly 0 expr None in
   printf "poly2=%a@." print_abstract0 poly2;
   ()
 ;;

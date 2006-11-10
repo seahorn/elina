@@ -1,4 +1,4 @@
-\documentclass[[twoside,10pt,a4paper]{report}
+\documentclass[twoside,10pt,a4paper]{report}
 \usepackage[latin1]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{ae}
@@ -47,7 +47,11 @@ Copyright (C) Bertrand Jeannet 2005-2006 for the
 
 \newpage
 
-\section*{Introduction}
+\tableofcontents
+
+%*****************************************************************************
+\chapter{Introduction}
+%*****************************************************************************
 
 This package is an \textsc{OCaml} interface for the APRON
 library/interface.  The interface is accessed via the module
@@ -73,12 +77,9 @@ Generator1 & generators, level 1 \\
 Abstract1  & abstract values, level 1
 \end{tabular}
 
-By default, variables (Apron.Var.t) are implemented as strings. To
-change this, one need to manually replace the default file var.ml
-by a user-defined one. The module Environment ensures that the new
-Var module offers a compatible signature.
-
+%=============================================================================
 \subsection*{Requirements}
+%=============================================================================
 
 \begin{itemize}
 \item M4 preprocessor (standard on any UNIX system)
@@ -89,7 +90,9 @@ Var module offers a compatible signature.
 \item Camlidl (tested with 1.05)
 \end{itemize}
 
+%=============================================================================
 \subsection*{Installation}
+%=============================================================================
 
 \begin{description}
 \item[Library]
@@ -98,14 +101,16 @@ You might also have to modify the Makefile for executables
 
 type 'make', and then 'make install'
 
-The OCaml part of the library is named apron.cma (.cmxa, .a)
-The C part of the library is named libapron\_caml.a (libapron\_caml\_debug.a)
+The OCaml part of the library is named apron.cma (.cmxa, .a) The C
+part of the library, which is automatically referenced by
+apron.cma/apron.cmxa, is named libapron\_caml.a
+(libapron\_caml\_debug.a)
 
 'make install' installs not only .mli, .cmi, but also .idl files.
 \item[Documentation]
 The documentation (currently very sketchy) is generated with ocamldoc.
 
-'make mlapronidl.dvi'
+'make mlapronidl.pdf'
 
 'make html' (put the HTML files in the html subdirectoy)
 
@@ -113,11 +118,93 @@ The documentation (currently very sketchy) is generated with ocamldoc.
 'make clean' and 'make distclean' have the usual behaviour.
 \end{description}
 
-\newpage
+%=============================================================================
+\subsection*{Compilation and Linking}
+%=============================================================================
 
-\tableofcontents
+To make things clearer, we assume an example file
+\texttt{example.ml} which uses both \textsc{NewPolka} (convex
+polyhedra) and \textsc{Itv} (intervals) libraries, in their
+versions where integers (resp. rationals) are GMP integers (resp.
+rationals). We assume that C and OCaml interface and library files
+are located in directory \$APRON/lib.
 
-\input{ocamldoc.tex}
+The native-code compilation command looks like
+\begin{quote}\tt
+  ocamlopt -I \$APRON/lib -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa itv.cmxa polka.cmxa -cclib "-lpolkag -litvmpq"
+\end{quote}
+Comments:
+\begin{enumerate}
+\item You need at least the libraries \texttt{bigarray} (standard
+  \textsc{OCaml} distribution), \texttt{gmp}, and \texttt{apron}
+  (standard APRON distribution), plus the one implementing an
+  effective abstract domains: here, \texttt{itv}, and
+  \texttt{polka}.
+\item The C libraries associated to those \textsc{OCaml} libraries
+  (\textit{e.g.,} \texttt{gmp\_caml}, \texttt{itv\_caml}, \ldots)
+  are automatically looked for, with the exception of the
+  libraries implementing abstract domains (\textit{e.g.,}
+  \texttt{polkag}, \texttt{itvmpq}). The reason is that most of
+  these libraries may be compiled with different internal
+  representations and/or options, while their interface remains
+  the same.
+\end{enumerate}
+
+The byte-code compilation process looks like
+\begin{quote}\tt
+  ocamlc -I \$APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma itv.cma polka.cma -cclib "-lpolkag -litvmpq" \\
+  ~\\
+  ocamlc -I \$APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma itv.cma polka.cma -cclib "-lpolkag -litvmpq" example.ml
+\end{quote}
+Comments:
+\begin{enumerate}
+\item One first build a custom bytecode interpreter that includes the new native-code needed;
+\item One then compile the \texttt{example.ml} file.
+\end{enumerate}
+
+The automatic search for C libraries associated to these
+\textsc{OCaml} libraries can be disabled by the option
+\texttt{-noautolink} supported by both \texttt{ocamlc} and
+\texttt{ocamlopt} commands. For instance, the command for native-code compilation can alternatively looks like:
+\begin{quote}\tt
+  ocamlopt -I \$APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa itv.cmxa polka.cmxa -cclib "-lpolkag -polka\_caml -litvmpq -litv\_caml -lapron\_caml -lapron -lgmp\_caml -LGMP/lib -lgmp"
+\end{quote}
+
+The option \texttt{-verbose} helps to understand what is happening
+in case of problem.
+
+\part{Coefficients}
+\input{Mpzf.tex}
+\input{Mpqf.tex}
+\input{Scalar.tex}
+\input{Interval.tex}
+\input{Coeff.tex}
+
+\part{Managers and Abstract Domains}
+\input{Manager.tex}
+\input{Itv.tex}
+\input{Oct.tex}
+\input{Polka.tex}
+
+\part{Level 1 of the interface}
+\input{Var.tex}
+\input{Environment.tex}
+\input{Linexpr1.tex}
+\input{Lincons1.tex}
+\input{Generator1.tex}
+\input{Abstract1.tex}
+
+\part{Level 0 of the interface}
+\input{Dim.tex}
+\input{Linexpr0.tex}
+\input{Lincons0.tex}
+\input{Generator0.tex}
+\input{Abstract0.tex}
+
+\part{Others}
+\input{Mpz.tex}
+\input{Mpq.tex}
+\input{Gmp_random.tex}
 
 \appendix
 \printindex

@@ -27,4 +27,4 @@ struct ap_dimension_t {
   [mlname(reald)]unsigned int realdim;
 };
 
-quote(MLMLI,"(** Dimensions and related types *)")
+quote(MLMLI,"(** APRON Dimensions and related types *)")

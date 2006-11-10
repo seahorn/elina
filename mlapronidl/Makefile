@@ -59,7 +59,13 @@ DVIPDF=dvipdf
 IDLMODULES = \
 scalar interval coeff \
 dim linexpr0 lincons0 generator0 manager abstract0 \
-var linexpr1 lincons1 generator1 abstract1
+var environment linexpr1 lincons1 generator1 abstract1
+
+IDLMODULEStex = ocamldoc.tex \
+Scalar.tex Interval.tex Coeff.tex \
+Dim.tex Linexpr0.tex Lincons0.tex Generator0.tex Manager.tex Abstract0.tex \
+Var.tex Environment.tex Linexpr1.tex Lincons1.tex Generator1.tex Abstract1.tex \
+Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Gmp_random.tex Itv.tex Polka.tex Oct.tex
 
 MLMODULES = $(IDLMODULES)
 
@@ -67,8 +73,8 @@ MLSRC = $(MLMODULES:%=%.mli) $(MLMODULES:%=%.ml)
 MLINT = $(MLMODULES:%=%.cmi)
 MLOBJ = $(MLMODULES:%=%.cmo)
 MLOBJx = $(MLMODULES:%=%.cmx)
-MLLIB_TOINSTALL = $(MLMODULES:%=%.mli) $(MLINT) apron.cmi apron.cmo
-MLLIB_TOINSTALLx = apron.cmx apron.o
+MLLIB_TOINSTALL = $(MLMODULES:%=%.mli) apron.cmi apron.cma
+MLLIB_TOINSTALLx = apron.cmx apron.cmxa apron.a
 CCMODULES = apron_caml $(IDLMODULES:%=%_caml)
 CCSRC = apron_caml.h $(CCMODULES:%=%.c)
 CCLIB_TOINSTALL = libapron_caml.a libapron_caml_debug.a
@@ -78,7 +84,7 @@ CCINC_TOINSTALL = apron_caml.h
 # Rules
 #---------------------------------------
 
-all: $(MLSRC) $(MLINT) $(MLOBJ) $(MLOBJx) apron.cmi apron.cmx libapron_caml.a libapron_caml_debug.a
+all: apron.cmi apron.cmx apron.cma apron.cmxa apron.a libapron_caml.a libapron_caml_debug.a
 
 mldep: $(MLSRC)
 	ocamldep $(OCAMLINC) $(MLSRC)
@@ -94,7 +100,7 @@ dist: $(IDLMODULES:%=%.idl) $(MLSRC) $(CCSRC) macros.m4 apron_caml.c apron_caml.
 	(cd ..; tar zcvf mlapronidl.tgz $(^:%=mlapronidl/%))
 
 clean:
-	/bin/rm -f $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c)
+	/bin/rm -f $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c) $(IDLMODULEStex)
 	/bin/rm -f mpz.idl mpq.idl
 	/bin/rm -f mlapronidl.out mlapronidl.aux mlapronidl.idx mlapronidl.ilg mlapronidl.ind mlapronidl.bbl mlapronidl.blg mlapronidl.dvi mlapronidl.log mlapronidl.toc mlapronidl.ps
 	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
@@ -122,15 +128,23 @@ libapron_caml.a: $(CCMODULES:%=%.o)
 	ar rcs $@ $^
 libapron_caml_debug.a: $(CCMODULES:%=%_debug.o)
 	ar rcs $@ $^
-libapron_caml_prof.a: $(CCMODULES:%=%_prof.o)
-	ar rcs $@ $^
 
 #---------------------------------------
 # ML rules
 #---------------------------------------
 
+apron.cma: apron.cmo libapron_caml.a
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ apron.cmo \
+	-cclib "-L$(MLAPRONIDL_PREFIX)/lib -lapron_caml" \
+	-cclib "-L$(APRON_PREFIX)/lib -lapron"
+
+apron.cmxa: apron.cmx libapron_caml.a
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ apron.cmx \
+	-cclib "-L$(MLAPRONIDL_PREFIX)/lib -lapron_caml" \
+	-cclib "-L$(APRON_PREFIX)/lib -lapron"
+
 apron.cmo apron.cmi: $(MLOBJ)
-	$(OCAMLC) -pack -o $@ $(MLOBJ)
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -pack -o $@ $(MLOBJ)
 
 apron.cmx apron.o: $(MLOBJx)
 	$(OCAMLOPT) -pack -o $@ $(MLOBJx)
@@ -149,9 +163,9 @@ mpq.idl: ../mlgmpidl/mpq.idl
 mlapronidl.pdf: mlapronidl.dvi
 	$(DVIPDF) mlapronidl.dvi
 
-mlapronidl.dvi: $(MLMODULES:%=%.mli)
+mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli)
 	$(OCAMLDOC) $(OCAMLINC) \
-	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -o ocamldoc.tex $^ ../octagons/oct.mli ../itv/itv.mli ../newpolka/polka.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpq.mli ../mlgmpidl/mpz.mli ../mlgmpidl/gmp_random.mli
+	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(IDLMODULES:%=%.mli) ../itv/itv.mli ../octagons/oct.mli ../newpolka/polka.mli  ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli
 	latex mlapronidl
 	makeindex mlapronidl
 	latex mlapronidl
@@ -159,9 +173,10 @@ mlapronidl.dvi: $(MLMODULES:%=%.mli)
 
 
 
-html: $(MLMODULES:%=%.mli)
+html: $(IDLMODULES:%=%.mli) mlapronidl.odoc
 	mkdir -p html
-	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code $^ ../octagons/oct.mli ../itv/itv.mli ../newpolka/polka.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpq.mli ../mlgmpidl/mpz.mli ../mlgmpidl/gmp_random.mli
+	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(IDLMODULES:%=%.mli) ../itv/itv.mli ../octagons/oct.mli ../newpolka/polka.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli 
+	cp -f index.html html
 
 #--------------------------------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES

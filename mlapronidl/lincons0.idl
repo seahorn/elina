@@ -3,7 +3,7 @@
 /* This file is part of the APRON Library, released under LGPL license.
    Please read the COPYING file packaged in the distribution  */
 
-quote(MLI,"(** Linear constraints of level 0 *)")
+quote(MLI,"(** APRON Linear constraints of level 0 *)")
 
 quote(C, "\n\
 #include <limits.h>\n\

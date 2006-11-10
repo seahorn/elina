@@ -28,7 +28,7 @@ typedef [abstract,
 	 ml2c(camlidl_apron_environment_ptr_ml2c)]
 struct ap_environment_ptr ap_environment_ptr;
 
-quote(MLMLI,"(** Environments binding dimensions to names *)")
+quote(MLMLI,"(** APRON Environments binding dimensions to names *)")
 
 quote(MLI,"\n(** Making an environment from a set of integer and real variables. Raise [Failure] in case of name conflict. *)")
 

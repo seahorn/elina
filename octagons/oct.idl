@@ -18,7 +18,7 @@
 quote(C,"/*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*/")
 quote(MLMLI,"(*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*)")
 
-quote(MLI,"(** Oct: octagon abstract domain. \n*)\n\n")
+quote(MLI,"(** OCT: octagon abstract domain. \n*)\n\n")
 quote(MLI,"(* *)\n\n");
 
 quote(C,"#include \"oct.h\"")

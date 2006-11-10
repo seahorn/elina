@@ -1,6 +1,6 @@
 /* -*- mode: c -*- */
 
-quote(MLI,"(** Expressions of level 1 *)")
+quote(MLI,"(** APRON Expressions of level 1 *)")
 
 quote(C, "\n\
 #include <limits.h>\n\

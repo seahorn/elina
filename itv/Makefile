@@ -72,7 +72,7 @@ CCSRC = itv_config.h itv_int.h itv.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 CCINC_TO_INSTALL = itv.h
 CCBIN_TO_INSTALL = 
 CCLIB_TO_INSTALL = libitvmpq.a libitvmpq_debug.a
-CAML_TO_INSTALL = itv.idl itv.ml itv.mli itv.cmi itv.cmo itv.cmx itv.o libitv_caml.a libitv_caml_debug.a
+CAML_TO_INSTALL = itv.idl itv.ml itv.mli itv.cmi itv.cmx itv.cma itv.cmxa itv.a libitv_caml.a libitv_caml_debug.a
 
 #---------------------------------------
 # Rules
@@ -86,7 +86,7 @@ all: allmpq
 
 allmpq: libitvmpq.a libitvmpq_debug.a
 
-ml: itv.mli itv.cmi itv.cmo itv.cmx libitv_caml.a libitv_caml_debug.a
+ml: itv.mli itv.ml itv.cmi itv.cmx itv.cma itv.cmxa libitv_caml.a libitv_caml_debug.a
 
 clean:
 	/bin/rm -f *.[ao] *.cm[ioax] testg test*_caml* code2latex
@@ -157,20 +157,36 @@ libitvdbl_debug.a: $(CCMODULES:%=%dbl_debug.o)
 %dbl_debug.o: %.c
 	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_DOUBLE -c -o $@ $<
 
-#-----------------------------------
-# Caml part
-#-----------------------------------
+#---------------------------------------
+# C rules
+#---------------------------------------
+
+libpolka_caml.a: polka_caml.o
+	ar rcs $@ $^
+libpolka_caml_debug.a: polka_caml_debug.o
+	ar rcs $@ $^
 
 libitv_caml.a: itv_caml.o
 	ar rcs $@ $^
 libitv_caml_debug.a: itv_caml_debug.o
 	ar rcs $@ $^
 
-%.o: %.c
-	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include $(ICFLAGS) $(XCFLAGS) -DNUM_MPQ -c -o $@ $<
-%_debug.o: %.c
+#---------------------------------------
+# ML rules
+#---------------------------------------
 
-	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_MPQ -c -o $@ $<
+itv.cma: itv.cmo libitv_caml.a
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ itv.cmo \
+	-cclib "-L$(ITV_PREFIX)/lib -litv_caml"
+
+itv.cmxa: itv.cmx libitv_caml.a
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ itv.cmx \
+	-cclib "-L$(ITV_PREFIX)/lib -litv_caml"
+
+
+#---------------------------------------
+# IDL rules
+#---------------------------------------
 
 %_caml.c %.ml %.mli: %.idl sedscript_caml manager.idl
 	mkdir -p tmp
@@ -195,6 +211,16 @@ manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
 
 %.cmx: %.ml %.cmi
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -c $<
+
+#---------------------------------------
+# C generic rules
+#---------------------------------------
+
+%.o: %.c
+	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include $(ICFLAGS) $(XCFLAGS) -DNUM_MPQ -c -o $@ $<
+%_debug.o: %.c
+
+	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_MPQ -c -o $@ $<
 
 #-----------------------------------
 # DEPENDENCIES

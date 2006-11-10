@@ -6,7 +6,7 @@ quote(C,"#include \"apron_caml.h\"")
 
 import "manager.idl";
 
-quote(MLMLI,"(** Itv: intervals abstract domain *)")
+quote(MLMLI,"(** ITV: intervals abstract domain *)")
 
 quote(MLI,"\n(** Create an Itv manager. *)")
 ap_manager_ptr itv_manager_alloc();

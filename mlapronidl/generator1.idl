@@ -26,7 +26,7 @@ struct ap_generator1_array_t {
   [mlname(mutable_generator0_array)] struct ap_generator0_array_t generator0_array;
   [mlname(mutable_array_env)] ap_environment_ptr env;
 };
-quote(MLMLI,"(** Generators and array of generators of level 1 *)")
+quote(MLMLI,"(** APRON Generators and array of generators of level 1 *)")
      
 quote(MLMLI,"\n\
 type typ = Generator0.typ = \n\

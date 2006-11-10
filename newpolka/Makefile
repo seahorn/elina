@@ -69,10 +69,10 @@ pk_meetjoin pk_assign pk_project pk_resize pk_expandfold pk_widening pk_closure
 CCSRC = pk_config.h pk_int.h pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = pk.h
-CCBIN_TO_INSTALL = polkarung polkatopg
+CCBIN_TO_INSTALL = 
 CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a 
 
-CAML_TO_INSTALL = polka.mli polka.ml polka.idl polka.cmi polka.cmo polka.cmx polka.o
+CAML_TO_INSTALL = polka.idl polka.cma polka.cmxa polka.a polka.cmi polka.cmx polka.mli polka.ml
 
 #---------------------------------------
 # Rules
@@ -84,7 +84,7 @@ CAML_TO_INSTALL = polka.mli polka.ml polka.idl polka.cmi polka.cmo polka.cmx pol
 
 all: allg
 
-ml: polka.mli polka.ml polka.idl polka.cmi polka.cmo polka.cmx libpolka_caml.a libpolka_caml_debug.a
+ml: polka.mli polka.ml polka.idl polka.cmi polka.cmx polka.cma polka.cmxa polka.a libpolka_caml.a libpolka_caml_debug.a
 
 allg: libpolkag.a libpolkag_debug.a 
 
@@ -156,40 +156,47 @@ libpolkag_debug.a: $(CCMODULES:%=%g_debug.o)
 # Caml part
 #-----------------------------------
 
-polkatopg: polka.cmo libpolka_caml_debug.a libpolkag_debug.a
-	$(OCAMLMKTOP) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cmo polka.cmo \
-	-ccopt -L$(MLGMPIDL_PREFIX)/lib -cclib -lgmp_caml_debug \
-	-ccopt -L$(GMP_PREFIX)/lib -cclib -lgmp \
-	-ccopt -L$(MLCOMMONINTERFACIDL_PREFIX)/lib -cclib -lapron_caml_debug \
-	-ccopt -L$(APRON_PREFIX)/lib -cclib -lapron_debug \
-	-ccopt -L. -cclib -lpolka_caml_debug -cclib -lpolkag_debug \
-	-ccopt -L$(CAMLIDL_PREFIX)/lib/ocaml -cclib -lcamlidl
+polkatopg: polka.cma libpolka_caml.a libpolkag.a
+	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom \
+	bigarray.cma gmp.cma apron.cma polka.cma \
+	-cclib "-lpolkag_debug"
 
-polkarung: polka.cmo libpolka_caml_debug.a libpolkag_debug.a
-	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cmo polka.cmo \
-	-ccopt -L$(MLGMPIDL_PREFIX)/lib -cclib -lgmp_caml_debug \
-	-ccopt -L$(GMP_PREFIX)/lib -cclib -lgmp \
-	-ccopt -L$(MLCOMMONINTERFACIDL_PREFIX)/lib -cclib -lapron_caml_debug \
-	-ccopt -L$(APRON_PREFIX)/lib -cclib -lapron_debug \
-	-ccopt -L. -cclib -lpolka_caml_debug -cclib -lpolkag_debug \
-	-ccopt -L$(CAMLIDL_PREFIX)/lib/ocaml -cclib -lcamlidl
+polkarung: polka.cma libpolka_caml_debug.a libpolkag_debug.a
+	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ \
+	-make-runtime bigarray.cma gmp.cma apron.cma polka.cma \
+	-cclib "-lpolkag_debug"
 
 testg_caml: test.cmo polkarung 
-	$(OCAMLC) -g $(OCAMLINC) -I $(MLAPRONIDL_PREFIX)/lib -o $@ -use-runtime polkarung bigarray.cma gmp.cma apron.cmo polka.cmo test.cmo 
+	$(OCAMLC) -g $(OCAMLINC) -o $@ -use-runtime polkarung \
+	bigarray.cma gmp.cma apron.cma polka.cma test.cmo 
 
 test.cmo: test.ml
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -I $(CAMLLIB_PREFIX)/lib -c $<
 
+#---------------------------------------
+# C rules
+#---------------------------------------
 
 libpolka_caml.a: polka_caml.o
 	ar rcs $@ $^
 libpolka_caml_debug.a: polka_caml_debug.o
 	ar rcs $@ $^
 
-%.o: %.c
-	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include  $(CFLAGS) -DNUMINT_MPZ -c -o $@ $<
-%_debug.o: %.c
-	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include  $(CFLAGS_DEBUG) -DNUMINT_MPZ -c -o $@ $<
+#---------------------------------------
+# ML rules
+#---------------------------------------
+
+polka.cma: polka.cmo libpolka_caml.a
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ polka.cmo \
+	-cclib "-L$(POLKA_PREFIX)/lib -lpolka_caml"
+
+polka.cmxa: polka.cmx libpolka_caml.a
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ polka.cmx \
+	-cclib "-L$(POLKA_PREFIX)/lib -lpolka_caml"
+
+#---------------------------------------
+# IDL rules
+#---------------------------------------
 
 %_caml.c %.ml %.mli: %.idl sedscript_caml manager.idl
 	mkdir -p tmp
@@ -201,6 +208,15 @@ libpolka_caml_debug.a: polka_caml_debug.o
 
 manager.idl: ../mlapronidl/manager.idl
 	ln -fs $^ $@
+
+#---------------------------------------
+# C generic rules
+#---------------------------------------
+
+%.o: %.c
+	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include  $(CFLAGS) -DNUMINT_MPZ -c -o $@ $<
+%_debug.o: %.c
+	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include  $(CFLAGS_DEBUG) -DNUMINT_MPZ -c -o $@ $<
 
 #---------------------------------------
 # ML generic rules

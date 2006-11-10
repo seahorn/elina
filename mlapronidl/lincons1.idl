@@ -27,7 +27,7 @@ struct ap_lincons1_array_t {
   [mlname(mutable_array_env)] ap_environment_ptr env;
 };
 
-quote(MLMLI,"(** Constraints and array of constraints of level 1 *)")
+quote(MLMLI,"(** APRON Constraints and array of constraints of level 1 *)")
 
 quote(MLMLI,"\n\
 type typ = Lincons0.typ =\n\

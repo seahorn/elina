@@ -24,7 +24,7 @@ struct ap_coeff_t {
       /* interval (quasi-linear expression) */
   } val;
 };
-quote(MLMLI,"(** Coefficients (either scalars or intervals) *)")
+quote(MLMLI,"(** APRON Coefficients (either scalars or intervals) *)")
 
 quote(MLI,"\n\
 val s_of_mpq : Mpq.t -> t\n\
