@@ -1105,7 +1105,7 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
   tdim = malloc(size*sizeof(ap_dim_t));
   tdim[0] = dim;
   for (i=1; i<size; i++){
-    tdim[i] = ap_environment_dim_of_var(nenv, tvar[i]);
+    tdim[i] = ap_environment_dim_of_var(a->env, tvar[i]);
     if (tdim[i]==AP_DIM_MAX){
       ap_abstract1_raise_invalid_var(man,AP_FUNID_FOLD,tvar[i]);
       free(tdim);
