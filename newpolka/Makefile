@@ -104,7 +104,7 @@ clean:
 	/bin/rm -f manager.idl
 	/bin/rm -fr tmp
 
-install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
+install:
 	$(INSTALLd) $(INCDIR) $(LIBDIR)
 	$(INSTALL) $(CCINC_TO_INSTALL) $(INCDIR)
 	for i in $(CCLIB_TO_INSTALL); do \
@@ -206,8 +206,8 @@ polka.cmxa: polka.cmx libpolka_caml.a
 	sed -f sedscript_caml tmp/$*.ml >$*.ml
 	sed -f sedscript_caml tmp/$*.mli >$*.mli
 
-manager.idl: ../mlapronidl/manager.idl
-	ln -fs $^ $@
+manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
+	cp $^ $@
 
 #---------------------------------------
 # C generic rules

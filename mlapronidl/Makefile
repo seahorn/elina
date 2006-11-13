@@ -6,8 +6,6 @@ include ../Makefile.config
 
 SRCDIR = $(shell pwd)
 #
-# Installation directory prefix
-MLAPRONIDL_INSTALL = $(HOME)/pkg/mlapronidl/$(ARCH)
 #
 PREFIX = $(APRON_INSTALL)
 #
@@ -73,7 +71,7 @@ MLSRC = $(MLMODULES:%=%.mli) $(MLMODULES:%=%.ml)
 MLINT = $(MLMODULES:%=%.cmi)
 MLOBJ = $(MLMODULES:%=%.cmo)
 MLOBJx = $(MLMODULES:%=%.cmx)
-MLLIB_TOINSTALL = $(MLMODULES:%=%.mli) apron.cmi apron.cma
+MLLIB_TOINSTALL = $(IDLMODULES:%=%.idl) $(MLMODULES:%=%.mli) apron.cmi apron.cma
 MLLIB_TOINSTALLx = apron.cmx apron.cmxa apron.a
 CCMODULES = apron_caml $(IDLMODULES:%=%_caml)
 CCSRC = apron_caml.h $(CCMODULES:%=%.c)
@@ -111,13 +109,12 @@ distclean:
 	/bin/rm -f $(MLLIB_TOINSTALL:%=$(MLAPRONIDL_PREFIX)/lib/%)
 	/bin/rm -f $(MLLIB_TOINSTALLx:%=$(MLAPRONIDL_PREFIX)/lib/%)
 	/bin/rm -f $(CCLIB_TOINSTALL:%=$(MLAPRONIDL_PREFIX)/lib/%)
-	/bin/rm -f $(IDLMODULES:%=$(MLAPRONIDL_PREFIX)/lib/%.idl)
 	/bin/rm -f $(CCINC_TOINSTALL:%=$(MLAPRONIDL_PREFIX)/include/%)
 
-install: $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(IDLMODULES:%=%.idl) $(CCINC_TOINSTALL)
+install: $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(CCINC_TOINSTALL)
 	mkdir -p $(MLAPRONIDL_PREFIX)/lib
 	mkdir -p $(MLAPRONIDL_PREFIX)/include
-	cp $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(IDLMODULES:%=%.idl) $(MLAPRONIDL_PREFIX)/lib
+	cp $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(MLAPRONIDL_PREFIX)/lib
 	cp $(CCINC_TOINSTALL) $(MLAPRONIDL_PREFIX)/include
 
 #---------------------------------------
@@ -149,10 +146,10 @@ apron.cmo apron.cmi: $(MLOBJ)
 apron.cmx apron.o: $(MLOBJx)
 	$(OCAMLOPT) -pack -o $@ $(MLOBJx)
 
-mpz.idl: ../mlgmpidl/mpz.idl
-	ln -fs $^ $@
-mpq.idl: ../mlgmpidl/mpq.idl
-	ln -fs $^ $@
+mpz.idl: $(MLGMPIDL_PREFIX)/lib/mpz.idl
+	cp $^ $@
+mpq.idl: $(MLGMPIDL_PREFIX)/lib/mpq.idl
+	cp $^ $@
 
 #---------------------------------------
 # TEX and HTML rules

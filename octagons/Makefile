@@ -94,14 +94,17 @@ root:
 
 all: allZi allZl allZg allQi allQl allQg allFd allFl
 
-allZi: Zi octtestZi mlZi
-allZl: Zl octtestZl mlZl
-allZg: Zg octtestZg mlZg
-allQi: Qi octtestQi mlQi
-allQl: Ql octtestQl mlQl
-allQg: Qg octtestQg mlQg
-allFd: Fd octtestFd mlFd
-allFl: Fl octtestFl mlFl
+ml: mlZi mlZl mlZg mlQi mlQl mlQg mlFd mlFl
+
+
+allZi: Zi octtestZi
+allZl: Zl octtestZl
+allZg: Zg octtestZg
+allQi: Qi octtestQi
+allQl: Ql octtestQl
+allQg: Qg octtestQg
+allFd: Fd octtestFd
+allFl: Fl octtestFl
 
 Zi: liboctZi.a
 Zl: liboctZl.a
@@ -170,6 +173,8 @@ octtest%: liboct%.a oct_test%.o
 	-L$(GMP_PREFIX)/lib -lgmp \
 	-lm
 
+%_caml.o: %_caml.c $(CCINC) $(DEPS)
+	$(CC) $(CFLAGS) -DNUM_LONGINT -c -o $@ $<
 %Zi.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) -DNUM_LONGINT -c -o $@ $<
 %Zl.o: %.c $(CCINC) $(DEPS)
@@ -200,57 +205,31 @@ octtest%: liboct%.a oct_test%.o
 
 .INTERMEDIATE: mlZi
 
-mlZi: oct.mli oct.cmi octZi.cma octZi.cmxa octtopZi octrunZi 
-mlZl: oct.mli oct.cmi octZl.cma octZl.cmxa octtopZl octrunZl 
-mlZg: oct.mli oct.cmi octZg.cma octZg.cmxa octtopZg octrunZg 
-mlQi: oct.mli oct.cmi octQi.cma octQi.cmxa octtopQi octrunQi 
-mlQl: oct.mli oct.cmi octQl.cma octQl.cmxa octtopQl octrunQl 
-mlQg: oct.mli oct.cmi octQg.cma octQg.cmxa octtopQg octrunQg 
-mlFd: oct.mli oct.cmi octFd.cma octFd.cmxa octtopFd octrunFd 
-mlFl: oct.mli oct.cmi octFl.cma octFl.cmxa octtopFl octrunFl 
+mlZi: oct.mli oct.cmi oct.cma oct.cmxa octtopZi octrunZi 
+mlZl: oct.mli oct.cmi oct.cma oct.cmxa octtopZl octrunZl 
+mlZg: oct.mli oct.cmi oct.cma oct.cmxa octtopZg octrunZg 
+mlQi: oct.mli oct.cmi oct.cma oct.cmxa octtopQi octrunQi 
+mlQl: oct.mli oct.cmi oct.cma oct.cmxa octtopQl octrunQl 
+mlQg: oct.mli oct.cmi oct.cma oct.cmxa octtopQg octrunQg 
+mlFd: oct.mli oct.cmi oct.cma oct.cmxa octtopFd octrunFd 
+mlFl: oct.mli oct.cmi oct.cma oct.cmxa octtopFl octrunFl 
 
-octtop%: oct.cmo liboct%_caml.a liboct%.a
-	$(OCAMLMKTOP) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cmo oct.cmo \
-	-ccopt -L$(MLGMPIDL_PREFIX)/lib -cclib -lgmp_caml \
-	-ccopt -L$(GMP_PREFIX)/lib -cclib -lgmp \
-	-ccopt -L$(MLCOMMONINTERFACIDL_PREFIX)/lib -cclib -lapron_caml \
-	-ccopt -L$(APRON_PREFIX)/lib -cclib -lapron \
-	-ccopt -L. -cclib -loct$*_caml -cclib -loct$* \
-	-ccopt -L$(CAMLIDL_PREFIX)/lib/ocaml -cclib -lcamlidl
+octtop%: oct.cma liboct_caml.a liboct%.a
+	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$*
 
-octrun%: oct.cmo liboct%_caml.a liboct%.a
-	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cmo oct.cmo \
-	-ccopt -L$(MLGMPIDL_PREFIX)/lib -cclib -lgmp_caml \
-	-ccopt -L$(GMP_PREFIX)/lib -cclib -lgmp \
-	-ccopt -L$(MLCOMMONINTERFACIDL_PREFIX)/lib -cclib -lapron_caml \
-	-ccopt -L$(APRON_PREFIX)/lib -cclib -lapron \
-	-ccopt -L. -cclib -loct$*_caml -cclib -loct$* \
-	-ccopt -L$(CAMLIDL_PREFIX)/lib/ocaml -cclib -lcamlidl
+octrun%: oct.cma liboct_caml.a 
+	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* \
 
-oct%.cma: oct.cmo liboct%_caml.a liboct%.a
-	$(OCAMLMKLIB) -o oct$* -custom -linkall -verbose $(OCAMLINC) \
-	oct.cmo \
-        -L$(MLGMPIDL_PREFIX)/lib -lgmp_caml \
-	-L$(GMP_PREFIX)/lib -lgmp \
-	-L$(MLCOMMONINTERFACIDL_PREFIX)/lib -lapron_caml \
-	-L$(APRON_PREFIX)/lib -lapron \
-	-L. -loct$*_caml -loct$* \
-	-L$(CAMLIDL_PREFIX)/lib/ocaml -lcamlidl
+oct.cma: oct.cmo liboct_caml.a 
+	$(OCAMLC) -verbose $(OCAMLINC) -a -o $@ oct.cmo -ccopt -L. -cclib -loct_caml
 
-oct%.cmxa oct%.a: oct.cmx liboct%_caml.a liboct%.a
-	$(OCAMLMKLIB) -o oct$* -linkall -verbose $(OCAMLINC) \
-	oct.cmx \
-        -L$(MLGMPIDL_PREFIX)/lib -lgmp_caml \
-	-L$(GMP_PREFIX)/lib -lgmp \
-	-L$(MLCOMMONINTERFACIDL_PREFIX)/lib -lapron_caml \
-	-L$(APRON_PREFIX)/lib -lapron \
-	-L. -loct$*_caml -loct$* \
-	-L$(CAMLIDL_PREFIX)/lib/ocaml -lcamlidl
+oct.cmxa oct.a: oct.cmx liboct_caml.a 
+	$(OCAMLOPT) -verbose $(OCAMLINC) -a -o $@ oct.cmx -ccopt -L. -cclib -loct_caml
 
-liboct%_caml.a: oct_caml%.o
+liboct_caml.a: oct_caml.o
 	$(AR) rcs $@ $^
 
-liboct%_caml.so: oct_caml%.o
+liboct_caml.so: oct_caml.o
 	$(SHARED) -o $@ $^
 
 %_caml.c %.ml %.mli: %.idl sedscript_caml $(DEPS)
@@ -263,7 +242,7 @@ liboct%_caml.so: oct_caml%.o
 	sed -f sedscript_caml tmp/$*.mli | grep --extended-regexp '^(.)+$$' >$*.mli
 
 manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
-	ln -fs $^ $@
+	cp $^ $@
 
 .PRECIOUS: %_caml.c %.ml %.mli liboct%_caml.a liboct%_caml.so oct.cmx oct.cmo
 

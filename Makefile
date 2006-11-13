@@ -1,13 +1,21 @@
 # $Id$
 
-all:
-	(cd apron; make all)
-	(cd mlgmpidl; make all)
-	(cd mlapronidl; make all)
-	(cd num; make all)
-	(cd newpolka; make allg ml)
-	(cd itv; make allmpq ml)
-	(cd octagons; make allQg allFd)
+
+all: c ml
+
+c:
+	(cd apron; make all install)
+	(cd num; make all install)
+	(cd newpolka; make allg install)
+	(cd itv; make all install)
+	(cd octagons; make allQg allFd install)
+
+ml:
+	(cd mlgmpidl; make all install)
+	(cd mlapronidl; make all install)
+	(cd newpolka; make ml install)
+	(cd itv; make ml install)
+	(cd octagons; make mlQg mlFd install)
 
 install:
 	(cd apron; make install)

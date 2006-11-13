@@ -22,7 +22,6 @@ quote(MLI,"(** OCT: octagon abstract domain. \n*)\n\n")
 quote(MLI,"(* *)\n\n");
 
 quote(C,"#include \"oct.h\"")
-quote(C,"#include \"oct_internal.h\"")
 quote(C,"#include \"apron_caml.h\"")
 
 quote(C,"#define I0_CHECK_EXC(man) if (man->result.exn!=AP_EXC_NONE){ value v = camlidl_c2ml_manager_struct_ap_exclog_t(man->result.exclog,_ctx); caml_raise_with_arg(*caml_named_value(\"apron exception\"),v); } ")

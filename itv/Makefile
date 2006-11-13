@@ -197,7 +197,7 @@ itv.cmxa: itv.cmx libitv_caml.a
 	sed -f sedscript_caml tmp/$*.mli >$*.mli
 
 manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
-	ln -s $^ $@
+	cp $^ $@
 
 #---------------------------------------
 # ML generic rules
