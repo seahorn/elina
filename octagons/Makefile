@@ -75,7 +75,7 @@ CCSOURCES = oct_hmat.c oct_print.c oct_transfer.c oct_closure.c oct_nary.c \
 CCINC = oct_internal.h oct_fun.h setround.h
 
 # trigers a whole recompilation
-DEPS = $(APRON_PREFIX)/include/ap_abstract0.h
+#DEPS = $(APRON_PREFIX)/include/ap_abstract0.h
 
 #---------------------------------------
 # Rules
@@ -123,7 +123,7 @@ clean:
 	/bin/rm -fr *~ \#*\#
 
 install:
-	$(INSTALLd) $(INCDIR) $(INCDIR)/oct $(LIBDIR)
+	$(INSTALLd) $(INCDIR) $(INCDIR)/oct $(LIBDIR) $(BINDIR)
 	$(INSTALL) oct.h $(INCDIR)
 	$(INSTALL) $(CCINC) $(INCDIR)/oct
 	for i in liboct??.* liboct??_caml.* oct.idl; do \
