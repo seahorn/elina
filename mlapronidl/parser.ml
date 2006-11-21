@@ -1,0 +1,210 @@
+(* $Id$ *)
+
+(* This file is part of the APRON Library, released under LGPL license.
+   Please read the COPYING file packaged in the distribution  *)
+
+(** APRON Parsing of expressions *)
+
+(** {2 Introduction}
+
+  This small module implements the parsing of expressions, constraints and
+  generators. The allowed syntax is simple (no parenthesis) but supports
+  interval expressions.
+
+  [cons ::= expr ('>' | '>=' | '=' | '!=' | '=' | '<=' | '<') expr]
+
+  [gen ::= ('V:' | 'R:' | 'L:') expr]
+
+  [expr ::= expr '+' term | expr '-' term | term] 
+  
+  [term ::= coeff ['*'] identifier | coeff | ['-'] identifier]
+
+  [coeff ::= scalar | ['-'] '['scalar ';' scalar ']']
+
+  [scalar ::= ['-'] (integer | rational | floating_point_number)]
+
+  There is the possibility to parse directly from a lexing buffer, 
+  or from a string (from which one can generate a buffer with the
+  function [Lexing.from_string].
+
+  This module uses the underlying modules [Apron_lexer] and [Apron_parser].
+*)
+
+
+
+exception Error of string
+
+let raise_error str = raise (Error str)
+
+(*  **********************************************************************)
+(** {2 Internal functions} *)
+(*  **********************************************************************)
+
+let rec check_list = function
+  | (var1,_)::(((var2,_)::_) as l)->
+      if (String.compare var1 var2)=0 then
+	raise (Error (Format.sprintf "Variable %s appears twice in an expression" var1))
+      else
+	check_list l
+  | _ -> ()
+
+let linexpr1_of_linexpr (env:Environment.t) (list:(string*Coeff.t) list) 
+  :
+  Linexpr1.t
+  =
+  let list = 
+    List.sort 
+      (fun (var1,_) (var2,_) -> String.compare var1 var2)
+      list
+  in
+  check_list list;
+  let res = Linexpr1.make env in
+  List.iter
+    (begin fun (var,coeff) ->
+      if var="" then
+	Linexpr1.set_cst res coeff
+      else
+	Linexpr1.set_coeff res (Var.of_string var) coeff
+    end)
+    list
+  ;
+  res
+
+let lincons1_of_lincons (env:Environment.t) (lincons:Lincons0.typ * (string*Coeff.t) list)
+  :
+  Lincons1.t
+  =
+  let (typ,list) = lincons in
+  Lincons1.make (linexpr1_of_linexpr env list) typ
+
+let generator1_of_generator (env:Environment.t) (generator:Generator0.typ * (string*Coeff.t) list)
+  :
+  Generator1.t
+  =
+  let (typ,list) = generator in
+  Generator1.make (linexpr1_of_linexpr env list) typ
+
+(*  **********************************************************************)
+(** {2 Exported functions: using lexbuf} *)
+(*  **********************************************************************)
+
+let linexpr1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf) 
+  : 
+  Linexpr1.t
+  =
+  let x = Apron_parser.linexpr Apron_lexer.lex lexbuf in
+  linexpr1_of_linexpr env x
+
+let lincons1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf) 
+  : 
+  Lincons1.t
+  =
+  let x = Apron_parser.lincons Apron_lexer.lex lexbuf in
+  lincons1_of_lincons env x
+
+let generator1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf) 
+  : 
+  Generator1.t
+  =
+  let x = Apron_parser.generator Apron_lexer.lex lexbuf in
+  generator1_of_generator env x
+
+(*  **********************************************************************)
+(** {2 Exported functions: using strings} *)
+(*  **********************************************************************)
+
+let linexpr1_of_string (env:Environment.t) (str:string) : Linexpr1.t
+  =
+  try 
+    let lexbuf = Lexing.from_string str in 
+    try linexpr1_of_lexbuf env lexbuf
+    with Parsing.Parse_error -> 
+      raise_error 
+      (Format.sprintf 
+	"Syntaxical error, characters %d-%d in constraint %s" 
+	(Lexing.lexeme_start lexbuf) 
+	(Lexing.lexeme_end lexbuf) 
+	str) 
+    with Apron_lexer.Error (s,e) -> 
+      raise_error 
+      (Format.sprintf 
+	"Lexical error, characters %d-%d in constraint %s" 
+	s e str) 
+      
+let lincons1_of_string (env:Environment.t) (str:string) : Lincons1.t
+  =
+  try 
+    let lexbuf = Lexing.from_string str in 
+    try lincons1_of_lexbuf env lexbuf
+    with Parsing.Parse_error -> 
+      raise_error 
+      (Format.sprintf 
+	"Syntaxical error, characters %d-%d in constraint %s" 
+	(Lexing.lexeme_start lexbuf) 
+	(Lexing.lexeme_end lexbuf) 
+	str) 
+    with Apron_lexer.Error (s,e) -> 
+      raise_error 
+      (Format.sprintf 
+	"Lexical error, characters %d-%d in constraint %s" 
+	s e str) 
+
+let generator1_of_string (env:Environment.t) (str:string) : Generator1.t
+  =
+  try 
+    let lexbuf = Lexing.from_string str in 
+    try 
+      generator1_of_lexbuf env lexbuf
+    with Parsing.Parse_error -> 
+      raise_error 
+      (Format.sprintf 
+	"Syntaxical error, characters %d-%d in constraint %s" 
+	(Lexing.lexeme_start lexbuf) 
+	(Lexing.lexeme_end lexbuf) 
+	str) 
+    with Apron_lexer.Error (s,e) -> 
+      raise_error 
+      (Format.sprintf 
+	"Lexical error, characters %d-%d in constraint %s" 
+	s e str) 
+
+let lincons1_of_lstring (env:Environment.t) (lstr:string list) 
+  : 
+  Lincons1.earray
+  =
+  let length = List.length lstr in
+  let res = Lincons1.array_make env length in
+  let i = ref (-1) in
+  List.iter
+    (fun str ->
+      incr i;
+      let x = lincons1_of_string env str in
+      Lincons1.array_set res !i x
+    )
+    lstr
+  ;
+  res
+
+let generator1_of_lstring (env:Environment.t) (lstr:string list) 
+  : 
+  Generator1.earray
+  =
+  let length = List.length lstr in
+  let res = Generator1.array_make env length in
+  let i = ref (-1) in
+  List.iter
+    (fun str ->
+      incr i;
+      let x = generator1_of_string env str in
+      Generator1.array_set res !i x
+    )
+    lstr
+  ;
+  res
+
+let of_lstring (man:Manager.t) (env:Environment.t) (lstr:string list) 
+  : 
+  Abstract1.t
+  =
+  let array = lincons1_of_lstring env lstr in
+  Abstract1.of_lincons_array man env array
