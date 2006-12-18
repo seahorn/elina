@@ -20,7 +20,7 @@ BINDIR = $(PREFIX)/bin
 #---------------------------------------
 CC = gcc -pg
 ICFLAGS = \
--I$(GMP_PREFIX)/include \
+-I$(GMP_PREFIX)/include  \
 -Wall -Winline -Wimplicit-function-declaration -std=c99
 
 CFLAGS = $(ICFLAGS) $(OPTFLAGS) -DNDEBUG
@@ -70,11 +70,12 @@ ap_abstract1.c
 # Rules
 #---------------------------------------
 
-all: lib
+all: src allbis
 
-lib: $(H_FILES) libapron.a libapron_debug.a
+allbis: $(H_FILES) libapron.a libapron_debug.a
 
-src: $(H_FILES)
+#used to generate .h files from .nw files
+src: $(H_FILES) $(TEX_FILES)
 
 #---------------------------------------
 # Misc rules
@@ -87,10 +88,12 @@ dist: $(NOWEB_FILES) $(TEX_FILES) $(H_FILES) $(C_FILES) apron.texi apronrational
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
 clean:
-	/bin/rm -f $(NOWEB_FILES:%.nw=%.h) $(TEX_FILES)
 	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps apron.cps apron.fns apron.info apron.fn apron.ky apron.pg apron.cp apron.tp apron.vr apron.kys apron.pgs apron.tps apron.vrs newpolka.texi itv.texi
 	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
 	/bin/rm -fr html
+
+mostlyclean:
+	/bin/rm -f $(NOWEB_FILES:%.nw=%.h) $(TEX_FILES)
 
 install: $(H_FILES) libapron.a libapron_debug.a
 	mkdir -p $(APRON_PREFIX)/include
@@ -110,7 +113,7 @@ distclean:
 .PHONY : apronrationale.dvi html
 
 apronrationale.pdf: apronrationale.dvi
-	$(DVIPDF) apronrationale -o
+	$(DVIPDF) apronrationale -o $@
 
 apronrationale.dvi: apronrationale.tex $(TEX_FILES)
 	$(LATEX) $^
@@ -121,7 +124,7 @@ itv.texi: ../itv/itv.texi
 	ln -s $< $@
 
 apron.pdf: apron.dvi
-	$(DVIPDF) apron.dvi
+	$(DVIPDF) apron.dvi -o $@
 
 apron.dvi: apron.texi newpolka.texi itv.texi
 	texi2dvi -o $@ $<
@@ -129,10 +132,10 @@ apron.dvi: apron.texi newpolka.texi itv.texi
 apron.info: apron.texi newpolka.texi itv.texi
 	makeinfo -o $@ $<
 
+
 html: apron.texi newpolka.texi itv.texi
 	texi2html -split=section -nonumber -menu -subdir=html $<
 	cp -f ../octagons/oct_doc.html html
-
 
 #---------------------------------------
 # C rules

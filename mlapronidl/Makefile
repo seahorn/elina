@@ -9,10 +9,6 @@ SRCDIR = $(shell pwd)
 #
 PREFIX = $(APRON_INSTALL)
 #
-# C include and lib directories
-INCDIR = $(PREFIX)/include
-LIBDIR = $(PREFIX)/lib
-BINDIR = $(PREFIX)/bin
 
 #---------------------------------------
 # CAML part
@@ -23,7 +19,8 @@ OCAMLDEP = $(CAML_PREFIX)/bin/ocamldep
 OCAMLLEX = $(CAML_PREFIX)/bin/ocamllex.opt
 OCAMLYACC = $(CAML_PREFIX)/bin/ocamlyacc
 OCAMLDOC = $(CAML_PREFIX)/bin/ocamldoc.opt
-OCAMLINC = -I $(MLGMPIDL_PREFIX)/lib
+
+OCAMLINC = -I ../mlgmpidl
 OCAMLFLAGS = -g
 OCAMLOPTFLAGS = -for-pack Apron -inline 20
 
@@ -35,9 +32,9 @@ M4 = m4
 #---------------------------------------
 CC = gcc
 ICFLAGS = \
--I$(GMP_PREFIX)/include -I$(MLGMPIDL_PREFIX)/include \
+-I../mlgmpidl -I../apron \
+-I$(GMP_PREFIX)/include \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml \
--I$(APRON_PREFIX)/include \
 -Wall -Winline -Wimplicit-function-declaration -std=c99
 
 CFLAGS = $(ICFLAGS) $(OPTFLAGS) -DNDEBUG
@@ -98,12 +95,15 @@ dist: $(IDLMODULES:%=%.idl) $(MLSRC) $(CCSRC) macros.m4 apron_caml.c apron_caml.
 	(cd ..; tar zcvf mlapronidl.tgz $(^:%=mlapronidl/%))
 
 clean:
-	/bin/rm -f $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c) $(IDLMODULEStex)
+	/bin/rm -f $(IDLMODULEStex)
 	/bin/rm -f mpz.idl mpq.idl
 	/bin/rm -f mlapronidl.out mlapronidl.aux mlapronidl.idx mlapronidl.ilg mlapronidl.ind mlapronidl.bbl mlapronidl.blg mlapronidl.dvi mlapronidl.log mlapronidl.toc mlapronidl.ps
 	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
 	/bin/rm -fr tmp html
 	/bin/rm -f ocamldoc.[cefkimoptv]*
+
+mostlyclean: clean
+	/bin/rm -f $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c)
 
 distclean:
 	/bin/rm -f $(MLLIB_TOINSTALL:%=$(MLAPRONIDL_PREFIX)/lib/%)
@@ -146,9 +146,9 @@ apron.cmo apron.cmi: $(MLOBJ) $(MLINT)
 apron.cmx apron.o: $(MLOBJx)
 	$(OCAMLOPT) -pack -o $@ $(MLOBJx)
 
-mpz.idl: $(MLGMPIDL_PREFIX)/lib/mpz.idl
+mpz.idl: ../mlgmpidl/mpz.idl
 	cp $^ $@
-mpq.idl: $(MLGMPIDL_PREFIX)/lib/mpq.idl
+mpq.idl: ../mlgmpidl/mpq.idl
 	cp $^ $@
 
 apron_lexer.ml: apron_lexer.mll

@@ -68,7 +68,8 @@ numerical variables.
 
 @menu
 * Copying::                     
-* Introduction to APRON::       
+* Introduction to APRON::   
+* APRON Rationale::
 * Installing APRON::            
 * APRON Basics::                
 * Managers and Abstract Domains::  
@@ -137,6 +138,10 @@ The design and implementation of higher level services that are built on
 top of the basic interface and that factorizes services that can be
 shared between the underlying implementations.
 @end itemize
+
+@c *******************************************************************
+@include rationale.texi
+@c *******************************************************************
 
 @c *******************************************************************
 @node Installing APRON, APRON Basics, Introduction to APRON, Top
@@ -2226,15 +2231,15 @@ This implies calls to @code{ap_abstract0_bound_dimension}.
 This interface of level 0 is defined in @file{ap_global0.h}.
 
 Unless there exists specific reasons for not doing so, we advise the
-user to use the level 1 of the interface (@pxref{Interface of level
-1}). The level 0 is intented for implementors who wants to connect a
+user to use the level 1 of the interface (@pxref{Level 1 of the interface}).
+The level 0 is intented for implementors who wants to connect a
 new library/abstract domain, or who want to build a composite domain
 from existing ones.
 
 @menu
 * Dimensions and related operations::  
 * Linear expressions of level 0::  
-* Linear constraints of level 0::  
+* Linear constraints of level 0:: 
 * Generators of level 0::       
 * Abstract values and operations of level 0::  
 @end menu

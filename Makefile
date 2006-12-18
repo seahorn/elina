@@ -4,18 +4,18 @@
 all: c ml
 
 c:
-	(cd apron; make all install)
-	(cd num; make all install)
-	(cd newpolka; make allg install)
-	(cd itv; make all install)
-	(cd octagons; make allQg allFd install)
+	(cd apron; make all)
+	(cd num; make all)
+	(cd newpolka; make allg)
+	(cd itv; make all)
+	(cd octagons; make allQg allFd)
 
 ml:
-	(cd mlgmpidl; make all install)
-	(cd mlapronidl; make all install)
-	(cd newpolka; make ml install)
-	(cd itv; make ml install)
-	(cd octagons; make mlQg mlFd install)
+	(cd mlgmpidl; make all)
+	(cd mlapronidl; make all)
+	(cd newpolka; make ml)
+	(cd itv; make ml)
+	(cd octagons; make mlQg mlFd)
 
 install:
 	(cd apron; make install)
@@ -35,6 +35,14 @@ clean:
 	(cd newpolka; make clean)
 	(cd octagons; make clean)
 	(cd examples; make clean)
+
+mostlyclean: clean
+	(cd apron; make mostlyclean)
+	(cd mlgmpidl; make mostlyclean)
+	(cd mlapronidl; make mostlyclean)
+	(cd itv; make mostlyclean)
+	(cd newpolka; make mostlyclean)
+
 
 distclean:
 	(cd apron; make distclean)

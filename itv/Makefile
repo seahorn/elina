@@ -3,11 +3,6 @@ include ../Makefile.config
 
 PREFIX = $(ITV_PREFIX)
 
-# C include and lib directories
-INCDIR = $(PREFIX)/include
-LIBDIR = $(PREFIX)/lib
-BINDIR = $(PREFIX)/bin
-
 SRCDIR = $(shell pwd)
 
 #---------------------------------------
@@ -44,8 +39,10 @@ CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 # Use ICFLAGS to specify machine-independent compilation flags.
 ICFLAGS = \
 -I$(GMP_PREFIX)/include  \
--I$(NUM_PREFIX)/include \
--I$(APRON_PREFIX)/include \
+-I../num \
+-I../apron \
+-I../mlgmpidl \
+-I../mlapronidl \
 -Wall -Wconversion -Winline -Wimplicit-function-declaration \
 -O0 -g -DNDEBUG -std=c99
 
@@ -58,7 +55,7 @@ CFLAGS_DEBUG = -O0 -g -UNDEBUG
 CFLAGS_PROF = -g -pg
 
 # Caml
-OCAMLINC = -I $(MLGMPIDL_PREFIX)/lib -I $(MLAPRONIDL_PREFIX)/lib
+OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
 OCAMLFLAGS = -g
 OCAMLOPTFLAGS = -inline 20
 
@@ -91,27 +88,30 @@ ml: itv.mli itv.ml itv.cmi itv.cmx itv.cma itv.cmxa libitv_caml.a libitv_caml_de
 clean:
 	/bin/rm -f *.[ao] *.cm[ioax] testg test*_caml* code2latex
 	/bin/rm -f *.?.tex *.log *.aux *.bbl *.blg *.toc *.dvi *.ps *.pstex*
-	/bin/rm -fr itvpolkarung itvpolkatopg manager.idl tmp
+	/bin/rm -fr itvpolkarung itvpolkatopg tmp
+
+mostlyclean: clean
+	/bin/rm -fr manager.idl
 	/bin/rm -f itv.ml itv.mli
 
 install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
-	$(INSTALLd) $(INCDIR) $(LIBDIR)
-	$(INSTALL) $(CCINC_TO_INSTALL) $(INCDIR)
+	$(INSTALLd) $(PREFIX)/include $(PREFIX)/lib
+	$(INSTALL) $(CCINC_TO_INSTALL) $(PREFIX)/include
 	for i in $(CCLIB_TO_INSTALL); do \
-		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
+		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/lib; fi; \
 	done
 	for i in $(CCBIN_TO_INSTALL); do \
-		if test -f $$i; then $(INSTALL) $$i $(BINDIR); fi; \
+		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/bin; fi; \
 	done
 	for i in $(CAML_TO_INSTALL); do \
-		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
+		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/lib; fi; \
 	done
 
 distclean: clean
-	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(INCDIR)/$$i; done
-	for i in $(CCLIB_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
-	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(BINDIR)/$$i; done
-	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
+	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(PREFIX)/include/$$i; done
+	for i in $(CCLIB_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
+	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(PREFIX)/bin/$$i; done
+	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
 	/bin/rm -f Makefile.depend
 
 dist: $(CCSRC) Makefile sedscript_caml itv.texi itv.idl itv.ml itv.mli itv_caml.c COPYING README
@@ -196,7 +196,7 @@ itv.cmxa: itv.cmx libitv_caml.a
 	sed -f sedscript_caml tmp/$*.ml >$*.ml
 	sed -f sedscript_caml tmp/$*.mli >$*.mli
 
-manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
+manager.idl: ../mlapronidl/manager.idl
 	cp $^ $@
 
 #---------------------------------------

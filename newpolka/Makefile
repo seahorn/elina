@@ -3,11 +3,6 @@ include ../Makefile.config
 
 PREFIX = $(POLKA_PREFIX)
 
-# C include and lib directories
-INCDIR = $(PREFIX)/include
-LIBDIR = $(PREFIX)/lib
-BINDIR = $(PREFIX)/bin
-
 SRCDIR = $(shell pwd)
 
 #---------------------------------------
@@ -39,10 +34,10 @@ CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 # Use ICFLAGS to specify machine-independent compilation flags.
 ICFLAGS = \
 -I$(GMP_PREFIX)/include \
--I$(APRON_PREFIX)/include \
--I$(MLAPRONIDL_PREFIX)/include \
--I$(NUM_PREFIX)/include \
--I$(HOME)/dev/apron \
+-I../apron \
+-I../num \
+-I../mlgmpidl \
+-I../mlapronidl \
 -Wall -Wconversion -Winline -Wimplicit-function-declaration \
 -std=c99
 
@@ -52,7 +47,7 @@ CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG
 CFLAGS_PROF = -g -pg
 
 # Caml
-OCAMLINC = -I $(MLGMPIDL_PREFIX)/lib -I $(MLAPRONIDL_PREFIX)/lib
+OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
 OCAMLFLAGS = -g
 OCAMLOPTFLAGS = -inline 20
 
@@ -100,28 +95,32 @@ clean:
 	/bin/rm -f *.[ao] 
 	/bin/rm -f *.?.tex *.log *.aux *.bbl *.blg *.toc *.dvi *.ps *.pstex*
 	/bin/rm -f test[01][ilg] test[ilg]_caml polkarun[ilg] polkatop[ilg]
-	/bin/rm -fr *.cm[ioax] polka_caml.* polka.ml polka.mli
+	/bin/rm -fr *.cm[ioax] 
 	/bin/rm -f manager.idl
 	/bin/rm -fr tmp
 
+mostlyclean: clean
+	/bin/rm -f manager.idl
+	/bin/rm -fr polka_caml.* polka.ml polka.mli
+
 install:
-	$(INSTALLd) $(INCDIR) $(LIBDIR)
-	$(INSTALL) $(CCINC_TO_INSTALL) $(INCDIR)
+	$(INSTALLd) $(PREFIX)/include $(PREFIX)/lib
+	$(INSTALL) $(CCINC_TO_INSTALL) $(PREFIX)/include
 	for i in $(CCLIB_TO_INSTALL); do \
-		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
+		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/lib; fi; \
 	done
 	for i in $(CCBIN_TO_INSTALL); do \
-		if test -f $$i; then $(INSTALL) $$i $(BINDIR); fi; \
+		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/bin; fi; \
 	done
 	for i in $(CAML_TO_INSTALL); do \
-		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
+		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/lib; fi; \
 	done
 
 distclean: clean
-	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(INCDIR)/$$i; done
-	for i in $(CCLIB_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
-	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(BINDIR)/$$i; done
-	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(LIBDIR)/$$i; done
+	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(PREFIX)/include/$$i; done
+	for i in $(CCLIB_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
+	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(PREFIX)/bin/$$i; done
+	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
 	/bin/rm -f Makefile.depend
 
 dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polka_caml.c COPYING README
@@ -159,12 +158,14 @@ libpolkag_debug.a: $(CCMODULES:%=%g_debug.o)
 polkatopg: polka.cma libpolka_caml.a libpolkag.a
 	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom \
 	bigarray.cma gmp.cma apron.cma polka.cma \
-	-cclib "-lpolkag_debug"
+	-cclib "-lpolkag_debug" \
+	-ccopt -L. -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
 
 polkarung: polka.cma libpolka_caml_debug.a libpolkag_debug.a
 	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ \
 	-make-runtime bigarray.cma gmp.cma apron.cma polka.cma \
-	-cclib "-lpolkag_debug"
+	-cclib "-lpolkag_debug" \
+	-ccopt -L. -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
 
 testg_caml: test.cmo polkarung 
 	$(OCAMLC) -g $(OCAMLINC) -o $@ -use-runtime polkarung \
@@ -206,7 +207,7 @@ polka.cmxa: polka.cmx libpolka_caml.a
 	sed -f sedscript_caml tmp/$*.ml >$*.ml
 	sed -f sedscript_caml tmp/$*.mli >$*.mli
 
-manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
+manager.idl: ../mlapronidl/manager.idl
 	cp $^ $@
 
 #---------------------------------------

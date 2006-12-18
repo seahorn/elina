@@ -14,7 +14,7 @@ It is a beta version, and may still contain important bugs.
 @end menu
 
 @c ===================================================================
-@node Use of Itv, Allocating Itv managers
+@node Use of Itv, Allocating Itv managers,, Itv
 @subsection Use of Itv
 @c ===================================================================
 
@@ -50,7 +50,7 @@ Also, all library are available in debug mode
 (@samp{libitvmpq_debug.a}, ...).
 
 @c ===================================================================
-@node Allocating Itv managers ,  , Use of Itv
+@node Allocating Itv managers ,  , Use of Itv, Itv
 @subsection Allocating Itv managers
 @c ===================================================================
 

@@ -5,10 +5,12 @@
 (*
 top -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib -I $POLKA_INSTALL/lib -I $ITV_INSTALL/lib
 
+top -I $APRON_INSTALL/lib
+
 #load "gmp.cma";;
 #load "apron.cma";;
 #load "polka.cma";;
-#load "itv.cma"
+#load "itv.cma";;
 
 #install_printer Apron.Linexpr1.print;;
 #install_printer Apron.Lincons1.print;;
@@ -18,14 +20,10 @@ top -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib 
 *)
 
 open Apron;;
-open Mpqf
-open Format
-;;
+open Mpqf;;
+open Format;;
 
 let print_array = Abstract0.print_array;;
-
-let manpk = Polka.manager_alloc true;;
-let manitv = Itv.manager_alloc ();;
 
 let lincons1_array_print fmt x =
   Lincons1.array_print fmt x
@@ -59,63 +57,15 @@ let ex1 (man:Manager.t) : Abstract1.t =
   ;
   (* Creation of abstract value
      1/2x+2/3y=1, [1,2]<=z+2w<=4, 0<=u<=5 *)
-  let tab = Lincons1.array_make env 5 in
-
-  let expr = Linexpr1.make env in
-  Linexpr1.set_array expr
-    [|
-      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 1 2)), var_x);
-      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_frac 2 3)), var_y)
-    |]
-    (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (1)))))
-    ;
-  let cons = Lincons1.make expr Lincons1.EQ in
-  Lincons1.array_set tab 0 cons;
-
-  let expr = Linexpr1.make env in
-  Linexpr1.set_array expr
-    [|
-      (Coeff.Scalar (Scalar.Float (-1.0)), var_z);
-      (Coeff.Scalar (Scalar.Float (-2.0)), var_w)
-    |]
-    (Some (Coeff.Scalar (Scalar.Float (4.0))))
-  ;
-  Lincons1.array_set tab 1 (Lincons1.make expr Lincons1.SUPEQ);
- 
-  let expr = Linexpr1.make env2 in
-  Linexpr1.set_array expr
-    [|
-      (Coeff.Scalar (Scalar.Float 1.0), var_z);
-      (Coeff.Scalar (Scalar.Float 2.0), var_w)
-    |]
-    (Some 
-      (Coeff.Interval
-	(Interval.of_infsup
-	  (Scalar.Float (-2.0))
-	  (Scalar.Float (-1.0)))))
-    ;
-  Linexpr1.extend_environment_with expr env;
-  Lincons1.array_set tab 2 (Lincons1.make expr Lincons1.SUPEQ);
- 
-  let cons = Lincons1.make (Linexpr1.make env) Lincons1.SUPEQ in
-  Lincons1.set_array cons
-    [|
-      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 1)), var_u)
-    |]
-    None
-  ;
-  Lincons1.array_set tab 3 cons;
-  let cons = Lincons1.make (Linexpr1.make env) Lincons1.SUPEQ in
-  Lincons1.set_array cons
-    [|
-      (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int (-1))), var_u)
-    |]
-    (Some (Coeff.Scalar (Scalar.Mpqf (Mpqf.of_int 5))))
-  ;
-  Lincons1.array_set tab 4 cons;
- 
+  let tab = 
+    Parser.lincons1_of_lstring 
+      env
+      ["1/2x+2/3y=1";
+      "[1;2]<=z+2w";"z+2w<=4";
+      "0<=u";"u<=5"]
+  in
   printf "tab = %a@." lincons1_array_print tab;
-
+  
   let abs = Abstract1.of_lincons_array man env tab in
   printf "abs=%a@." Abstract1.print abs;
   let array = Abstract1.to_generator_array man abs in
@@ -138,8 +88,10 @@ let ex1 (man:Manager.t) : Abstract1.t =
   done;
   (* 2. dimensions *)
   (* 3. of box *)
-  let abs2 = Abstract1.of_box man env [|var_x; var_y; var_z; var_w; var_u; var_v; var_a; var_b|]
-    box.Abstract1.interval_array 
+  let abs2 = 
+    Abstract1.of_box man env
+      [|var_x; var_y; var_z; var_w; var_u; var_v; var_a; var_b|]
+      box.Abstract1.interval_array 
   in
   printf "abs2=%a@." Abstract1.print abs2;
   (* 4. Tests top and bottom *)
@@ -148,19 +100,51 @@ let ex1 (man:Manager.t) : Abstract1.t =
     Abstract1.print abs3 
     Manager.print_tbool (Abstract1.is_bottom man abs3);
 
-  printf "abs=%a@." 
-    Abstract1.print abs;
-  let p2 = Abstract1.expand man abs (var_y) [|Var.of_string "y1"; Var.of_string "y2"|] in
-  printf "p2=expand(abs,y,[y1,y2]))=%a@."
-    Abstract1.print p2; 
-  let p2 = Abstract1.expand man abs (var_u) [|Var.of_string "u1"; Var.of_string "u2"|] in
-  printf "p2=expand(abs,u,[u1,u2]))=%a@."
-    Abstract1.print p2; 
+  printf "abs=%a@." Abstract1.print abs;
+  let p2 = Abstract1.expand man abs 
+    var_y [|Var.of_string "y1"; Var.of_string "y2"|] 
+  in
+  printf "p2=expand(abs,y,[y1,y2]))=%a@." Abstract1.print p2; 
+  let p2 = Abstract1.expand man abs 
+    var_u [|Var.of_string "u1"; Var.of_string "u2"|] 
+  in
+  printf "p2=expand(abs,u,[u1,u2]))=%a@." Abstract1.print p2; 
   abs
 ;;
+
+let ex2 (man:Manager.t) =
+  let env = Environment.make
+    [||]
+    [|var_x; var_y; var_z|]
+  in
+  (* Creation of abstract value
+     5<=x<=14, 4<=y<=12, z=0 *)
+  let abs1 = Abstract1.of_box man env [|var_x;var_y;var_z|] 
+    [|
+      Interval.of_int 5 14;
+      Interval.of_int 4 12;
+      Interval.of_int 0 0;
+    |]
+  in
+  let abs2 = Abstract1.of_box man env [|var_x;var_y;var_z|] 
+    [|
+      Interval.of_int 3 12;
+      Interval.of_int 5 13;
+      Interval.of_int 1 1;
+    |]
+  in
+  let abs3 = Abstract1.join man abs1 abs2 in
+  abs3
+;;
+
+let manpk = Polka.manager_alloc true;;
+let manitv = Itv.manager_alloc ();;
 
 let abs1 = ex1 manpk;;
 
 let abs2 = ex1 manitv;;
 
+let abs3 = ex2 manpk;;
+
 Abstract1.is_eq manpk abs1 abs2;;
+Abstract1.is_eq manitv abs1 abs2;;

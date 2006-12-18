@@ -19,7 +19,7 @@ numflt_longdouble.h \
 bound.h \
 bound_def.h
 
-all:
+all: 
 
 install:
 	mkdir -p $(NUM_PREFIX)/include
@@ -32,4 +32,3 @@ distclean:
 
 dist: $(H_FILES) Makefile README
 	(cd ..; tar zcvf num.tgz $(^:%=num/%))
-

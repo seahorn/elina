@@ -16,7 +16,7 @@ special options.
 @end menu
 
 @c ===================================================================
-@node Use of NewPolka, Allocating NewPolka managers and setting options
+@node Use of NewPolka, Allocating NewPolka managers and setting options,, NewPolka
 @subsection Use of NewPolka
 @c ===================================================================
 
@@ -57,7 +57,7 @@ Also, all library are available in debug mode
 (@samp{libpolkai_debug.a}, ....
 
 @c ===================================================================
-@node Allocating NewPolka managers and setting options,  , Use of NewPolka
+@node Allocating NewPolka managers and setting options,  , Use of NewPolka, NewPolka
 @subsection Allocating NewPolka managers and setting options
 @c ===================================================================
 

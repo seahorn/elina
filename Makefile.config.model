@@ -17,41 +17,48 @@ CAMLIDL_PREFIX =
 #
 APRON_PREFIX = 
 
+# Optimization flags (adapt to your architecture)
+#
+OPTFLAGS = -O3
+# OPTFLAGS = -O3 -march=pentium-m -mtune=pentium-m -pipe -mmmx -msse -msse2 -mfpmath=sse -ftracer -funit-at-a-time -funroll-loops -fmove-all-movables -DNDEBUG
+
+#
+# Next variables have as default values $(APRON_PREFIX)
+# Should fits standard usage
+#
+#
+#
 # Where to install and to find MLGMPIDL ($(MLGMPIDL)/lib, $(MLGMPIDL)/bin)
 #
-MLGMPIDL_PREFIX = 
-# MLGMPIDL_PREFIX = $(APRON_PREFIX)
+MLGMPIDL_PREFIX = $(APRON_PREFIX)
+# MLGMPIDL_PREFIX = 
 
 # Where to install and to find MLAPRONIDL ($(MLAPRONIDL)/lib)
 #
-MLAPRONIDL_PREFIX = 
-# MLAPRONIDL_PREFIX = $(APRON_PREFIX)
+MLAPRONIDL_PREFIX = $(APRON_PREFIX)
+# MLAPRONIDL_PREFIX = 
 
 # Where to install and to find NUM ($(NUM)/include)
 #
-NUM_PREFIX = 
-# NUM_PREFIX = $(APRON_PREFIX)
+NUM_PREFIX = $(APRON_PREFIX)
+# NUM_PREFIX =
 
 # Where to install and to find POLKA 
 # ($(POLKA_PREFIX)/include, $(POLKA_PREFIX)/lib, $(POLKA_PREFIX)/bin)
 #
-POLKA_PREFIX = 
-# POLKA_PREFIX = $(APRON_PREFIX)
+POLKA_PREFIX = $(APRON_PREFIX)
+# POLKA_PREFIX =
 
 # Where to install and to find ITV (intervals)
 # ($(ITV_PREFIX)/include, $(ITV_PREFIX)/lib, $(ITV_PREFIX)/bin)
 #
-ITV_PREFIX = 
-# ITV_PREFIX = $(APRON_PREFIX)
+ITV_PREFIX = $(APRON_PREFIX)
+# ITV_PREFIX =
 
 # Where to install and to find OMEGA
-OMEGA_PREFIX = 
-# OMEGA_PREFIX = $(APRON_PREFIX)
+OMEGA_PREFIX = $(APRON_PREFIX)
+# OMEGA_PREFIX =
 
 # Where to install and to find the octagon library
-OCT_PREFIX = 
-# OCT_PREFIX = $(APRON_PREFIX)
-
-# Optimization flags (adapt to your architecture)
-OPTFLAGS = -O3
-# OPTFLAGS = -O3 -march=pentium-m -mtune=pentium-m -pipe -mmmx -msse -msse2 -mfpmath=sse -ftracer -funit-at-a-time -funroll-loops -fmove-all-movables -DNDEBUG
+OCT_PREFIX = $(APRON_PREFIX)
+# OCT_PREFIX =

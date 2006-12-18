@@ -45,12 +45,12 @@ CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 
 # Use ICFLAGS to specify machine-independent compilation flags.
 ICFLAGS = \
--I$(POLKA_PREFIX)/include \
--I$(MLGMPIDL_PREFIX)/include \
+-I../newpolka \
+-I../mlgmpidl \
 -I$(GMP_PREFIX)/include \
--I$(APRON_PREFIX)/include \
--I$(MLAPRONIDL_PREFIX)/include \
--I$(NUM_PREFIX)/include \
+-I../apron \
+-I../mlapronidl \
+-I../num \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml \
 -Wall -W -Wundef -Wbad-function-cast -Wcast-align \
 -Wstrict-prototypes -Wdisabled-optimization \
@@ -61,7 +61,7 @@ ICFLAGS = \
 CFLAGS = $(OPTFLAGS) $(ICFLAGS) -DNDEBUG
 
 # Caml
-OCAMLINC = -I $(MLGMPIDL_PREFIX)/lib -I $(MLAPRONIDL_PREFIX)/lib
+OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
 OCAMLFLAGS = -g
 OCAMLOPTFLAGS = -inline 20
 
@@ -168,8 +168,8 @@ liboct%.so: $(subst .c,%.o,$(CCSOURCES))
 octtest%: liboct%.a oct_test%.o
 	$(CC) -o $@ oct_test$*.o \
 	-L. -loct$* \
-	-L$(POLKA_PREFIX)/lib -lpolkag_debug \
-	-L$(APRON_PREFIX)/lib -lapron \
+	-L../newpolka -lpolkag_debug \
+	-L../apron -lapron \
 	-L$(GMP_PREFIX)/lib -lgmp \
 	-lm
 
@@ -215,10 +215,10 @@ mlFd: oct.mli oct.cmi oct.cma oct.cmxa octtopFd octrunFd
 mlFl: oct.mli oct.cmi oct.cma oct.cmxa octtopFl octrunFl 
 
 octtop%: oct.cma liboct_caml.a liboct%.a
-	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$*
+	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
 
 octrun%: oct.cma liboct_caml.a 
-	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* \
+	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron 
 
 oct.cma: oct.cmo liboct_caml.a 
 	$(OCAMLC) -verbose $(OCAMLINC) -a -o $@ oct.cmo -ccopt -L. -cclib -loct_caml
@@ -234,14 +234,14 @@ liboct_caml.so: oct_caml.o
 
 %_caml.c %.ml %.mli: %.idl sedscript_caml $(DEPS)
 	mkdir -p tmp
-	cp $(MLAPRONIDL_PREFIX)/lib/*.idl tmp/
+	cp ../mlapronidl/*.idl tmp/
 	cp $*.idl tmp/
 	cd tmp && $(CAMLIDL) -no-include -nocpp -I $(MLAPRONIDL_PREFIX)/lib $*.idl
 	cp tmp/$*_stubs.c $*_caml.c
 	sed -f sedscript_caml tmp/$*.ml | grep --extended-regexp '^(.)+$$' >$*.ml
 	sed -f sedscript_caml tmp/$*.mli | grep --extended-regexp '^(.)+$$' >$*.mli
 
-manager.idl: $(MLAPRONIDL_PREFIX)/lib/manager.idl
+manager.idl: ../mlapronidl/manager.idl
 	cp $^ $@
 
 .PRECIOUS: %_caml.c %.ml %.mli liboct%_caml.a liboct%_caml.so oct.cmx oct.cmo
