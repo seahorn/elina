@@ -5,10 +5,9 @@
 
 # Please read the COPYING file packaged in the distribution
 
-
 This main directory contain the following subpackages of the APRON project:
 
-num:	  
+num:
 	manipulating "generic" numbers (used by intervals,
         newpolka and possibly octagons).
 
@@ -35,5 +34,17 @@ Makefile.config.model:
 Makefile:
 	compiles as many things as it can
 
+	make all (C an OCaml version)
+	make c (C version)
+	make ml (ml stuff)
+	make doc (not useful for a normal user)
+	make clean (clean things, with the exception of noweb generated files)
+	make mostlyclean (clean all it can clean, implies clean)
+	make distclean (clean the distribution directories)
+	make install (installs in directories specified in Makefile.config)
 
+Minimal Requirements:
+	C: GMP, 
+	ml: OCaml, CamlIDL
+	Documentation: latex, makeinfo, texi2html
 

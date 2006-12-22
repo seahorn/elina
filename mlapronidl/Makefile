@@ -69,7 +69,7 @@ MLINT = $(MLMODULES:%=%.cmi)
 MLOBJ = $(MLMODULES:%=%.cmo)
 MLOBJx = $(MLMODULES:%=%.cmx)
 MLLIB_TOINSTALL = $(IDLMODULES:%=%.idl) $(MLMODULES:%=%.mli) apron.cmi apron.cma
-MLLIB_TOINSTALLx = apron.cmxa apron.a
+MLLIB_TOINSTALLx = apron.cmx apron.cmxa apron.a
 CCMODULES = apron_caml $(IDLMODULES:%=%_caml)
 CCSRC = apron_caml.h $(CCMODULES:%=%.c)
 CCLIB_TOINSTALL = libapron_caml.a libapron_caml_debug.a
@@ -175,9 +175,9 @@ mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli)
 
 
 
-html: $(IDLMODULES:%=%.mli) mlapronidl.odoc
+html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc
 	mkdir -p html
-	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(IDLMODULES:%=%.mli) ../itv/itv.mli ../octagons/oct.mli ../newpolka/polka.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli 
+	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(IDLMODULES:%=%.mli) parser.mli ../itv/itv.mli ../octagons/oct.mli ../newpolka/polka.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli 
 	cp -f index.html html
 
 #--------------------------------------------------------------

@@ -1,0 +1,19 @@
+Version 0.9.4
+
+- Modification of Makefile and Makefile.config.model
+
+- Updated documentation
+
+- OCaml linking: apron.cmo, polka.cmo, oct.cmo... become libraries
+  apron.cma, polka.cma,... that reference needed C libraries, with
+  the exception of libpolkaXX, liboctXX, ... This is documented in
+  READMEs and doc.
+
+- mlapronidl: Added string parsing (module Parser)
+
+- newpolka: 
+
+  * Stronger normalization in widening for strict constraints
+
+  * Bug fixed (some of them were severe)
+

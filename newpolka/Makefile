@@ -116,7 +116,7 @@ install:
 		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/lib; fi; \
 	done
 
-distclean: clean
+distclean:
 	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(PREFIX)/include/$$i; done
 	for i in $(CCLIB_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
 	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(PREFIX)/bin/$$i; done

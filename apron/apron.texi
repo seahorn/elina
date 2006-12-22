@@ -2,7 +2,7 @@
 @c -*-texinfo-*-
 @c %**start of header
 @setfilename apron.info
-@settitle APRON 0.9.3
+@settitle APRON 0.9.4
 @c @setcontentsaftertitlepage
 @c include version.texi
 @iftex
@@ -49,7 +49,7 @@ numerical variables.
 
 @title APRON
 @subtitle The APRON library
-@subtitle Edition 0.9.3, October 2006
+@subtitle Edition 0.9.4, December 2006
 
 @author by Bertrand Jeannet and the APRON team
 @c Include the Distribution inside the titlepage so

@@ -4,7 +4,7 @@
 #
 # Copyright (C) Antoine Mine' 2006
 
-# This file is part of the APRON Library, released under LGPL license.  
+# This file is part of the APRON Library, released under LGPL license.
 # Please read the COPYING file packaged in the distribution.
 
 include ../Makefile.config
@@ -33,7 +33,7 @@ CC = gcc
 AR = ar
 SHARED = gcc -shared
 
-OCAMLC = $(CAML_PREFIX)/bin/ocamlc.opt 
+OCAMLC = $(CAML_PREFIX)/bin/ocamlc.opt
 OCAMLOPT = $(CAML_PREFIX)/bin/ocamlopt.opt
 OCAMLMKTOP = $(CAML_PREFIX)/bin/ocamlmktop
 OCAMLMKLIB = $(CAML_PREFIX)/bin/ocamlmklib
@@ -70,7 +70,7 @@ OCAMLOPTFLAGS = -inline 20
 #---------------------------------------
 
 CCSOURCES = oct_hmat.c oct_print.c oct_transfer.c oct_closure.c oct_nary.c \
-            oct_representation.c oct_predicate.c oct_resize.c setround.c
+	    oct_representation.c oct_predicate.c oct_resize.c setround.c
 
 CCINC = oct_internal.h oct_fun.h setround.h
 
@@ -136,14 +136,14 @@ install:
 		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
 	done
 
-uninstall: clean
+uninstall:
 	/bin/rm -fr $(INCDIR)/oct
 	/bin/rm -f $(BINDIR)/octtest?? $(BINDIR)/octtop?? $(BINDIR)/octrun??
 	/bin/rm -f $(LIBDIR)/liboct??.* $(LIBDIR)/liboct??_caml.*
 	/bin/rm -f $(LIBDIR)/oct.mli $(LIBDIR)/oct.cmi $(LIBDIR)/oct.idl $(LIBDIR)/oct??.cma $(LIBDIR)/oct??.cmxa $(LIBDIR)/oct??.a
 	/bin/rm -f Makefile.depend
 
-distclean: clean uninstall
+distclean: uninstall
 	/bin/rm -f Makefile.depend
 
 dist: Makefile COPYING README oct_doc.html sedscript_caml $(CCSOURCES) $(CCINC) oct.h oct_test.c oct.idl
@@ -205,25 +205,25 @@ octtest%: liboct%.a oct_test%.o
 
 .INTERMEDIATE: mlZi
 
-mlZi: oct.mli oct.cmi oct.cma oct.cmxa octtopZi octrunZi 
-mlZl: oct.mli oct.cmi oct.cma oct.cmxa octtopZl octrunZl 
-mlZg: oct.mli oct.cmi oct.cma oct.cmxa octtopZg octrunZg 
-mlQi: oct.mli oct.cmi oct.cma oct.cmxa octtopQi octrunQi 
-mlQl: oct.mli oct.cmi oct.cma oct.cmxa octtopQl octrunQl 
-mlQg: oct.mli oct.cmi oct.cma oct.cmxa octtopQg octrunQg 
-mlFd: oct.mli oct.cmi oct.cma oct.cmxa octtopFd octrunFd 
-mlFl: oct.mli oct.cmi oct.cma oct.cmxa octtopFl octrunFl 
+mlZi: oct.mli oct.cmi oct.cma oct.cmxa octtopZi octrunZi
+mlZl: oct.mli oct.cmi oct.cma oct.cmxa octtopZl octrunZl
+mlZg: oct.mli oct.cmi oct.cma oct.cmxa octtopZg octrunZg
+mlQi: oct.mli oct.cmi oct.cma oct.cmxa octtopQi octrunQi
+mlQl: oct.mli oct.cmi oct.cma oct.cmxa octtopQl octrunQl
+mlQg: oct.mli oct.cmi oct.cma oct.cmxa octtopQg octrunQg
+mlFd: oct.mli oct.cmi oct.cma oct.cmxa octtopFd octrunFd
+mlFl: oct.mli oct.cmi oct.cma oct.cmxa octtopFl octrunFl
 
 octtop%: oct.cma liboct_caml.a liboct%.a
 	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
 
-octrun%: oct.cma liboct_caml.a 
-	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron 
+octrun%: oct.cma liboct_caml.a
+	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
 
-oct.cma: oct.cmo liboct_caml.a 
+oct.cma: oct.cmo liboct_caml.a
 	$(OCAMLC) -verbose $(OCAMLINC) -a -o $@ oct.cmo -ccopt -L. -cclib -loct_caml
 
-oct.cmxa oct.a: oct.cmx liboct_caml.a 
+oct.cmxa oct.a: oct.cmx liboct_caml.a
 	$(OCAMLOPT) -verbose $(OCAMLINC) -a -o $@ oct.cmx -ccopt -L. -cclib -loct_caml
 
 liboct_caml.a: oct_caml.o
@@ -264,4 +264,3 @@ manager.idl: ../mlapronidl/manager.idl
 #-----------------------------------
 # DEPENDENCIES
 #-----------------------------------
-

@@ -3,9 +3,11 @@
    read the COPYING file packaged in the distribution. *)
 
 (*
-top -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib -I $POLKA_INSTALL/lib -I $ITV_INSTALL/lib
+itvpolkatopg -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib -I $POLKA_INSTALL/lib -I $ITV_INSTALL/lib
 
-top -I $APRON_INSTALL/lib
+or with default setting
+
+itvpolkatopg -I $APRON_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cma";;

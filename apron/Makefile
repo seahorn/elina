@@ -113,7 +113,7 @@ distclean:
 .PHONY : apronrationale.dvi html
 
 apronrationale.pdf: apronrationale.dvi
-	$(DVIPDF) apronrationale -o $@
+	$(DVIPDF) apronrationale $@
 
 apronrationale.dvi: apronrationale.tex $(TEX_FILES)
 	$(LATEX) $^
@@ -124,7 +124,7 @@ itv.texi: ../itv/itv.texi
 	ln -s $< $@
 
 apron.pdf: apron.dvi
-	$(DVIPDF) apron.dvi -o $@
+	$(DVIPDF) apron.dvi $@
 
 apron.dvi: apron.texi newpolka.texi itv.texi
 	texi2dvi -o $@ $<

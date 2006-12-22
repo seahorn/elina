@@ -35,6 +35,7 @@ clean:
 	(cd newpolka; make clean)
 	(cd octagons; make clean)
 	(cd examples; make clean)
+	rm -fr online
 
 mostlyclean: clean
 	(cd apron; make mostlyclean)
@@ -62,8 +63,8 @@ doc:
 
 # make distribution, update to reflect current version
 
-PKGNAME  = apron-0.9.3
-PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model
+PKGNAME  = apron-0.9.4
+PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model Changes
 PKGDIRS  = apron mlapronidl num mlgmpidl octagons itv newpolka examples
 
 dist:
@@ -74,6 +75,19 @@ dist:
 	cp $(PKGFILES) $(PKGNAME)
 	tar vczf $(PKGNAME).tgz $(PKGNAME)
 	rm -rf $(PKGNAME)
+
+online: doc
+	rm -fr online
+	mkdir -p online
+	mv index.html online
+	mv apron/html online/apron
+	mv mlapronidl/html online/mlapronidl
+	mv mlgmpidl/html online/mlgmpidl
+	cp apron/apron.pdf online
+	cp mlapronidl/mlapronidl.pdf online
+	cp mlgmpidl/mlgmpidl.pdf online
+	cp examples/example1.c online
+	cp examples/mlexample?.ml online
 
 pkg_%:
 	(cd $*; $(MAKE) dist)

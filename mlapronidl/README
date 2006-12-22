@@ -25,13 +25,14 @@ Linexpr1   : (interval) linear expressions, level 1
 Lincons1   : interval) linear constraints, level 1
 Generator1 : generators, level 1
 Abstract1  : abstract values, level 1
+Parser     : parsing of expressions, constraints and generators
 
 REQUIREMENTS
 ============
 M4 preprocessor (standard on any UNIX system)
 APRON library
 GMP library (tested with version 4.0 and up)
-mlgmpidl package
+mlgmpidl package (included)
 OCaml 3.0 or up (tested with 3.09)
 Camlidl (tested with 1.05)
 

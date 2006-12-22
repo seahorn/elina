@@ -448,6 +448,8 @@ offered.
 @section Functionalities of the interface at level 1
 @c ===================================================================
 
+We focus on the changes brought by the level 1 w.r.t. the level 0.
+
 @menu
 * Variables and Environments::  
 * Semantics and Representation of an abstract value::  
