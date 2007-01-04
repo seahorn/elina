@@ -212,8 +212,8 @@ void matrix_move_rows(matrix_t* mat, size_t destrow, size_t orgrow, size_t size)
 /* ********************************************************************** */
 
 bool matrix_normalize_constraint(pk_internal_t* pk,
-				   matrix_t* mat, 
-				   size_t intdim, size_t realdim)
+				 matrix_t* mat, 
+				 size_t intdim, size_t realdim)
 {
   bool change1, change2;
   int i;

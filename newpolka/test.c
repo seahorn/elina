@@ -6,6 +6,7 @@
    read the COPYING file packaged in the distribution */
 
 #include <fenv.h>
+#include <string.h>
 
 #include "permutation.h"
 #include "pk_config.h"
@@ -1014,15 +1015,6 @@ void test_approximate()
 /* ********************************************************************** */
 /* Polyhedra 10 */
 /* ********************************************************************** */
-
-static inline char* strdup(const char* s)
-{
-  char* s2;
-
-  s2 = malloc(strlen(s)+1);
-  strcpy(s2,s);
-  return s2;
-}
 
 void poly_test_gen(manager_t* man, size_t intdim, size_t realdim, 
 		   size_t nbcons, /* Number of constraints */

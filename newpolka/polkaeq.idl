@@ -1,0 +1,25 @@
+/* -*- mode: c -*- */
+
+/* This file is part of the APRON Library, released under LGPL license.  Please
+   read the COPYING file packaged in the distribution */
+
+quote(C,"#include \"pk_internal.h\"")
+quote(C,"#include \"ap_manager.h\"")
+quote(C,"#include \"apron_caml.h\"")
+
+import "manager.idl";
+import "polka.idl";
+
+quote(MLMLI,"(** POLKAEQ: Linear Equality abstract domain *)")
+
+quote(MLI,"\n\n(** Create a NewPolkaEq manager. *)")
+ap_manager_ptr pkeq_manager_alloc();
+
+quote(MLI,"\n\n(** Get the internal submanager of a NewPolka manager. *)")
+internal_ptr manager_get_internal(ap_manager_ptr man)
+  quote(call,"\n\
+if (strcmp(man->library,\"polkaeq\")!=0){\n\
+  caml_failwith(\"Polka.get_internal applied to a manager not created by Polkaeq\");\n\
+}\n\
+_res = (internal_ptr)man->internal;\n\
+");

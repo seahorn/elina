@@ -94,7 +94,7 @@ void poly_free(ap_manager_t* man, poly_t* po)
   free(po);
 }
 
-/* Return the abstract size of a polydron, which is the number of
+/* Return the abstract size of a polyhedron, which is the number of
    coefficients of its current representation, possibly redundant. */
 size_t poly_size(ap_manager_t* man, const poly_t* po)
 {
@@ -192,12 +192,16 @@ void poly_chernikova2(ap_manager_t* man,
 		      const poly_t* poly,
 		      char* msg)
 {
-  pk_internal_t* pk = (pk_internal_t*)man->internal;
   poly_t* po = (poly_t*)poly;
-
-  poly_chernikova(man,po,msg);
-  if (pk->exn)
+  pk_internal_t* pk = (pk_internal_t*)man->internal;
+  if ((po->C && po->F) || (!po->C && !po->F)){
     return;
+  }
+  else {
+    poly_chernikova(man,po,msg);
+    if (pk->exn)
+      return;
+  }
   if (!po->C && !po->F)
     return;
   if (!poly_is_conseps(pk,po)){
@@ -321,34 +325,6 @@ void poly_minimize(ap_manager_t* man, const poly_t* poly)
 /* II.3 Approximation */
 /* ====================================================================== */
 
-/* Approximation by removing constraints with too big coefficients */
-bool matrix_approximate_constraint_1(pk_internal_t* pk, matrix_t* C)
-{
-  size_t i,j;
-  bool change;
-  change = false;
-  for (i=0;i<C->nbrows; i++){
-    if (numint_sgn(C->p[i][0])){
-      for (j=1; j<C->nbcolumns; j++){
-	if (numint_size(C->p[i][j]) > pk->approximate_max_coeff_size){
-	  change = true;
-	  C->nbrows--;
-	  matrix_exch_rows(C,i,C->nbrows);
-	  break;
-	}
-      }
-    }
-  }
-  if (change){
-    /* Add for safety positivity and strictness that may not be implied any more */
-    size_t nbrows = C->nbrows;
-    matrix_realloc_lazy(C,nbrows+pk->dec-1);
-    _matrix_fill_constraint_top(pk,C,nbrows);
-    C->_sorted = false;
-  }
-  return change;
-}
-
 
 void poly_set_save_C(poly_t* po, const poly_t* pa)
 {
@@ -363,6 +339,9 @@ void poly_set_save_C(poly_t* po, const poly_t* pa)
   }
 }
 
+/* ---------------------------------------------------------------------- */
+/* Normalize integer constraints.  Return true if there is some change. */
+/* ---------------------------------------------------------------------- */
 bool _poly_approximate_n1(ap_manager_t* man, poly_t* po, const poly_t* pa, int algorithm)
 {
   if (po->intdim>0){
@@ -396,6 +375,37 @@ bool _poly_approximate_n1(ap_manager_t* man, poly_t* po, const poly_t* pa, int a
     return false;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Remove constraints with coefficients of size greater than
+   pk->max_coeff_size, if pk->max_coeff_size > 0 */
+/* ---------------------------------------------------------------------- */
+bool matrix_approximate_constraint_1(pk_internal_t* pk, matrix_t* C)
+{
+  size_t i,j;
+  bool change;
+  change = false;
+  for (i=0;i<C->nbrows; i++){
+    if (numint_sgn(C->p[i][0])){
+      for (j=pk->dec; j<C->nbcolumns; j++){
+	if (numint_size2(C->p[i][j]) > pk->approximate_max_coeff_size){
+	  change = true;
+	  C->nbrows--;
+	  matrix_exch_rows(C,i,C->nbrows);
+	  break;
+	}
+      }
+    }
+  }
+  if (change){
+    /* Add for safety positivity and strictness that may not be implied any more */
+    size_t nbrows = C->nbrows;
+    matrix_realloc_lazy(C,nbrows+pk->dec-1);
+    _matrix_fill_constraint_top(pk,C,nbrows);
+    C->_sorted = false;
+  }
+  return change;
+}
+
 bool _poly_approximate_1(ap_manager_t* man, poly_t* po, const poly_t* pa)
 {
   bool change;
@@ -420,9 +430,17 @@ bool _poly_approximate_1(ap_manager_t* man, poly_t* po, const poly_t* pa)
     man->result.flag_exact = tbool_false;
   } else {
     poly_set_save_C(po,pa);
+    man->result.flag_exact = tbool_true;
   }
   return change;
 }
+
+/* ---------------------------------------------------------------------- */
+/* 1. Remove constraints with too big coefficients 
+   2. Add interval constraints
+   3. Add octagonal constraints
+*/
+/* ---------------------------------------------------------------------- */
 
 void poly_approximate_123(ap_manager_t* man, poly_t* po, int algorithm)
 {
@@ -525,10 +543,127 @@ void poly_approximate_123(ap_manager_t* man, poly_t* po, int algorithm)
   }
 }
 
+/* ---------------------------------------------------------------------- */
+/* 10. Round constraints with too big coefficients */
+/* ---------------------------------------------------------------------- */
+
+bool matrix_approximate_constraint_10(pk_internal_t* pk, matrix_t* C, matrix_t* F)
+{
+  size_t i,j,size;
+  bool change,removed;
+  mpq_t mpq;
+  mpz_t mpz;
+
+  mpz_init(mpz);
+  mpq_init(mpq);
+
+  change = false;
+  i = 0;
+  while (i<C->nbrows){
+    removed = false;
+    if (numint_sgn(C->p[i][0]) && 
+	(pk->strict ? numint_sgn(C->p[i][polka_eps])<0 : true)){
+      /* Look for a too big coefficient in the row */
+      size=0; /* for next test */
+      for (j=pk->dec; j<C->nbcolumns; j++){
+	size = numint_size2(C->p[i][j]);
+	if (size > pk->approximate_max_coeff_size){
+	  /* Too big coefficient detected in the row */
+	  break;
+	}
+      }
+      if (size > pk->approximate_max_coeff_size){
+	/* Too big coefficient detected in the row */
+	/* A. Compute maximum magnitude */
+	size_t maxsize = size;
+	for (j=j+1; j<C->nbcolumns; j++){
+	  size = numint_size2(C->p[i][j]);
+	  if (size>maxsize) maxsize=size;
+	}
+	/* B. Relax if constraint is strict */
+	if (pk->strict){
+	  numint_set_int(C->p[i][polka_eps],0);
+	}
+	/* C. Perform rounding of non constant coefficients */
+	size = maxsize - pk->approximate_max_coeff_size;
+	for (j=pk->dec; j<C->nbcolumns; j++){
+	  numint_fdiv_q_2exp(C->p[i][j],C->p[i][j], size);
+	}
+	/* D. Compute new constant coefficient */
+	numint_set_int(C->p[i][0],1);
+	numint_set_int(C->p[i][polka_cst],0);
+	matrix_bound_linexpr(pk,mpq,(const numint_t*)C->p[i],F,-1);
+	if (mpz_sgn(mpq_denref(mpq))==0){
+	  /* If no bound, we remove the constraint */
+	  C->nbrows--;
+	  matrix_exch_rows(C,i,C->nbrows);
+	  removed = true;
+	}
+	else {
+	  /* Otherwise, we round the constant to an integer */
+	  mpz_fdiv_q(mpz,mpq_numref(mpq),mpq_denref(mpq));
+	  mpz_neg(mpz,mpz);
+	  if (mpz_fits_numint(mpz)){
+	    /* If constant fits */
+	    numint_set_mpz(C->p[i][polka_cst],mpz);
+	    vector_normalize(pk,C->p[i],C->nbcolumns);
+	  }
+	  else {
+	    /* Otherwise, we remove the constraint */
+	    C->nbrows--;
+	    matrix_exch_rows(C,i,C->nbrows);
+	  }
+	}
+      	change = true;
+      }
+    }
+    if (!removed) i++;
+  }
+  if (change){
+    /* Add for safety positivity and strictness that may not be implied any more */
+    size_t nbrows = C->nbrows;
+    matrix_realloc_lazy(C,nbrows+pk->dec-1);
+    _matrix_fill_constraint_top(pk,C,nbrows);
+    C->_sorted = false;
+  }
+  mpz_clear(mpz);
+  mpq_clear(mpq);
+  return change;
+}
+
+void poly_approximate_10(ap_manager_t* man, poly_t* po)
+{
+  bool change;
+  pk_internal_t* pk = (pk_internal_t*)man->internal;
+
+  poly_chernikova(man,po,"of the argument");
+  if (pk->exn){
+    pk->exn = AP_EXC_NONE;
+    return;
+  }
+  if (!po->C && !po->F){
+    return;
+  }
+  assert(po->C && po->F);
+  change = matrix_approximate_constraint_10(pk, po->C, po->F);
+  if (change){
+    if (po->F) matrix_free(po->F);
+    if (po->satC) satmat_free(po->satC);
+    if (po->satF) satmat_free(po->satF);
+    po->F = NULL;
+    po->satC = NULL;
+    po->satF = NULL;
+    man->result.flag_exact = tbool_false;
+  }
+  else {
+     man->result.flag_exact = tbool_true;
+  }
+}
+
 /*
 Approximation:
 
-- valgorithm==0: do nothing
+- algorithm==0: do nothing
 
 - algorithm==-1: normalize integer minimal constraints (induces a smaller
 		 polyhedron)
@@ -558,6 +693,10 @@ void poly_approximate(ap_manager_t* man, poly_t* po, int algorithm)
     if (pk->approximate_max_coeff_size>0)
       poly_approximate_123(man,po,algorithm);
     break;
+  case 10:
+     if (pk->approximate_max_coeff_size>0)
+       poly_approximate_10(man,po);
+     break;
   }
 }
 

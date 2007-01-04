@@ -118,7 +118,7 @@ poly_t* poly_expand(ap_manager_t* man,
     return (destructive ? pa : poly_copy(man,pa));
   }
 
-  /* Get the generator systems, and possibly minimize */
+  /* Get the constraints system, and possibly minimize */
   if (pk->funopt->algorithm<0)
     poly_obtain_C(man,pa,"of the argument");
   else

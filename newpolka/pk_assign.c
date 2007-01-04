@@ -838,6 +838,7 @@ poly_t* poly_asssub_linexpr_array(bool assign,
 {
   int i;
   size_t intdimsup,realdimsup;
+  bool linear;
   poly_t* po;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
@@ -861,14 +862,14 @@ poly_t* poly_asssub_linexpr_array(bool assign,
     return destructive ? pa : poly_bottom(man,pa->intdim,pa->realdim);
   }
   /* Choose the right technique */
+  linear = true;
   intdimsup = realdimsup = 0;
   for (i=0; i<size; i++){
-    if (texpr[i]->cst.discr==AP_COEFF_INTERVAL){
-      if (tdim[i]<pa->intdim) intdimsup++;
-      else realdimsup++;
-    }
+    linear = linear && (texpr[i]->cst.discr==AP_COEFF_SCALAR);
+    if (tdim[i]<pa->intdim) intdimsup++;
+    else realdimsup++;
   }
-  if (intdimsup+realdimsup==0){
+  if (linear){
     po = poly_asssub_linear_linexpr_array(assign,man,destructive,pa,tdim,texpr,size);
   } else {
     po = poly_asssub_quasilinear_linexpr_array(assign,man,destructive,pa,

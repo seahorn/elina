@@ -6,6 +6,7 @@
    read the COPYING file packaged in the distribution */
 
 #include <fenv.h>
+#include <string.h>
 
 #include "ap_dimension.h"
 #include "pk_config.h"
@@ -943,7 +944,7 @@ void test_approximate()
 
   man = pk_manager_alloc(true);
   pk = (pk_internal_t*)man->internal;
-  pk_set_approximate_max_coeff_size(pk,1);
+  pk_set_approximate_max_coeff_size(pk,10);
 
   /* Build a polyhedron x>=0, x<=mag, x-(mag*mag)y>=0 */
   po = poly_top(man,0,2);
@@ -977,13 +978,20 @@ void test_approximate()
   ap_linexpr0_free(expr);
 
   pa = poly_copy(man,po);
-  poly_approximate(man,po,3);
-  poly_fprint(stdout,man,pa,NULL);
+  poly_approximate(man,pa,3);
   poly_fprint(stdout,man,po,NULL);
-  assert(poly_is_leq(man,pa,po)==tbool_true);
-  
-  poly_free(man,po);
+  poly_fprint(stdout,man,pa,NULL);
+  assert(poly_is_leq(man,po,pa)==tbool_true);
   poly_free(man,pa);
+
+  pa = poly_copy(man,po);
+  poly_approximate(man,pa,10);
+  poly_fprint(stdout,man,po,NULL);
+  poly_fprint(stdout,man,pa,NULL);
+  assert(poly_is_leq(man,po,pa)==tbool_true);
+  poly_free(man,pa);
+
+  poly_free(man,po);
   ap_manager_free(man);
   return;
 }
@@ -992,15 +1000,6 @@ void test_approximate()
 /* ********************************************************************** */
 /* Polyhedra 10 */
 /* ********************************************************************** */
-
-static inline char* strdup(const char* s)
-{
-  char* s2;
-
-  s2 = malloc(strlen(s)+1);
-  strcpy(s2,s);
-  return s2;
-}
 
 void poly_test_gen(ap_manager_t* man, size_t intdim, size_t realdim, 
 		   size_t nbcons, /* Number of constraints */
@@ -1102,6 +1101,8 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   ap_dim_t dim;
   ap_dimchange_t* dimchange;
 
+  pk_internal_t* pk = pk_manager_get_internal(man);
+  pk_set_approximate_max_coeff_size(pk,10);
   mpq_init(mpq);
   mpq_set_si(mpq,0,1);
   mpq_init(mpqone);
@@ -1152,6 +1153,7 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
     printf("approximate(-1) smaller\n");
   }
   poly_free(man,p3);
+
   p3 = poly_copy(man,p1);
   poly_approximate(man,p3,3);
   poly_fprint(stdout,man,p1,name_of_dim);
@@ -1159,6 +1161,17 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   assert(poly_is_leq(man,p1,p3)==tbool_true);
   if (poly_is_leq(man,p3,p1)!=tbool_true){
     printf("approximate(3) greater\n");
+    assert(man->result.flag_exact!=tbool_true);
+  }
+  poly_free(man,p3);
+
+  p3 = poly_copy(man,p1);
+  poly_approximate(man,p3,10);
+  poly_fprint(stdout,man,p1,name_of_dim);
+  poly_fprint(stdout,man,p3,name_of_dim);
+  assert(poly_is_leq(man,p1,p3)==tbool_true);
+  if (poly_is_leq(man,p3,p1)!=tbool_true){
+    printf("approximate(10) greater\n");
     assert(man->result.flag_exact!=tbool_true);
   }
   poly_free(man,p3);
@@ -1303,6 +1316,7 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   poly_approximate(man,p5,0);
   assert(poly_is_eq(man,p4,p5)==tbool_true);
   poly_free(man,p5);
+
   p5 = poly_copy(man,p4);
   poly_approximate(man,p5,-1);
   poly_fprint(stdout,man,p5,name_of_dim);
@@ -1311,6 +1325,7 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
     printf("approximate(-1) smaller\n");
   }
   poly_free(man,p5);
+
   p5 = poly_copy(man,p4);
   poly_approximate(man,p5,3);
   res = man->result.flag_exact;
@@ -1318,6 +1333,21 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   assert(poly_is_leq(man,p4,p5)==tbool_true);
   if (poly_is_leq(man,p5,p4)!=tbool_true){
     printf("approximate(3) greater\n");
+    assert(res!=tbool_true);
+  }
+  else {
+    assert(res==tbool_true);
+  }
+  poly_free(man,p5);
+
+  printf("approximate(10)\n");
+  p5 = poly_copy(man,p4);
+  poly_approximate(man,p5,10);
+  res = man->result.flag_exact;
+  poly_fprint(stdout,man,p5,name_of_dim);
+  assert(poly_is_leq(man,p4,p5)==tbool_true);
+  if (poly_is_leq(man,p5,p4)!=tbool_true){
+    printf("approximate(10) greater\n");
     assert(res!=tbool_true);
   }
   else {

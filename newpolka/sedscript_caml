@@ -1,3 +1,4 @@
 s/Manager.ap_manager_ptr/Apron.Manager.t/g; 
 s/internal_ptr/internal/g;  
 s/external pk_/external /g;  
+s/external pkeq_/external /g;  

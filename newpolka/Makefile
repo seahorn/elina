@@ -60,14 +60,19 @@ mf_qsort \
 pk_user \
 pk_internal pk_bit pk_satmat pk_vector pk_matrix pk_cherni \
 pk_representation pk_constructor pk_test pk_extract \
-pk_meetjoin pk_assign pk_project pk_resize pk_expandfold pk_widening pk_closure
+pk_meetjoin pk_assign pk_project pk_resize pk_expandfold pk_widening pk_closure \
+pk_equality
+
 CCSRC = pk_config.h pk_int.h pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = pk.h
 CCBIN_TO_INSTALL = 
 CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a 
 
-CAML_TO_INSTALL = polka.idl polka.cma polka.cmxa polka.a polka.cmi polka.cmx polka.mli polka.ml
+CAML_TO_INSTALL = polka.idl polkaeq.idl \
+polka.cma polka.cmxa polka.a \
+polka.cmi polka.cmx polka.mli polka.ml \
+polkaeq.cmi polkaeq.cmx polkaeq.mli polkaeq.ml 
 
 #---------------------------------------
 # Rules
@@ -79,7 +84,7 @@ CAML_TO_INSTALL = polka.idl polka.cma polka.cmxa polka.a polka.cmi polka.cmx pol
 
 all: allg
 
-ml: polka.mli polka.ml polka.idl polka.cmi polka.cmx polka.cma polka.cmxa polka.a libpolka_caml.a libpolka_caml_debug.a
+ml: $(CAML_TO_INSTALL) libpolka_caml.a libpolka_caml_debug.a
 
 allg: libpolkag.a libpolkag_debug.a 
 

@@ -266,13 +266,14 @@ poly_t* poly_of_box(ap_manager_t* man,
 		    size_t intdim, size_t realdim,
 		    const ap_interval_t** array)
 {
-  int k;
+  int i,k;
   size_t dim;
   poly_t* po;
 
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_OF_BOX);
   pk_internal_realloc_lazy(pk,intdim+realdim);
 
+  dim = intdim + realdim;
   po = poly_alloc(intdim,realdim);
   po->status =
     poly_status_conseps |
@@ -291,6 +292,8 @@ poly_t* poly_of_box(ap_manager_t* man,
     return po;
   }
   po->C->nbrows = (size_t)k;
+  
+
   assert(poly_check(pk,po));
   man->result.flag_exact = man->result.flag_best = tbool_true;
   return po;
