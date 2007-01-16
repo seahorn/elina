@@ -68,6 +68,8 @@ static inline void numint_mul_2(numint_t a, const numint_t b);
 static inline void numint_fdiv_q(numint_t a, const numint_t b, const numint_t c);
 static inline void numint_cdiv_q(numint_t a, const numint_t b, const numint_t c);
 static inline void numint_cdiv_2(numint_t a, const numint_t b);
+static inline void numint_cdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c);
+static inline void numint_fdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c);
 static inline void numint_min(numint_t a, const numint_t b, const numint_t c);
 static inline void numint_max(numint_t a, const numint_t b, const numint_t c);
 

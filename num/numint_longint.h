@@ -88,6 +88,10 @@ static inline void numint_cdiv_q(numint_t a, const numint_t b, const numint_t c)
 } 
 static inline void numint_cdiv_2(numint_t a, const numint_t b)
 { *a = (*b>=0L) ? (*b+1)/2 : *b/2; }
+static inline void numint_cdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c)
+{ *a = (*b >> c)+(*b & ((1L<<c)-1L) ? 1 : 0); }
+static inline void numint_fdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c)
+{ *a = (*b >> c); }
 static inline void numint_min(numint_t a, const numint_t b, const numint_t c)
 { *a = (*b<=*c) ? *b : *c; }
 static inline void numint_max(numint_t a, const numint_t b, const numint_t c)

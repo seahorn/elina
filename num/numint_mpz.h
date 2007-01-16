@@ -86,6 +86,10 @@ static inline void numint_cdiv_q(numint_t a, const numint_t b, const numint_t c)
 { mpz_cdiv_q(a,b,c); }
 static inline void numint_cdiv_2(numint_t a, const numint_t b)
 { mpz_cdiv_q_2exp(a,b,1); }
+static inline void numint_cdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c)
+{ mpz_cdiv_q_2exp(a,b,c); }
+static inline void numint_fdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c)
+{ mpz_fdiv_q_2exp(a,b,c); }
 static inline void numint_min(numint_t a, const numint_t b, const numint_t c)
 { mpz_set(a, mpz_cmp(b,c)<=0 ? b : c); }
 static inline void numint_max(numint_t a, const numint_t b, const numint_t c)
