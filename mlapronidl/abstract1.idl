@@ -403,7 +403,7 @@ void ap_abstract1_substitute_linexpr_array_with(ap_manager_ptr man,
   quote(call,"\n\
 if (v3!=v4) caml_failwith(\"Abstract1.substitute_linexpr_array_with: arrays of different size\");\n\
 {\n\
-  ap_abstract1_t res = ap_abstract1_assign_linexpr_array(man,true,a,v1,v2,v3,dest);\n\
+  ap_abstract1_t res = ap_abstract1_substitute_linexpr_array(man,true,a,v1,v2,v3,dest);\n\
   value v = Field(_v_a,0);\n\
   *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
 }")
