@@ -44,9 +44,9 @@ let rec check_list = function
   | (var1,_)::(((var2,_)::_) as l)->
       if (String.compare var1 var2)=0 then
 	raise (Error (Format.sprintf "%s appears twice in an expression" 
-	  if var1="" 
+	  (if var1="" 
 	  then "Constant coefficient"
-	  else ("Variable "^var1)))
+	  else ("Variable "^var1))))
       else
 	check_list l
   | _ -> ()
