@@ -265,7 +265,7 @@ bool ap_abstract0_check_dim_array(ap_funid_t funid, ap_manager_t* man,
 /* Check that the linear expression makes sense in the given dimensionality */
 static
 ap_dim_t ap_abstract0_check_linexpr_check(ap_dimension_t dimension,
-				   const ap_linexpr0_t* expr)
+					  const ap_linexpr0_t* expr)
 {
   int i;
   size_t nbdims;
@@ -323,13 +323,13 @@ dimension: %3lu\
 
 static
 bool ap_abstract0_check_linexpr(ap_funid_t funid, ap_manager_t* man,
-			   ap_dimension_t dimension,
-			   const ap_linexpr0_t* expr)
+				ap_dimension_t dimension,
+				const ap_linexpr0_t* expr)
 {
   ap_dim_t dim = ap_abstract0_check_linexpr_check(dimension,expr);
   if (dim!=AP_DIM_MAX){
     ap_abstract0_check_linexpr_raise(funid,man,dimension,dim,
-				  "incompatible dimension in the linear expression for the abstract value");
+				     "incompatible dimension in the linear expression for the abstract value");
     return false;
   } else {
     return true;
@@ -348,6 +348,14 @@ bool ap_abstract0_check_linexpr_array(ap_funid_t funid, ap_manager_t* man,
   size_t i;
 
   for (i=0;i<size; i++){
+    if (texpr[i]==NULL){
+      char str[80];
+      sprintf(str,"null pointer in the %luth expression of the array",(unsigned long)i);
+      ap_manager_raise_exception(man,
+				 AP_EXC_INVALID_ARGUMENT,
+				 funid,str);
+      return false;
+    }
     ap_dim_t dim = ap_abstract0_check_linexpr_check(dimension,texpr[i]);
     if (dim!=AP_DIM_MAX){
       char str[80];
@@ -366,6 +374,14 @@ bool ap_abstract0_check_lincons_array(ap_funid_t funid, ap_manager_t* man,
   size_t i;
 
   for (i=0;i<array->size; i++){
+    if (array->p[i].linexpr0==NULL){
+      char str[80];
+      sprintf(str,"null pointer in the %luth constraint of the array",(unsigned long)i);
+      ap_manager_raise_exception(man,
+				 AP_EXC_INVALID_ARGUMENT,
+				 funid,str);
+      return false;
+    }
     ap_dim_t dim = ap_abstract0_check_linexpr_check(dimension,array->p[i].linexpr0);
     if (dim!=AP_DIM_MAX){
       char str[80];
@@ -384,6 +400,14 @@ bool ap_abstract0_check_generator_array(ap_funid_t funid, ap_manager_t* man,
   size_t i;
 
   for (i=0;i<array->size; i++){
+    if (array->p[i].linexpr0==NULL){
+      char str[80];
+      sprintf(str,"null pointer in the %luth generator of the array",(unsigned long)i);
+      ap_manager_raise_exception(man,
+				 AP_EXC_INVALID_ARGUMENT,
+				 funid,str);
+      return false;
+    }
     ap_dim_t dim = ap_abstract0_check_linexpr_check(dimension,array->p[i].linexpr0);
     if (dim!=AP_DIM_MAX){
       char str[80];
@@ -975,13 +999,13 @@ ap_abstract0_t* ap_abstract0_add_ray_array(ap_manager_t* man,
 /* ============================================================ */
 /* III.2 Assignement and Substitutions */
 /* ============================================================ */
-ap_abstract0_t* ap_abstract0_asssub_linexpr(ap_funid_t funid, 
-				      /* either assign or substitute */
-				      ap_manager_t* man,
-				      bool destructive,
-				      ap_abstract0_t* a,
-				      ap_dim_t dim, const ap_linexpr0_t* expr,
-				      const ap_abstract0_t* dest)
+ap_abstract0_t* ap_abstract0_asssub_linexpr(ap_funid_t funid,
+					    /* either assign or substitute */
+					    ap_manager_t* man,
+					    bool destructive,
+					    ap_abstract0_t* a,
+					    ap_dim_t dim, const ap_linexpr0_t* expr,
+					    const ap_abstract0_t* dest)
 {
   ap_dimension_t dimension = _ap_abstract0_dimension(a);
   if (ap_abstract0_checkman1(funid,man,a) &&
@@ -1003,18 +1027,18 @@ ap_abstract0_t* ap_abstract0_asssub_linexpr(ap_funid_t funid,
   else {
     if (destructive) ap_abstract0_free(a->man,a->value);
     return ap_abstract0_top(man,
-			 dimension.intdim,
-			 dimension.realdim);
+			    dimension.intdim,
+			    dimension.realdim);
   }
 }
 ap_abstract0_t* ap_abstract0_assign_linexpr(ap_manager_t* man,
-				      bool destructive,
-				      ap_abstract0_t* a,
-				      ap_dim_t dim, const ap_linexpr0_t* expr,
-				      const ap_abstract0_t* dest)
+					    bool destructive,
+					    ap_abstract0_t* a,
+					    ap_dim_t dim, const ap_linexpr0_t* expr,
+					    const ap_abstract0_t* dest)
 {
   return ap_abstract0_asssub_linexpr(AP_FUNID_ASSIGN_LINEXPR,
-				  man,destructive,a,dim,expr,dest);
+				     man,destructive,a,dim,expr,dest);
 }
 ap_abstract0_t* ap_abstract0_substitute_linexpr(ap_manager_t* man,
 				      bool destructive,
@@ -1309,14 +1333,18 @@ ap_dimension_t dimension = _ap_abstract0_dimension(a);
 }
 
 /* ********************************************************************** */
-/* ********************************************************************** */
-/* Additional generic functions */
-/* ********************************************************************** */
+/* IV. Functions offered by the APRON interface */
 /* ********************************************************************** */
 
+/* These functions do not correspond to functions in the underlying library. */
+
+/* This function implements widening with threshold, relying on the
+   widening, sat_lincons and meet_lincons_array operations.
+*/
 ap_abstract0_t* ap_abstract0_widening_threshold(ap_manager_t* man,
-					  const ap_abstract0_t* a1, const ap_abstract0_t* a2,
-					  ap_lincons0_array_t* array)
+						const ap_abstract0_t* a1,
+						const ap_abstract0_t* a2,
+						ap_lincons0_array_t* array)
 {
   void* (*ptr)(ap_manager_t*,...);
   tbool_t (*ptr2)(ap_manager_t*,...);
@@ -1337,10 +1365,10 @@ ap_abstract0_t* ap_abstract0_widening_threshold(ap_manager_t* man,
     while (i<size-j){
       if (ptr2(man,a2->value,&array->p[i])==tbool_true){
 	i++;
-      } 
+      }
       else {
 	j++;
-	tmp = array->p[i]; 
+	tmp = array->p[i];
 	array->p[i] = array->p[array->size-j];
 	array->p[array->size-j] = tmp;
       }
@@ -1355,7 +1383,265 @@ ap_abstract0_t* ap_abstract0_widening_threshold(ap_manager_t* man,
   }
   else {
     return ap_abstract0_top(man,
-			 dimension.intdim,
-			 dimension.realdim);
+			    dimension.intdim,
+			    dimension.realdim);
   }
+}
+
+
+/* ********************************************************************** */
+/* ********************************************************************** */
+/* Additional generic functions */
+/* ********************************************************************** */
+/* ********************************************************************** */
+
+/* These functions are dedicated to implementors of domains. They offer generic
+   default implementations for some of the operations required by the APRON
+   API, when there is no more specific and efficient implementation for the
+   domain being implemented.
+
+   To use them, the function allocating manager, which is specific to the domain,
+   should put the corresponding pointers in the virtual table to them.
+*/
+
+/* ********************************************************************** */
+/* II. Constructors */
+/* ********************************************************************** */
+
+/*
+   This function implements a generic of_lincons_array operation using top and
+   meet_lincons_array operations.
+*/
+ap_abstract0_t*
+ap_abstract0_generic_of_lincons_array(ap_manager_t* man,
+				      size_t intdim, size_t realdim,
+				      const ap_lincons0_array_t* array)
+{
+  ap_abstract0_t* (*top)(ap_manager_t*,...) = man->funptr[AP_FUNID_TOP];
+  ap_abstract0_t* (*meet_lincons_array)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_LINCONS_ARRAY];
+
+  ap_abstract0_t* res;
+
+  res = top(man,intdim,realdim);
+  res = meet_lincons_array(man,true,res,array);
+  return res;
+}
+
+/* ********************************************************************** */
+/* III. Operations */
+/* ********************************************************************** */
+
+/*
+   This function implements a generic meet_array operation using copy and meet
+   operations.
+*/
+ap_abstract0_t*
+ap_abstract0_generic_meet_array(ap_manager_t* man,
+				const ap_abstract0_t** tab,
+				size_t size)
+{
+  ap_abstract0_t* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
+  ap_abstract0_t* (*meet)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET];
+  size_t i;
+  ap_abstract0_t* res;
+  if (size==1){
+    return copy(man,tab[0]);
+  }
+  else {
+    res = meet(man,false,tab[0],tab[1]);
+    for (i=2; i<size; i++){
+      res = meet(man,true,res,tab[i]);
+    }
+    return res;
+  }
+}
+
+/*
+   This function implements a generic join_array operation using copy and meet
+   operations.
+*/
+ap_abstract0_t*
+ap_abstract0_generic_join_array(ap_manager_t* man,
+				const ap_abstract0_t** tab,
+				size_t size)
+{
+  ap_abstract0_t* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
+  ap_abstract0_t* (*join)(ap_manager_t*,...) = man->funptr[AP_FUNID_JOIN];
+  size_t i;
+  ap_abstract0_t* res;
+  if (size==1){
+    return copy(man,tab[0]);
+  }
+  else {
+    res = join(man,false,tab[0],tab[1]);
+    for (i=2; i<size; i++){
+      res = join(man,true,res,tab[i]);
+    }
+    return res;
+  }
+}
+
+/*
+   This function implements generic parallel assignement/substitution
+   operations by
+   1. introducing primed dimensions
+   2. transforming linear expressions into equality constraints relating the
+      assigned primed dimension and the linear expression
+   3. intersecting the obtained abstract value with the constraints
+   4. exchanging primed and unprimed dimensions
+   5. removing the introduced (primed) dimensions
+
+   It relies on: is_bottom, copy, dimension, add_dimensions,
+   permute_dimensions, remove_dimensions, meet_lincons_array abstract
+   operations.
+
+   Meaning of parameters:
+   - assign selects the operation: true means assignement, false substitution
+   - The other parameters have the meaning they have for parallel
+     assignement/substitution
+*/
+
+static
+ap_abstract0_t*
+ap_abstract0_generic_asssub_linexpr_array(bool assign,
+					  ap_manager_t* man,
+					  bool destructive,
+					  ap_abstract0_t* abs,
+					  const ap_dim_t* tdim,
+					  const ap_linexpr0_t** texpr,
+					  size_t size)
+{
+  tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+  ap_abstract0_t* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
+  ap_abstract0_t* (*add_dimensions)(ap_manager_t*,...) = man->funptr[AP_FUNID_ADD_DIMENSIONS];
+  ap_abstract0_t* (*permute_dimensions)(ap_manager_t*,...) = man->funptr[AP_FUNID_PERMUTE_DIMENSIONS];
+  ap_abstract0_t* (*remove_dimensions)(ap_manager_t*,...) = man->funptr[AP_FUNID_REMOVE_DIMENSIONS];
+  ap_abstract0_t* (*meet_lincons_array)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_LINCONS_ARRAY];
+  size_t i;
+  ap_dimension_t d, dsup;
+  ap_dimchange_t dimchange;
+  ap_dimperm_t permutation;
+  ap_lincons0_array_t array;
+  ap_abstract0_t* abs2;
+
+  if (is_bottom(man,abs)){
+    return destructive ? abs : copy(man,abs);
+  }
+  /* 1. Compute the number of integer and real dimensions assigned */
+  d = _ap_abstract0_dimension(abs);
+  dsup.intdim = 0;
+  dsup.realdim = 0;
+  for (i=0; i<size; i++){
+    if (tdim[i]<d.intdim)
+      dsup.intdim++;
+    else
+      dsup.realdim++;
+  }
+  /* 2. Build dimchange (for addition of primed dimensions) */
+  ap_dimchange_init(&dimchange,dsup.intdim,dsup.realdim);
+  for (i=0;i<dsup.intdim;i++)
+    dimchange.dim[i]=d.intdim;
+  for (i=dsup.intdim;i<dsup.intdim+dsup.realdim;i++)
+    dimchange.dim[i]=d.intdim+d.realdim;
+
+  /* 3. Build permutation (exchanging primed and unprimed dimensions) */
+  ap_dimperm_init(&permutation,d.intdim+d.realdim+dsup.intdim+dsup.realdim);
+  ap_dimperm_set_id(&permutation);
+  for (i=0; i<size; i++){
+    ap_dim_t dim = tdim[i];
+    ap_dim_t dimp = dim<d.intdim ? d.intdim+i : d.intdim+d.realdim+i;
+    permutation.dim[dim] = dimp;
+    permutation.dim[dimp] = dim;
+  }
+  /* 4. Build constraints system
+     An assignement x'_i := a_ij x_j + b_i becomes
+     an equality constraint -x'_i + a_ij x_j + b_i = 0
+  */
+  array = ap_lincons0_array_make(size);
+  for (i=0; i<size; i++){
+    ap_dim_t dim = tdim[i];
+    ap_dim_t dimp = permutation.dim[dim];
+    ap_linexpr0_t* expr = ap_linexpr0_add_dimensions(texpr[i],&dimchange);
+    ap_linexpr0_set_coeff_scalar_double(expr,dimp,-1.0);
+    ap_lincons0_t cons = ap_lincons0_make(AP_CONS_EQ,expr);
+    array.p[i] = cons;
+  }
+
+  /* 5. Add primed dimensions to abstract value */
+  abs2 = add_dimensions(man,destructive,abs,&dimchange,false);
+  /* From now, work by side-effect on abs2 */
+
+  /* 6. Permute unprimed and primed dimensions if !assign */
+  if (!assign){
+    abs2 = permute_dimensions(man,true,abs2,&permutation);
+  }
+  /* 7. Perform meet of abs2 with constraints */
+  abs2 = meet_lincons_array(man,true,abs2,&array);
+
+  /* 8. Permute unprimed and primed dimensions if assign */
+  if (assign){
+    abs2 = permute_dimensions(man,true,abs2,&permutation);
+  }
+  /* 9. Remove extra dimensions */
+  ap_dimchange_add_invert(&dimchange);
+  abs2 = remove_dimensions(man,true,abs2,&dimchange);
+
+  /* 10. Free allocated objects */
+  ap_dimperm_clear(&permutation);
+  ap_dimchange_clear(&dimchange);
+  ap_lincons0_array_clear(&array);
+
+  return abs2;
+}
+
+/*
+   This function implements generic parallel assignement operation by
+   1. introducing primed dimensions
+   2. transforming linear expressions into equality constraints relating the
+      assigned primed dimension and the linear expression
+   3. intersecting the obtained abstract value with the constraints
+   4. exchanging primed and unprimed dimensions
+   5. removing the introduced (primed) dimensions
+
+   It relies on: is_bottom, copy, dimension, add_dimensions,
+   permute_dimensions, remove_dimensions, meet_lincons_array abstract
+   operations.
+*/
+ap_abstract0_t*
+ap_abstract0_generic_assign_linexpr_array(ap_manager_t* man,
+					  bool destructive,
+					  ap_abstract0_t* abs,
+					  const ap_dim_t* tdim,
+					  const ap_linexpr0_t** texpr,
+					  size_t size)
+{
+  return ap_abstract0_generic_asssub_linexpr_array(true,
+						   man, destructive,
+						   abs, tdim, texpr, size);
+}
+
+/*
+   This function implements generic parallel substitution operation by
+   1. introducing primed dimensions
+   2. transforming linear expressions into equality constraints relating the
+      assigned primed dimension and the linear expression
+   3. exchanging primed and unprimed dimensions
+   4. intersecting the obtained abstract value with the constraints
+   5. removing the introduced (primed) dimensions
+
+   It relies on: is_bottom, copy, dimension, add_dimensions,
+   permute_dimensions, remove_dimensions, meet_lincons_array abstract
+   operations.
+*/
+ap_abstract0_t*
+ap_abstract0_generic_substitute_linexpr_array(ap_manager_t* man,
+					      bool destructive,
+					      ap_abstract0_t* abs,
+					      const ap_dim_t* tdim,
+					      const ap_linexpr0_t** texpr,
+					      size_t size)
+{
+  return ap_abstract0_generic_asssub_linexpr_array(false,
+						   man, destructive,
+						   abs, tdim, texpr, size);
 }

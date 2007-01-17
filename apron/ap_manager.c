@@ -107,19 +107,10 @@ void ap_option_init(ap_option_t* opt)
 /* II. Constructor and destructor for result */
 /* ********************************************************************** */
 
-static inline char* strdup(const char* s)
-{
-  char* s2;
-
-  s2 = malloc(strlen(s)+1);
-  strcpy(s2,s);
-  return s2;
-}
-
 ap_exclog_t* ap_exc_cons(ap_exc_t exn, 
-				ap_funid_t funid,
-				const char* msg, 
-				ap_exclog_t* tail)
+			 ap_funid_t funid,
+			 const char* msg, 
+			 ap_exclog_t* tail)
 {
   ap_exclog_t* head = (ap_exclog_t*)malloc(sizeof(ap_exclog_t));
   head->exn = exn;
@@ -165,8 +156,8 @@ void ap_result_clear(ap_result_t* result)
 
 /* Constructor and destructor for manager */
 ap_manager_t* ap_manager_alloc(char* library, char* version, 
-			 void* internal, 
-			 void (*internal_free)(void*))
+			       void* internal, 
+			       void (*internal_free)(void*))
 {
   ap_manager_t* man;
 

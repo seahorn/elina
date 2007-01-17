@@ -10,14 +10,6 @@
 #include "ap_manager.h"
 #include "ap_environment.h"
 
-static inline char* strdup(const char* s){
-  char* s2;
-
-  s2 = malloc(strlen(s)+1);
-  strcpy(s2,s);
-  return s2;
-}
-
 static int var_cmp(const void* a, const void* b)
 {
   void* aa = *((void**)a);

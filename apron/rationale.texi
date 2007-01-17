@@ -1,5 +1,5 @@
 @c *******************************************************************
-@node APRON Rationale,,, Top
+@node APRON Rationale, Installing APRON, Introduction to APRON, Top
 @chapter APRON Rationale
 @c *******************************************************************
 

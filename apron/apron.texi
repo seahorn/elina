@@ -67,17 +67,18 @@ numerical variables.
 @end ifnothtml
 
 @menu
-* Copying::                     
-* Introduction to APRON::   
+* Copying::
+* Introduction to APRON::
 * APRON Rationale::
-* Installing APRON::            
-* APRON Basics::                
-* Managers and Abstract Domains::  
-* Scalars & Intervals & Coefficients::  
-* Level 1 of the interface::    
-* Level 0 of the interface::    
-* Examples::                    
-* Appendices::                  
+* Installing APRON::
+* APRON Basics::
+* Managers and Abstract Domains::
+* Scalars & Intervals & Coefficients::
+* Level 1 of the interface::
+* Level 0 of the interface::
+* Functions for implementors::
+* Examples::
+* Appendices::
 @end menu
 
 @c *******************************************************************
@@ -94,7 +95,7 @@ including all source code, libraries, binaries, and documentation.
 @include lgpl.texi
 
 @c *******************************************************************
-@node Introduction to APRON, Installing APRON, Copying, Top
+@node Introduction to APRON, APRON Rationale, Copying, Top
 @chapter Introduction to APRON
 @c *******************************************************************
 
@@ -144,7 +145,7 @@ shared between the underlying implementations.
 @c *******************************************************************
 
 @c *******************************************************************
-@node Installing APRON, APRON Basics, Introduction to APRON, Top
+@node Installing APRON, APRON Basics, APRON Rationale, Top
 @chapter Installing APRON
 @c *******************************************************************
 
@@ -155,8 +156,8 @@ You should look at @file{../README}, @file{README} and @file{Makefile} files.
 @chapter APRON Basics
 @c *******************************************************************
 @menu
-* Headers and Libraries::       
-* C Programming Conventions::   
+* Headers and Libraries::
+* C Programming Conventions::
 @end menu
 
 @c ===================================================================
@@ -257,10 +258,10 @@ not be shared between threads (make copies to transmit information).
 Managers are allocated by the underlying libraries/abstract domains, but are freed via an APRON function.
 
 @menu
-* Managers::                    
-* NewPolka::                    
-* Itv::                         
-* Oct::                         
+* Managers::
+* NewPolka::
+* Itv::
+* Oct::
 @end menu
 
 @c ===================================================================
@@ -269,8 +270,8 @@ Managers are allocated by the underlying libraries/abstract domains, but are fre
 @c ===================================================================
 
 @menu
-* APRON Global Datatypes::      
-* Functions related to managers::  
+* APRON Global Datatypes::
+* Functions related to managers::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -395,6 +396,7 @@ typedef struct ap_exclog_t @{
 @end example
 @end deftp
 
+@anchor{ap_funopt_t}
 @deftp datatype ap_funopt_t
 Options attached to functions.
 @example
@@ -450,8 +452,9 @@ Return @code{tbool_true} if the last called APRON function returned an
 exact (resp. a best approximation) result.
 @end deftypefun
 
+@anchor{Manager options}
 @subheading Options
-
+@xref{ap_funopt_t}.
 @deftypefun ap_funopt_t ap_manager_get_funopt (ap_manager_t* @var{man}, ap_funid_t @var{funid})
 Getting the option attached to the specified function in the manager.
 @end deftypefun
@@ -461,7 +464,7 @@ manager. @var{fopt} is copied (and not only referenced).
 @end deftypefun
 @deftypefun void ap_funopt_init (ap_funopt_t* @var{fopt})
 Initialize @var{fopt} with default values.
-@end deftypefun 
+@end deftypefun
 
 @subheading Exceptions
 
@@ -514,9 +517,9 @@ intervals built on scalars.  @emph{Coefficients} are either scalars or
 intervals.
 
 @menu
-* Scalars::                     
-* Intervals::                   
-* Coefficients::                
+* Scalars::
+* Intervals::
+* Coefficients::
 @end menu
 
 @c ===================================================================
@@ -549,11 +552,11 @@ implemented by GMP.
 @end deftp
 
 @menu
-* Initializing scalars::        
-* Assigning scalars::           
-* Converting scalars::          
-* Comparing scalars::           
-* Other operations on scalars::  
+* Initializing scalars::
+* Assigning scalars::
+* Converting scalars::
+* Comparing scalars::
+* Other operations on scalars::
 @end menu
 
 
@@ -697,11 +700,11 @@ Intervals on scalars.
 @end deftp
 
 @menu
-* Initializing intervals::      
-* Assigning intervals::         
-* Comparing intervals::         
-* Other operations on intervals::  
-* Array of intervals::          
+* Initializing intervals::
+* Assigning intervals::
+* Comparing intervals::
+* Other operations on intervals::
+* Array of intervals::
 @end menu
 
 
@@ -850,10 +853,10 @@ A coefficient is either a scalar or an interval.
 @end deftp
 
 @menu
-* Initializing coefficients::   
-* Assigning coefficients::      
-* Comparing coefficients::      
-* Other operations on coefficients::  
+* Initializing coefficients::
+* Assigning coefficients::
+* Comparing coefficients::
+* Other operations on coefficients::
 @end menu
 
 
@@ -973,12 +976,12 @@ Print @var{op} on the stream @var{stream}.
 This interface of level 1 is defined in @file{ap_global1.h}.
 
 @menu
-* Variables and related operations::  
-* Environements::               
-* Linear expressions of level 1::  
-* Linear constraints of level 1::  
-* Generators of level 1::       
-* Abstract values and operations of level 1::  
+* Variables and related operations::
+* Environements::
+* Linear expressions of level 1::
+* Linear constraints of level 1::
+* Generators of level 1::
+* Abstract values and operations of level 1::
 @end menu
 
 @noindent
@@ -1239,10 +1242,10 @@ typedef struct ap_linexpr1_t @{
 @end deftp
 
 @menu
-* Allocating linear expressions of level 1::  
-* Tests on linear expressions of level 1::  
-* Access to linear expressions of level 1::  
-* Change of dimensions and permutations of linear expressions of level 1::  
+* Allocating linear expressions of level 1::
+* Tests on linear expressions of level 1::
+* Access to linear expressions of level 1::
+* Change of dimensions and permutations of linear expressions of level 1::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -1474,11 +1477,11 @@ Arrays at level 1 cannot be accessed directly, for example by writing
 @end deftp
 
 @menu
-* Allocating linear constraints of level 1::  
-* Tests on linear constraints of level 1::  
-* Access to linear constraints of level 1::  
-* Change of dimensions and permutations of linear constraints of level 1::  
-* Arrays of linear constraints of level 1::  
+* Allocating linear constraints of level 1::
+* Tests on linear constraints of level 1::
+* Access to linear constraints of level 1::
+* Change of dimensions and permutations of linear constraints of level 1::
+* Arrays of linear constraints of level 1::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -1663,10 +1666,10 @@ Arrays at level 1 cannot be accessed directly, for example by writing
 @end deftp
 
 @menu
-* Allocating generators of level 1::  
-* Access to generators of level 1::  
-* Change of dimensions and permutations of generators of level 1::  
-* Arrays of generators of level 1::  
+* Allocating generators of level 1::
+* Access to generators of level 1::
+* Change of dimensions and permutations of generators of level 1::
+* Arrays of generators of level 1::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -1844,25 +1847,28 @@ common super-environement (@pxref{Environements}).
 @end itemize
 
 @menu
-* Allocating abstract values of level 1::  
-* Control of internal representation of abstract values of level 1::  
-* Printing abstract values of level 1::  
-* Serialization of abstract values of level 1::  Constructors, Accessors, Tests and Extraction of properties
+* Allocating abstract values of level 1::
+* Control of internal representation of abstract values of level 1::
+* Printing abstract values of level 1::
+* Serialization of abstract values of level 1::
 
-* Constructors for abstract values of level 1::  
-* Accessors for abstract values of level 1::  
-* Tests on abstract values of level 1::  
-* Extraction of properties of abstract values of level 1::  Operations
+Constructors, Accessors, Tests and Extraction of properties
+* Constructors for abstract values of level 1::
+* Accessors for abstract values of level 1::
+* Tests on abstract values of level 1::
+* Extraction of properties of abstract values of level 1::
 
-* Meet and Join of abstract values of level 1::  
-* Assignements and Substitutions of abstract values of level 1::  
-* Existential quantification of abstract values of level 1::  
-* Change of environements of abstract values of level 1::  
-* Expansion and Folding of dimensions in abstract values of level 1::  
-* Widening of abstract values of level 1::  
-* Topological closure of abstract values of level 1::  Additional functions
+Operations
+* Meet and Join of abstract values of level 1::
+* Assignements and Substitutions of abstract values of level 1::
+* Existential quantification of abstract values of level 1::
+* Change of environements of abstract values of level 1::
+* Expansion and Folding of dimensions in abstract values of level 1::
+* Widening of abstract values of level 1::
+* Topological closure of abstract values of level 1::
 
-* Additional functions on abstract values of level 1::  
+Additional functions
+* Additional functions on abstract values of level 1::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -2224,7 +2230,7 @@ This implies calls to @code{ap_abstract0_bound_dimension}.
 @end deftypefun
 
 @c *******************************************************************
-@node Level 0 of the interface, Examples, Level 1 of the interface, Top
+@node Level 0 of the interface, Functions for implementors, Level 1 of the interface, Top
 @chapter Level 0 of the interface
 @c *******************************************************************
 
@@ -2237,11 +2243,11 @@ new library/abstract domain, or who want to build a composite domain
 from existing ones.
 
 @menu
-* Dimensions and related operations::  
-* Linear expressions of level 0::  
-* Linear constraints of level 0:: 
-* Generators of level 0::       
-* Abstract values and operations of level 0::  
+* Dimensions and related operations::
+* Linear expressions of level 0::
+* Linear constraints of level 0::
+* Generators of level 0::
+* Abstract values and operations of level 0::
 @end menu
 
 @c ===================================================================
@@ -2326,8 +2332,8 @@ Represents the permutation @code{i -> dimperm.p[i]} for
 @end deftp
 
 @menu
-* Manipulating changes of dimensions::  
-* Manipulating permutations of dimensions::  
+* Manipulating changes of dimensions::
+* Manipulating permutations of dimensions::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -2411,11 +2417,11 @@ are of type @code{coeff_t}.
 @end deftp
 
 @menu
-* Allocating linear expressions of level 0::  
-* Tests on linear expressions of level 0::  
-* Access to linear expressions of level 0::  
-* Change of dimensions and permutations of linear expressions of level 0::  
-* Other functions on linear expressions of level 0::  
+* Allocating linear expressions of level 0::
+* Tests on linear expressions of level 0::
+* Access to linear expressions of level 0::
+* Change of dimensions and permutations of linear expressions of level 0::
+* Other functions on linear expressions of level 0::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -2728,10 +2734,10 @@ One can assign a constraint to the index @var{index} by writing:
 @end deftp
 
 @menu
-* Allocating linear constraints of level 0::  
-* Tests on linear constraints of level 0::  
-* Arrays of linear constraints of level 0::  
-* Change of dimensions and permutations of linear constraints of level 0::  
+* Allocating linear constraints of level 0::
+* Tests on linear constraints of level 0::
+* Arrays of linear constraints of level 0::
+* Change of dimensions and permutations of linear constraints of level 0::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -2862,9 +2868,9 @@ Datatype for arrays of generators.
 @end deftp
 
 @menu
-* Allocating generators of level 0::  
-* Arrays of generators of level 0::  
-* Change of dimensions and permutations of generators of level 0::  
+* Allocating generators of level 0::
+* Arrays of generators of level 0::
+* Change of dimensions and permutations of generators of level 0::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -2972,25 +2978,28 @@ arguments is neither (semantically) modified nor deallocated.
 @end itemize
 
 @menu
-* Allocating abstract values of level 0::  
-* Control of internal representation of abstract values of level 0::  
-* Printing abstract values of level 0::  
-* Serialization of abstract values of level 0::  Constructors, Accessors, Tests and Extraction of properties
+* Allocating abstract values of level 0::
+* Control of internal representation of abstract values of level 0::
+* Printing abstract values of level 0::
+* Serialization of abstract values of level 0::
 
-* Constructors for abstract values of level 0::  
-* Accessors for abstract values of level 0::  
-* Tests on abstract values of level 0::  
-* Extraction of properties of abstract values of level 0::  Operations
+Constructors, Accessors, Tests and Extraction of properties
+* Constructors for abstract values of level 0::
+* Accessors for abstract values of level 0::
+* Tests on abstract values of level 0::
+* Extraction of properties of abstract values of level 0::
 
-* Meet and Join of abstract values of level 0::  
-* Assignements and Substitutions of abstract values of level 0::  
-* Existential quantification of abstract values of level 0::  
-* Change and permutation of dimensions of abstract values of level 0::  
-* Expansion and Folding of dimensions in abstract values of level 0::  
-* Widening of abstract values of level 0::  
-* Topological closure of abstract values of level 0::  Additional functions
+Operations
+* Meet and Join of abstract values of level 0::
+* Assignements and Substitutions of abstract values of level 0::
+* Existential quantification of abstract values of level 0::
+* Change and permutation of dimensions of abstract values of level 0::
+* Expansion and Folding of dimensions in abstract values of level 0::
+* Widening of abstract values of level 0::
+* Topological closure of abstract values of level 0::
 
-* Additional functions on abstract values of level 0::  
+Additional functions
+* Additional functions on abstract values of level 0::
 @end menu
 
 @c -------------------------------------------------------------------
@@ -3350,6 +3359,69 @@ constraints in @var{array} that are satisfied by both @var{a1} and
 @var{a2}.
 @end deftypefun
 
+@c *******************************************************************
+@node Functions for implementors, Examples, Level 0 of the interface, Top
+@chapter Functions for implementors
+@c *******************************************************************
+
+The signatures of the functions described in this chapter are
+provided by the file @file{ap_abstract0.h}.
+
+@menu
+* Generic implementations::     
+* Useful functions::            
+@end menu
+
+@c ===================================================================
+@node Generic implementations, Useful functions, Functions for implementors, Functions for implementors
+@section Generic implementations of functions of the API
+@c ===================================================================
+
+These functions are dedicated to implementors of underlying
+libraries. They offer generic default implementations for some of
+the operations required by the APRON API, when there is no more
+specific and efficient implementation for the domain being
+implemented.
+
+To use one of these, the function allocating manager, which is
+specific to the domain, should put the corresponding pointer in
+the virtual table to such a generic implementation.
+
+@deftypefun ap_abstract0_t* ap_abstract0_generic_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, const ap_lincons0_array_t* @var{array})
+Implements a generic @code{of_lincons_array} function using
+@code{top} and @code{meet_lincons_array} operations.
+@end deftypefun
+
+@deftypefun ap_abstract0_t* ap_abstract0_generic_meet_array (ap_manager_t* @var{man}, const ap_abstract0_t** @var{tab}, size_t @var{size})
+@deftypefunx ap_abstract0_t* ap_abstract0_generic_join_array (ap_manager_t* @var{man}, const ap_abstract0_t** @var{tab}, size_t @var{size})
+Implements a generic @code{meet_array} (resp. @code{join_array})
+operation using @code{copy} and @code{meet} (resp. @code{join})
+operations.
+@end deftypefun
+
+@deftypefun ap_abstract0_t* ap_abstract0_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size})
+@deftypefunx ap_abstract0_t* ap_abstract0_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size})
+Implements generic parallel assignement (resp. substitution) function by
+@enumerate
+@item introducing primed dimensions for assigned dimensions;
+@item transforming linear expressions into equality constraints relating
+the assigned primed dimension and the linear expression;
+@item in the case of substitution, exchanging primed and unprimed dimensions;
+@item intersecting the obtained abstract value with the constraints;
+@item in the case of assignement, exchanging primed and unprimed dimensions;
+@item and removing the introduced (primed) dimensions
+@end enumerate
+@noindent 
+It relies on: @code{is_bottom}, @code{ copy}, @code{ dimension},
+@code{ add_dimensions}, @code{permute_dimensions},
+@code{remove_dimensions} and @code{meet_lincons_array} functions.
+@end deftypefun
+
+@c ===================================================================
+@node Useful functions,  , Generic implementations, Functions for implementors
+@section Useful functions
+@c ===================================================================
+
 @deftypefun ap_linexpr0_t* ap_abstract0_quasilinear_of_intervallinear (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, ap_linexpr0_t* @var{expr})
 Evaluate the interval linear expression @var{expr} on the abstract
 value @var{a} and approximate it by a quasilinear expression.
@@ -3359,7 +3431,7 @@ This implies calls to @code{ap_abstract0_bound_dimension}.
 
 
 @c *******************************************************************
-@node Examples, Appendices, Level 0 of the interface, Top
+@node Examples, Appendices, Functions for implementors, Top
 @chapter Examples
 @c *******************************************************************
 
@@ -3378,9 +3450,9 @@ distribution, or click on the links below:
 @c *******************************************************************
 
 @menu
-* C Datatype Index::            
-* C Variable Index::            
-* C Function Index::            
+* C Datatype Index::
+* C Variable Index::
+* C Function Index::
 @end menu
 
 @c ===================================================================

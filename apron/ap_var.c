@@ -10,14 +10,6 @@
 #include "ap_manager.h"
 #include "ap_var.h"
 
-static inline char* strdup(const char* s){
-  char* s2;
-
-  s2 = malloc(strlen(s)+1);
-  strcpy(s2,s);
-  return s2;
-}
-
 static int var_compare_default(void* v1, void* v2){
   return (v1==v2) ? 0 : strcmp((char*)v1,(char*)v2);
 }
