@@ -90,6 +90,7 @@ void _poly_projectforget_array(bool project,
     matrix_sort_rows(pk,mat);
     poly_dual((poly_t*)pa);
     if (po!=pa) poly_dual(po);
+    if (!lazy) poly_obtain_satC(pa);
     res = _poly_meet_matrix(false,lazy,man,po,pa,mat);
     poly_dual((poly_t*)pa);
     if (po!=pa) poly_dual(po);

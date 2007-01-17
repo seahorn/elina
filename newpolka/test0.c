@@ -1783,6 +1783,11 @@ void mine3()
   poly = poly_join_array(man,tpoly,3);
   fprintf(stdout,"res\n");
   poly_fprint(stdout,man,poly,NULL);
+  ap_lincons0_array_clear(&array);
+  poly_free(man,poly0);
+  poly_free(man,poly1);
+  poly_free(man,poly2);
+  poly_free(man,poly);
   ap_manager_free(man);
 }
 

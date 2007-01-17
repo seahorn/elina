@@ -277,7 +277,6 @@ poly_t* poly_of_box(ap_manager_t* man,
   po = poly_alloc(intdim,realdim);
   po->status =
     poly_status_conseps |
-    poly_status_consgauss |
     poly_status_minimal;
 
   dim = intdim + realdim;

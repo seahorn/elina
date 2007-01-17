@@ -128,7 +128,7 @@ poly_t* poly_expand(ap_manager_t* man,
     po = pa;
     po->intdim+=intdimsup;
     po->realdim+=realdimsup;
-    po->status &= ~poly_status_gengauss & ~poly_status_minimal;
+    po->status &= ~poly_status_consgauss & ~poly_status_gengauss & ~poly_status_minimal;
   }
   else {
     po = poly_alloc(nintdim,nrealdim);
@@ -156,7 +156,7 @@ poly_t* poly_expand(ap_manager_t* man,
     if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
     if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
     po->nbeq = po->nbline = 0;
-    po->status &= ~poly_status_gengauss & ~poly_status_minimal;
+    po->status &= ~poly_status_consgauss & ~poly_status_gengauss & ~poly_status_minimal;
   }
   po->C = matrix_expand(pk, destructive, pa->C, 
 			dim, 
@@ -297,7 +297,7 @@ poly_t* poly_fold(ap_manager_t* man,
     if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
     if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
     po->nbeq = po->nbline = 0;
-    po->status &= ~poly_status_gengauss & ~poly_status_minimal;
+    po->status &= ~poly_status_consgauss & ~poly_status_gengauss & ~poly_status_minimal;
   }
   
   po->F = matrix_fold(pk, destructive, pa->F, 

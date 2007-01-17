@@ -15,8 +15,6 @@
 extern "C" {
 #endif
 
-static inline char* strdup(const char* s);
-
 bool manager_check_dim_dim(manager_t* man,
 			   const poly_t* a, dim_t dim,
 			   funid_t funid);
@@ -32,7 +30,7 @@ bool manager_check_dim_linexpr(manager_t* man,
 			       const poly_t* a, const linexpr0_t* expr,
 			       funid_t funid);
 
-/* ********************************************************************** */
+#if !(defined __USE_SVID || defined __USE_BSD || defined __USE_XOPEN_EXTENDED)
 static inline char* strdup(const char* s){
   char* s2;
 
@@ -40,6 +38,7 @@ static inline char* strdup(const char* s){
   strcpy(s2,s);
   return s2;
 }
+#endif
 
 #ifdef __cplusplus
 }

@@ -61,11 +61,11 @@ pk_user \
 pk_internal pk_bit pk_satmat pk_vector pk_matrix pk_cherni \
 pk_representation pk_constructor pk_test pk_extract \
 pk_meetjoin pk_assign pk_project pk_resize pk_expandfold pk_widening pk_closure \
-pk_equality
+pkeq
 
 CCSRC = pk_config.h pk_int.h pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
-CCINC_TO_INSTALL = pk.h
+CCINC_TO_INSTALL = pk.h pkeq.h
 CCBIN_TO_INSTALL = 
 CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a 
 
@@ -128,7 +128,7 @@ distclean:
 	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
 	/bin/rm -f Makefile.depend
 
-dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polka_caml.c COPYING README
+dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polkaeq.idl polkaeq.ml polkaeq.mli polka_caml.c COPYING README
 	(cd ..; tar zcvf newpolka.tgz $(^:%=newpolka/%))
 
 #---------------------------------------
@@ -160,17 +160,17 @@ libpolkag_debug.a: $(CCMODULES:%=%g_debug.o)
 # Caml part
 #-----------------------------------
 
-polkatopg: polka.cma libpolka_caml.a libpolkag.a
-	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom \
+polkatopg: polka.cma libpolka_caml.a libpolkag_debug.a
+	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -verbose -o $@ \
 	bigarray.cma gmp.cma apron.cma polka.cma \
-	-cclib "-lpolkag_debug" \
-	-ccopt -L. -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
+	-ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron" \
+	-cclib "-lpolkag_debug" 
 
 polkarung: polka.cma libpolka_caml_debug.a libpolkag_debug.a
-	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ \
+	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -verbose -o $@ \
 	-make-runtime bigarray.cma gmp.cma apron.cma polka.cma \
-	-cclib "-lpolkag_debug" \
-	-ccopt -L. -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
+	-ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron" \
+	-cclib "-lpolkag_debug"
 
 testg_caml: test.cmo polkarung 
 	$(OCAMLC) -g $(OCAMLINC) -o $@ -use-runtime polkarung \
@@ -183,22 +183,24 @@ test.cmo: test.ml
 # C rules
 #---------------------------------------
 
-libpolka_caml.a: polka_caml.o
+libpolka_caml.a: polka_caml.o polkaeq_caml.o
 	ar rcs $@ $^
-libpolka_caml_debug.a: polka_caml_debug.o
+libpolka_caml_debug.a: polka_caml_debug.o polkaeq_caml_debug.o
 	ar rcs $@ $^
 
 #---------------------------------------
 # ML rules
 #---------------------------------------
 
-polka.cma: polka.cmo libpolka_caml.a
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ polka.cmo \
-	-cclib "-L$(POLKA_PREFIX)/lib -lpolka_caml"
+polka.cma: polka.cmo polkaeq.cmo libpolka_caml.a
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -custom -a -o $@ \
+	polka.cmo polkaeq.cmo \
+	-ccopt "-L$(POLKA_PREFIX)/lib" -cclib "-lpolka_caml"
 
-polka.cmxa: polka.cmx libpolka_caml.a
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ polka.cmx \
-	-cclib "-L$(POLKA_PREFIX)/lib -lpolka_caml"
+polka.cmxa: polka.cmx polkaeq.cmx libpolka_caml.a
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
+	polka.cmx polkaeq.cmx \
+	-ccopt "-L$(POLKA_PREFIX)/lib" -cclib "-lpolka_caml"
 
 #---------------------------------------
 # IDL rules

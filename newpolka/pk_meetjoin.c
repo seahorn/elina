@@ -99,12 +99,13 @@ bool _poly_meet_matrix(bool meet,
     cherni_add_and_minimize(pk,meet,po,start);
     if (pk->exn) goto _poly_meet_matrix_exit0;
     po->status = 
-      meet ?
+      meet
+      ?
       ( poly_status_conseps | 
-	poly_status_consgauss |
-	(po->status & poly_status_gengauss) ) :
-      ( (po->status & poly_status_consgauss) |
-	poly_status_gengauss ) ;
+	poly_status_consgauss) 
+      :
+      ( poly_status_gengauss ) 
+      ;
     assert( poly_check_dual(pk,po,meet) );
   }
   return false;
@@ -468,10 +469,8 @@ poly_t* _poly_meet_array(bool meet,
       poly->status = 
 	meet ?
 	( poly_status_conseps | 
-	  poly_status_consgauss |
-	  (poly->status & poly_status_gengauss) ) :
-	( (poly->status & poly_status_consgauss) |
-	  poly_status_gengauss ) ;
+	  poly_status_consgauss) :
+	( poly_status_gengauss ) ;
     }
     assert(poly_check_dual(pk,poly,meet));
     return poly;

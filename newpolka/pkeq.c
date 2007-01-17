@@ -15,7 +15,8 @@
 #include "pk_constructor.h"
 #include "pk_assign.h"
 #include "pk_resize.h"
-#include "pk_equality.h"
+
+#include "pkeq.h"
 
 
 /* ********************************************************************** */
@@ -78,7 +79,7 @@ void equality_reduce(ap_manager_t* man, poly_t* po)
       po->C->nbrows = po->nbeq + 1;
       _matrix_fill_constraint_top(pk,po->C,po->nbeq);
       matrix_reduce(po->C);
-      matrix_free(po->F);
+      matrix_free(po->F); po->F = NULL;
       if (po->satC){
 	satmat_free(po->satC);
 	po->satC = NULL;
@@ -153,7 +154,6 @@ poly_t* equality_of_box(ap_manager_t* man,
   po = poly_alloc(intdim,realdim);
   po->status =
     poly_status_conseps |
-    poly_status_consgauss |
     poly_status_minimal;
 
   dim = intdim + realdim;
@@ -165,7 +165,7 @@ poly_t* equality_of_box(ap_manager_t* man,
   exc = false;
   for (i=0; i<dim; i++){
     const ap_interval_t* itv = array[i];
-    if (ap_scalar_equal(itv->inf,itv->sup)==0){
+    if (ap_scalar_equal(itv->inf,itv->sup)){
       assert(ap_scalar_infty(itv->inf)==0);
       ap_mpq_set_scalar(mpq,itv->inf,0);
       exc = vector_set_dim_bound(pk,po->C->p[row],(ap_dim_t)i, mpq,

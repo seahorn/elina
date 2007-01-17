@@ -437,7 +437,7 @@ poly_t* poly_permute_dimensions(ap_manager_t* man,
   poly_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_PERMUTE_DIMENSIONS);
 
-  if (pk->funopt->algorithm>=0){
+  if (pk->funopt->algorithm>0){
     /* Minimize the argument */
     poly_chernikova(man,pa,"of the argument");
     if (pk->exn){

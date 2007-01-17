@@ -184,10 +184,33 @@ matrix_t* matrix_substitute_variable(pk_internal_t* pk,
 /* ====================================================================== */
 
 /* The list of pair (variable,expr) is given by an array of type
-   equation_t. IMPORTANT: the array is supposed to be sorted in increasing
-   order w.r.t. the field dim. The vectors ar eof size the number of columns of
-   the matrix.
+   equation_t.
+
+   IMPRTANT: the array tdim should be sorted in ascending order.
 */
+
+/* insertion sort for sorting the array tdim */
+void pk_asssub_isort(ap_dim_t* tdim, numint_t** tvec, size_t size)
+{
+  int i,j;
+
+  for (i=1; i<size; i++){
+    ap_dim_t dim = tdim[i];
+    numint_t* vec = tvec[i];
+    for (j=i; j>0; j--){
+      if (tdim[j-1]>dim){
+	tdim[j] = tdim[j-1];
+	tvec[j] = tvec[j-1];
+      }
+      else 
+	break;
+    }
+    tdim[j]=dim;
+    tvec[j]=vec;
+  }
+}
+
+
 
 /* ---------------------------------------------------------------------- */
 /* Assignement by an array of equations */
@@ -223,7 +246,7 @@ matrix_t* matrix_assign_variables(pk_internal_t* pk,
     eindex = 0;
     for (j=1; j<mat->nbcolumns; j++){
       if (eindex < size && pk->dec + tdim[eindex] == j){
-	/* We are on a assigned column */
+	/* We are on an assigned column */
 	for (i=0; i<mat->nbrows; i++){ /* For each row */
 	  vector_product(pk,pk->matrix_prod,
 			 (const numint_t*)mat->p[i],
@@ -323,8 +346,8 @@ matrix_t* matrix_substitute_variables(pk_internal_t* pk,
 	for (eindex=0; eindex<size; eindex++){
 	  if (numint_sgn(mat->p[i][pk->dec + tdim[eindex]])) {
 	    numint_mul(pk->matrix_prod,
-		      mat->p[i][pk->dec + tdim[eindex]],
-		      tvec[eindex][j]);
+		       mat->p[i][pk->dec + tdim[eindex]],
+		       tvec[eindex][j]);
 	    numint_mul(pk->matrix_prod,pk->matrix_prod,vden[eindex]);
 	    numint_add(nmat->p[i][j],nmat->p[i][j],pk->matrix_prod);
 	  }
@@ -353,8 +376,8 @@ matrix_t* matrix_substitute_variables(pk_internal_t* pk,
 	for (eindex=0; eindex<size; eindex++){
 	  if (numint_sgn(mat->p[i][pk->dec + tdim[eindex]])) {
 	    numint_mul(pk->matrix_prod,
-		      mat->p[i][pk->dec + tdim[eindex]],
-		      tvec[eindex][j]);
+		       mat->p[i][pk->dec + tdim[eindex]],
+		       tvec[eindex][j]);
 	    numint_add(nmat->p[i][j],nmat->p[i][j],pk->matrix_prod);
 	  }
 	}
@@ -505,7 +528,7 @@ poly_t* poly_asssub_linear_linexpr(bool assign,
 
   if (!assign) poly_dual((poly_t*)pa);
 
- /* Convert linear expression */
+  /* Convert linear expression */
   vector_set_linexpr(pk,pk->poly_numintp,
 		     linexpr,
 		     pa->intdim+pa->realdim,
@@ -530,10 +553,10 @@ poly_t* poly_asssub_linear_linexpr(bool assign,
   }
   if (pa->F){
     /* Perform assignements on generators */
-      po->F = 
-	assign ?
-	matrix_assign_variable(pk, destructive, pa->F, dim, pk->poly_numintp) :
-	matrix_substitute_variable(pk, destructive, pa->F, dim, pk->poly_numintp);
+    po->F = 
+      assign ?
+      matrix_assign_variable(pk, destructive, pa->F, dim, pk->poly_numintp) :
+      matrix_substitute_variable(pk, destructive, pa->F, dim, pk->poly_numintp);
   }
   if (sgn && pa->C){ /* Expression is invertible and we have constraints */
     /* Invert the expression in pk->poly_numintp2 */
@@ -555,7 +578,7 @@ poly_t* poly_asssub_linear_linexpr(bool assign,
     po->nbline = 0;
   }
   po->status = 0;
-_poly_asssub_linear_linexpr_exit:
+ _poly_asssub_linear_linexpr_exit:
   if (!assign){
     poly_dual((poly_t*)pa);
     if (!destructive) poly_dual(po);
@@ -662,6 +685,7 @@ poly_t* poly_asssub_linear_linexpr_array(bool assign,
 					 size_t size)
 {
   int i;
+  ap_dim_t* tdim2;
   numint_t** tvec;
   size_t nbcols;
   matrix_t* mat;
@@ -695,16 +719,21 @@ poly_t* poly_asssub_linear_linexpr_array(bool assign,
 		       pa->intdim + pa->realdim,
 		       0);
   }
+  /* Copy tdim because of sorting */
+  tdim2 = (ap_dim_t*)malloc(size*sizeof(ap_dim_t));
+  memcpy(tdim2,tdim,size*sizeof(ap_dim_t));
+  pk_asssub_isort(tdim2,tvec,size);
   /* Perform the operation */
   mat = 
     assign ?
-    matrix_assign_variables(pk, pa->F, tdim, tvec, size) :
-    matrix_substitute_variables(pk, pa->F, tdim, tvec, size);
+    matrix_assign_variables(pk, pa->F, tdim2, tvec, size) :
+    matrix_substitute_variables(pk, pa->F, tdim2, tvec, size);
   /* Free allocated stuff */
   for (i=0; i<size; i++){
     vector_free(tvec[i],nbcols);
   }
   free(tvec);
+  free(tdim2);
 
   /* Update polyhedra */
   if (destructive){

@@ -8,8 +8,8 @@
 polkatopg -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib
 
 #load "gmp.cma";;
-#load "apron.cmo";;
-#load "polka.cmo";;
+#load "apron.cma";;
+#load "polka.cma";;
 *)
 
 open Apron;;
@@ -31,12 +31,14 @@ let assoc = function
 let print_array = Abstract0.print_array;;
 
 let man = Polka.manager_alloc true;;
+let maneq = Polkaeq.manager_alloc ();;
 
 
 let print_linexpr0 fmt x = Linexpr0.print assoc fmt x;;
 let print_lincons0 fmt x = Lincons0.print assoc fmt x;;
 let print_generator0 = Generator0.print assoc;;
-let print_abstract0 fmt a =
+let print_abstract0 fmt a = Abstract0.print assoc fmt a;;
+(*
   if Abstract0.is_bottom man a = Manager.True then
     Format.pp_print_string fmt "bottom"
   else if Abstract0.is_top man a = Manager.True then
@@ -45,7 +47,7 @@ let print_abstract0 fmt a =
     let tab = Abstract0.to_lincons_array man a in
     print_array (Lincons0.print assoc) fmt tab;
   end
-;;
+*)
 
 (*
 
@@ -159,6 +161,7 @@ let poly1 man =
 
   printf "tab = %a@." 
     (print_array print_lincons0) tab;
+
 
   let poly = Abstract0.of_lincons_array man 0 6 tab in
   printf "poly=%a@." print_abstract0 poly;

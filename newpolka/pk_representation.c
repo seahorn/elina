@@ -138,8 +138,7 @@ void poly_chernikova(ap_manager_t* man,
       if (pk->exn) goto poly_chernikova_exit0;
       po->status |=
 	poly_status_conseps |
-	poly_status_consgauss |
-	poly_status_gengauss;
+	poly_status_consgauss;
     }
     else {
       po->C = po->F; po->F = NULL;
@@ -147,9 +146,7 @@ void poly_chernikova(ap_manager_t* man,
       cherni_minimize(pk,false,po);
       poly_dual(po);
       if (pk->exn) goto poly_chernikova_exit0;
-      po->status |=
-	poly_status_consgauss |
-	poly_status_gengauss;
+      po->status |= poly_status_gengauss;
       po->status &= ~poly_status_conseps;
     }
     po->status &= ~poly_status_minimal;
@@ -233,13 +230,13 @@ void poly_chernikova3(ap_manager_t* man,
 
   if (po->C){
     size_t rank;
-    if (! po->status & poly_status_consgauss){
+    if (! (po->status & poly_status_consgauss)){
       rank = cherni_gauss(pk,po->C,po->nbeq);
       assert(rank==po->nbeq);
       cherni_backsubstitute(pk,po->C,rank);
       po->C->_sorted = false;
     }
-    if (! po->status & poly_status_gengauss){
+    if (! (po->status & poly_status_gengauss)){
       rank = cherni_gauss(pk,po->F,po->nbline);
       assert(rank==po->nbline);
       cherni_backsubstitute(pk,po->F,rank);
@@ -260,7 +257,7 @@ void poly_chernikova3(ap_manager_t* man,
 /* ====================================================================== */
 
 /* Put the polyhedron with minimized constraints and frames.  If in addition
-   the integer man->option->canonicalize.algorithm is strictly positive,
+   the integer man->option->canonicalize.algorithm is positive,
    normalize equalities and lines, and also strict constraints */
 
 void poly_canonicalize(ap_manager_t* man, const poly_t* poly)
@@ -271,7 +268,7 @@ void poly_canonicalize(ap_manager_t* man, const poly_t* poly)
   if (poly_is_canonical(man,po))
     return;
 
-  if (pk->funopt->algorithm >= 1)
+  if (pk->funopt->algorithm >= 0)
     poly_chernikova3(man,po,NULL);
   else
     poly_chernikova(man,po,NULL);
