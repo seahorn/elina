@@ -1,8 +1,8 @@
 /* ********************************************************************** */
-/* itv_representation.c: general management */
+/* box_representation.c: general management */
 /* ********************************************************************** */
 
-#include "itv_config.h"
+#include "box_config.h"
 #include "itv.h"
 
 #ifdef __cplusplus
@@ -10,36 +10,36 @@ extern "C" {
 #endif
 
 /* Internal functions */
-itv_t* itv_alloc(size_t intdim, size_t realdim);
-void itv_init(itv_t* a);
-void itv_set_bottom(itv_t* a);
-void itv_set_top(itv_t* a);
-void itv_set(itv_t* a, const itv_t* b);
+box_t* box_alloc(size_t intdim, size_t realdim);
+void box_init(box_t* a);
+void box_set_bottom(box_t* a);
+void box_set_top(box_t* a);
+void box_set(box_t* a, const box_t* b);
 
 /* 1. Memory */
-itv_t* itv_copy(ap_manager_t* man, const itv_t* a);
-void itv_free(ap_manager_t* man, itv_t* a);
-size_t itv_size(ap_manager_t* man, const itv_t* a);
+box_t* box_copy(ap_manager_t* man, const box_t* a);
+void box_free(ap_manager_t* man, box_t* a);
+size_t box_size(ap_manager_t* man, const box_t* a);
 
 /* 2. Control of internal representation */
-void itv_minimize(ap_manager_t* man, const itv_t* a);
-void itv_canonicalize(ap_manager_t* man, const itv_t* a);
-void itv_approximate(ap_manager_t* man, itv_t* a, int algorithm);
-tbool_t itv_is_minimal(ap_manager_t* man, const itv_t* a);
-tbool_t itv_is_canonical(ap_manager_t* man, const itv_t* a);
+void box_minimize(ap_manager_t* man, const box_t* a);
+void box_canonicalize(ap_manager_t* man, const box_t* a);
+void box_approximate(ap_manager_t* man, box_t* a, int algorithm);
+tbool_t box_is_minimal(ap_manager_t* man, const box_t* a);
+tbool_t box_is_canonical(ap_manager_t* man, const box_t* a);
 
 
 /* 3. Printing */
-void itv_print(FILE* stream,
-	       ap_manager_t* man,const itv_t* a,char** name_of_dim);
-void itv_dump(FILE* stream, ap_manager_t* man, const itv_t* a);
-void itv_printdiff(FILE* stream,
-		   ap_manager_t* man, const itv_t* a, const itv_t* b,
+void box_print(FILE* stream,
+	       ap_manager_t* man,const box_t* a,char** name_of_dim);
+void box_dump(FILE* stream, ap_manager_t* man, const box_t* a);
+void box_printdiff(FILE* stream,
+		   ap_manager_t* man, const box_t* a, const box_t* b,
 		   char** name_of_dim);
 
 /* 4. Serialization */
-ap_membuf_t itv_serialize_raw(ap_manager_t* man, const itv_t* a);
-itv_t* itv_deserialize_raw(ap_manager_t* man, void* ptr);
+ap_membuf_t box_serialize_raw(ap_manager_t* man, const box_t* a);
+box_t* box_deserialize_raw(ap_manager_t* man, void* ptr);
 
 #ifdef __cplusplus
 }

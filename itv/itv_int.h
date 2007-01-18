@@ -21,8 +21,8 @@ void linexpr_sub_cst_pkint(linexpr_t* a, linexpr_t* b, bound_t c);
 void linexpr_neg(linexpr_t* a, linexpr_t* b);
 */
 
-struct itv_t {
-  itv_interval_t* p;
+struct box_t {
+  itv_t* p;
   size_t intdim;
   size_t realdim;
 };

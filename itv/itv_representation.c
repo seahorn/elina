@@ -1,48 +1,48 @@
 /* ********************************************************************** */
-/* itv_representation.c: general management */
+/* box_representation.c: general management */
 /* ********************************************************************** */
 
 #include <string.h>
 #include <stdio.h>
 
-#include "itv_config.h"
-#include "itv_int.h"
-#include "itv_representation.h"
+#include "box_config.h"
+#include "box_int.h"
+#include "box_representation.h"
 
 /* ********************************************************************** */
 /* Internal functions */
 /* ********************************************************************** */
-itv_t* itv_alloc(size_t intdim, size_t realdim)
+box_t* box_alloc(size_t intdim, size_t realdim)
 {
-  itv_t* itv = malloc(sizeof(itv_t));
+  box_t* itv = malloc(sizeof(box_t));
   itv->p = NULL;
   itv->intdim = intdim;
   itv->realdim = realdim;
   return itv;
 }
 
-void itv_init(itv_t* a)
+void box_init(box_t* a)
 {
   int i;
   size_t nbdims = a->intdim + a->realdim;
   if (nbdims>0){
     assert(a->p==NULL);
-    a->p = malloc( nbdims*sizeof(itv_interval_t) );
+    a->p = malloc( nbdims*sizeof(itv_t) );
     for(i=0;i<nbdims; i++){
-      itv_interval_init(a->p[i]);
+      itv_init(a->p[i]);
     }
   }
 }
 
-void itv_set_bottom(itv_t* a)
+void box_set_bottom(box_t* a)
 {
   if (a->p){
-    itv_interval_array_free(a->p,a->intdim+a->realdim);
+    itv_array_free(a->p,a->intdim+a->realdim);
     a->p = NULL;
   }
 }
 
-void itv_set_top(itv_t* a)
+void box_set_top(box_t* a)
 {
   int i;
   size_t nbdims;
@@ -50,15 +50,15 @@ void itv_set_top(itv_t* a)
   nbdims = a->intdim + a->realdim;
   if (nbdims>0){
     if (a->p==NULL){
-      itv_init(a);
+      box_init(a);
     };
     for (i=0; i<nbdims; i++){
-      itv_interval_set_top(a->p[i]);
+      itv_set_top(a->p[i]);
     }
   }
 }
 
-void itv_set(itv_t* a, const itv_t* b)
+void box_set(box_t* a, const box_t* b)
 {
   int i;
   size_t nbdims;
@@ -68,10 +68,10 @@ void itv_set(itv_t* a, const itv_t* b)
 
   nbdims = b->intdim + b->realdim;
   if (a->p==NULL){
-    itv_init(a);
+    box_init(a);
   };
   for (i=0; i<nbdims; i++){
-    itv_interval_set(a->p[i],b->p[i]);
+    itv_set(a->p[i],b->p[i]);
   }
 }
 
@@ -81,16 +81,16 @@ void itv_set(itv_t* a, const itv_t* b)
 
 /* Return a copy of an abstract value, on
    which destructive update does not affect the initial value. */
-itv_t* itv_copy(ap_manager_t* man, const itv_t* a)
+box_t* box_copy(ap_manager_t* man, const box_t* a)
 {
   int i;
   size_t nbdims = a->intdim+a->realdim;
 
-  itv_t* b = itv_alloc(a->intdim,a->realdim);
+  box_t* b = box_alloc(a->intdim,a->realdim);
   if (a->p){
-    b->p = malloc(nbdims*sizeof(itv_interval_t));
+    b->p = malloc(nbdims*sizeof(itv_t));
     for (i=0; i<nbdims; i++){
-      itv_interval_init_set(b->p[i],a->p[i]);
+      itv_init_set(b->p[i],a->p[i]);
     }
   }
   man->result.flag_best = tbool_true;
@@ -99,17 +99,17 @@ itv_t* itv_copy(ap_manager_t* man, const itv_t* a)
 }
 
 /* Free all the memory used by the abstract value */
-void itv_free(ap_manager_t* man, itv_t* a)
+void box_free(ap_manager_t* man, box_t* a)
 {
   if (a->p){
-    itv_interval_array_free(a->p,a->intdim+a->realdim);
+    itv_array_free(a->p,a->intdim+a->realdim);
     a->p = NULL;
   }
   free(a);
 }
 
 /* Return the abstract size of an abstract value (see ap_manager_t) */
-size_t itv_size(ap_manager_t* man, const itv_t* a)
+size_t box_size(ap_manager_t* man, const box_t* a)
 {
   return 2*(a->intdim+a->realdim);
 }
@@ -121,13 +121,13 @@ size_t itv_size(ap_manager_t* man, const itv_t* a)
 /* Minimize the size of the representation of a.
    This may result in a later recomputation of internal information.
 */
-void itv_minimize(ap_manager_t* man, const itv_t* a)
+void box_minimize(ap_manager_t* man, const box_t* a)
 {
   return;
 }
 
 /* Put the abstract value in canonical form. (not yet clear definition) */
-void itv_canonicalize(ap_manager_t* man, const itv_t* a)
+void box_canonicalize(ap_manager_t* man, const box_t* a)
 {
   return;
 }
@@ -137,18 +137,18 @@ void itv_canonicalize(ap_manager_t* man, const itv_t* a)
 
    The transformation may lose information.  The argument "algorithm"
    overrides the field algorithm of the structure of type foption_t
-   associated to itv_approximate (commodity feature). */
-void itv_approximate(ap_manager_t* man, itv_t* a, int algorithm)
+   associated to box_approximate (commodity feature). */
+void box_approximate(ap_manager_t* man, box_t* a, int algorithm)
 {
   return;
 }
 
-tbool_t itv_is_minimal(ap_manager_t* man, const itv_t* a)
+tbool_t box_is_minimal(ap_manager_t* man, const box_t* a)
 {
   man->result.flag_exact = tbool_true;
   return tbool_true;
 }
-tbool_t itv_is_canonical(ap_manager_t* man, const itv_t* a)
+tbool_t box_is_canonical(ap_manager_t* man, const box_t* a)
 {
   man->result.flag_exact = tbool_true;
   return tbool_true;
@@ -160,9 +160,9 @@ tbool_t itv_is_canonical(ap_manager_t* man, const itv_t* a)
 
 /* Print the abstract value in a pretty way, using function
    name_of_dim to name dimensions */
-void itv_fprint(FILE* stream,
+void box_fprint(FILE* stream,
 	       ap_manager_t* man,
-	       const itv_t* a,
+	       const box_t* a,
 	       char** name_of_dim)
 {
   int i;
@@ -178,7 +178,7 @@ void itv_fprint(FILE* stream,
       } else {
 	fprintf(stream,"x%d in ", i);
       }
-      itv_interval_fprint(stream,a->p[i]);
+      itv_fprint(stream,a->p[i]);
       fprintf(stream,"\n");
     }
   }
@@ -189,9 +189,9 @@ void itv_fprint(FILE* stream,
 
 /* Dump the internal representation of an abstract value,
    for debugging purposes */
-void itv_fdump(FILE* stream,
+void box_fdump(FILE* stream,
 	      ap_manager_t* man,
-	      const itv_t* a)
+	      const box_t* a)
 {
   int i;
   size_t nbdims = a->intdim + a->realdim;
@@ -202,7 +202,7 @@ void itv_fdump(FILE* stream,
     fprintf(stream,"\n");
     for(i=0; i<nbdims; i++){
       fprintf(stream,"dim %3d in ",i);
-      itv_interval_fprint(stream,a->p[i]);
+      itv_fprint(stream,a->p[i]);
       fprintf(stream,"\n");
     }
   }
@@ -214,9 +214,9 @@ void itv_fdump(FILE* stream,
 /* Print the difference between a1 (old value) and a2 (new value),
    using function name_of_dim to name dimensions.
    The meaning of difference is library dependent. */
-void itv_fprintdiff(FILE* stream,
+void box_fprintdiff(FILE* stream,
 		   ap_manager_t* man,
-		   const itv_t* a, const itv_t* b,
+		   const box_t* a, const box_t* b,
 		   char** name_of_dim)
 {
   int i;
@@ -227,18 +227,18 @@ void itv_fprintdiff(FILE* stream,
 
   fprintf(stream,"diff of 2 intervals of dim (%d,%d)",
 	  a->intdim,b->intdim);
-  if (itv_is_eq(man,a,b)){
+  if (box_is_eq(man,a,b)){
     fprintf(stream," : none\n");
   }
   else {
     /* we are sure that nbdims>0 */
     if (a->p==0){
       fprintf(stream,"\nbottom =>\n");
-      itv_fprint(stream,man,b,name_of_dim);
+      box_fprint(stream,man,b,name_of_dim);
     }
     else if (b->p==0){
       fprintf(stream,"\n");
-      itv_fprint(stream,man,a,name_of_dim);
+      box_fprint(stream,man,a,name_of_dim);
       fprintf(stream,"=> bottom\n");
     }
     else {
@@ -250,7 +250,7 @@ void itv_fprintdiff(FILE* stream,
 	
 	if (sgn1!=0 || sgn2!=0){
 	  fprintf(stream,"%8s in ",name_of_dim[i]);
-	  itv_interval_fprint(stream,a->p[i]);
+	  itv_fprint(stream,a->p[i]);
 	  fprintf(stream," => ");
 	  str =
 	    sgn1>0 ?
@@ -293,7 +293,7 @@ void itv_fprintdiff(FILE* stream,
    binary format to it and return a pointer on the memory buffer and the size
    of bytes written.  It is the user responsability to free the memory
    afterwards (with free). */
-ap_membuf_t itv_serialize_raw(ap_manager_t* man, const itv_t* a)
+ap_membuf_t box_serialize_raw(ap_manager_t* man, const box_t* a)
 {
   ap_membuf_t buf;
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_SERIALIZE_RAW,"");
@@ -304,7 +304,7 @@ ap_membuf_t itv_serialize_raw(ap_manager_t* man, const itv_t* a)
 
 /* Return the abstract value read in raw binary format from the input stream
    and store in size the number of bytes read */
-itv_t* itv_deserialize_raw(ap_manager_t* man, void* ptr)
+box_t* box_deserialize_raw(ap_manager_t* man, void* ptr)
 {
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_DESERIALIZE_RAW,"");
   return NULL;

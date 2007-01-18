@@ -1,59 +1,59 @@
 /* ********************************************************************** */
-/* itv_otherops.c */
+/* box_otherops.c */
 /* ********************************************************************** */
 
-#include "itv_otherops.h"
-#include "itv_resize.h"
-#include "itv_int.h"
+#include "box_otherops.h"
+#include "box_resize.h"
+#include "box_int.h"
 
-itv_t* itv_forget_array(ap_manager_t* man,
+box_t* box_forget_array(ap_manager_t* man,
 			bool destructive,
-			itv_t* a,
+			box_t* a,
 			const ap_dim_t* tdim,
 			size_t size,
 			bool project)
 {
-  itv_t* res;
+  box_t* res;
   size_t i;
 
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
   
-  res = destructive ? a : itv_copy(man,a);
+  res = destructive ? a : box_copy(man,a);
   if (a->p==NULL){
     return res;
   }
   if (project){
     for (i=0;i<size;i++){
-      itv_interval_ptr itv = res->p[tdim[i]];
+      itv_ptr itv = res->p[tdim[i]];
       bound_set_int(itv->inf,0);
       bound_set_int(itv->sup,0);
     }
   }
   else {
     for (i=0;i<size;i++){
-      itv_interval_ptr itv = res->p[tdim[i]];
-      itv_interval_set_top(itv);
+      itv_ptr itv = res->p[tdim[i]];
+      itv_set_top(itv);
     }
   }
   return res;
 }
 
-itv_t* itv_expand(ap_manager_t* man,
+box_t* box_expand(ap_manager_t* man,
 		  bool destructive,
-		  itv_t* a,
+		  box_t* a,
 		  ap_dim_t dim,
 		  size_t dimsup)
 {
   size_t intdimsup,realdimsup,offset;
   ap_dimchange_t dimchange;
   size_t i;
-  itv_t* res;
+  box_t* res;
 
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
   if (a->p==NULL || dimsup==0){
-    return destructive ? a : itv_copy(man,a);
+    return destructive ? a : box_copy(man,a);
   }
 
   if (dim<a->intdim){
@@ -69,17 +69,17 @@ itv_t* itv_expand(ap_manager_t* man,
   for (i=0;i<dimsup;i++){
     dimchange.dim[i]=offset;
   }
-  res = itv_add_dimensions(man,destructive,a,&dimchange);
+  res = box_add_dimensions(man,destructive,a,&dimchange);
   for (i=offset;i<offset+dimsup;i++){
-    itv_interval_set(res->p[i],res->p[dim]);
+    itv_set(res->p[i],res->p[dim]);
   }
   ap_dimchange_clear(&dimchange);
   return res;
 }
 
-itv_t* itv_fold(ap_manager_t* man,
+box_t* box_fold(ap_manager_t* man,
 		bool destructive,
-		itv_t* a,
+		box_t* a,
 		const ap_dim_t* tdim,
 		size_t size)
 {
@@ -87,14 +87,14 @@ itv_t* itv_fold(ap_manager_t* man,
   size_t dimsup,intdimsup,realdimsup;
   ap_dimchange_t dimchange;
   size_t i;
-  itv_t* res;
+  box_t* res;
 
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_top;
 
   dim = tdim[0];
   dimsup = size-1;
-  res = destructive ? a : itv_copy(man,a);
+  res = destructive ? a : box_copy(man,a);
   if (dim<a->intdim){
     intdimsup = dimsup;
     realdimsup = 0;
@@ -108,40 +108,40 @@ itv_t* itv_fold(ap_manager_t* man,
     return res;
   }
   for (i=1; i<size; i++){
-    itv_interval_join(res->p[dim],res->p[dim],res->p[tdim[i]]);
+    itv_join(res->p[dim],res->p[dim],res->p[tdim[i]]);
   }
   ap_dimchange_init(&dimchange,intdimsup,realdimsup);
   for (i=0;i<intdimsup+realdimsup;i++){
     dimchange.dim[i]=tdim[i+1];
   }
-  return itv_remove_dimensions(man,true,res,&dimchange);
+  return box_remove_dimensions(man,true,res,&dimchange);
 }
 
 
-itv_t* itv_widening(ap_manager_t* man,
-		    const itv_t* a1, const itv_t* a2)
+box_t* box_widening(ap_manager_t* man,
+		    const box_t* a1, const box_t* a2)
 {
   size_t i;
   size_t nbdims;
-  itv_t* res;
+  box_t* res;
 
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
   nbdims = a1->intdim+a1->realdim;
   if (a1->p==NULL){
-    return itv_copy(man,a2);
+    return box_copy(man,a2);
   }
   assert(a2->p!=NULL);
-  res = itv_copy(man,a1);
+  res = box_copy(man,a1);
   for (i=0; i<nbdims; i++){
-    itv_interval_widening(res->p[i],a1->p[i],a2->p[i]);
+    itv_widening(res->p[i],a1->p[i],a2->p[i]);
   }
   return res;
 }
 
-itv_t* itv_closure(ap_manager_t* man, bool destructive, itv_t* a)
+box_t* box_closure(ap_manager_t* man, bool destructive, box_t* a)
 {
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
-  return destructive ? a : itv_copy(man,a);
+  return destructive ? a : box_copy(man,a);
 }

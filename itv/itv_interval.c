@@ -2,16 +2,16 @@
 /* itvinterval.c: abstract lattice of (unidimensional) intervals */
 /* ********************************************************************** */
 
-#include "itv_config.h"
-#include "itv_interval.h"
-#include "itv_internal.h"
+#include "box_config.h"
+#include "box_interval.h"
+#include "box_internal.h"
 
 /* ********************************************************************** */
 /* Normalization and tests */
 /* ********************************************************************** */
 
-bool itv_interval_canonicalize(itv_internal_t* intern,
-			       itv_interval_t a, bool integer)
+bool itv_canonicalize(box_internal_t* intern,
+			       itv_t a, bool integer)
 {
   bool exc;
 
@@ -23,8 +23,8 @@ bool itv_interval_canonicalize(itv_internal_t* intern,
 
   /* Check that it is not bottom */
   exc = false;
-  num_neg(intern->itv_interval_canonicalize_num,bound_numref(a->inf));
-  if (bound_cmp_num(a->sup,intern->itv_interval_canonicalize_num) < 0)
+  num_neg(intern->itv_canonicalize_num,bound_numref(a->inf));
+  if (bound_cmp_num(a->sup,intern->itv_canonicalize_num) < 0)
     exc = true;
   return exc;
 }
@@ -32,8 +32,8 @@ bool itv_interval_canonicalize(itv_internal_t* intern,
 /* ********************************************************************** */
 /* Arithmetic operations */
 /* ********************************************************************** */
-void itv_interval_mul_num(itv_internal_t* intern,
-			 itv_interval_t a, const itv_interval_t b, const num_t c)
+void itv_mul_num(box_internal_t* intern,
+			  itv_t a, const itv_t b, const num_t c)
 {
   if (num_sgn(c)>=0){
     bound_mul_num(a->sup,b->sup,c);
@@ -45,14 +45,14 @@ void itv_interval_mul_num(itv_internal_t* intern,
       bound_mul_num(a->inf,b->sup,c);
     }
     else {
-      bound_set(intern->itv_interval_muldiv_bound,a->sup);
+      bound_set(intern->itv_muldiv_bound,a->sup);
       bound_mul_num(a->sup,a->inf,c);
-      bound_mul_num(a->inf,intern->itv_interval_muldiv_bound,c);
+      bound_mul_num(a->inf,intern->itv_muldiv_bound,c);
     }
   }
 }
-void itv_interval_div_num(itv_internal_t* intern,
-			 itv_interval_t a, const itv_interval_t b, const num_t c)
+void itv_div_num(box_internal_t* intern,
+			  itv_t a, const itv_t b, const num_t c)
 {
   if (num_sgn(c)>0){
     bound_div_num(a->sup,b->sup,c);
@@ -64,14 +64,14 @@ void itv_interval_div_num(itv_internal_t* intern,
       bound_div_num(a->inf,b->sup,c);
     }
     else {
-      bound_set(intern->itv_interval_muldiv_bound,a->sup);
+      bound_set(intern->itv_muldiv_bound,a->sup);
       bound_div_num(a->sup,a->inf,c);
-      bound_div_num(a->inf,intern->itv_interval_muldiv_bound,c);
+      bound_div_num(a->inf,intern->itv_muldiv_bound,c);
     }
   }
 }
 
-void itv_interval_neg(itv_interval_t a, const itv_interval_t b)
+void itv_neg(itv_t a, const itv_t b)
 {
   if (a!=b){
     bound_neg(a->inf,b->sup);
@@ -87,7 +87,7 @@ void itv_interval_neg(itv_interval_t a, const itv_interval_t b)
 /* Printing */
 /* ********************************************************************** */
 
-void itv_interval_fprint(FILE* stream, const itv_interval_t a)
+void itv_fprint(FILE* stream, const itv_t a)
 {
   num_t num;
 
@@ -105,7 +105,7 @@ void itv_interval_fprint(FILE* stream, const itv_interval_t a)
   fprintf(stream,"]");
 }
 
-int itv_interval_snprint(char* s, size_t size, const itv_interval_t a)
+int itv_snprint(char* s, size_t size, const itv_t a)
 {
   num_t num;
   int count = 0;
@@ -174,7 +174,7 @@ void ap_scalar_set_bound(ap_scalar_t* a, const bound_t b, int round)
   }
 }
 /* infty * 0 = 0 , scalar != -oo */
-void bound_mul_scalar(itv_internal_t* intern,
+void bound_mul_scalar(box_internal_t* intern,
 		      bound_t a, const bound_t b, const ap_scalar_t* c)
 {
   if (bound_infty(b)){
@@ -200,33 +200,33 @@ void bound_mul_scalar(itv_internal_t* intern,
 /* Intervals */
 /* ====================================================================== */
 
-void itv_interval_set_interval(itv_internal_t* intern,
-			       itv_interval_t a, const ap_interval_t* b)
+void itv_set_interval(box_internal_t* intern,
+			       itv_t a, const ap_interval_t* b)
 {
-  ap_scalar_neg(intern->itv_interval_set_interval_scalar, b->inf);
-  bound_set_scalar(a->inf,intern->itv_interval_set_interval_scalar,+1);
+  ap_scalar_neg(intern->itv_set_interval_scalar, b->inf);
+  bound_set_scalar(a->inf,intern->itv_set_interval_scalar,+1);
   bound_set_scalar(a->sup,b->sup,+1);
 }
-void ap_interval_set_itv_interval(ap_interval_t* a, const itv_interval_t b)
+void ap_interval_set_box_interval(ap_interval_t* a, const itv_t b)
 {
   ap_scalar_set_bound(a->inf,b->inf,+1);
   ap_scalar_neg(a->inf,a->inf);
   ap_scalar_set_bound(a->sup,b->sup,+1);
 }
 
-bool itv_interval_is_leq_interval(itv_internal_t* intern,
-				  const itv_interval_t a, const ap_interval_t* b)
+bool itv_is_leq_interval(box_internal_t* intern,
+				  const itv_t a, const ap_interval_t* b)
 {
   bool res;
 
-  ap_interval_set_itv_interval(intern->itv_interval_is_leq_interval_interval,a);
-  res = ap_interval_is_leq(intern->itv_interval_is_leq_interval_interval,b);
+  ap_interval_set_box_interval(intern->itv_is_leq_interval_interval,a);
+  res = ap_interval_is_leq(intern->itv_is_leq_interval_interval,b);
   return res;
 }
 
-void itv_interval_mul_scalar(itv_internal_t* intern,
-			     itv_interval_t a,
-			     const itv_interval_t b, const ap_scalar_t* c)
+void itv_mul_scalar(box_internal_t* intern,
+			     itv_t a,
+			     const itv_t b, const ap_scalar_t* c)
 {
   if (ap_scalar_sgn(c)>=0){
     bound_mul_scalar(intern,a->sup,b->sup,c);
@@ -238,23 +238,23 @@ void itv_interval_mul_scalar(itv_internal_t* intern,
       bound_mul_scalar(intern,a->inf,b->sup,c);
     }
     else {
-      bound_set(intern->itv_interval_mul_scalar_bound,b->sup);
+      bound_set(intern->itv_mul_scalar_bound,b->sup);
       bound_mul_scalar(intern,a->sup,b->inf,c);
-      bound_mul_scalar(intern,a->inf,intern->itv_interval_mul_scalar_bound,c);
+      bound_mul_scalar(intern,a->inf,intern->itv_mul_scalar_bound,c);
     }
   }
 }
 
 /* Assume that both intervals are either positive or negative */
-void itv_interval_mul_interval2(itv_internal_t* intern,
-				itv_interval_t a,
-				const itv_interval_t b,
+void itv_mul_interval2(box_internal_t* intern,
+				itv_t a,
+				const itv_t b,
 				const ap_interval_t* c)
 {
   ap_scalar_t* cinf;
 
   if(a==b) abort();
-  cinf = intern->itv_interval_mul_interval2_scalar;
+  cinf = intern->itv_mul_interval2_scalar;
   ap_scalar_neg(cinf,c->inf);
   if (bound_sgn(b->inf)<=0){
     /* b>=0 */
@@ -292,61 +292,61 @@ void itv_interval_mul_interval2(itv_internal_t* intern,
 }
 
 /* Assume that first interval is either positive or negative */
-void itv_interval_mul_interval1(itv_internal_t* intern,
-				itv_interval_t a,
-				const itv_interval_t b,
+void itv_mul_interval1(box_internal_t* intern,
+				itv_t a,
+				const itv_t b,
 				const ap_interval_t* c)
 {
 
   if (ap_scalar_sgn(c->inf)>=0 || ap_scalar_sgn(c->sup)<=0){
-    itv_interval_mul_interval2(intern,a,b,c);
+    itv_mul_interval2(intern,a,b,c);
   }
   else {
-    ap_scalar_set(intern->itv_interval_mul_interval1_interval->inf,
-	       c->inf);
-    ap_scalar_set_int(intern->itv_interval_mul_interval1_interval->sup,
-		   0);
-    itv_interval_mul_interval2(intern,
-			       intern->itv_interval_mul_interval1_itvinterval,
+    ap_scalar_set(intern->itv_mul_interval1_interval->inf,
+		  c->inf);
+    ap_scalar_set_int(intern->itv_mul_interval1_interval->sup,
+		      0);
+    itv_mul_interval2(intern,
+			       intern->itv_mul_interval1_itvinterval,
 			       b,
-			       intern->itv_interval_mul_interval1_interval);
-    ap_scalar_set_int(intern->itv_interval_mul_interval1_interval->inf,
-		   0);
-    ap_scalar_set(intern->itv_interval_mul_interval1_interval->sup,
-	       c->sup);
-    itv_interval_mul_interval2(intern,
+			       intern->itv_mul_interval1_interval);
+    ap_scalar_set_int(intern->itv_mul_interval1_interval->inf,
+		      0);
+    ap_scalar_set(intern->itv_mul_interval1_interval->sup,
+		  c->sup);
+    itv_mul_interval2(intern,
 			       a,
 			       b,
-			       intern->itv_interval_mul_interval1_interval);
-    itv_interval_join(a,a,intern->itv_interval_mul_interval1_itvinterval);
+			       intern->itv_mul_interval1_interval);
+    itv_join(a,a,intern->itv_mul_interval1_itvinterval);
   }
 }
 
-void itv_interval_mul_interval(itv_internal_t* intern,
-			       itv_interval_t a,
-			       const itv_interval_t b,
+void itv_mul_interval(box_internal_t* intern,
+			       itv_t a,
+			       const itv_t b,
 			       const ap_interval_t* c)
 {
   if (ap_scalar_equal(c->inf,c->sup)){
-    itv_interval_mul_scalar(intern,a,b,c->inf);
+    itv_mul_scalar(intern,a,b,c->inf);
   }
   else if (bound_sgn(b->inf)<=0 || bound_sgn(b->sup)<=0){
-    itv_interval_mul_interval1(intern,a,b,c);
+    itv_mul_interval1(intern,a,b,c);
   }
   else {
-    bound_set(intern->itv_interval_mul_interval_itvinterval->inf,b->inf);
-    bound_set_int(intern->itv_interval_mul_interval_itvinterval->sup,0);
-    itv_interval_mul_interval2(intern,
-			      intern->itv_interval_mul_interval_itvinterval2,
-			      intern->itv_interval_mul_interval_itvinterval,
-			      c);
-    bound_set_int(intern->itv_interval_mul_interval_itvinterval->inf,0);
-    bound_set(intern->itv_interval_mul_interval_itvinterval->sup,b->sup);
-    itv_interval_mul_interval2(intern,
-			      a,
-			      intern->itv_interval_mul_interval_itvinterval,
-			      c);
-    itv_interval_join(a,a,intern->itv_interval_mul_interval_itvinterval2);
+    bound_set(intern->itv_mul_interval_itvinterval->inf,b->inf);
+    bound_set_int(intern->itv_mul_interval_itvinterval->sup,0);
+    itv_mul_interval2(intern,
+			       intern->itv_mul_interval_itvinterval2,
+			       intern->itv_mul_interval_itvinterval,
+			       c);
+    bound_set_int(intern->itv_mul_interval_itvinterval->inf,0);
+    bound_set(intern->itv_mul_interval_itvinterval->sup,b->sup);
+    itv_mul_interval2(intern,
+			       a,
+			       intern->itv_mul_interval_itvinterval,
+			       c);
+    itv_join(a,a,intern->itv_mul_interval_itvinterval2);
   }
 }
 
@@ -354,10 +354,10 @@ void itv_interval_mul_interval(itv_internal_t* intern,
 /* Linear expressions */
 /* ********************************************************************** */
 
-void itv_linexpr_reinit(itv_linexpr_t* expr, size_t size)
+void box_linexpr_reinit(box_linexpr_t* expr, size_t size)
 {
   size_t i;
-  expr->linterm = realloc(expr->linterm,size*sizeof(itv_linterm_t));
+  expr->linterm = realloc(expr->linterm,size*sizeof(box_linterm_t));
   
   for (i=expr->size;i<size;i++){
     num_init(expr->linterm[i].num);
@@ -368,14 +368,14 @@ void itv_linexpr_reinit(itv_linexpr_t* expr, size_t size)
   expr->size = size;
   return;
 }
-void itv_linexpr_init(itv_linexpr_t* expr, size_t size)
+void box_linexpr_init(box_linexpr_t* expr, size_t size)
 {
   expr->linterm = NULL;
   expr->size = 0;
-  itv_interval_init(expr->cst);
-  itv_linexpr_reinit(expr,size);
+  itv_init(expr->cst);
+  box_linexpr_reinit(expr,size);
 }
-void itv_linexpr_clear(itv_linexpr_t* expr)
+void box_linexpr_clear(box_linexpr_t* expr)
 {
   size_t i;
   if (expr->linterm){
@@ -386,23 +386,23 @@ void itv_linexpr_clear(itv_linexpr_t* expr)
     expr->linterm = NULL;
     expr->size = 0;
   }
-  itv_interval_clear(expr->cst);
+  itv_clear(expr->cst);
 }
-void itv_linexpr_set(itv_linexpr_t* a, const itv_linexpr_t* b)
+void box_linexpr_set(box_linexpr_t* a, const box_linexpr_t* b)
 {
   size_t i;
-  itv_linexpr_reinit(a,b->size);
+  box_linexpr_reinit(a,b->size);
   if (b->linterm){
     for (i=0;i<b->size;i++){
       a->linterm[i].dim = b->linterm[i].dim;
       num_set(a->linterm[i].num,b->linterm[i].num);
     }
   }
-  itv_interval_set(a->cst,b->cst);
+  itv_set(a->cst,b->cst);
 }
 
-void itv_linexpr_set_linexpr(itv_internal_t* intern,
-			    itv_linexpr_t* expr, const ap_linexpr0_t* linexpr0)
+void box_linexpr_set_linexpr(box_internal_t* intern,
+			    box_linexpr_t* expr, const ap_linexpr0_t* linexpr0)
 {
   size_t i,k,size;
   ap_dim_t dim;
@@ -412,7 +412,7 @@ void itv_linexpr_set_linexpr(itv_internal_t* intern,
   ap_linexpr0_ForeachLinterm(linexpr0,i,dim,coeff){
     size++;
   }
-  itv_linexpr_reinit(expr,size);
+  box_linexpr_reinit(expr,size);
   k = 0;
   ap_linexpr0_ForeachLinterm(linexpr0,i,dim,coeff){
     assert(coeff->discr==AP_COEFF_SCALAR && 
@@ -423,7 +423,7 @@ void itv_linexpr_set_linexpr(itv_internal_t* intern,
   }
   switch(linexpr0->cst.discr){
   case AP_COEFF_INTERVAL:
-    itv_interval_set_interval(intern,expr->cst,linexpr0->cst.val.interval);
+    itv_set_interval(intern,expr->cst,linexpr0->cst.val.interval);
     break;
   case AP_COEFF_SCALAR:
     bound_set_scalar(expr->cst->sup,linexpr0->cst.val.scalar,+1);
@@ -432,44 +432,44 @@ void itv_linexpr_set_linexpr(itv_internal_t* intern,
   }
   return;
 }
-void itv_lincons_set_lincons(itv_internal_t* intern,
-			    itv_lincons_t* cons, const ap_lincons0_t* lincons0)
+void box_lincons_set_lincons(box_internal_t* intern,
+			     box_lincons_t* cons, const ap_lincons0_t* lincons0)
 {
-  itv_linexpr_set_linexpr(intern, 
-			 &cons->itvlinexpr,
-			 lincons0->linexpr0);
+  box_linexpr_set_linexpr(intern, 
+			  &cons->itvlinexpr,
+			  lincons0->linexpr0);
   cons->constyp = lincons0->constyp;
 }
 
-void itv_lincons_clear(itv_lincons_t* cons)
+void box_lincons_clear(box_lincons_t* cons)
 {
-  itv_linexpr_clear(&cons->itvlinexpr);
+  box_linexpr_clear(&cons->itvlinexpr);
 }
-void itv_lincons_set(itv_lincons_t* a, const itv_lincons_t* b)
+void box_lincons_set(box_lincons_t* a, const box_lincons_t* b)
 {
-  itv_linexpr_set(&a->itvlinexpr,&b->itvlinexpr);
+  box_linexpr_set(&a->itvlinexpr,&b->itvlinexpr);
   a->constyp = b->constyp;
 }
 
-itv_lincons_array_t itv_lincons_array_make(size_t size)
+box_lincons_array_t box_lincons_array_make(size_t size)
 {
   size_t i;
-  itv_lincons_array_t array;
+  box_lincons_array_t array;
   
-  array.p = malloc(size*sizeof(itv_lincons_t));
+  array.p = malloc(size*sizeof(box_lincons_t));
   array.size = size;
   for (i=0; i<size; i++){
-    itv_linexpr_init(&array.p[i].itvlinexpr,0);
+    box_linexpr_init(&array.p[i].itvlinexpr,0);
   }
   return array;
 }
 
-void itv_lincons_array_clear(itv_lincons_array_t* array)
+void box_lincons_array_clear(box_lincons_array_t* array)
 {
   size_t i;
   if (array->p){
     for (i=0; i<array->size; i++){
-      itv_linexpr_clear(&array->p[i].itvlinexpr);
+      box_linexpr_clear(&array->p[i].itvlinexpr);
     }
     free(array->p);
   }
