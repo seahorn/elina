@@ -497,7 +497,7 @@ raised one.
 @section Itv (@file{itv.h}): intervals abstract domain
 @c ===================================================================
 
-@include itv.texi
+@include box.texi
 
 @c ===================================================================
 @node Oct,  , Itv, Managers and Abstract Domains
@@ -3365,7 +3365,7 @@ constraints in @var{array} that are satisfied by both @var{a1} and
 @c *******************************************************************
 
 The signatures of the functions described in this chapter are
-provided by the file @file{ap_abstract0.h}.
+provided by the file @file{ap_generic.h}.
 
 @menu
 * Generic implementations::     
@@ -3387,30 +3387,36 @@ To use one of these, the function allocating manager, which is
 specific to the domain, should put the corresponding pointer in
 the virtual table to such a generic implementation.
 
-@deftypefun ap_abstract0_t* ap_abstract0_generic_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, const ap_lincons0_array_t* @var{array})
+They manipulated "unboxed" abstract values, which are native to
+the underlying library: they are not yet boxed with the manager in
+the type @code{ap_abstract0_t}.
+
+@deftypefun void* ap_generic_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, const ap_lincons0_array_t* @var{array})
 Implements a generic @code{of_lincons_array} function using
 @code{top} and @code{meet_lincons_array} operations.
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_generic_meet_array (ap_manager_t* @var{man}, const ap_abstract0_t** @var{tab}, size_t @var{size})
-@deftypefunx ap_abstract0_t* ap_abstract0_generic_join_array (ap_manager_t* @var{man}, const ap_abstract0_t** @var{tab}, size_t @var{size})
+@deftypefun void* ap_generic_meet_array (ap_manager_t* @var{man}, const void** @var{tab}, size_t @var{size})
+@deftypefunx void* ap_generic_join_array (ap_manager_t* @var{man}, const void** @var{tab}, size_t @var{size})
 Implements a generic @code{meet_array} (resp. @code{join_array})
 operation using @code{copy} and @code{meet} (resp. @code{join})
 operations.
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size}, const ap_abstract0_t* @var{dest})
-@deftypefunx ap_abstract0_t* ap_abstract0_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size}, const ap_abstract0_t* @var{dest})
+@deftypefun void* ap_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size}, const void* @var{dest})
+@deftypefunx void* ap_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size}, const void* @var{dest})
 Implements generic parallel assignement (resp. substitution) function by
 @enumerate
 @item introducing primed dimensions for assigned dimensions;
 @item transforming linear expressions into equality constraints relating
 the assigned primed dimension and the linear expression;
 @item in the case of substitution, exchanging primed and unprimed dimensions;
+@item if @var{dest} is not NULL, introduce primed dimensions, exchange
+primed and unprimed dimensions in the case of assignement, and
+intersect the current abstract value with the result;
 @item intersecting the obtained abstract value with the constraints;
 @item in the case of assignement, exchanging primed and unprimed dimensions;
 @item removing the introduced (primed) dimensions
-@item and intersecting with @var{dest} if it is not NULL.
 @end enumerate
 @noindent 
 It relies on: @code{is_bottom}, @code{ copy}, @code{ dimension},
@@ -3424,7 +3430,7 @@ It relies on: @code{is_bottom}, @code{ copy}, @code{ dimension},
 @section Useful functions
 @c ===================================================================
 
-@deftypefun ap_linexpr0_t* ap_abstract0_quasilinear_of_intervallinear (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, ap_linexpr0_t* @var{expr})
+@deftypefun ap_linexpr0_t* ap_abstract0_quasilinear_of_intervallinear (ap_manager_t* @var{man}, const void* @var{a}, ap_linexpr0_t* @var{expr})
 Evaluate the interval linear expression @var{expr} on the abstract
 value @var{a} and approximate it by a quasilinear expression.
 

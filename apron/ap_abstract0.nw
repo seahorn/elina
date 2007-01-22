@@ -122,17 +122,17 @@ canonique.
 
 
 void ap_abstract0_fprint(FILE* stream,
-		    ap_manager_t* man,
-		    const ap_abstract0_t* a,
-		    char** name_of_dim);
+                    ap_manager_t* man,
+                    const ap_abstract0_t* a,
+                    char** name_of_dim);
   /* Print the abstract value in a pretty way, using function
      name_of_dim to name dimensions */
 
 
 void ap_abstract0_fprintdiff(FILE* stream,
-			ap_manager_t* man,
-			const ap_abstract0_t* a1, const ap_abstract0_t* a2,
-			char** name_of_dim);
+                        ap_manager_t* man,
+                        const ap_abstract0_t* a1, const ap_abstract0_t* a2,
+                        char** name_of_dim);
   /* Print the difference between a1 (old value) and a2 (new value),
      using function name_of_dim to name dimensions.
      The meaning of difference is library dependent. */
@@ -224,15 +224,15 @@ peuvent être vues comme des fonctions de conversion).
 <<*>>=
 
 ap_abstract0_t* ap_abstract0_of_box(ap_manager_t* man,
-			      size_t intdim, size_t realdim,
-			      const ap_interval_t*const* tinterval);
+                              size_t intdim, size_t realdim,
+                              const ap_interval_t*const* tinterval);
   /* Abstract an hypercube defined by the array of intervals
      of size intdim+realdim */
 
 
 ap_abstract0_t* ap_abstract0_of_lincons_array(ap_manager_t* man,
-					size_t intdim, size_t realdim,
-					const ap_lincons0_array_t* array);
+                                        size_t intdim, size_t realdim,
+                                        const ap_lincons0_array_t* array);
   /* Abstract a convex polyhedra defined by the array of (interval) linear
      constraints of size size */
 @
@@ -293,15 +293,15 @@ tbool_t ap_abstract0_sat_lincons(ap_manager_t* man, const ap_abstract0_t* a, con
 
 
 tbool_t ap_abstract0_sat_interval(ap_manager_t* man, const ap_abstract0_t* a,
-			      ap_dim_t dim, const ap_interval_t* interval);
+                              ap_dim_t dim, const ap_interval_t* interval);
   /* is the dimension included in the interval in the abstract value ? */
 
 
 tbool_t ap_abstract0_is_dimension_unconstrained(ap_manager_t* man, const ap_abstract0_t*
-					     a, ap_dim_t dim); /* is the dimension
-					     unconstrained in the abstract
-					     value ?  If it is the case, we
-					     have forget(man,a,dim) == a */
+                                             a, ap_dim_t dim); /* is the dimension
+                                             unconstrained in the abstract
+                                             value ?  If it is the case, we
+                                             have forget(man,a,dim) == a */
 @
 
 \point{Le problème du test du vide avec les entiers.}
@@ -341,13 +341,13 @@ réel.
 
 
 ap_interval_t* ap_abstract0_bound_linexpr(ap_manager_t* man,
-				    const ap_abstract0_t* a, const ap_linexpr0_t* expr);
+                                    const ap_abstract0_t* a, const ap_linexpr0_t* expr);
   /* Returns the interval taken by a linear expression
      over the abstract value */
 
 
 ap_interval_t* ap_abstract0_bound_dimension(ap_manager_t* man,
-				      const ap_abstract0_t* a, ap_dim_t dim);
+                                      const ap_abstract0_t* a, ap_dim_t dim);
   /* Returns the interval taken by the dimension
      over the abstract value */
 
@@ -413,16 +413,16 @@ ap_abstract0_t* ap_abstract0_join_array(ap_manager_t* man, const ap_abstract0_t*
 
 
 ap_abstract0_t* ap_abstract0_meet_lincons_array(ap_manager_t* man,
-					  bool destructive,
-					  ap_abstract0_t* a,
-					  const ap_lincons0_array_t* array);
+                                          bool destructive,
+                                          ap_abstract0_t* a,
+                                          const ap_lincons0_array_t* array);
   /* Meet of an abstract value with a set of constraints */
 
 
 ap_abstract0_t* ap_abstract0_add_ray_array(ap_manager_t* man,
-				     bool destructive,
-				     ap_abstract0_t* a,
-				     const ap_generator0_array_t* array);
+                                     bool destructive,
+                                     ap_abstract0_t* a,
+                                     const ap_generator0_array_t* array);
   /* Generalized time elapse operator */
 @
 
@@ -457,16 +457,16 @@ update} à un niveau supérieur, voir la suite.
 
 
 ap_abstract0_t* ap_abstract0_assign_linexpr(ap_manager_t* man,
-				      bool destructive,
-				      ap_abstract0_t* org,
-				      ap_dim_t dim, const ap_linexpr0_t* expr,
-				      const ap_abstract0_t* dest);
+                                      bool destructive,
+                                      ap_abstract0_t* org,
+                                      ap_dim_t dim, const ap_linexpr0_t* expr,
+                                      const ap_abstract0_t* dest);
 
 ap_abstract0_t* ap_abstract0_substitute_linexpr(ap_manager_t* man,
-					  bool destructive,
-					  ap_abstract0_t* org,
-					  ap_dim_t dim, const ap_linexpr0_t* expr,
-					  const ap_abstract0_t* dest);
+                                          bool destructive,
+                                          ap_abstract0_t* org,
+                                          ap_dim_t dim, const ap_linexpr0_t* expr,
+                                          const ap_abstract0_t* dest);
   /* Assignement and Substitution of a single dimension by a (interval)
      linear expression in abstract value org.
 
@@ -478,20 +478,20 @@ ap_abstract0_t* ap_abstract0_substitute_linexpr(ap_manager_t* man,
 
 
 ap_abstract0_t* ap_abstract0_assign_linexpr_array(ap_manager_t* man,
-					    bool destructive,
-					    ap_abstract0_t* org,
-					    const ap_dim_t* tdim,
-					    const ap_linexpr0_t*const* texpr,
-					    size_t size,
-					    const ap_abstract0_t* dest);
+                                            bool destructive,
+                                            ap_abstract0_t* org,
+                                            const ap_dim_t* tdim,
+                                            const ap_linexpr0_t*const* texpr,
+                                            size_t size,
+                                            const ap_abstract0_t* dest);
 
 ap_abstract0_t* ap_abstract0_substitute_linexpr_array(ap_manager_t* man,
-						bool destructive,
-						ap_abstract0_t* org,
-						const ap_dim_t* tdim,
-						const ap_linexpr0_t*const* texpr,
-						size_t size,
-						const ap_abstract0_t* dest);
+                                                bool destructive,
+                                                ap_abstract0_t* org,
+                                                const ap_dim_t* tdim,
+                                                const ap_linexpr0_t*const* texpr,
+                                                size_t size,
+                                                const ap_abstract0_t* dest);
   /* Parallel Assignement and Substitution of several dimensions by
      linear expressions in abstract value org.
 
@@ -511,9 +511,9 @@ ap_abstract0_t* ap_abstract0_substitute_linexpr_array(ap_manager_t* man,
 /* ============================================================ */
 
 ap_abstract0_t* ap_abstract0_forget_array(ap_manager_t* man,
-				    bool destructive,
-				    ap_abstract0_t* a, const ap_dim_t* tdim, size_t size,
-				    bool project);
+                                    bool destructive,
+                                    ap_abstract0_t* a, const ap_dim_t* tdim, size_t size,
+                                    bool project);
 @
 Questions:
 \begin{itemize}
@@ -549,20 +549,20 @@ un flag pour distinguer [[project]] de [[forget]] ou [[embed]] ?
 /* ============================================================ */
 
 ap_abstract0_t* ap_abstract0_add_dimensions(ap_manager_t* man,
-				      bool destructive,
-				      ap_abstract0_t* a,
-				      ap_dimchange_t* dimchange,
-				      bool project);
+                                      bool destructive,
+                                      ap_abstract0_t* a,
+                                      ap_dimchange_t* dimchange,
+                                      bool project);
 ap_abstract0_t* ap_abstract0_remove_dimensions(ap_manager_t* man,
-					 bool destructive,
-					 ap_abstract0_t* a,
-					 ap_dimchange_t* dimchange);
+                                         bool destructive,
+                                         ap_abstract0_t* a,
+                                         ap_dimchange_t* dimchange);
 /* Size of the permutation is supposed to be equal to
    the dimension of the abstract value */
 ap_abstract0_t* ap_abstract0_permute_dimensions(ap_manager_t* man,
-					  bool destructive,
-					  ap_abstract0_t* a,
-					  const ap_dimperm_t* perm);
+                                          bool destructive,
+                                          ap_abstract0_t* a,
+                                          const ap_dimperm_t* perm);
 @
 
 %----------------------------------------------------------------------
@@ -591,10 +591,10 @@ des opérations spécifiques.
 
 
 ap_abstract0_t* ap_abstract0_expand(ap_manager_t* man,
-			      bool destructive,
-			      ap_abstract0_t* a,
-			      ap_dim_t dim,
-			      size_t n);
+                              bool destructive,
+                              ap_abstract0_t* a,
+                              ap_dim_t dim,
+                              size_t n);
   /* Expand the dimension dim into itself + n additional dimensions.
      It results in (n+1) unrelated dimensions having same
      relations with other dimensions. The (n+1) dimensions are put as follows:
@@ -608,10 +608,10 @@ ap_abstract0_t* ap_abstract0_expand(ap_manager_t* man,
 
 
 ap_abstract0_t* ap_abstract0_fold(ap_manager_t* man,
-			    bool destructive,
-			    ap_abstract0_t* a,
-			    const ap_dim_t* tdim,
-			    size_t size);
+                            bool destructive,
+                            ap_abstract0_t* a,
+                            const ap_dim_t* tdim,
+                            size_t size);
   /* Fold the dimensions in the array tdim of size n>=1 and put the result
      in the first dimension in the array. The other dimensions of the array
      are then removed (using ap_abstract0_permute_remove_dimensions). */
@@ -627,7 +627,7 @@ ap_abstract0_t* ap_abstract0_fold(ap_manager_t* man,
 /* ============================================================ */
 
 ap_abstract0_t* ap_abstract0_widening(ap_manager_t* man,
-				const ap_abstract0_t* a1, const ap_abstract0_t* a2);
+                                const ap_abstract0_t* a1, const ap_abstract0_t* a2);
 @
 
 %----------------------------------------------------------------------
@@ -675,102 +675,8 @@ ap_manager_t* ap_abstract0_manager(const ap_abstract0_t* a)
 
 ap_abstract0_t*
 ap_abstract0_widening_threshold(ap_manager_t* man,
-				const ap_abstract0_t* a1, const ap_abstract0_t* a2,
-				ap_lincons0_array_t* array);
-@
-
-<<*>>=
-/* ********************************************************************** */
-/* ********************************************************************** */
-/* Additional functions */
-/* ********************************************************************** */
-/* ********************************************************************** */
-
-/* ********************************************************************** */
-/* I. General management */
-/* ********************************************************************** */
-
-/* ********************************************************************** */
-/* II. Constructors */
-/* ********************************************************************** */
-
-ap_abstract0_t*
-ap_abstract0_generic_of_lincons_array(ap_manager_t* man,
-				      size_t intdim, size_t realdim,
-				      const ap_lincons0_array_t* array);
-  /* This function implements a generic of_lincons_array operation using top and
-     meet_lincons_array operations.
-  */
-
-/* ********************************************************************** */
-/* III. Operations */
-/* ********************************************************************** */
-
-ap_abstract0_t*
-ap_abstract0_generic_meet_array(ap_manager_t* man,
-				const ap_abstract0_t** tab, size_t size);
-  /* This function implements a generic meet_array operation using copy and meet
-     operations. */
-
-ap_abstract0_t*
-ap_abstract0_generic_join_array(ap_manager_t* man,
-				const ap_abstract0_t** tab, size_t size);
-  /* This function implements a generic join_array operation using copy and meet
-   operations. */
-
-ap_abstract0_t*
-ap_abstract0_generic_assign_linexpr_array(ap_manager_t* man,
-					  bool destructive,
-					  ap_abstract0_t* abs,
-					  const ap_dim_t* tdim,
-					  const ap_linexpr0_t** texpr,
-					  size_t size,
-                                          const ap_abstract0_t* dest);
-  /*
-     This function implements generic parallel assignement operation by
-     1. introducing primed dimensions
-     2. transforming linear expressions into equality constraints relating the
-	assigned primed dimension and the linear expression
-     3. intersecting the obtained abstract value with the constraints
-     4. exchanging primed and unprimed dimensions
-     5. removing the introduced (primed) dimensions
-
-     It relies on: is_bottom, copy, dimension, add_dimensions,
-     permute_dimensions, remove_dimensions, meet_lincons_array abstract
-     operations.
-  */
-ap_abstract0_t*
-ap_abstract0_generic_substitute_linexpr_array(ap_manager_t* man,
-					      bool destructive,
-					      ap_abstract0_t* abs,
-					      const ap_dim_t* tdim,
-					      const ap_linexpr0_t** texpr,
-					      size_t size,
-                                              const ap_abstract0_t* dest);
-  /*
-     This function implements generic parallel substitution operation by
-     1. introducing primed dimensions
-     2. transforming linear expressions into equality constraints relating the
-        assigned primed dimension and the linear expression
-     3. exchanging primed and unprimed dimensions
-     4. intersecting the obtained abstract value with the constraints
-     5. removing the introduced (primed) dimensions
-
-     It relies on: is_bottom, copy, dimension, add_dimensions,
-     permute_dimensions, remove_dimensions, meet_lincons_array abstract
-     operations.
-  */
-
-ap_linexpr0_t*
-ap_abstract0_generic_quasilinear_of_intervallinear(ap_manager_t* man,
-						    const ap_abstract0_t* a,
-						    ap_linexpr0_t* expr);
-  /* Evaluate a interval linear expression on the abstract
-     value such as to transform it into a quasilinear expression.
-
-     This implies calls to ap_abstract0_bound_dimension.
-
-     NOT YET IMPLEMENTED */
+                                const ap_abstract0_t* a1, const ap_abstract0_t* a2,
+                                ap_lincons0_array_t* array);
 @
 
 %======================================================================
@@ -787,23 +693,23 @@ On définit ici des fonctions utiles pour le niveau 1.
 /* ********************************************************************** */
 
 ap_abstract0_t* ap_abstract0_meetjoin(ap_funid_t funid,
-				ap_manager_t* man, bool destructive,
-				ap_abstract0_t* a1, const ap_abstract0_t* a2);
+                                ap_manager_t* man, bool destructive,
+                                ap_abstract0_t* a1, const ap_abstract0_t* a2);
 ap_abstract0_t* ap_abstract0_asssub_linexpr(ap_funid_t funid,
-				      /* either assign or substitute */
-				      ap_manager_t* man,
-				      bool destructive,
-				      ap_abstract0_t* a,
-				      ap_dim_t dim, const ap_linexpr0_t* expr,
-				      const ap_abstract0_t* dest);
+                                      /* either assign or substitute */
+                                      ap_manager_t* man,
+                                      bool destructive,
+                                      ap_abstract0_t* a,
+                                      ap_dim_t dim, const ap_linexpr0_t* expr,
+                                      const ap_abstract0_t* dest);
 ap_abstract0_t* ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
-					    ap_manager_t* man,
-					    bool destructive,
-					    ap_abstract0_t* a,
-					    const ap_dim_t* tdim,
-					    const ap_linexpr0_t*const* texpr,
-					    size_t size,
-					    const ap_abstract0_t* dest);
+                                            ap_manager_t* man,
+                                            bool destructive,
+                                            ap_abstract0_t* a,
+                                            const ap_dim_t* tdim,
+                                            const ap_linexpr0_t*const* texpr,
+                                            size_t size,
+                                            const ap_abstract0_t* dest);
 @
 
 

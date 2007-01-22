@@ -52,7 +52,7 @@ H_FILES = \
 ap_config.h \
 ap_scalar.h ap_interval.h ap_coeff.h ap_dimension.h \
 ap_linexpr0.h ap_lincons0.h ap_generator0.h ap_expr0.h \
-ap_manager.h ap_abstract0.h \
+ap_manager.h ap_abstract0.h ap_generic.h \
 ap_var.h ap_environment.h \
 ap_linexpr1.h ap_lincons1.h ap_generator1.h ap_expr1.h \
 ap_abstract1.h \
@@ -61,7 +61,7 @@ ap_global0.h ap_global1.h
 C_FILES = \
 ap_scalar.c ap_interval.c ap_coeff.c ap_dimension.c \
 ap_linexpr0.c ap_lincons0.c ap_generator0.c \
-ap_manager.c ap_abstract0.c \
+ap_manager.c ap_abstract0.c ap_generic.c \
 ap_var.c ap_environment.c \
 ap_linexpr1.c ap_lincons1.c ap_generator1.c \
 ap_abstract1.c
@@ -88,7 +88,7 @@ dist: $(NOWEB_FILES) $(TEX_FILES) $(H_FILES) $(C_FILES) apron.texi apronrational
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
 clean:
-	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps apron.cps apron.fns apron.info apron.fn apron.ky apron.pg apron.cp apron.tp apron.vr apron.kys apron.pgs apron.tps apron.vrs newpolka.texi itv.texi
+	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps apron.cps apron.fns apron.info apron.fn apron.ky apron.pg apron.cp apron.tp apron.vr apron.kys apron.pgs apron.tps apron.vrs newpolka.texi box.texi
 	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
 	/bin/rm -fr html
 
@@ -120,20 +120,20 @@ apronrationale.dvi: apronrationale.tex $(TEX_FILES)
 
 newpolka.texi: ../newpolka/newpolka.texi
 	ln -s $< $@
-itv.texi: ../itv/itv.texi
+box.texi: ../itv/box.texi
 	ln -s $< $@
 
 apron.pdf: apron.dvi
 	$(DVIPDF) apron.dvi $@
 
-apron.dvi: apron.texi newpolka.texi itv.texi
+apron.dvi: apron.texi newpolka.texi box.texi
 	texi2dvi -o $@ $<
 
-apron.info: apron.texi newpolka.texi itv.texi
+apron.info: apron.texi newpolka.texi box.texi
 	makeinfo -o $@ $<
 
 
-html: apron.texi newpolka.texi itv.texi
+html: apron.texi newpolka.texi box.texi
 	texi2html -split=section -nonumber -menu -subdir=html $<
 	cp -f ../octagons/oct_doc.html html
 
@@ -198,7 +198,10 @@ ap_manager.o: ap_manager.c ap_manager.h ap_coeff.h ap_config.h \
 ap_abstract0.o: ap_abstract0.c ap_abstract0.h ap_manager.h ap_coeff.h \
   ap_config.h ap_scalar.h ap_interval.h ap_expr0.h ap_linexpr0.h \
   ap_dimension.h ap_lincons0.h ap_generator0.h
-ap_var.o: ap_var.c ap_manager.h ap_coeff.h ap_config.h ap_scalar.h \
+ap_generic.o: ap_generic.c ap_generic.h ap_manager.h ap_coeff.h \
+  ap_config.h ap_scalar.h ap_interval.h ap_expr0.h ap_linexpr0.h \
+  ap_dimension.h ap_lincons0.h ap_generator0.h ap_abstract0.h
+aap_var.o: ap_var.c ap_manager.h ap_coeff.h ap_config.h ap_scalar.h \
   ap_interval.h ap_var.h
 ap_environment.o: ap_environment.c ap_manager.h ap_coeff.h ap_config.h \
   ap_scalar.h ap_interval.h ap_environment.h ap_dimension.h ap_var.h
