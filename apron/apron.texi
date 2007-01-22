@@ -3399,8 +3399,8 @@ operation using @code{copy} and @code{meet} (resp. @code{join})
 operations.
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size})
-@deftypefunx ap_abstract0_t* ap_abstract0_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size})
+@deftypefun ap_abstract0_t* ap_abstract0_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size}, const ap_abstract0_t* @var{dest})
+@deftypefunx ap_abstract0_t* ap_abstract0_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size}, const ap_abstract0_t* @var{dest})
 Implements generic parallel assignement (resp. substitution) function by
 @enumerate
 @item introducing primed dimensions for assigned dimensions;
@@ -3409,12 +3409,14 @@ the assigned primed dimension and the linear expression;
 @item in the case of substitution, exchanging primed and unprimed dimensions;
 @item intersecting the obtained abstract value with the constraints;
 @item in the case of assignement, exchanging primed and unprimed dimensions;
-@item and removing the introduced (primed) dimensions
+@item removing the introduced (primed) dimensions
+@item and intersecting with @var{dest} if it is not NULL.
 @end enumerate
 @noindent 
 It relies on: @code{is_bottom}, @code{ copy}, @code{ dimension},
 @code{ add_dimensions}, @code{permute_dimensions},
-@code{remove_dimensions} and @code{meet_lincons_array} functions.
+@code{remove_dimensions}, @code{meet_lincons_array} and
+@code{meet} functions.
 @end deftypefun
 
 @c ===================================================================

@@ -1444,14 +1444,21 @@ ap_abstract0_generic_meet_array(ap_manager_t* man,
   ap_abstract0_t* (*meet)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET];
   size_t i;
   ap_abstract0_t* res;
+  tbool_t exact,best;
   if (size==1){
     return copy(man,tab[0]);
   }
   else {
     res = meet(man,false,tab[0],tab[1]);
+    exact = man->result.flag_exact;
+    best =  man->result.flag_best;
     for (i=2; i<size; i++){
       res = meet(man,true,res,tab[i]);
+      exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
+      best =  (best==tbool_true ? man->result.flag_best : tbool_top);
     }
+    man->result.flag_exact = exact;
+    man->result.flag_best = best;
     return res;
   }
 }
@@ -1469,14 +1476,21 @@ ap_abstract0_generic_join_array(ap_manager_t* man,
   ap_abstract0_t* (*join)(ap_manager_t*,...) = man->funptr[AP_FUNID_JOIN];
   size_t i;
   ap_abstract0_t* res;
+  tbool_t exact,best;
   if (size==1){
     return copy(man,tab[0]);
   }
   else {
     res = join(man,false,tab[0],tab[1]);
+    exact = man->result.flag_exact;
+    best =  man->result.flag_best;
     for (i=2; i<size; i++){
       res = join(man,true,res,tab[i]);
+      exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
+      best =  (best==tbool_true ? man->result.flag_best : tbool_top);
     }
+    man->result.flag_exact = exact;
+    man->result.flag_best = best;
     return res;
   }
 }
@@ -1490,9 +1504,10 @@ ap_abstract0_generic_join_array(ap_manager_t* man,
    3. intersecting the obtained abstract value with the constraints
    4. exchanging primed and unprimed dimensions
    5. removing the introduced (primed) dimensions
+   6. Optionnaly intersecting with dest
 
    It relies on: is_bottom, copy, dimension, add_dimensions,
-   permute_dimensions, remove_dimensions, meet_lincons_array abstract
+   permute_dimensions, remove_dimensions, meet_lincons_array and meet abstract
    operations.
 
    Meaning of parameters:
@@ -1509,7 +1524,8 @@ ap_abstract0_generic_asssub_linexpr_array(bool assign,
 					  ap_abstract0_t* abs,
 					  const ap_dim_t* tdim,
 					  const ap_linexpr0_t** texpr,
-					  size_t size)
+					  size_t size,
+					  const ap_abstract0_t* dest)
 {
   tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
   ap_abstract0_t* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
@@ -1517,14 +1533,17 @@ ap_abstract0_generic_asssub_linexpr_array(bool assign,
   ap_abstract0_t* (*permute_dimensions)(ap_manager_t*,...) = man->funptr[AP_FUNID_PERMUTE_DIMENSIONS];
   ap_abstract0_t* (*remove_dimensions)(ap_manager_t*,...) = man->funptr[AP_FUNID_REMOVE_DIMENSIONS];
   ap_abstract0_t* (*meet_lincons_array)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_LINCONS_ARRAY];
+  ap_abstract0_t* (*meet)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET];
   size_t i;
   ap_dimension_t d, dsup;
   ap_dimchange_t dimchange;
   ap_dimperm_t permutation;
   ap_lincons0_array_t array;
   ap_abstract0_t* abs2;
+  tbool_t exact,best;
 
   if (is_bottom(man,abs)){
+    man->result.flag_exact = man->result.flag_best = tbool_true;
     return destructive ? abs : copy(man,abs);
   }
   /* 1. Compute the number of integer and real dimensions assigned */
@@ -1569,28 +1588,46 @@ ap_abstract0_generic_asssub_linexpr_array(bool assign,
 
   /* 5. Add primed dimensions to abstract value */
   abs2 = add_dimensions(man,destructive,abs,&dimchange,false);
+  exact = man->result.flag_exact;
+  best =  man->result.flag_best;
   /* From now, work by side-effect on abs2 */
 
   /* 6. Permute unprimed and primed dimensions if !assign */
   if (!assign){
     abs2 = permute_dimensions(man,true,abs2,&permutation);
+    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
+    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
   }
   /* 7. Perform meet of abs2 with constraints */
   abs2 = meet_lincons_array(man,true,abs2,&array);
+  exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
+  best =  (best==tbool_true ? man->result.flag_best : tbool_top);
 
   /* 8. Permute unprimed and primed dimensions if assign */
   if (assign){
     abs2 = permute_dimensions(man,true,abs2,&permutation);
+    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
+    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
   }
   /* 9. Remove extra dimensions */
   ap_dimchange_add_invert(&dimchange);
   abs2 = remove_dimensions(man,true,abs2,&dimchange);
+  exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
+  best =  (best==tbool_true ? man->result.flag_best : tbool_top);
 
-  /* 10. Free allocated objects */
+  /* 10. Optional intersection */
+  if (dest!=NULL){
+    abs2 = meet(man,true,abs2,dest);
+    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
+    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+  }
+  /* 11. Free allocated objects */
   ap_dimperm_clear(&permutation);
   ap_dimchange_clear(&dimchange);
   ap_lincons0_array_clear(&array);
 
+  man->result.flag_exact = exact;
+  man->result.flag_best = best;
   return abs2;
 }
 
@@ -1604,7 +1641,7 @@ ap_abstract0_generic_asssub_linexpr_array(bool assign,
    5. removing the introduced (primed) dimensions
 
    It relies on: is_bottom, copy, dimension, add_dimensions,
-   permute_dimensions, remove_dimensions, meet_lincons_array abstract
+   permute_dimensions, remove_dimensions, meet_lincons_array abstract and meet
    operations.
 */
 ap_abstract0_t*
@@ -1613,11 +1650,13 @@ ap_abstract0_generic_assign_linexpr_array(ap_manager_t* man,
 					  ap_abstract0_t* abs,
 					  const ap_dim_t* tdim,
 					  const ap_linexpr0_t** texpr,
-					  size_t size)
+					  size_t size,
+					  const ap_abstract0_t* dest)
 {
   return ap_abstract0_generic_asssub_linexpr_array(true,
 						   man, destructive,
-						   abs, tdim, texpr, size);
+						   abs, tdim, texpr, size,
+						   dest);
 }
 
 /*
@@ -1630,7 +1669,7 @@ ap_abstract0_generic_assign_linexpr_array(ap_manager_t* man,
    5. removing the introduced (primed) dimensions
 
    It relies on: is_bottom, copy, dimension, add_dimensions,
-   permute_dimensions, remove_dimensions, meet_lincons_array abstract
+   permute_dimensions, remove_dimensions, meet_lincons_array and meet abstract
    operations.
 */
 ap_abstract0_t*
@@ -1639,9 +1678,11 @@ ap_abstract0_generic_substitute_linexpr_array(ap_manager_t* man,
 					      ap_abstract0_t* abs,
 					      const ap_dim_t* tdim,
 					      const ap_linexpr0_t** texpr,
-					      size_t size)
+					      size_t size,
+					      const ap_abstract0_t* dest)
 {
   return ap_abstract0_generic_asssub_linexpr_array(false,
 						   man, destructive,
-						   abs, tdim, texpr, size);
+						   abs, tdim, texpr, size,
+						   dest);
 }

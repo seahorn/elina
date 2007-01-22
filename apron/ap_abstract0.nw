@@ -724,7 +724,8 @@ ap_abstract0_generic_assign_linexpr_array(ap_manager_t* man,
 					  ap_abstract0_t* abs,
 					  const ap_dim_t* tdim,
 					  const ap_linexpr0_t** texpr,
-					  size_t size);
+					  size_t size,
+                                          const ap_abstract0_t* dest);
   /*
      This function implements generic parallel assignement operation by
      1. introducing primed dimensions
@@ -744,7 +745,8 @@ ap_abstract0_generic_substitute_linexpr_array(ap_manager_t* man,
 					      ap_abstract0_t* abs,
 					      const ap_dim_t* tdim,
 					      const ap_linexpr0_t** texpr,
-					      size_t size);
+					      size_t size,
+                                              const ap_abstract0_t* dest);
   /*
      This function implements generic parallel substitution operation by
      1. introducing primed dimensions
