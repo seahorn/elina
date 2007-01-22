@@ -142,7 +142,7 @@ ap_abstract0_generic_asssub_linexpr_array(bool assign,
 					  bool destructive,
 					  void* abs,
 					  const ap_dim_t* tdim,
-					  const ap_linexpr0_t** texpr,
+					  const ap_linexpr0_t*const* texpr,
 					  size_t size,
 					  const void* dest)
 {
@@ -286,7 +286,7 @@ ap_abstract0_generic_assign_linexpr_array(ap_manager_t* man,
 					  bool destructive,
 					  void* abs,
 					  const ap_dim_t* tdim,
-					  const ap_linexpr0_t** texpr,
+					  const ap_linexpr0_t*const* texpr,
 					  size_t size,
 					  const void* dest)
 {
@@ -317,7 +317,7 @@ ap_abstract0_generic_substitute_linexpr_array(ap_manager_t* man,
 					      bool destructive,
 					      void* abs,
 					      const ap_dim_t* tdim,
-					      const ap_linexpr0_t** texpr,
+					      const ap_linexpr0_t*const* texpr,
 					      size_t size,
 					      const void* dest)
 {

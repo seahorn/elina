@@ -3403,8 +3403,8 @@ operation using @code{copy} and @code{meet} (resp. @code{join})
 operations.
 @end deftypefun
 
-@deftypefun void* ap_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size}, const void* @var{dest})
-@deftypefunx void* ap_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t** @var{texpr}, size_t @var{size}, const void* @var{dest})
+@deftypefun void* ap_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t*const* @var{texpr}, size_t @var{size}, const void* @var{dest})
+@deftypefunx void* ap_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t*const* @var{texpr}, size_t @var{size}, const void* @var{dest})
 Implements generic parallel assignement (resp. substitution) function by
 @enumerate
 @item introducing primed dimensions for assigned dimensions;

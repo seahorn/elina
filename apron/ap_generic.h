@@ -13,6 +13,19 @@
 extern "C" {
 #endif
 
+/* These functions are dedicated to implementors of domains. They offer generic
+   default implementations for some of the operations required by the APRON
+   API, when there is no more specific and efficient implementation for the
+   domain being implemented.
+
+   To use them, the function allocating manager, which is specific to the domain,
+   should put the corresponding pointers in the virtual table to them.
+
+   They manipulated "unboxed" abstract values, which are native to the
+   underlying library: they are not yet boxed with the manager in the type
+   ap_abstract0_t.
+*/
+
 /* ********************************************************************** */
 /* I. General management */
 /* ********************************************************************** */
@@ -50,7 +63,7 @@ ap_generic_assign_linexpr_array(ap_manager_t* man,
 				bool destructive,
 				void* abs,
 				const ap_dim_t* tdim,
-				const ap_linexpr0_t** texpr,
+				const ap_linexpr0_t*const* texpr,
 				size_t size,
 				const void* dest);
   /*
@@ -71,7 +84,7 @@ ap_generic_substitute_linexpr_array(ap_manager_t* man,
 				    bool destructive,
 				    void* abs,
 				    const ap_dim_t* tdim,
-				    const ap_linexpr0_t** texpr,
+				    const ap_linexpr0_t*const* texpr,
 				    size_t size,
 				    const void* dest);
   /*
