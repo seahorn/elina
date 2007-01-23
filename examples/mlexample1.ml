@@ -3,16 +3,16 @@
    read the COPYING file packaged in the distribution. *)
 
 (*
-itvpolkatopg -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib -I $POLKA_INSTALL/lib -I $ITV_INSTALL/lib
+boxpolkatopg -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib -I $POLKA_INSTALL/lib -I $BOX_INSTALL/lib
 
 or with default setting
 
-itvpolkatopg -I $APRON_INSTALL/lib
+boxpolkatopg -I $APRON_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cma";;
 #load "polka.cma";;
-#load "itv.cma"
+#load "box.cma"
 
 #install_printer Apron.Linexpr1.print;;
 #install_printer Apron.Lincons1.print;;
@@ -29,7 +29,7 @@ open Format
 let print_array = Abstract0.print_array;;
 
 let manpk = Polka.manager_alloc true;;
-let manitv = Itv.manager_alloc ();;
+let manbox = Box.manager_alloc ();;
 
 let lincons1_array_print fmt x =
   Lincons1.array_print fmt x
@@ -135,10 +135,10 @@ let ex1 (man:Manager.t) : Abstract1.t =
   printf "box=%a@." (print_array Interval.print) box.Abstract1.interval_array;
   for i=0 to 4 do
     let expr = Lincons1.get_linexpr1 (Lincons1.array_get tab i) in
-    let itv = Abstract1.bound_linexpr man abs expr in
+    let box = Abstract1.bound_linexpr man abs expr in
     printf "Bound of %a = %a@."
       Linexpr1.print expr
-      Interval.print itv;
+      Interval.print box;
   done;
   (* 2. dimensions *)
   (* 3. of box *)
@@ -165,6 +165,6 @@ let ex1 (man:Manager.t) : Abstract1.t =
 
 let abs1 = ex1 manpk;;
 
-let abs2 = ex1 manitv;;
+let abs2 = ex1 manbox;;
 
 Abstract1.is_eq manpk abs1 abs2;;

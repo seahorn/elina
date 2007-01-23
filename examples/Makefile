@@ -26,18 +26,18 @@ OCAMLINC = \
 -I $(MLGMPIDL_PREFIX)/lib \
 -I $(MLAPRONIDL_PREFIX)/lib \
 -I $(POLKA_PREFIX)/lib \
--I $(ITV_PREFIX)/lib
+-I $(BOX_PREFIX)/lib
 
 OCAMLFLAGS = $(OCAMLINC)
 
 OCAMLLDFLAGS = \
-bigarray.cma gmp.cma apron.cma itv.cma polka.cma \
--cclib "$(LCFLAGS) -L$(ITV_PREFIX)/lib -litvmpq_debug" \
+bigarray.cma gmp.cma apron.cma box.cma polka.cma \
+-cclib "$(LCFLAGS) -L$(BOX_PREFIX)/lib -lboxmpq_debug" \
 -cclib "-L$(POLKA_PREFIX)/lib -lpolkag_debug" 
 
 OCAMLOPTLDFLAGS = \
-bigarray.cmxa gmp.cmxa apron.cmxa itv.cmxa polka.cmxa \
--cclib "$(LCFLAGS) -L$(ITV_PREFIX)/lib -litvmpq_debug" \
+bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa \
+-cclib "$(LCFLAGS) -L$(BOX_PREFIX)/lib -lboxmpq_debug" \
 -cclib "-L$(POLKA_PREFIX)/lib -lpolkag_debug" 
 
 all: C ml
@@ -59,19 +59,19 @@ ml: mlexample1g
 mlexample%g.opt: mlexample%.cmx
 	$(OCAMLOPT) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
 
-%g: %.cmo itvpolkarung
-	$(OCAMLC) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime itvpolkarung -o $@ $<
+%g: %.cmo boxpolkarung
+	$(OCAMLC) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime boxpolkarung -o $@ $<
 
-itvpolkarung:
+boxpolkarung:
 	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ \
-	bigarray.cma gmp.cma apron.cma itv.cma polka.cma \
-	-cclib "$(LCFLAGS) -L$(ITV_PREFIX)/lib -litvmpq_debug" \
+	bigarray.cma gmp.cma apron.cma box.cma polka.cma \
+	-cclib "$(LCFLAGS) -L$(BOX_PREFIX)/lib -lboxmpq_debug" \
 	-cclib "-L$(POLKA_PREFIX)/lib -lpolkag_debug" 
 
-itvpolkatopg:
+boxpolkatopg:
 	ocamlmktop $(OCAMLINC) -verbose -custom -o $@ \
-	bigarray.cma gmp.cma apron.cma itv.cma polka.cma \
-	-cclib "$(LCFLAGS) -L$(ITV_PREFIX)/lib -litvmpq_debug" \
+	bigarray.cma gmp.cma apron.cma box.cma polka.cma \
+	-cclib "$(LCFLAGS) -L$(BOX_PREFIX)/lib -lboxmpq_debug" \
 	-cclib "-L$(POLKA_PREFIX)/lib -lpolkag_debug" 
 
 %.cmo: %.ml
@@ -83,7 +83,7 @@ itvpolkatopg:
 #
 
 clean:
-	rm -f example1g itvpolkarung itvpolkatopg *.cm[ioxa] *.o mlexample1g mlexample2g
+	rm -f example1g boxpolkarung boxpolkatopg *.cm[ioxa] *.o mlexample1g mlexample2g mlexample3g *.opt
 
 distclean: clean
 

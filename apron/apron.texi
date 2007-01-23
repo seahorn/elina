@@ -260,7 +260,7 @@ Managers are allocated by the underlying libraries/abstract domains, but are fre
 @menu
 * Managers::
 * NewPolka::
-* Itv::
+* Box::
 * Oct::
 @end menu
 
@@ -486,21 +486,21 @@ raised one.
 @end deftypefun
 
 @c ===================================================================
-@node NewPolka, Itv, Managers, Managers and Abstract Domains
+@node NewPolka, Box, Managers, Managers and Abstract Domains
 @section NewPolka (@file{pk.h}): convex polyhedra abstract domain
 @c ===================================================================
 
 @include newpolka.texi
 
 @c ===================================================================
-@node Itv, Oct, NewPolka, Managers and Abstract Domains
-@section Itv (@file{itv.h}): intervals abstract domain
+@node Box, Oct, NewPolka, Managers and Abstract Domains
+@section Box (@file{box.h}): intervals abstract domain
 @c ===================================================================
 
 @include box.texi
 
 @c ===================================================================
-@node Oct,  , Itv, Managers and Abstract Domains
+@node Oct,  , Box, Managers and Abstract Domains
 @section Oct: octagon abstract domain
 @c ===================================================================
 

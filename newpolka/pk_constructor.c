@@ -266,7 +266,7 @@ poly_t* poly_of_box(ap_manager_t* man,
 		    size_t intdim, size_t realdim,
 		    const ap_interval_t** array)
 {
-  int i,k;
+  int k;
   size_t dim;
   poly_t* po;
 

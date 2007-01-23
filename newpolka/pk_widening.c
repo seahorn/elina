@@ -170,7 +170,7 @@ poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
     nbrows = pk->dec-1;
 
     /* Adding constraints of pb mutually redundant with some of pa, except if
-     it is mutually redundant with the positivity constraint of pa only. */
+       it is mutually redundant with the positivity constraint of pa only. */
     bitstringp = bitstring_alloc(sat_nbcols);
     for (i=0; i<pb->C->nbrows; i++){
       bitstring_clear(bitstringp,sat_nbcols);

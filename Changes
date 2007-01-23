@@ -1,3 +1,10 @@
+Version 0.9.5
+
+- itv becomes box
+
+- NewPolka offers a layer for linear equalities only, in addition to more
+  general linear inequalities.
+
 Version 0.9.4
 
 - Modification of Makefile and Makefile.config.model

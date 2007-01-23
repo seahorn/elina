@@ -49,11 +49,11 @@ NUM_PREFIX = $(APRON_PREFIX)
 POLKA_PREFIX = $(APRON_PREFIX)
 # POLKA_PREFIX =
 
-# Where to install and to find ITV (intervals)
-# ($(ITV_PREFIX)/include, $(ITV_PREFIX)/lib, $(ITV_PREFIX)/bin)
+# Where to install and to find BOX (intervals)
+# ($(BOX_PREFIX)/include, $(BOX_PREFIX)/lib, $(BOX_PREFIX)/bin)
 #
-ITV_PREFIX = $(APRON_PREFIX)
-# ITV_PREFIX =
+BOX_PREFIX = $(APRON_PREFIX)
+# BOX_PREFIX =
 
 # Where to install and to find OMEGA
 OMEGA_PREFIX = $(APRON_PREFIX)

@@ -120,7 +120,7 @@ apronrationale.dvi: apronrationale.tex $(TEX_FILES)
 
 newpolka.texi: ../newpolka/newpolka.texi
 	ln -s $< $@
-box.texi: ../itv/box.texi
+box.texi: ../box/box.texi
 	ln -s $< $@
 
 apron.pdf: apron.dvi

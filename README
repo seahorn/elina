@@ -27,6 +27,9 @@ newpolka:
 octagons:
 	octagon library
 
+box:
+	interval library
+
 Makefile.config.model:
 	common configuration file model (to be copied to Makefile.config)
 	(installation directories mainly)
