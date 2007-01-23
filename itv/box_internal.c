@@ -6,55 +6,35 @@
 #include <stdio.h>
 
 #include "box_internal.h"
+#include "box.h"
 #include "itv.h"
 
 void box_internal_init(box_internal_t* intern)
 {
-  num_init(intern->itv_canonicalize_num);
-  bound_init(intern->itv_muldiv_bound);
-  num_init(intern->bound_mul_scalar_num);
-  intern->itv_set_interval_scalar = ap_scalar_alloc();
-  intern->itv_is_leq_interval_interval = ap_interval_alloc();
-  bound_init(intern->itv_mul_scalar_bound);
-  intern->itv_mul_interval2_scalar = ap_scalar_alloc();
-  intern->itv_mul_interval1_interval = ap_interval_alloc();
-  itv_init(intern->itv_mul_interval1_itvinterval);
-  itv_init(intern->itv_mul_interval_itvinterval);
-  itv_init(intern->itv_mul_interval_itvinterval2);
-  itv_init(intern->bound_linexpr_internal_itvinterval);
-  itv_init(intern->bound_box_linexpr_itvinterval);
-  itv_init(intern->sat_lincons_itvinterval);
-  itv_init(intern->bound_linexpr_itvinterval);
-  num_init(intern->meet_box_lincons_num);
-  itv_init(intern->meet_box_lincons_itvinterval);
-  box_lincons_init(&intern->meet_lincons_array_itvlincons);
-  itv_init(intern->substitute_linexpr_itvinterval);
-  itv_init(intern->substitute_linexpr_itvinterval2);
-  box_lincons_init(&intern->substitute_linexpr_itvlincons);
+  intern->itv = itv_internal_alloc();
+  itv_init(intern->bound_linexpr_internal_itv);
+  itv_init(intern->bound_linexpr_internal_itv2);
+  intern->sat_interval_interval = ap_interval_alloc();
+  itv_init(intern->sat_lincons_itv);
+  itv_init(intern->bound_linexpr_itv);
+  itv_init(intern->meet_lincons_internal_itv);
+  itv_init(intern->meet_lincons_internal_itv2);
+  itv_init(intern->meet_lincons_internal_itv3);
+  bound_init(intern->meet_lincons_internal_bound);
 }
 void box_internal_clear(box_internal_t* intern)
 {
-  num_clear(intern->itv_canonicalize_num);
-  bound_clear(intern->itv_muldiv_bound);
-  num_clear(intern->bound_mul_scalar_num);
-  ap_scalar_free(intern->itv_set_interval_scalar);
-  ap_interval_free(intern->itv_is_leq_interval_interval);
-  bound_clear(intern->itv_mul_scalar_bound);
-  ap_scalar_free(intern->itv_mul_interval2_scalar);
-  ap_interval_free(intern->itv_mul_interval1_interval);
-  itv_clear(intern->itv_mul_interval1_itvinterval);
-  itv_clear(intern->itv_mul_interval_itvinterval);
-  itv_clear(intern->itv_mul_interval_itvinterval2);
-  itv_clear(intern->bound_linexpr_internal_itvinterval);
-  itv_clear(intern->bound_box_linexpr_itvinterval);
-  itv_clear(intern->sat_lincons_itvinterval);
-  itv_clear(intern->bound_linexpr_itvinterval);
-  num_clear(intern->meet_box_lincons_num);
-  itv_clear(intern->meet_box_lincons_itvinterval);
-  box_lincons_clear(&intern->meet_lincons_array_itvlincons);
-  itv_clear(intern->substitute_linexpr_itvinterval);
-  itv_clear(intern->substitute_linexpr_itvinterval2);
-  box_lincons_clear(&intern->substitute_linexpr_itvlincons);
+  itv_internal_free(intern->itv); intern->itv=NULL;
+  itv_clear(intern->bound_linexpr_internal_itv);
+  itv_clear(intern->bound_linexpr_internal_itv2);
+  ap_interval_free(intern->sat_interval_interval); 
+  intern->sat_interval_interval = NULL; 
+  itv_clear(intern->sat_lincons_itv);
+  itv_clear(intern->bound_linexpr_itv);
+  itv_clear(intern->meet_lincons_internal_itv);
+  itv_clear(intern->meet_lincons_internal_itv2);
+  itv_clear(intern->meet_lincons_internal_itv3);
+  bound_clear(intern->meet_lincons_internal_bound);
 }
 
 box_internal_t* box_internal_alloc()

@@ -5,80 +5,42 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "box_config.h"
-#include "box_int.h"
 #include "box_internal.h"
 #include "box_representation.h"
-#include "box_meetjoin.h"
 
 void box_bound_linexpr_internal(box_internal_t* intern,
-				itv_t itvinterval, 
-				const box_t* a, const ap_linexpr0_t* expr)
+				itv_t itv, 
+				const box_t* a, 
+				const ap_linexpr0_t* expr)
 {
   int i;
   ap_dim_t dim;
   ap_coeff_t *coeff;
-
+  bool eq;
   assert(a->p);
 
-  bound_set_int(itvinterval->inf,0);
-  bound_set_int(itvinterval->sup,0);
-  switch(expr->cst.discr){
-  case AP_COEFF_SCALAR:
-    if (ap_scalar_sgn(expr->cst.val.scalar)!=0){
-      bound_set_scalar(itvinterval->sup, expr->cst.val.scalar,+1);
-      bound_neg(itvinterval->inf, itvinterval->sup);
-    }
-    break;
-  case AP_COEFF_INTERVAL:
-    itv_set_interval(intern,
-			      itvinterval,
-			      expr->cst.val.interval);
-    break;
-  }
+  itv_set_coeff(intern->itv, itv, &expr->cst);
   ap_linexpr0_ForeachLinterm(expr,i,dim,coeff){
-    switch(coeff->discr){
-    case AP_COEFF_SCALAR:
-      if (ap_scalar_sgn(coeff->val.scalar)){
-	itv_mul_scalar(intern,
-				intern->bound_linexpr_internal_itvinterval,
-				a->p[dim],coeff->val.scalar);
-	itv_add(itvinterval, 
-			 itvinterval, 
-			 intern->bound_linexpr_internal_itvinterval);
-	break;
+    eq = itv_set_coeff(intern->itv,
+		       intern->bound_linexpr_internal_itv,
+		       coeff);
+    if (eq){
+      if (num_sgn(intern->bound_linexpr_internal_itv->sup)!=0){
+	itv_mul_bound(intern->itv,
+		      intern->bound_linexpr_internal_itv2,
+		      a->p[dim],
+		      intern->bound_linexpr_internal_itv->sup);
+	itv_add(itv, itv, intern->bound_linexpr_internal_itv2);
       }
-    case AP_COEFF_INTERVAL:
-      itv_mul_interval(intern,
-				intern->bound_linexpr_internal_itvinterval,
-				a->p[dim],coeff->val.interval);
-      itv_add(itvinterval, itvinterval, intern->bound_linexpr_internal_itvinterval);
-      break;
     }
-    if (itv_is_top(itvinterval))
-      break;
-  }
-}
-
-void box_bound_itvlinexpr(box_internal_t* intern,
-			  itv_t itvinterval, 
-			  const box_t* a, const box_linexpr_t* expr)
-{
-  size_t i;
-  ap_dim_t dim;
-  num_t* pnum;
-
-  assert(a->p);
-
-  itv_set(itvinterval,expr->cst);
-  box_linexpr_ForeachLinterm(expr,i,dim,pnum){
-    if (num_sgn(*pnum)){
-      itv_mul_num(intern,
-			  intern->bound_box_linexpr_itvinterval,
-			  a->p[dim],*pnum);
-      itv_add(itvinterval, itvinterval, intern->bound_box_linexpr_itvinterval);
+    else {
+      itv_mul(intern->itv,
+	      intern->bound_linexpr_internal_itv2,
+	      a->p[dim],
+	      intern->bound_linexpr_internal_itv);
+      itv_add(itv, itv, intern->bound_linexpr_internal_itv2);
     }
-    if (itv_is_top(itvinterval))
+    if (itv_is_top(itv))
       break;
   }
 }
@@ -126,25 +88,14 @@ box_t* box_of_box(ap_manager_t* man,
   if (intdim+realdim!=0){
     box_init(a);
     for(i=0;i<intdim+realdim; i++){
-      itv_set_interval(intern,a->p[i],tinterval[i]);
-      exc = itv_canonicalize(intern,a->p[i],i<intdim);
+      itv_set_interval(intern->itv,a->p[i],tinterval[i]);
+      exc = itv_canonicalize(intern->itv,a->p[i],i<intdim);
       if (exc) { box_set_bottom(a); break; }
     }
   }
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
   return a;
-}
-
-/* Abstract a convex polyhedra defined by the array of linear constraints
-   of size size */
-box_t* box_of_lincons_array(ap_manager_t* man,
-			    size_t intdim, size_t realdim,
-			    const ap_lincons0_array_t* array)
-{
-  box_t* res = box_top(man,intdim,realdim);
-  res = box_meet_lincons_array(man,true,res,array);
-  return res;
 }
 
 /* ********************************************************************** */
@@ -265,7 +216,8 @@ tbool_t box_sat_interval(ap_manager_t* man,
   if (a->p==NULL)
     return tbool_true;
 
-  return tbool_of_bool(itv_is_leq_interval(intern,a->p[dim],interval));
+  ap_interval_set_itv(intern->sat_interval_interval, a->p[dim]);
+  return tbool_of_bool(ap_interval_is_leq(intern->sat_interval_interval,interval));
 }
 
 /* does the abstract value satisfy the linear constraint ? */
@@ -282,38 +234,39 @@ tbool_t box_sat_lincons(ap_manager_t* man,
     return tbool_true;
   
   box_bound_linexpr_internal(intern,
-			     intern->sat_lincons_itvinterval, a, cons->linexpr0);
+			     intern->sat_lincons_itv, 
+			     a, 
+			     cons->linexpr0);
   switch (cons->constyp){
   case AP_CONS_EQ:
     res =
-      (bound_sgn(intern->sat_lincons_itvinterval->inf)==0 &&
-       bound_sgn(intern->sat_lincons_itvinterval->sup)==0) ?
+      (bound_sgn(intern->sat_lincons_itv->inf)==0 &&
+       bound_sgn(intern->sat_lincons_itv->sup)==0) ?
       tbool_true :
       tbool_top;
     break;
   case AP_CONS_SUPEQ:
-    if (bound_sgn(intern->sat_lincons_itvinterval->inf)<=0)
+    if (bound_sgn(intern->sat_lincons_itv->inf)<=0)
       res = tbool_true;
-    else if (bound_sgn(intern->sat_lincons_itvinterval->sup)<0)
+    else if (bound_sgn(intern->sat_lincons_itv->sup)<0)
       res = tbool_false;
     else
       res = tbool_top;
     break;
   case AP_CONS_SUP:
-     if (bound_sgn(intern->sat_lincons_itvinterval->inf)<0)
+     if (bound_sgn(intern->sat_lincons_itv->inf)<0)
       res = tbool_true;
-    else if (bound_sgn(intern->sat_lincons_itvinterval->sup)<=0)
+    else if (bound_sgn(intern->sat_lincons_itv->sup)<=0)
       res = tbool_false;
     else
       res = tbool_top;
      break;
   default:
-    assert(0);
+    abort();
     res = tbool_top;
   }
   return res;
 }
-
 
 /* ********************************************************************** */
 /* II.4 Extraction of properties */
@@ -347,8 +300,8 @@ ap_interval_t* box_bound_linexpr(ap_manager_t* man,
   }
   else {
     box_bound_linexpr_internal(intern,
-			       intern->bound_linexpr_itvinterval,a,expr);
-    ap_interval_set_itv(interval,intern->bound_linexpr_itvinterval);
+			       intern->bound_linexpr_itv,a,expr);
+    ap_interval_set_itv(interval,intern->bound_linexpr_itv);
   }
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;

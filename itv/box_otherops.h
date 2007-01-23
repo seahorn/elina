@@ -2,7 +2,10 @@
 /* box_otherops.h */
 /* ********************************************************************** */
 
-#include "itv.h"
+#ifndef _BOX_OTHEROPS_H_
+#define _BOX_OTHEROPS_H_
+
+#include "box.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,3 +37,4 @@ box_t* box_closure(ap_manager_t* man, bool destructive, box_t* a);
 }
 #endif
 
+#endif

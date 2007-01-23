@@ -2,8 +2,10 @@
 /* box_assign.h */
 /* ********************************************************************** */
 
-#include "itv.h"
-#include "box_internal.h"
+#ifndef _BOX_ASSIGN_H_
+#define _BOX_ASSIGN_H_
+
+#include "box.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,3 +41,4 @@ box_t* box_substitute_linexpr_array(ap_manager_t* man,
 }
 #endif
 
+#endif

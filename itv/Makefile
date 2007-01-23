@@ -1,7 +1,7 @@
 
 include ../Makefile.config
 
-PREFIX = $(ITV_PREFIX)
+PREFIX = $(BOX_PREFIX)
 
 SRCDIR = $(shell pwd)
 
@@ -63,13 +63,13 @@ OCAMLOPTFLAGS = -inline 20
 # Files
 #---------------------------------------
 
-CCMODULES = itv_internal itv_interval itv_representation itv_constructor itv_meetjoin itv_assign itv_resize itv_otherops #itv_int itv
-CCSRC = itv_config.h itv_int.h itv.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
+CCMODULES = itv box_internal box_representation box_constructor box_meetjoin box_assign box_resize box_otherops #box_int box
+CCSRC = box_config.h box_int.h box.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
-CCINC_TO_INSTALL = itv.h
+CCINC_TO_INSTALL = box.h
 CCBIN_TO_INSTALL = 
-CCLIB_TO_INSTALL = libitvmpq.a libitvmpq_debug.a
-CAML_TO_INSTALL = itv.idl itv.ml itv.mli itv.cmi itv.cmx itv.cma itv.cmxa itv.a libitv_caml.a libitv_caml_debug.a
+CCLIB_TO_INSTALL = libboxmpq.a libboxmpq_debug.a
+CAML_TO_INSTALL = box.idl box.ml box.mli box.cmi box.cmx box.cma box.cmxa box.a libbox_caml.a libbox_caml_debug.a
 
 #---------------------------------------
 # Rules
@@ -81,18 +81,18 @@ CAML_TO_INSTALL = itv.idl itv.ml itv.mli itv.cmi itv.cmx itv.cma itv.cmxa itv.a 
 
 all: allmpq
 
-allmpq: libitvmpq.a libitvmpq_debug.a
+allmpq: libboxmpq.a libboxmpq_debug.a
 
-ml: itv.mli itv.ml itv.cmi itv.cmx itv.cma itv.cmxa libitv_caml.a libitv_caml_debug.a
+ml: box.mli box.ml box.cmi box.cmx box.cma box.cmxa libbox_caml.a libbox_caml_debug.a
 
 clean:
-	/bin/rm -f *.[ao] *.cm[ioax] testg test*_caml* code2latex
+	/bin/rm -f *.[ao] *.cm[ioax] *.cmxa testg test*_caml* code2latex
 	/bin/rm -f *.?.tex *.log *.aux *.bbl *.blg *.toc *.dvi *.ps *.pstex*
-	/bin/rm -fr itvpolkarung itvpolkatopg tmp
+	/bin/rm -fr boxpolkarung boxpolkatopg tmp
 
 mostlyclean: clean
 	/bin/rm -fr manager.idl
-	/bin/rm -f itv.ml itv.mli
+	/bin/rm -f box.ml box.mli
 
 install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
 	$(INSTALLd) $(PREFIX)/include $(PREFIX)/lib
@@ -114,8 +114,8 @@ distclean:
 	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
 	/bin/rm -f Makefile.depend
 
-dist: $(CCSRC) Makefile sedscript_caml itv.texi itv.idl itv.ml itv.mli itv_caml.c COPYING README
-	(cd ..; tar zcvf itv.tgz $(^:%=itv/%))
+dist: $(CCSRC) Makefile sedscript_caml box.texi box.idl box.ml box.mli box_caml.c COPYING README
+	(cd ..; tar zcvf box.tgz $(^:%=box/%))
 
 #---------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES
@@ -127,9 +127,9 @@ dist: $(CCSRC) Makefile sedscript_caml itv.texi itv.idl itv.ml itv.mli itv_caml.
 # C part
 #-----------------------------------
 
-libitvmpq.a: $(CCMODULES:%=%mpq.o)
+libboxmpq.a: $(CCMODULES:%=%mpq.o)
 	ar rcs $@ $^
-libitvmpq_debug.a: $(CCMODULES:%=%mpq_debug.o)
+libboxmpq_debug.a: $(CCMODULES:%=%mpq_debug.o)
 	ar rcs $@ $^
 
 %mpq.o: %.c
@@ -137,9 +137,9 @@ libitvmpq_debug.a: $(CCMODULES:%=%mpq_debug.o)
 %mpq_debug.o: %.c
 	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_MPQ -c -o $@ $<
 
-libitvllr.a: $(CCMODULES:%=%llr.o)
+libboxllr.a: $(CCMODULES:%=%llr.o)
 	ar rcs $@ $^
-libitvllr_debug.a: $(CCMODULES:%=%llr_debug.o)
+libboxllr_debug.a: $(CCMODULES:%=%llr_debug.o)
 	ar rcs $@ $^
 
 %llr.o: %.c
@@ -147,9 +147,9 @@ libitvllr_debug.a: $(CCMODULES:%=%llr_debug.o)
 %llr_debug.o: %.c
 	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_LONGLONGRAT -c -o $@ $<
 
-libitvdbl.a: $(CCMODULES:%=%dbl.o)
+libboxdbl.a: $(CCMODULES:%=%dbl.o)
 	ar rcs $@ $^
-libitvdbl_debug.a: $(CCMODULES:%=%dbl_debug.o)
+libboxdbl_debug.a: $(CCMODULES:%=%dbl_debug.o)
 	ar rcs $@ $^
 
 %dbl.o: %.c
@@ -166,22 +166,22 @@ libpolka_caml.a: polka_caml.o
 libpolka_caml_debug.a: polka_caml_debug.o
 	ar rcs $@ $^
 
-libitv_caml.a: itv_caml.o
+libbox_caml.a: box_caml.o
 	ar rcs $@ $^
-libitv_caml_debug.a: itv_caml_debug.o
+libbox_caml_debug.a: box_caml_debug.o
 	ar rcs $@ $^
 
 #---------------------------------------
 # ML rules
 #---------------------------------------
 
-itv.cma: itv.cmo libitv_caml.a
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ itv.cmo \
-	-cclib "-L$(ITV_PREFIX)/lib -litv_caml"
+box.cma: box.cmo libbox_caml.a
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ box.cmo \
+	-cclib "-L$(BOX_PREFIX)/lib -lbox_caml"
 
-itv.cmxa: itv.cmx libitv_caml.a
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ itv.cmx \
-	-cclib "-L$(ITV_PREFIX)/lib -litv_caml"
+box.cmxa: box.cmx libbox_caml.a
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ box.cmx \
+	-cclib "-L$(BOX_PREFIX)/lib -lbox_caml"
 
 
 #---------------------------------------

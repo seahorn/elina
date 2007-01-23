@@ -5,8 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "box_config.h"
-#include "box_int.h"
+#include "box_internal.h"
 #include "box_representation.h"
 
 /* ********************************************************************** */

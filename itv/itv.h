@@ -1,15 +1,19 @@
 /* ********************************************************************** */
-/* itv_h: abstract lattice of (unidimensional) intervals */
+/* itv.h: abstract lattice of (unidimensional) intervals */
 /* ********************************************************************** */
 
 #ifndef _ITV_H_
 #define _ITV_H_
 
 #include <stdio.h>
-#include "box_config.h"
+#include "itv_config.h"
+#include "num.h"
+#include "bound.h"
+#include "ap_global0.h"
 
 /* Be cautious: interval [a,b] is represented by [-a,b].  This is because
    bound quantities are always rounded toward +infty */
+
 struct itv_t {
   bound_t inf; /* negation of the inf bound */
   bound_t sup; /* sup bound */
@@ -17,29 +21,21 @@ struct itv_t {
 typedef struct itv_t itv_t[1];
 typedef struct itv_t* itv_ptr;
 
-/* Internal datatype for quasilinear expressions */
-typedef struct box_linterm_t {
-  num_t num;
-  ap_dim_t dim;
-} box_linterm_t;
 
-typedef struct box_linexpr_t {
-  box_linterm_t* linterm;
-  size_t size;
-  itv_t cst;
-} box_linexpr_t;
+typedef struct itv_internal_t {
+  num_t canonicalize_num;
+  bound_t muldiv_bound;
+  bound_t mul_bound;
+  itv_t mul_itv;
+  itv_t mul_itv2;
+  ap_scalar_t* set_interval_scalar;
+} itv_internal_t;
 
-typedef struct box_lincons_t {
-  box_linexpr_t itvlinexpr;
-  ap_constyp_t constyp;
-} box_lincons_t;
+void itv_internal_init(itv_internal_t* intern);
+void itv_internal_clear(itv_internal_t* intern);
 
-typedef struct box_lincons_array_t {
-  box_lincons_t* p;
-  size_t size;
-} box_lincons_array_t;
-
-#include "box_internal.h"
+itv_internal_t* itv_internal_alloc();
+void itv_internal_free(itv_internal_t* intern);
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,16 +60,16 @@ static inline void itv_set_top(itv_t a);
 static inline void itv_swap(itv_t a, itv_t b);
 
 /* Normalization and tests */
-bool itv_canonicalize(box_internal_t* intern,
+bool itv_canonicalize(itv_internal_t* intern,
 		      itv_t a, bool integer);
 static inline bool itv_is_top(const itv_t a);
-static inline bool itv_is_bottom(box_internal_t* intern,
-					 const itv_t a);
+static inline bool itv_is_bottom(itv_internal_t* intern,
+				 const itv_t a);
 static inline bool itv_is_leq(const itv_t a, const itv_t b);
 static inline bool itv_is_eq(const itv_t a, const itv_t b);
 
 /* Lattice operations */
-static inline bool itv_meet(box_internal_t* intern,
+static inline bool itv_meet(itv_internal_t* intern,
 				    itv_t a, const itv_t b, const itv_t c);
 static inline void itv_join(itv_t a, const itv_t b, const itv_t c);
 static inline void itv_widening(itv_t a, const itv_t b, const itv_t c);
@@ -81,83 +77,32 @@ static inline void itv_widening(itv_t a, const itv_t b, const itv_t c);
 /* Arithmetic operations */
 static inline 
 void itv_add(itv_t a, const itv_t b, const itv_t c);
-void itv_mul_num(box_internal_t* intern,
-		 itv_t a, const itv_t b, const num_t c);
-void itv_div_num(box_internal_t* intern,
-		 itv_t a, const itv_t b, const num_t c);
+void itv_mul(itv_internal_t* intern,
+	     itv_t a, const itv_t b, const itv_t c);
+void itv_mul_bound(itv_internal_t* intern,
+		   itv_t a, const itv_t b, const bound_t c);
+void itv_div_bound(itv_internal_t* intern,
+		   itv_t a, const itv_t b, const bound_t c);
 void itv_neg(itv_t a, const itv_t b);
+  
 
 /* Printing */
 int itv_snprint(char* s, size_t size, const itv_t a);
 void itv_fprint(FILE* stream, const itv_t a);
 
 /* Conversions */
-void num_set_scalar(num_t a, const ap_scalar_t* b, int round);
-void bound_set_scalar(num_t a, const ap_scalar_t* b, int round);
-void ap_scalar_set_num(ap_scalar_t* a, const num_t b, int round);
-void ap_scalar_set_bound(ap_scalar_t* a, const bound_t b, int round);
+int num_set_scalar(num_t a, const ap_scalar_t* b, int round);
+int bound_set_scalar(num_t a, const ap_scalar_t* b, int round);
+int ap_scalar_set_num(ap_scalar_t* a, const num_t b, int round);
+int ap_scalar_set_bound(ap_scalar_t* a, const bound_t b, int round);
 
-void itv_set_interval(box_internal_t* intern,
+void itv_set_interval(itv_internal_t* intern,
 		      itv_t a, const ap_interval_t* b);
 void ap_interval_set_itv(ap_interval_t* a, const itv_t b);
 
-bool itv_is_leq_interval(box_internal_t* intern,
-			 const itv_t a, const ap_interval_t* b);
-  
-void itv_mul_scalar(box_internal_t* intern,
-		    itv_t a,
-		    const itv_t b, const ap_scalar_t* c);
-void itv_div_scalar(box_internal_t* intern,
-		    itv_t a, 
-		    const itv_t b, const ap_scalar_t* c);
-
-void itv_mul_interval(box_internal_t* intern,
-		      itv_t a,
-		      const itv_t b,
-		      const ap_interval_t* c);
-
-/* ********************************************************************** */
-/* itvlinexpr, itvlincons, box_lincons_array */
-/* ********************************************************************** */
-
-void box_linexpr_init(box_linexpr_t* expr, size_t size);
-void box_linexpr_reinit(box_linexpr_t* expr, size_t size);
-void box_linexpr_clear(box_linexpr_t* expr);
-void box_linexpr_set(box_linexpr_t* a, const box_linexpr_t* b);
-
-void box_linexpr_set_linexpr(box_internal_t* intern,
-			    box_linexpr_t* expr, const ap_linexpr0_t* linexpr0);
-
-void box_lincons_set_lincons(box_internal_t* intern,
-			    box_lincons_t* cons, const ap_lincons0_t* lincons0);
-static inline
-void box_lincons_init(box_lincons_t* cons);
-void box_lincons_clear(box_lincons_t* cons);
-void box_lincons_set(box_lincons_t* a, const box_lincons_t* b);
-
-box_lincons_array_t box_lincons_array_make(size_t size);
-void box_lincons_array_clear(box_lincons_array_t* array);
-
-
-/* Iterator (Macro): use:
-   box_linexpr_ForeachLinterm(box_linexpr_t* e, size_t i, ap_dim_t d, num_t* pnum){
-     ..
-   }
-   where
-   - e is the inspected expression,
-   - i is the internal iterator (of type size_t or int)
-   - dim is the dimension of one linear term
-   - pnum is a pointer to the corresponding coefficient
-
-*/
-#define box_linexpr_ForeachLinterm(_p_e, _p_i, _p_d, _p_num) \
-  for ((_p_i)=0; \
-       (_p_i)<(_p_e)->size ? \
-	  ((_p_d) = (_p_e)->linterm[i].dim, \
-	   (_p_num) = &(_p_e)->linterm[i].num, \
-	   true) : \
-	 false; \
-       (_p_i)++)
+/* Return true if returned interval is a point */
+bool itv_set_coeff(itv_internal_t* intern,
+		   itv_t a, const ap_coeff_t* b);
 
 /* ********************************************************************** */
 /* Definition of inline functions */
@@ -215,8 +160,10 @@ static inline void itv_swap(itv_t a, itv_t b)
 { itv_t t; *t=*a;*a=*b;*b=*t; }
 
 static inline bool itv_is_top(const itv_t a)
-{ return bound_infty(a->inf) && bound_infty(a->sup); }
-static inline bool itv_is_bottom(box_internal_t* intern,
+{ 
+  return bound_infty(a->inf) && bound_infty(a->sup); 
+}
+static inline bool itv_is_bottom(itv_internal_t* intern,
 					 const itv_t a)
 {
   return itv_canonicalize(intern, *(itv_t*)(&a), false);
@@ -230,8 +177,8 @@ static inline bool itv_is_eq(const itv_t a, const itv_t b)
   return bound_equal(a->sup,b->sup) && bound_equal(a->inf,b->inf);
 }
 
-static inline bool itv_meet(box_internal_t* intern,
-				    itv_t a, const itv_t b, const itv_t c)
+static inline bool itv_meet(itv_internal_t* intern,
+			    itv_t a, const itv_t b, const itv_t c)
 {
   bound_min(a->sup,b->sup,c->sup);
   bound_min(a->inf,b->inf,c->inf);
@@ -266,10 +213,6 @@ static inline void itv_add_num(itv_t a, const itv_t b, const num_t c)
 {
   bound_add_num(a->sup,b->sup,c);
   bound_sub_num(a->inf,b->inf,c);
-}
-static inline
-void box_lincons_init(box_lincons_t* cons){
-  box_linexpr_init(&cons->itvlinexpr,0);
 }
 
 #ifdef __cplusplus

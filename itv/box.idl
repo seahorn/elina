@@ -1,0 +1,12 @@
+/* -*- mode: c -*- */
+
+quote(C,"#include \"box_internal.h\"")
+quote(C,"#include \"ap_manager.h\"")
+quote(C,"#include \"apron_caml.h\"")
+
+import "manager.idl";
+
+quote(MLMLI,"(** BOX: intervals abstract domain *)")
+
+quote(MLI,"\n(** Create an Box manager. *)")
+ap_manager_ptr box_manager_alloc();

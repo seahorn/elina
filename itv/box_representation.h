@@ -2,8 +2,10 @@
 /* box_representation.c: general management */
 /* ********************************************************************** */
 
-#include "box_config.h"
-#include "itv.h"
+#ifndef _BOX_REPRESENTATION_H_
+#define _BOX_REPRESENTATION_H_
+
+#include "box.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,4 +45,6 @@ box_t* box_deserialize_raw(ap_manager_t* man, void* ptr);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

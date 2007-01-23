@@ -2,8 +2,8 @@
 /* box_resize.c */
 /* ********************************************************************** */
 
+#include "box_internal.h"
 #include "box_resize.h"
-#include "box_int.h"
 
 box_t* box_add_dimensions(ap_manager_t* man,
 			  bool destructive, box_t* a,

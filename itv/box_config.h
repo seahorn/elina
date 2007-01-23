@@ -1,6 +1,6 @@
 
-#ifndef _ITV_CONFIG_H_
-#define _ITV_CONFIG_H_
+#ifndef _BOX_CONFIG_H_
+#define _BOX_CONFIG_H_
 
 #include "num.h"
 #include "bound.h"

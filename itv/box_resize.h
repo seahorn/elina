@@ -2,7 +2,10 @@
 /* box_resize.h */
 /* ********************************************************************** */
 
-#include "itv.h"
+#ifndef _BOX_RESIZE_H_
+#define _BOX_RESIZE_H_
+
+#include "box.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,3 +28,4 @@ box_t* box_permute_dimensions(ap_manager_t* man,
 }
 #endif
 
+#endif

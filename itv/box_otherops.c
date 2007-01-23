@@ -2,9 +2,8 @@
 /* box_otherops.c */
 /* ********************************************************************** */
 
+#include "box_internal.h"
 #include "box_otherops.h"
-#include "box_resize.h"
-#include "box_int.h"
 
 box_t* box_forget_array(ap_manager_t* man,
 			bool destructive,

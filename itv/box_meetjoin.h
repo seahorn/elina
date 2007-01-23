@@ -2,18 +2,15 @@
 /* box_meetjoin.h */
 /* ********************************************************************** */
 
-#include "box_config.h"
-#include "itv.h"
+#ifndef _BOX_MEETJOIN_H_
+#define _BOX_MEETJOIN_H_
+
+#include "box.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool box_meet_itvlincons(box_internal_t* intern,
-			 box_t* a, box_lincons_t* cons);
-void box_meet_box_lincons_array(box_internal_t* intern,
-			       box_t* a, box_lincons_array_t* array,
-			       size_t kmax);
 void box_add_ray(box_internal_t* intern,
 		 box_t* a, const ap_generator0_t* gen);
 
@@ -33,3 +30,4 @@ box_t* box_add_ray_array(ap_manager_t* man,
 }
 #endif
 
+#endif

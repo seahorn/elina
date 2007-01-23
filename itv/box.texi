@@ -3,57 +3,57 @@
 
 @c to be included from apron.texi
 
-The @sc{Itv} interval library is aimed to be used through
+The @sc{Box} interval library is aimed to be used through
 the APRON interface.
 
 It is a beta version, and may still contain important bugs.
 
 @menu
-* Use of Itv::             
-* Allocating Itv managers::  
+* Use of Box::             
+* Allocating Box managers::  
 @end menu
 
 @c ===================================================================
-@node Use of Itv, Allocating Itv managers,, Itv
-@subsection Use of Itv
+@node Use of Box, Allocating Box managers,, Box
+@subsection Use of Box
 @c ===================================================================
 
-To use @sc{Itv} in C, add
+To use @sc{Box} in C, add
 @example
-#include "itv.h"
+#include "box.h"
 @end example
-in your source file(s) and add @samp{-I$(ITV_PREFIX)/include} in the
+in your source file(s) and add @samp{-I$(BOX_PREFIX)/include} in the
 command line in your Makefile.
 
-You should also link your object files with the @sc{Itv} library
+You should also link your object files with the @sc{Box} library
 to produce an executable, by adding something like
-@samp{-L$(ITV_PREFIX)/li -litvmpq_debug} in the command line in your
+@samp{-L$(BOX_PREFIX)/li -lboxmpq_debug} in the command line in your
 Makefile.
 
 There are actually several variants of the library:
 @table @file
-@item libitvllr.a
+@item libboxllr.a
 The underlying representation for numbers is rationals based on
 @code{long long int} integers. This may cause overflows. These are
 currently not detected.
-@item libitvdbl.a
+@item libboxdbl.a
 The underlying representations for numbers is @code{double}. Overflows
 are not possible (we use infinite floating numbers), but currently the
 soundness is not ensured for all operations.
-@item libitvmpq.a
+@item libboxmpq.a
 The underlying representations for rationams is @code{mpq_t}, the
 multi-precision rationals from the GNU GMP library. Overflows are not
 possible any more, but huge numbers may appear.
 @end table
 
 Also, all library are available in debug mode
-(@samp{libitvmpq_debug.a}, ...).
+(@samp{libboxmpq_debug.a}, ...).
 
 @c ===================================================================
-@node Allocating Itv managers ,  , Use of Itv, Itv
-@subsection Allocating Itv managers
+@node Allocating Box managers ,  , Use of Box, Box
+@subsection Allocating Box managers
 @c ===================================================================
 
-@deftypefun ap_manager_t* itv_manager_alloc ()
-Allocate a APRON manager linked to the Itv library.
+@deftypefun ap_manager_t* box_manager_alloc ()
+Allocate a APRON manager linked to the Box library.
 @end deftypefun

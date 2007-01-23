@@ -2,20 +2,19 @@
 /* box_constructor.h: constructors */
 /* ********************************************************************** */
 
-#include "box_config.h"
-#include "box_int.h"
+#ifndef _BOX_CONSTRUCTOR_H_
+#define _BOX_CONSTRUCTOR_H_
+
+#include "box.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void box_bound_linexpr_internal(box_internal_t* intern,
-				itv_t itvinterval, 
-				const box_t* a, const ap_linexpr0_t* expr);
-void box_bound_itvlinexpr(box_internal_t* intern,
-			  itv_t itvinterval, 
-			  const box_t* a, const box_linexpr_t* expr);
-
+				itv_t itv,
+				const box_t* a, 
+				const ap_linexpr0_t* expr);
 box_t* box_bottom(ap_manager_t* man, size_t intdim, size_t realdim);
 box_t* box_top(ap_manager_t* man, size_t intdim, size_t realdim);
 box_t* box_of_box(ap_manager_t* man,
@@ -47,3 +46,4 @@ ap_interval_t** box_to_box(ap_manager_t* man, const box_t* a);
 }
 #endif
 
+#endif
