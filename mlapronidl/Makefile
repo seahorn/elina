@@ -60,7 +60,7 @@ IDLMODULEStex = ocamldoc.tex \
 Scalar.tex Interval.tex Coeff.tex \
 Dim.tex Linexpr0.tex Lincons0.tex Generator0.tex Manager.tex Abstract0.tex \
 Var.tex Environment.tex Linexpr1.tex Lincons1.tex Generator1.tex Abstract1.tex \
-Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Gmp_random.tex Itv.tex Polka.tex Oct.tex
+Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Gmp_random.tex Box.tex Polka.tex Oct.tex
 
 MLMODULES = $(IDLMODULES) apron_parser apron_lexer parser
 
@@ -167,7 +167,7 @@ mlapronidl.pdf: mlapronidl.dvi
 
 mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli)
 	$(OCAMLDOC) $(OCAMLINC) \
-	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(MLMODULES:%=%.mli) ../itv/itv.mli ../octagons/oct.mli ../newpolka/polka.mli  ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli
+	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli  ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli
 	latex mlapronidl
 	makeindex mlapronidl
 	latex mlapronidl
@@ -177,7 +177,7 @@ mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli)
 
 html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc
 	mkdir -p html
-	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(IDLMODULES:%=%.mli) parser.mli ../itv/itv.mli ../octagons/oct.mli ../newpolka/polka.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli 
+	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli 
 	cp -f index.html html
 
 #--------------------------------------------------------------
