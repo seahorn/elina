@@ -68,35 +68,35 @@ COMPILATION AND LINKING
 =======================
 
 To make things clearer, we assume an example file 'example.ml' which uses both
-NewPolka (convex polyhedra) and Itv (intervals) libraries, in their versions
+NewPolka (convex polyhedra) and Box (intervals) libraries, in their versions
 where integers (resp. rationals) are GMP integers (resp.  rationals). We assume
 that C and OCaml interface and library files are located in directory
 $APRON/lib.
 
 The native-code compilation command looks like
 
-ocamlopt -I $APRON/lib -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa itv.cmxa polka.cmxa -cclib "-lpolkag -litvmpq"
+ocamlopt -I $APRON/lib -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -lboxmpq"
 
 Comments:
 
 1. You need at least the libraries 'bigarray' (standard OCaml
   distribution), 'gmp', and 'apron' (standard APRON distribution),
   plus the one implementing an effective abstract domains: here,
-  'itv', and 'polka'.
+  'box', and 'polka'.
 
 2. The C libraries associated to those OCaml libraries
-  ('gmp_caml', 'itv_caml', ...)  are automatically looked for,
+  ('gmp_caml', 'box_caml', ...)  are automatically looked for,
   with the exception of the libraries implementing abstract
-  domains ('polkag', 'itvmpq'). The reason is that most of these
+  domains ('polkag', 'boxmpq'). The reason is that most of these
   libraries may be compiled with different internal
   representations and/or options, while their interface remains
   the same.
 
 The byte-code compilation process looks like
 
-ocamlc -I $APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma itv.cma polka.cma -cclib "-lpolkag -litvmpq"
+ocamlc -I $APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq"
  
-ocamlc -I $APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma itv.cma polka.cma -cclib "-lpolkag -litvmpq" example.ml
+ocamlc -I $APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq" example.ml
 
 Comments:
 1. One first build a custom bytecode interpreter that includes the
@@ -108,7 +108,7 @@ libraries can be disabled by the option '-noautolink' supported by
 both 'ocamlc' and 'ocamlopt' commands. For instance, the command
 for native-code compilation can alternatively looks like:
 
-ocamlopt -I $APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa itv.cmxa polka.cmxa -cclib "-lpolkag -polka_caml -litvmpq -litv_caml -lapron_caml -lapron -lgmp_caml -LGMP/lib -lgmp" 
+ocamlopt -I $APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -polka_caml -lboxmpq -lbox_caml -lapron_caml -lapron -lgmp_caml -LGMP/lib -lgmp" 
 
 The option '-verbose' helps to understand what is happening in
 case of problem.
