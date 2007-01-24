@@ -200,8 +200,6 @@ ap_manager_t* pk_manager_alloc(bool strict)
   funptr[AP_FUNID_MINIMIZE] = &poly_minimize;
   funptr[AP_FUNID_CANONICALIZE] = &poly_canonicalize;
   funptr[AP_FUNID_APPROXIMATE] = &poly_approximate;
-  funptr[AP_FUNID_IS_MINIMAL] = &poly_is_minimal;
-  funptr[AP_FUNID_IS_CANONICAL] = &poly_is_canonical;
   funptr[AP_FUNID_FPRINT] = &poly_fprint;
   funptr[AP_FUNID_FPRINTDIFF] = &poly_fprintdiff;
   funptr[AP_FUNID_FDUMP] = &poly_fdump;

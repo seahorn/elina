@@ -164,9 +164,6 @@ void ap_abstract1_approximate(ap_manager_t* man, ap_abstract1_t* a, int algorith
      The transformation may lose information.  The argument "algorithm"
      overrides the field algorithm of the structure of type foption_t
      associated to ap_abstract1_approximate (commodity feature). */
-
-tbool_t ap_abstract1_is_minimal(ap_manager_t* man, const ap_abstract1_t* a);
-tbool_t ap_abstract1_is_canonical(ap_manager_t* man, const ap_abstract1_t* a);
 @
 
 Les propriétés de la forme canonique ne sont pas encore bien

@@ -64,14 +64,6 @@ quote(MLI,"\n(** [approximate man abs alg] perform some transformation on the ab
 void ap_abstract0_approximate(ap_manager_ptr man, ap_abstract0_ptr a, int v)
   quote(dealloc,"I0_CHECK_EXC(man)");
 
-quote(MLI,"\n(** Is the value in minimal form ? *)")
-enum tbool_t ap_abstract0_is_minimal(ap_manager_ptr man, ap_abstract0_ptr a)
-  quote(dealloc,"I0_CHECK_EXC(man)");
-
-quote(MLI,"\n(** Is the value in canonical from ? *)")
-enum tbool_t ap_abstract0_is_canonical(ap_manager_ptr man, ap_abstract0_ptr a)
-  quote(dealloc,"I0_CHECK_EXC(man)");
-
 quote(MLMLI,"(* ============================================================ *)")
 quote(MLMLI,"(** {3 Printing} *)")
 quote(MLMLI,"(* ============================================================ *)")

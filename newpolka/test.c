@@ -1139,7 +1139,6 @@ void poly_test_check(manager_t* man, size_t intdim, size_t realdim,
   PRINT((printf("minimize\n")));
   p3 = poly_copy(man,p1);
   poly_minimize(man,p3);
-  assert(poly_is_minimal(man,p3)==tbool_true);
   assert(poly_is_canonical(man,p3)==tbool_false || poly_is_bottom(man,p3)==tbool_true);
   assert(poly_is_eq(man,p1,p3)==tbool_true);
   poly_free(man,p3);
@@ -1149,7 +1148,6 @@ void poly_test_check(manager_t* man, size_t intdim, size_t realdim,
   p3 = poly_copy(man,p1);
   poly_canonicalize(man,p3);
   assert(poly_is_eq(man,p1,p3)==tbool_true);
-  assert(poly_is_minimal(man,p3)==tbool_false || poly_is_bottom(man,p3)==tbool_true);
   assert(poly_is_canonical(man,p3)==tbool_true);
   poly_free(man,p3);
 

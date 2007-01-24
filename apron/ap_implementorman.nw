@@ -66,8 +66,6 @@ commoninterface to their default value (see documentation).
   funptr[fun_minimize] = &poly_minimize;
   funptr[fun_canonicalize] = &poly_canonicalize;
   funptr[fun_approximate] = &poly_approximate;
-  funptr[fun_is_minimal] = &poly_is_minimal;
-  funptr[fun_is_canonical] = &poly_is_canonical;
   funptr[fun_fprint] = &poly_fprint;
   funptr[fun_fprintdiff] = &poly_fprintdiff;
   funptr[fun_fdump] = &poly_fdump;

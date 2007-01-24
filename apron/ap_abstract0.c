@@ -590,26 +590,6 @@ void ap_abstract0_approximate(ap_manager_t* man, ap_abstract0_t* a, int n)
     ptr(man,a->value,n);
   }
 }
-tbool_t ap_abstract0_is_minimal(ap_manager_t* man, const ap_abstract0_t* a)
-{
-  if (ap_abstract0_checkman1(AP_FUNID_IS_MINIMAL,man,a)){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_MINIMAL];
-    return ptr(man,a->value);
-  }
-  else {
-    return tbool_top;
-  }
-}
-tbool_t ap_abstract0_is_canonical(ap_manager_t* man, const ap_abstract0_t* a)
-{
-  if (ap_abstract0_checkman1(AP_FUNID_IS_CANONICAL,man,a)){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_CANONICAL];
-    return ptr(man,a->value);
-  }
-  else {
-    return tbool_top;
-  }
-}
 
 /* ============================================================ */
 /* I.3 Printing */

@@ -104,10 +104,6 @@ void poly_approximate(ap_manager_t* man, poly_t* a, int algorithm);
      overrides the field algorithm of the structure of type foption_t
      associated to poly_approximate (commodity feature). */
 
-tbool_t poly_is_minimal(ap_manager_t* man, const poly_t* a);
-tbool_t poly_is_canonical(ap_manager_t* man, const poly_t* a);
-
-
 /* ============================================================ */
 /* I.3 Printing */
 /* ============================================================ */

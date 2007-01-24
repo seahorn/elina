@@ -19,8 +19,6 @@ quote(C, "\n\
 #define Funid_minimize    AP_FUNID_MINIMIZE\n\
 #define Funid_canonicalize    AP_FUNID_CANONICALIZE\n\
 #define Funid_approximate    AP_FUNID_APPROXIMATE\n\
-#define Funid_is_minimal    AP_FUNID_IS_MINIMAL\n\
-#define Funid_is_canonical    AP_FUNID_IS_CANONICAL\n\
 #define Funid_fprint    AP_FUNID_FPRINT\n\
 #define Funid_fprintdiff    AP_FUNID_FPRINTDIFF\n\
 #define Funid_fdump    AP_FUNID_FDUMP\n\
@@ -89,8 +87,6 @@ enum ap_funid_t {
   Funid_minimize,
   Funid_canonicalize,
   Funid_approximate,
-  Funid_is_minimal,
-  Funid_is_canonical,
   Funid_fprint,
   Funid_fprintdiff,
   Funid_fdump,
@@ -155,12 +151,6 @@ struct ap_funopt_t {
      - MIN_INT is most efficient available;
      - otherwise, no accuracy or speed meaning
   */
-  int approx_before;
-  int approx_after;
-  /* Related to the notion of approximation/reduction.
-     Indicates which kind of "approximation" may be performed on the
-     argument(s) before the algorithm, and on the result delivered
-     by the algorithm. 0 is default behaviour. */
   unsigned int timeout; /* unit !? */
   /* Above the given computation time, the function may abort with the
      exception flag flag_time_out on.
@@ -234,8 +224,6 @@ let string_of_funid = function\n\
 | Funid_minimize -> \"Funid_minimize\"\n\
 | Funid_canonicalize -> \"Funid_canonicalize\"\n\
 | Funid_approximate -> \"Funid_approximate\"\n\
-| Funid_is_minimal -> \"Funid_is_minimal\"\n\
-| Funid_is_canonical -> \"Funid_is_canonical\"\n\
 | Funid_fprint -> \"Funid_fprint\"\n\
 | Funid_fprintdiff -> \"Funid_fprintdiff\"\n\
 | Funid_fdump -> \"Funid_fdump\"\n\

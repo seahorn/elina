@@ -142,17 +142,6 @@ void box_approximate(ap_manager_t* man, box_t* a, int algorithm)
   return;
 }
 
-tbool_t box_is_minimal(ap_manager_t* man, const box_t* a)
-{
-  man->result.flag_exact = tbool_true;
-  return tbool_true;
-}
-tbool_t box_is_canonical(ap_manager_t* man, const box_t* a)
-{
-  man->result.flag_exact = tbool_true;
-  return tbool_true;
-}
-
 /* ********************************************************************** */
 /* 3. Printing */
 /* ********************************************************************** */

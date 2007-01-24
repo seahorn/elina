@@ -76,8 +76,6 @@ ap_manager_t* box_manager_alloc()
   funptr[AP_FUNID_MINIMIZE] = &box_minimize;
   funptr[AP_FUNID_CANONICALIZE] = &box_canonicalize;
   funptr[AP_FUNID_APPROXIMATE] = &box_approximate;
-  funptr[AP_FUNID_IS_MINIMAL] = &box_is_minimal;
-  funptr[AP_FUNID_IS_CANONICAL] = &box_is_canonical;
   funptr[AP_FUNID_FPRINT] = &box_fprint;
   funptr[AP_FUNID_FPRINTDIFF] = &box_fprintdiff;
   funptr[AP_FUNID_FDUMP] = &box_fdump;

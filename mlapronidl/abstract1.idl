@@ -71,19 +71,11 @@ val canonicalize : Manager.t -> t -> unit\n\
 (** [approximate man abs alg] perform some transformation on the abstract value, guided by the argument [alg]. The transformation may lose information.  The argument [alg] overrides the field algorithm of the structure of type [Manager.funopt] associated to ap_abstract0_approximate (commodity feature).*)
 val approximate : Manager.t -> t -> 'a -> int -> unit\n\
 \n\
-(** Is the value in minimal form ? *)
-val is_minimal : Manager.t -> t -> Manager.tbool_t\n\
-\n\
-(** Is the value in canonical from ? *)
-val is_canonical : Manager.t -> t -> Manager.tbool_t\n\
-\n\
 ")
 quote(ML,"\n\
 let minimize man x = Abstract0.minimize man x.abstract0\n\
 let canonicalize man x = Abstract0.canonicalize man x.abstract0\n\
 let approximate man x n = Abstract0.approximate man x.abstract0\n\
-let is_minimal man x = Abstract0.is_minimal man x.abstract0\n\
-let is_canonical man x = Abstract0.is_canonical man x.abstract0\n\
 ")
 
 quote(MLMLI,"(* ============================================================ *)")

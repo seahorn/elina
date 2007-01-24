@@ -100,8 +100,6 @@ typedef enum ap_funid_t {
   AP_FUNID_MINIMIZE,
   AP_FUNID_CANONICALIZE,
   AP_FUNID_APPROXIMATE,
-  AP_FUNID_IS_MINIMAL,
-  AP_FUNID_IS_CANONICAL,
   AP_FUNID_FPRINT,
   AP_FUNID_FPRINTDIFF,
   AP_FUNID_FDUMP,
@@ -258,12 +256,6 @@ typedef struct ap_funopt_t {
      - MIN_INT is most efficient available;
      - otherwise, no accuracy or speed meaning
   */
-  int approx_before;
-  int approx_after;
-  /* Related to the notion of approximation/reduction.
-     Indicates which kind of "approximation" may be performed on the
-     argument(s) before the algorithm, and on the result delivered
-     by the algorithm. 0 is default behaviour. */
   size_t timeout; /* unit !? */
   /* Above the given computation time, the function may abort with the
      exception flag flag_time_out on.

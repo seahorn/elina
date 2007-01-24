@@ -18,8 +18,6 @@ const char* ap_name_of_funid[AP_FUNID_SIZE2] = {
   "minimize",
   "canonicalize",
   "approximate",
-  "is_minimal",
-  "is_canonical",
   "print",
   "printdiff",
   "dump",
@@ -81,8 +79,6 @@ const char* ap_name_of_exception[AP_EXC_SIZE] = {
 void ap_funopt_init(ap_funopt_t* opt)
 {
   opt->algorithm = 0;
-  opt->approx_before = 0;
-  opt->approx_after = 0;
   opt->timeout = 0;
   opt->max_object_size = 0;
   opt->flag_exact_wanted = false;

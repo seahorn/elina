@@ -704,7 +704,6 @@ void poly_approximate(ap_manager_t* man, poly_t* po, int algorithm)
 /* Is the polyhedron in a minimal representation ? */
 tbool_t poly_is_minimal(ap_manager_t* man, const poly_t* po)
 {
-  pk_init_from_manager(man,AP_FUNID_IS_MINIMAL);
   if ( (!po->C && !po->F) ||
        (po->status & poly_status_minimal) )
     return tbool_true;
@@ -720,25 +719,19 @@ tbool_t poly_is_canonical(ap_manager_t* man, const poly_t* po)
 {
   tbool_t res;
 
-  pk_init_from_manager(man,AP_FUNID_IS_CANONICAL);
   if (!po->C && !po->F)
     res = tbool_true;
   else if (!po->C || !po->F)
     res = tbool_false;
   else {
-    if (man->option.funopt[AP_FUNID_CANONICALIZE].algorithm <= 0){
+    pk_internal_t* pk = (pk_internal_t*)man->internal;
+    if (po->C->_sorted && po->F->_sorted &&
+	po->status & poly_status_consgauss &&
+	po->status & poly_status_gengauss &&
+	poly_is_conseps(pk,po))
       res = tbool_true;
-    }
-    else {
-      pk_internal_t* pk = (pk_internal_t*)man->internal;
-      if (po->C->_sorted && po->F->_sorted &&
-	  po->status & poly_status_consgauss &&
-	  po->status & poly_status_gengauss &&
-	  poly_is_conseps(pk,po))
-	res = tbool_true;
-      else
-	res = tbool_top;
-    }
+    else
+      res = tbool_top;
   }
   return res;
 }

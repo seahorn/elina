@@ -301,24 +301,6 @@ void oct_approximate(ap_manager_t* man, oct_t* a, int algorithm)
 			     "not implemented");
 }
 
-/* NOT IMPLEMENTED: always returns top */
-tbool_t oct_is_minimal(ap_manager_t* man, oct_t* a)
-{
-  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_MINIMAL,0);
-  ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,pr->funid,
-			     "not implemented");
-  return tbool_top;
-}
-
-/* NOT IMPLEMENTED: always returns top */
-tbool_t oct_is_canonical(ap_manager_t* man, oct_t* a)
-{
-  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_CANONICAL,0);
-  ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,pr->funid,
-			     "not implemented");
-  return tbool_top;
-}
-
 /* ============================================================ */
 /* Topological losure operation */
 /* ============================================================ */
@@ -378,8 +360,6 @@ ap_manager_t* oct_manager_alloc(void)
   man->funptr[AP_FUNID_MINIMIZE] = &oct_minimize;
   man->funptr[AP_FUNID_CANONICALIZE] = &oct_canonicalize;
   man->funptr[AP_FUNID_APPROXIMATE] = &oct_approximate;
-  man->funptr[AP_FUNID_IS_MINIMAL] = &oct_is_minimal;
-  man->funptr[AP_FUNID_IS_CANONICAL] = &oct_is_canonical;
   man->funptr[AP_FUNID_FPRINT] = &oct_fprint;
   man->funptr[AP_FUNID_FPRINTDIFF] = &oct_fprintdiff;
   man->funptr[AP_FUNID_FDUMP] = &oct_fdump;

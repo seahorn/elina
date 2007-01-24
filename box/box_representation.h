@@ -27,9 +27,6 @@ size_t box_size(ap_manager_t* man, const box_t* a);
 void box_minimize(ap_manager_t* man, const box_t* a);
 void box_canonicalize(ap_manager_t* man, const box_t* a);
 void box_approximate(ap_manager_t* man, box_t* a, int algorithm);
-tbool_t box_is_minimal(ap_manager_t* man, const box_t* a);
-tbool_t box_is_canonical(ap_manager_t* man, const box_t* a);
-
 
 /* 3. Printing */
 void box_print(FILE* stream,

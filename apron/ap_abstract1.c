@@ -241,14 +241,6 @@ void ap_abstract1_approximate(ap_manager_t* man, ap_abstract1_t* a, int algorith
   ap_abstract0_approximate(man,a->abstract0, algorithm);
 }
 
-tbool_t ap_abstract1_is_minimal(ap_manager_t* man, const ap_abstract1_t* a){
-  return ap_abstract0_is_minimal(man,a->abstract0);
-}
-tbool_t ap_abstract1_is_canonical(ap_manager_t* man, const ap_abstract1_t* a){
-  return ap_abstract0_is_canonical(man,a->abstract0);
-}
-
-
 /* ============================================================ */
 /* I.3 Printing */
 /* ============================================================ */

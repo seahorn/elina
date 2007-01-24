@@ -203,9 +203,6 @@ involved in the reduction process.
 @item                           @tab --
 @tab Do nothing
 
-@item is_minimal
-@item is_canonical
-
 @item
 @item fprint                    @tab
 @tab Require canonicalization.
