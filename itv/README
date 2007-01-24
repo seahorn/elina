@@ -1,0 +1,29 @@
+
+# This file is part of the APRON Library, released under LGPL
+# license.
+
+# Please read the COPYING file packaged in the distribution
+
+This package is an interval library for use for various abstract domains.
+It requires APRON package.
+
+REQUIREMENTS
+============
+For the C interface:
+
+GMP library (tested with version 4.0 and up)
+NUM "library" (a set of header files)
+APRON library
+
+INSTALLATION
+============
+
+type 'make', and then 'make install' 
+
+The library is named libitvmpq.a, libitvllr.a, libitvdbl.a (and
+libitvmpq_debug.a, ...).
+
+mpq, llr, dbl, stands for mpq_t, rationals on long long int, and double, which
+indicates the underlying representation of numbers.
+
+The include files to consider are itv.h and itv_linexpr.h
