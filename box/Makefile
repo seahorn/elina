@@ -40,17 +40,17 @@ CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 ICFLAGS = \
 -I$(GMP_PREFIX)/include  \
 -I../num \
+-I../itv \
 -I../apron \
 -I../mlgmpidl \
 -I../mlapronidl \
 -Wall -Wconversion -Winline -Wimplicit-function-declaration \
--O0 -g -DNDEBUG -std=c99
+-O3 -g -DNDEBUG -std=c99
 
 # Use XCFLAGS to specify machine-dependent compilation flags.
 XCFLAGS =
 
 # For debugging purpose
-CFLAGS = $(OPTFLAGS) -DNDEBUG
 CFLAGS_DEBUG = -O0 -g -UNDEBUG
 CFLAGS_PROF = -g -pg
 
@@ -63,8 +63,8 @@ OCAMLOPTFLAGS = -inline 20
 # Files
 #---------------------------------------
 
-CCMODULES = itv box_internal box_representation box_constructor box_meetjoin box_assign box_resize box_otherops #box_int box
-CCSRC = box_config.h box_int.h box.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
+CCMODULES = box_internal box_representation box_constructor box_meetjoin box_assign box_resize box_otherops 
+CCSRC = box_config.h box.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = box.h
 CCBIN_TO_INSTALL = 
@@ -128,7 +128,7 @@ dist: $(CCSRC) Makefile sedscript_caml box.texi box.idl box.ml box.mli box_caml.
 #-----------------------------------
 
 libboxmpq.a: $(CCMODULES:%=%mpq.o)
-	ar rcs $@ $^
+	ar rcs $@ $^ ../itv/libitvmpq.a
 libboxmpq_debug.a: $(CCMODULES:%=%mpq_debug.o)
 	ar rcs $@ $^
 
@@ -177,11 +177,11 @@ libbox_caml_debug.a: box_caml_debug.o
 
 box.cma: box.cmo libbox_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ box.cmo \
-	-cclib "-L$(BOX_PREFIX)/lib -lbox_caml"
+	-ccopt "-L$(BOX_PREFIX)/lib" -cclib "-lbox_caml"
 
 box.cmxa: box.cmx libbox_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ box.cmx \
-	-cclib "-L$(BOX_PREFIX)/lib -lbox_caml"
+	-ccopt "-L$(BOX_PREFIX)/lib" -cclib "-lbox_caml"
 
 
 #---------------------------------------
@@ -219,7 +219,6 @@ manager.idl: ../mlapronidl/manager.idl
 %.o: %.c
 	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include $(ICFLAGS) $(XCFLAGS) -DNUM_MPQ -c -o $@ $<
 %_debug.o: %.c
-
 	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_MPQ -c -o $@ $<
 
 #-----------------------------------

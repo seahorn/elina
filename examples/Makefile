@@ -5,15 +5,12 @@ CC = gcc
 ICFLAGS = \
 -I$(GMP_PREFIX)/include \
 -I$(APRON_PREFIX)/include \
--I$(NUM_PREFIX)/include \
--I$(POLKA_PREFIX)/include \
 -Wall -Wconversion -Winline -Wimplicit-function-declaration \
 -std=c99
 
 LCFLAGS = \
 -L$(GMP_PREFIX)/lib \
--L$(APRON_PREFIX)/lib \
--L$(POLKA_PREFIX)/lib
+-L$(APRON_PREFIX)/lib 
 
 CFLAGS = $(ICFLAGS) -O3 -DNDEBUG
 CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG
@@ -24,21 +21,21 @@ OCAMLOPT = ocamlopt.opt
 
 OCAMLINC = \
 -I $(MLGMPIDL_PREFIX)/lib \
--I $(MLAPRONIDL_PREFIX)/lib \
--I $(POLKA_PREFIX)/lib \
--I $(BOX_PREFIX)/lib
+-I $(MLAPRONIDL_PREFIX)/lib 
 
 OCAMLFLAGS = $(OCAMLINC)
 
 OCAMLLDFLAGS = \
-bigarray.cma gmp.cma apron.cma box.cma polka.cma \
--cclib "$(LCFLAGS) -L$(BOX_PREFIX)/lib -lboxmpq_debug" \
--cclib "-L$(POLKA_PREFIX)/lib -lpolkag_debug" 
+-ccopt "$(LCFLAGS)" \
+bigarray.cma gmp.cma apron.cma \
+box.cma -cclib "-lboxmpq_debug -litvmpq_debug -lapron" \
+polka.cma -cclib "-lpolkag_debug"
 
 OCAMLOPTLDFLAGS = \
-bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa \
--cclib "$(LCFLAGS) -L$(BOX_PREFIX)/lib -lboxmpq_debug" \
--cclib "-L$(POLKA_PREFIX)/lib -lpolkag_debug" 
+-ccopt "$(LCFLAGS)" \
+bigarray.cmxa gmp.cmxa apron.cmxa \
+box.cmxa -cclib "-lboxmpq_debug -litvmpq_debug -lapron" \
+polka.cmxa -cclib "-lpolkag_debug"
 
 all: C ml
 
@@ -63,16 +60,10 @@ mlexample%g.opt: mlexample%.cmx
 	$(OCAMLC) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime boxpolkarung -o $@ $<
 
 boxpolkarung:
-	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ \
-	bigarray.cma gmp.cma apron.cma box.cma polka.cma \
-	-cclib "$(LCFLAGS) -L$(BOX_PREFIX)/lib -lboxmpq_debug" \
-	-cclib "-L$(POLKA_PREFIX)/lib -lpolkag_debug" 
+	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ $(OCAMLLDFLAGS)
 
 boxpolkatopg:
-	ocamlmktop $(OCAMLINC) -verbose -custom -o $@ \
-	bigarray.cma gmp.cma apron.cma box.cma polka.cma \
-	-cclib "$(LCFLAGS) -L$(BOX_PREFIX)/lib -lboxmpq_debug" \
-	-cclib "-L$(POLKA_PREFIX)/lib -lpolkag_debug" 
+	ocamlmktop $(OCAMLINC) -verbose -custom -o $@ $(OCAMLLDFLAGS)
 
 %.cmo: %.ml
 	$(OCAMLC) $(OCAMLFLAGS) -c -o $@ $<

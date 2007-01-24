@@ -29,15 +29,15 @@
    meet_lincons_array operations.
 */
 void*
-ap_abstract0_generic_of_lincons_array(ap_manager_t* man,
-				      size_t intdim, size_t realdim,
-				      const ap_lincons0_array_t* array)
+ap_generic_of_lincons_array(ap_manager_t* man,
+			    size_t intdim, size_t realdim,
+			    const ap_lincons0_array_t* array)
 {
   void* (*top)(ap_manager_t*,...) = man->funptr[AP_FUNID_TOP];
   void* (*meet_lincons_array)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_LINCONS_ARRAY];
 
   void* res;
-
+  
   res = top(man,intdim,realdim);
   res = meet_lincons_array(man,true,res,array);
   return res;
@@ -52,9 +52,9 @@ ap_abstract0_generic_of_lincons_array(ap_manager_t* man,
    operations.
 */
 void*
-ap_abstract0_generic_meet_array(ap_manager_t* man,
-				const void** tab,
-				size_t size)
+ap_generic_meet_array(ap_manager_t* man,
+		      const void** tab,
+		      size_t size)
 {
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
   void* (*meet)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET];
@@ -84,9 +84,9 @@ ap_abstract0_generic_meet_array(ap_manager_t* man,
    operations.
 */
 void*
-ap_abstract0_generic_join_array(ap_manager_t* man,
-				const void** tab,
-				size_t size)
+ap_generic_join_array(ap_manager_t* man,
+		      const void** tab,
+		      size_t size)
 {
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
   void* (*join)(ap_manager_t*,...) = man->funptr[AP_FUNID_JOIN];
@@ -137,14 +137,14 @@ ap_abstract0_generic_join_array(ap_manager_t* man,
 
 static
 void*
-ap_abstract0_generic_asssub_linexpr_array(bool assign,
-					  ap_manager_t* man,
-					  bool destructive,
-					  void* abs,
-					  const ap_dim_t* tdim,
-					  const ap_linexpr0_t*const* texpr,
-					  size_t size,
-					  const void* dest)
+ap_generic_asssub_linexpr_array(bool assign,
+				ap_manager_t* man,
+				bool destructive,
+				void* abs,
+				const ap_dim_t* tdim,
+				const ap_linexpr0_t*const* texpr,
+				size_t size,
+				const void* dest)
 {
   tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
@@ -282,18 +282,18 @@ ap_abstract0_generic_asssub_linexpr_array(bool assign,
    operations.
 */
 void*
-ap_abstract0_generic_assign_linexpr_array(ap_manager_t* man,
-					  bool destructive,
-					  void* abs,
-					  const ap_dim_t* tdim,
-					  const ap_linexpr0_t*const* texpr,
-					  size_t size,
-					  const void* dest)
+ap_generic_assign_linexpr_array(ap_manager_t* man,
+				bool destructive,
+				void* abs,
+				const ap_dim_t* tdim,
+				const ap_linexpr0_t*const* texpr,
+				size_t size,
+				const void* dest)
 {
-  return ap_abstract0_generic_asssub_linexpr_array(true,
-						   man, destructive,
-						   abs, tdim, texpr, size,
-						   dest);
+  return ap_generic_asssub_linexpr_array(true,
+					 man, destructive,
+					 abs, tdim, texpr, size,
+					 dest);
 }
 
 /*
@@ -313,16 +313,16 @@ ap_abstract0_generic_assign_linexpr_array(ap_manager_t* man,
    operations.
 */
 void*
-ap_abstract0_generic_substitute_linexpr_array(ap_manager_t* man,
-					      bool destructive,
-					      void* abs,
-					      const ap_dim_t* tdim,
-					      const ap_linexpr0_t*const* texpr,
-					      size_t size,
-					      const void* dest)
+ap_generic_substitute_linexpr_array(ap_manager_t* man,
+				    bool destructive,
+				    void* abs,
+				    const ap_dim_t* tdim,
+				    const ap_linexpr0_t*const* texpr,
+				    size_t size,
+				    const void* dest)
 {
-  return ap_abstract0_generic_asssub_linexpr_array(false,
-						   man, destructive,
-						   abs, tdim, texpr, size,
-						   dest);
+  return ap_generic_asssub_linexpr_array(false,
+					 man, destructive,
+					 abs, tdim, texpr, size,
+					 dest);
 }

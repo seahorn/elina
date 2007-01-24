@@ -13,7 +13,7 @@
 #endif
 #include <caml/camlidlruntime.h>
 
-#include "box_internal.h"
+#include "box.h"
 #include "ap_manager.h"
 #include "apron_caml.h"
 extern int camlidl_ml2c_manager_enum_tbool_t(value);

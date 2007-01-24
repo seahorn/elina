@@ -6,6 +6,7 @@ all: c ml
 c:
 	(cd apron; make all)
 	(cd num; make all)
+	(cd itv; make all)
 	(cd newpolka; make allg)
 	(cd box; make all)
 	(cd octagons; make allQg allFd)
@@ -22,6 +23,7 @@ install:
 	(cd mlgmpidl; make install)
 	(cd mlapronidl; make install)
 	(cd num; make install)
+	(cd itv; make install)
 	(cd newpolka; make install)
 	(cd box; make install)
 	(cd octagons; make install)
@@ -31,6 +33,7 @@ clean:
 	(cd mlgmpidl; make clean)
 	(cd mlapronidl; make clean)
 	(cd num; make clean)
+	(cd itv; make clean)
 	(cd box; make clean)
 	(cd newpolka; make clean)
 	(cd octagons; make clean)
@@ -41,6 +44,7 @@ mostlyclean: clean
 	(cd apron; make mostlyclean)
 	(cd mlgmpidl; make mostlyclean)
 	(cd mlapronidl; make mostlyclean)
+	(cd itv; make mostlyclean)
 	(cd box; make mostlyclean)
 	(cd newpolka; make mostlyclean)
 
@@ -50,6 +54,7 @@ distclean:
 	(cd mlgmpidl; make distclean)
 	(cd mlapronidl; make distclean)
 	(cd num; make distclean)
+	(cd itv; make distclean)
 	(cd box; make distclean)
 	(cd newpolka; make distclean)
 	(cd octagons; make distclean)
@@ -65,7 +70,7 @@ doc:
 
 PKGNAME  = apron-0.9.4
 PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model Changes
-PKGDIRS  = apron mlapronidl num mlgmpidl octagons box newpolka examples
+PKGDIRS  = apron mlapronidl num itv mlgmpidl octagons box newpolka examples
 
 dist:
 	$(MAKE) all

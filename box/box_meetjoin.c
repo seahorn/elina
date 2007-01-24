@@ -10,6 +10,8 @@
 #include "box_constructor.h"
 #include "box_meetjoin.h"
 
+#include "itv_linexpr.h"
+
 /* ============================================================ */
 /* Meet and Join */
 /* ============================================================ */
@@ -162,168 +164,16 @@ box_t* box_add_ray_array(ap_manager_t* man,
 /* Meet_lincons */
 /* ============================================================ */
 
-/* Internal datatype for quasilinear expressions */
-typedef struct linterm_t {
-  itv_t itv;
-  bool equality;
-  ap_dim_t dim;
-} linterm_t;
-
-typedef struct linexpr_t {
-  linterm_t* linterm;
-  size_t size;
-  itv_t cst;
-  bool equality;
-} linexpr_t;
-
-typedef struct lincons_t {
-  linexpr_t linexpr;
-  ap_constyp_t constyp;
-} lincons_t;
-
-/* Iterator (Macro): use:
-   linexpr_ForeachLinterm(itv_linexpr_t* e, size_t i, ap_dim_t d, itv_ptr pitv, bool equality){
-     ..
-   }
-   where
-   - e is the inspected expression,
-   - i is the internal iterator (of type size_t or int)
-   - dim is the dimension of one linear term
-   - pitv is a pointer to the corresponding coefficient
-   - equality indicates if the interval is actually a point
-
-*/
-#define linexpr_ForeachLinterm(_p_e, _p_i, _p_d, _p_itv, _p_equality)	\
-  for ((_p_i)=0; \
-       (_p_i)<(_p_e)->size ? \
-	  ((_p_d) = (_p_e)->linterm[i].dim, \
-	   (_p_itv) = (_p_e)->linterm[i].itv, \
-	   (_p_equality) = &(_p_e)->linterm[i].equality, \
-	   true) : \
-	 false; \
-       (_p_i)++)
-
-static
-void linexpr_reinit(linexpr_t* expr, size_t size)
-{
-  size_t i;
-  expr->linterm = realloc(expr->linterm,size*sizeof(linterm_t));
-
-  for (i=expr->size;i<size;i++){
-    itv_init(expr->linterm[i].itv);
-    expr->linterm[i].equality = true;
-  }
-  for  (i=size; i<expr->size; i++){
-    itv_clear(expr->linterm[i].itv);
-  }
-  expr->size = size;
-  return;
-}
-static
-void linexpr_init(linexpr_t* expr, size_t size)
-{
-  expr->linterm = NULL;
-  expr->size = 0;
-  itv_init(expr->cst);
-  expr->equality = true;
-  linexpr_reinit(expr,size);
-}
-static
-void linexpr_clear(linexpr_t* expr)
-{
-  size_t i;
-  if (expr->linterm){
-    for (i=0;i<expr->size;i++){
-      itv_clear(expr->linterm[i].itv);
-    }
-    free(expr->linterm);
-    expr->linterm = NULL;
-    expr->size = 0;
-  }
-  itv_clear(expr->cst);
-}
-static inline
-void lincons_clear(lincons_t* cons)
-{
-  linexpr_clear(&cons->linexpr);
-}
-static
-void linexpr_set_linexpr(box_internal_t* intern,
-			 linexpr_t* expr, const ap_linexpr0_t* linexpr0)
-{
-  size_t i,k,size;
-  ap_dim_t dim;
-  ap_coeff_t* coeff;
-
-  size=0;
-  ap_linexpr0_ForeachLinterm(linexpr0,i,dim,coeff){
-    size++;
-  }
-  linexpr_reinit(expr,size);
-  expr->equality = itv_set_coeff(intern->itv, expr->cst, &linexpr0->cst);
-  k = 0;
-  ap_linexpr0_ForeachLinterm(linexpr0,i,dim,coeff){
-    expr->linterm[k].dim = dim;
-    expr->linterm[k].equality = itv_set_coeff(intern->itv,
-					      expr->linterm[k].itv,
-					      coeff);
-    k++;
-  }
-}
-static inline
-void lincons_set_lincons(box_internal_t* intern,
-			 lincons_t* cons, const ap_lincons0_t* lincons0)
-{
-  linexpr_set_linexpr(intern, &cons->linexpr,lincons0->linexpr0);
-  cons->constyp = lincons0->constyp;
-}
-
-/* Evaluate an internal linear expression */
-static
-void bound_linexpr(box_internal_t* intern,
-		   itv_t itv,
-		   box_t* a,
-		   linexpr_t* expr)
-{
-  int i;
-  ap_dim_t dim;
-  itv_ptr pitv;
-  bool* peq;
-  assert(a->p);
-
-  itv_set(itv, expr->cst);
-  linexpr_ForeachLinterm(expr,i,dim,pitv,peq){
-    if (*peq){
-      if (num_sgn(pitv->sup)!=0){
-	itv_mul_bound(intern->itv,
-		      intern->meet_lincons_internal_itv,
-		      a->p[dim],
-		      pitv->sup);
-	itv_add(itv, itv, intern->meet_lincons_internal_itv);
-      }
-    }
-    else {
-      itv_mul(intern->itv,
-	      intern->meet_lincons_internal_itv,
-	      a->p[dim],
-	      pitv);
-      itv_add(itv, itv, intern->meet_lincons_internal_itv);
-    }
-    if (itv_is_top(itv))
-      break;
-  }
-}
-
 /* Meet of an abstract value with a constraint */
 bool box_meet_lincons_internal(box_internal_t* intern,
-			     box_t* a,
-			     lincons_t* cons)
+			       box_t* a,
+			       itv_lincons_t* cons)
 {
   size_t nbcoeffs,nbdims;
   ap_dim_t dim;
   int i;
   itv_ptr pitv;
-  linexpr_t* expr;
+  itv_linexpr_t* expr;
   bool *peq;
   bool equality,change,globalchange;
   bool exc;
@@ -344,16 +194,17 @@ bool box_meet_lincons_internal(box_internal_t* intern,
   nbcoeffs = 0;
   bound_set_int(intern->meet_lincons_internal_itv2->inf,0);
   bound_set_int(intern->meet_lincons_internal_itv2->sup,0);
-  linexpr_ForeachLinterm(expr,i,dim,pitv,peq){
+  itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq){
     /* 1. We decompose the expression e = ax+e' */
     /* We save the linterm */
     itv_swap(intern->meet_lincons_internal_itv2,pitv);
     equality = *peq;
     *peq = true;
     /* 2. evaluate e' */
-    bound_linexpr(intern,
-		  intern->meet_lincons_internal_itv3,
-		  a,expr);
+    itv_eval_itv_linexpr(intern->itv,
+			 intern->meet_lincons_internal_itv3,
+			 a->p,
+			 expr);
     change = false;
     if (!itv_is_top(intern->meet_lincons_internal_itv3)){
       if (equality){
@@ -514,12 +365,12 @@ void box_meet_lincons_array_internal(box_internal_t* intern,
 {
   size_t i,k;
   bool change;
-  lincons_t cons;
+  itv_lincons_t cons;
   
   if (kmax<1) kmax=2;
   
   /* We initialize stuff */
-  linexpr_init(&cons.linexpr,0);
+  itv_lincons_init(&cons);
 
   /* we possibly perform kmax passes */
   for (k=0;k<kmax;k++){
@@ -528,7 +379,7 @@ void box_meet_lincons_array_internal(box_internal_t* intern,
       if (array->p[i].constyp==AP_CONS_EQ ||
 	  array->p[i].constyp==AP_CONS_SUPEQ ||
 	  array->p[i].constyp==AP_CONS_SUP){
-	lincons_set_lincons(intern,&cons,&array->p[i]);
+	itv_lincons_set_ap_lincons0(intern->itv,&cons,&array->p[i]);
 	change = 
 	  box_meet_lincons_internal(intern,a,&cons)
 	  ||

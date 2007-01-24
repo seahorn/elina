@@ -43,6 +43,11 @@ MLAPRONIDL_PREFIX = $(APRON_PREFIX)
 NUM_PREFIX = $(APRON_PREFIX)
 # NUM_PREFIX =
 
+# Where to install and to find ITV ($(ITV)/include)
+#
+ITV_PREFIX = $(APRON_PREFIX)
+# ITV_PREFIX =
+
 # Where to install and to find POLKA 
 # ($(POLKA_PREFIX)/include, $(POLKA_PREFIX)/lib, $(POLKA_PREFIX)/bin)
 #

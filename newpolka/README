@@ -53,7 +53,7 @@ For use via APRON, the include files to consider is pk.h
 type 'make ml', and then 'make install' 
 
 The C part of the library is named libpolka_caml.a (and libpolka_caml_debug.a).
-The OCaml part is named polka.cmo (polka.cmx)
+The OCaml part is named polka.cma (polka.cmxa)
 
 You may also generate runtime and toplevel with
 'make polkarung', 'make polkatopg'

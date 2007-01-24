@@ -7,6 +7,7 @@
 
 #include "box_internal.h"
 #include "box_representation.h"
+#include "ap_generic.h"
 
 void box_bound_linexpr_internal(box_internal_t* intern,
 				itv_t itv, 
@@ -19,11 +20,11 @@ void box_bound_linexpr_internal(box_internal_t* intern,
   bool eq;
   assert(a->p);
 
-  itv_set_coeff(intern->itv, itv, &expr->cst);
+  itv_set_ap_coeff(intern->itv, itv, &expr->cst);
   ap_linexpr0_ForeachLinterm(expr,i,dim,coeff){
-    eq = itv_set_coeff(intern->itv,
-		       intern->bound_linexpr_internal_itv,
-		       coeff);
+    eq = itv_set_ap_coeff(intern->itv,
+			  intern->bound_linexpr_internal_itv,
+			  coeff);
     if (eq){
       if (num_sgn(intern->bound_linexpr_internal_itv->sup)!=0){
 	itv_mul_bound(intern->itv,
@@ -88,7 +89,7 @@ box_t* box_of_box(ap_manager_t* man,
   if (intdim+realdim!=0){
     box_init(a);
     for(i=0;i<intdim+realdim; i++){
-      itv_set_interval(intern->itv,a->p[i],tinterval[i]);
+      itv_set_ap_interval(intern->itv,a->p[i],tinterval[i]);
       exc = itv_canonicalize(intern->itv,a->p[i],i<intdim);
       if (exc) { box_set_bottom(a); break; }
     }
@@ -96,6 +97,13 @@ box_t* box_of_box(ap_manager_t* man,
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
   return a;
+}
+
+box_t* box_of_lincons_array(ap_manager_t* man,
+			    size_t intdim, size_t realdim,
+			    const ap_lincons0_array_t* array)
+{
+  return (box_t*)ap_generic_of_lincons_array(man,intdim,realdim,array);
 }
 
 /* ********************************************************************** */

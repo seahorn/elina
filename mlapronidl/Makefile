@@ -54,7 +54,7 @@ DVIPDF=dvipdf
 IDLMODULES = \
 scalar interval coeff \
 dim linexpr0 lincons0 generator0 manager abstract0 \
-var environment linexpr1 lincons1 generator1 abstract1 
+var environment linexpr1 lincons1 generator1 abstract1
 
 IDLMODULEStex = ocamldoc.tex \
 Scalar.tex Interval.tex Coeff.tex \
@@ -132,13 +132,13 @@ libapron_caml_debug.a: $(CCMODULES:%=%_debug.o)
 
 apron.cma: apron.cmo libapron_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ apron.cmo \
-	-cclib "-L$(MLAPRONIDL_PREFIX)/lib -lapron_caml" \
-	-cclib "-L$(APRON_PREFIX)/lib -lapron"
+	-ccopt "-L$(APRON_PREFIX)/lib -L$(MLAPRONIDL_PREFIX)/lib" \
+	-cclib "-lapron_caml" -cclib "-lapron"
 
 apron.cmxa: apron.cmx libapron_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ apron.cmx \
-	-cclib "-L$(MLAPRONIDL_PREFIX)/lib -lapron_caml" \
-	-cclib "-L$(APRON_PREFIX)/lib -lapron"
+	-ccopt "-L$(APRON_PREFIX)/lib -L$(MLAPRONIDL_PREFIX)/lib" \
+	-cclib "-lapron_caml" -cclib "-lapron"
 
 apron.cmo apron.cmi: $(MLOBJ) $(MLINT)
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -pack -o $@ $(MLOBJ)
@@ -177,7 +177,7 @@ mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli)
 
 html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc
 	mkdir -p html
-	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli 
+	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli
 	cp -f index.html html
 
 #--------------------------------------------------------------
