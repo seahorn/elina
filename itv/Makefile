@@ -141,6 +141,12 @@ libitvdbl_debug.a: $(CCMODULES:%=%dbl_debug.o)
 %dbl_debug.o: %.c
 	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_DOUBLE -c -o $@ $<
 
+testmpq: testmpq_debug.o libitvmpq_debug.a
+	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvmpq_debug -lapron_debug -lgmp -lmpfr -lm
+
+testllr: testllr_debug.o libitvllr_debug.a
+	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvllr_debug -lapron_debug -lgmp -lmpfr -lm
+
 #-----------------------------------
 # DEPENDENCIES
 #-----------------------------------

@@ -86,10 +86,13 @@ void itv_mul_bound(itv_internal_t* intern,
     if (a!=b){
       bound_mul(a->sup,b->inf,c);
       bound_mul(a->inf,b->sup,c);
+      bound_neg(a->sup,a->sup);
+      bound_neg(a->inf,a->inf);
     }
     else {
-      bound_set(intern->muldiv_bound,a->sup);
+      bound_neg(intern->muldiv_bound,a->sup);
       bound_mul(a->sup,a->inf,c);
+      bound_neg(a->sup,a->sup);
       bound_mul(a->inf,intern->muldiv_bound,c);
     }
   }
@@ -107,10 +110,13 @@ void itv_div_bound(itv_internal_t* intern,
     if (a!=b){
       bound_div(a->sup,b->inf,c);
       bound_div(a->inf,b->sup,c);
+      bound_neg(a->sup,a->sup);
+      bound_neg(a->inf,a->inf);
     }
     else {
-      bound_set(intern->muldiv_bound,a->sup);
+      bound_neg(intern->muldiv_bound,a->sup);
       bound_div(a->sup,a->inf,c);
+      bound_neg(a->sup,a->sup);
       bound_div(a->inf,intern->muldiv_bound,c);
     }
   }
@@ -213,7 +219,7 @@ void itv_muln(itv_internal_t* intern,
 	      const itv_t b,
 	      const itv_t c)
 {
-  assert(c!=a && c!=b && bound_sgn(c->inf)<=0);
+  assert(bound_sgn(c->sup)<=0);
 
   if (bound_sgn(b->inf)<=0){
     /* b is positive */
@@ -236,8 +242,6 @@ void itv_mul(itv_internal_t* intern,
 	     const itv_t b,
 	     const itv_t c)
 {
-  
-  assert(c!=a && c!=b);
   if (bound_sgn(c->inf)<=0){
     /* c is positive, */
     itv_mulp(intern,a,b,c);

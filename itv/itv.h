@@ -100,7 +100,7 @@ void itv_neg(itv_t a, const itv_t b);
 void itv_mul(itv_internal_t* intern,
 	     itv_t a, const itv_t b, const itv_t c);
 static inline
-void itv_add_num(itv_t a, const itv_t b, const num_t c);
+void itv_add_bound(itv_t a, const itv_t b, const num_t c);
 void itv_mul_bound(itv_internal_t* intern,
 		   itv_t a, const itv_t b, const bound_t c);
 void itv_div_bound(itv_internal_t* intern,
@@ -110,6 +110,8 @@ void itv_div_bound(itv_internal_t* intern,
 /* Printing */
 int itv_snprint(char* s, size_t size, const itv_t a);
 void itv_fprint(FILE* stream, const itv_t a);
+static inline
+void itv_print(const itv_t a);
 
 /* Conversions (not fully implemented) */
 /* round indicates if rounding mode is ceil (+1) or floor (-1) */
@@ -239,11 +241,18 @@ static inline void itv_add(itv_t a, const itv_t b, const itv_t c)
   bound_add(a->sup,b->sup,c->sup);
   bound_add(a->inf,b->inf,c->inf);
 }
-static inline void itv_add_num(itv_t a, const itv_t b, const num_t c)
+static inline void itv_add_bound(itv_t a, const itv_t b, const bound_t c)
 {
-  bound_add_num(a->sup,b->sup,c);
-  bound_sub_num(a->inf,b->inf,c);
+  bound_add(a->sup,b->sup,c);
+  bound_sub(a->inf,b->inf,c);
 }
+static inline void itv_sub_bound(itv_t a, const itv_t b, const bound_t c)
+{
+  bound_sub(a->sup,b->sup,c);
+  bound_add(a->inf,b->inf,c);
+}
+static inline void itv_print(const itv_t itv)
+{ itv_fprint(stdout,itv); }
 
 #ifdef __cplusplus
 }
