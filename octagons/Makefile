@@ -47,6 +47,7 @@ CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 ICFLAGS = \
 -I../newpolka \
 -I../mlgmpidl \
+-I$(MPFR_PREFIX)/include \
 -I$(GMP_PREFIX)/include \
 -I../apron \
 -I../mlapronidl \
