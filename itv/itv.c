@@ -11,7 +11,8 @@ void itv_internal_init(itv_internal_t* intern)
   bound_init(intern->mul_bound);
   itv_init(intern->mul_itv);
   itv_init(intern->mul_itv2);
-  intern->set_interval_scalar = ap_scalar_alloc();
+  intern->ap_conversion_scalar = ap_scalar_alloc();
+  bound_init(intern->ap_conversion_bound);
   itv_init(intern->eval_itv);
   itv_init(intern->eval_itv2);
 }
@@ -22,7 +23,8 @@ void itv_internal_clear(itv_internal_t* intern)
   bound_clear(intern->mul_bound);
   itv_clear(intern->mul_itv);
   itv_clear(intern->mul_itv2);
-  ap_scalar_free(intern->set_interval_scalar); intern->set_interval_scalar = NULL;
+  ap_scalar_free(intern->ap_conversion_scalar); intern->ap_conversion_scalar = NULL;
+  bound_clear(intern->ap_conversion_bound);
   itv_clear(intern->eval_itv);
   itv_clear(intern->eval_itv2);
 }
@@ -318,108 +320,81 @@ int itv_snprint(char* s, size_t size, const itv_t a)
 /* Conversions */
 /* ********************************************************************** */
 
-/* ====================================================================== */
-/* Numbers */
-/* ====================================================================== */
-
-int num_set_ap_scalar(num_t a, const ap_scalar_t* b, int round)
+bool itv_set_ap_scalar(itv_internal_t* intern,
+		       itv_t a, const ap_scalar_t* b)
 {
-  assert(!ap_scalar_infty(b));
-  switch(b->discr){
-  case AP_SCALAR_MPQ:
-    num_set_mpq(a,b->val.mpq);
-    return 0;
-    break;
-  case AP_SCALAR_DOUBLE:
-    num_set_double(a,b->val.dbl);
-    return 0;
-    break;
-  default:
-    abort();
-  }
-}
-int bound_set_ap_scalar(num_t a, const ap_scalar_t* b, int round)
-{
-  if (ap_scalar_infty(b)){
-    bound_set_infty(a);
-    return 0;
+  assert (ap_scalar_infty(b)==0);
+  bool exact = bound_set_ap_scalar(a->sup,b);
+  if (exact){
+    bound_neg(a->inf,a->sup);
+    return true;
   }
   else {
-    return num_set_ap_scalar(bound_numref(a),b,round);
+    ap_scalar_neg(intern->ap_conversion_scalar, b);
+    bound_set_ap_scalar(a->inf,intern->ap_conversion_scalar);
+    return false;
   }
 }
-int ap_scalar_set_num(ap_scalar_t* a, const num_t b, int round)
-{
-#if defined(NUM_DOUBLE)
-  ap_scalar_reinit(a,AP_SCALAR_DOUBLE);
-  a->val.dbl = *b;
-  return 0;
-#else
-  ap_scalar_reinit(a,AP_SCALAR_MPQ);
-  mpq_set_num(a->val.mpq,b);
-  return 0;
-#endif
-}
-int ap_scalar_set_bound(ap_scalar_t* a, const bound_t b, int round)
-{
-  if (bound_infty(b)){
-    ap_scalar_set_infty(a,1);
-    return 0;
-  }
-  else {
-    ap_scalar_reinit(a,AP_SCALAR_MPQ);
-    mpq_set_num(a->val.mpq,bound_numref(b));
-    return 0;
-  }
-}
-
-/* ====================================================================== */
-/* Intervals */
-/* ====================================================================== */
-
-void itv_set_ap_interval(itv_internal_t* intern,
+bool itv_set_ap_interval(itv_internal_t* intern,
 			 itv_t a, const ap_interval_t* b)
 {
-  ap_scalar_neg(intern->set_interval_scalar, b->inf);
-  bound_set_ap_scalar(a->inf,intern->set_interval_scalar,+1);
-  bound_set_ap_scalar(a->sup,b->sup,+1);
+  ap_scalar_neg(intern->ap_conversion_scalar, b->inf);
+  bool b1 = bound_set_ap_scalar(a->inf,intern->ap_conversion_scalar);
+  bool b2 = bound_set_ap_scalar(a->sup,b->sup);
+  return b1 && b2;
 }
-void ap_interval_set_itv(ap_interval_t* a, const itv_t b)
-{
-  ap_scalar_set_bound(a->inf,b->inf,+1);
-  ap_scalar_neg(a->inf,a->inf);
-  ap_scalar_set_bound(a->sup,b->sup,+1);
-}
-
-/* Return true if single point */
 bool itv_set_ap_coeff(itv_internal_t* intern,
 		      itv_t itv, const ap_coeff_t* coeff)
 {
   switch(coeff->discr){
   case AP_COEFF_SCALAR:
-    {
-      ap_scalar_t* scalar = coeff->val.scalar;
-      int sgn;
-      assert(!ap_scalar_infty(scalar));
- 
-      sgn = bound_set_ap_scalar(itv->sup,
-				scalar, +1);
-      if (sgn==0){
-	bound_neg(itv->inf,itv->sup);
-	return true;
-      }
-      else {
-	bound_set_ap_scalar(itv->inf, scalar, -1);
-	bound_neg(itv->inf,itv->inf);
-	return false;
-      }
-    }
+    return itv_set_ap_scalar(intern,itv,coeff->val.scalar);
     break;
   case AP_COEFF_INTERVAL:
-    itv_set_ap_interval(intern, itv, coeff->val.interval);
-    return false;
+    return itv_set_ap_interval(intern, itv, coeff->val.interval);
     break;
   default:
     abort();
   }
 }
+
+bool ap_interval_set_itv(itv_internal_t* intern,
+			 ap_interval_t* a, const itv_t b)
+{
+  bool b1 = ap_scalar_set_bound(a->inf,b->inf);
+  ap_scalar_neg(a->inf,a->inf);
+  bool b2 = ap_scalar_set_bound(a->sup,b->sup);
+  return b1 && b2;
+}
+bool ap_coeff_set_itv(itv_internal_t* intern,
+		      ap_coeff_t* a, const itv_t b)
+{
+  bool exact;
+  if (bound_infty(b->inf) || bound_infty(b->sup))
+    goto ap_coeff_set_itv_default;
+  bound_neg(intern->ap_conversion_bound, b->inf);
+  if (!bound_equal(intern->ap_conversion_bound, b->sup))
+    goto ap_coeff_set_itv_default;
+  exact = ap_scalar_set_bound(intern->ap_conversion_scalar, b->sup);
+  if (exact){
+    ap_coeff_set_scalar(a, intern->ap_conversion_scalar);
+    return true;
+  }
+  else {
+    ap_coeff_reinit(a,AP_COEFF_INTERVAL, 
+		    intern->ap_conversion_scalar->discr);
+    ap_scalar_set(a->val.interval->sup, intern->ap_conversion_scalar);
+    ap_scalar_set_bound(a->val.interval->inf, intern->ap_conversion_bound);
+    return false;
+  }
+ ap_coeff_set_itv_default:
+  ap_coeff_reinit(a,AP_COEFF_INTERVAL, 
+#if defined(NUM_NUMFLT)
+		  AP_SCALAR_DOUBLE
+#else
+		  AP_SCALAR_MPQ
+#endif
+		  );
+  return ap_interval_set_itv(intern,a->val.interval,b);
+}
+

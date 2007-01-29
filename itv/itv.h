@@ -34,7 +34,8 @@ typedef struct itv_internal_t {
   bound_t mul_bound;
   itv_t mul_itv;
   itv_t mul_itv2;
-  ap_scalar_t* set_interval_scalar;
+  ap_scalar_t* ap_conversion_scalar;
+  bound_t ap_conversion_bound;
   itv_t eval_itv;
   itv_t eval_itv2;
 } itv_internal_t;
@@ -113,29 +114,25 @@ void itv_fprint(FILE* stream, const itv_t a);
 static inline
 void itv_print(const itv_t a);
 
-/* Conversions (not fully implemented) */
-/* round indicates if rounding mode is ceil (+1) or floor (-1) */
-
-int num_set_ap_scalar(num_t a, const ap_scalar_t* b, int round);
-  /* Convert a non infinity ap_scalar_t into a num_t */
-int bound_set_ap_scalar(num_t a, const ap_scalar_t* b, int round);
-  /* Convert a ap_scalar_t into a bound_t */
-int ap_scalar_set_num(ap_scalar_t* a, const num_t b, int round);
-  /* Convert a num_t into a ap_scalar_t */
-int ap_scalar_set_bound(ap_scalar_t* a, const bound_t b, int round);
-  /* Convert a bound_t into a ap_scalar_t */
-
-void itv_set_ap_interval(itv_internal_t* intern,
+/* All these functions return true if the conversion is exact */
+bool itv_set_ap_scalar(itv_internal_t* intern,
+		       itv_t a, const ap_scalar_t* b);
+  /* Convert a ap_scalar_t into a itv_t.
+     Assumes the scalar is finite.
+     If it returns true, the interval is a single point */
+bool itv_set_ap_interval(itv_internal_t* intern,
 			 itv_t a, const ap_interval_t* b);
   /* Convert a ap_interval_t into a itv_t */
-void ap_interval_set_itv(ap_interval_t* a, const itv_t b);
-  /* Convert a itv_t into a ap_interval_t */
-
 bool itv_set_ap_coeff(itv_internal_t* intern,
 		      itv_t a, const ap_coeff_t* b);
-  /* Convert a ap_coeff_t into a itv_t.
+  /* Convert a ap_coeff_t into a itv_t. */
 
-     Return true if the returned interval is a point */
+bool ap_interval_set_itv(itv_internal_t* intern,
+			 ap_interval_t* a, const itv_t b);
+  /* Convert a itv_t into a ap_interval_t */
+bool ap_coeff_set_itv(itv_internal_t* intern,
+		      ap_coeff_t* a, const itv_t b);
+  /* Convert a itv_t into a ap_coeff_t */
 
 /* ********************************************************************** */
 /* Definition of inline functions */

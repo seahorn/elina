@@ -46,19 +46,22 @@ void itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
   size_t i,k,size;
   ap_dim_t dim;
   ap_coeff_t* coeff;
+  bool exact;
 
   size=0;
   ap_linexpr0_ForeachLinterm(linexpr0,i,dim,coeff){
     size++;
   }
   itv_linexpr_reinit(expr,size);
-  expr->equality = itv_set_ap_coeff(intern, expr->cst, &linexpr0->cst);
+  exact = itv_set_ap_coeff(intern, expr->cst, &linexpr0->cst);
+  expr->equality = exact && linexpr0->cst.discr==AP_COEFF_SCALAR;
   k = 0;
   ap_linexpr0_ForeachLinterm(linexpr0,i,dim,coeff){
     expr->linterm[k].dim = dim;
-    expr->linterm[k].equality = itv_set_ap_coeff(intern,
-						 expr->linterm[k].itv,
-						 coeff);
+    exact = itv_set_ap_coeff(intern,
+			     expr->linterm[k].itv,
+			     coeff);
+    expr->linterm[k].equality = exact && coeff->discr==AP_COEFF_SCALAR;
     k++;
   }
 }
@@ -117,7 +120,8 @@ void itv_eval_ap_linexpr0(itv_internal_t* intern,
 
   itv_set_ap_coeff(intern,itv, &expr->cst);
   ap_linexpr0_ForeachLinterm(expr,i,dim,pcoeff){
-    bool eq = itv_set_ap_coeff(intern,intern->eval_itv2,pcoeff);
+    bool exact = itv_set_ap_coeff(intern,intern->eval_itv2,pcoeff);
+    bool eq = exact && pcoeff->discr==AP_COEFF_SCALAR;
     if (eq){
       if (num_sgn(intern->eval_itv2->sup)!=0){
 	itv_mul_bound(intern,
