@@ -40,13 +40,13 @@ void itv_linexpr_clear(itv_linexpr_t* expr)
   }
   itv_clear(expr->cst);
 }
-void itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
+bool itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
 				 itv_linexpr_t* expr, const ap_linexpr0_t* linexpr0)
 {
   size_t i,k,size;
   ap_dim_t dim;
   ap_coeff_t* coeff;
-  bool exact;
+  bool res,exact;
 
   size=0;
   ap_linexpr0_ForeachLinterm(linexpr0,i,dim,coeff){
@@ -55,6 +55,7 @@ void itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
   itv_linexpr_reinit(expr,size);
   exact = itv_set_ap_coeff(intern, expr->cst, &linexpr0->cst);
   expr->equality = exact && linexpr0->cst.discr==AP_COEFF_SCALAR;
+  res = exact;
   k = 0;
   ap_linexpr0_ForeachLinterm(linexpr0,i,dim,coeff){
     expr->linterm[k].dim = dim;
@@ -62,14 +63,17 @@ void itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
 			     expr->linterm[k].itv,
 			     coeff);
     expr->linterm[k].equality = exact && coeff->discr==AP_COEFF_SCALAR;
+    res = res && exact;
     k++;
   }
+  return res;
 }
-void itv_lincons_set_ap_lincons0(itv_internal_t* intern,
+bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
 				 itv_lincons_t* cons, const ap_lincons0_t* lincons0)
 {
-  itv_linexpr_set_ap_linexpr0(intern, &cons->linexpr,lincons0->linexpr0);
+  bool exact = itv_linexpr_set_ap_linexpr0(intern, &cons->linexpr,lincons0->linexpr0);
   cons->constyp = lincons0->constyp;
+  return exact;
 }
 
 /* Evaluate an interval linear expression */
@@ -108,7 +112,7 @@ void itv_eval_itv_linexpr(itv_internal_t* intern,
 }
 
 /* Evaluate an interval linear expression */
-void itv_eval_ap_linexpr0(itv_internal_t* intern,
+bool itv_eval_ap_linexpr0(itv_internal_t* intern,
 			  itv_t itv,
 			  const itv_t* p,
 			  const ap_linexpr0_t* expr)
@@ -116,11 +120,14 @@ void itv_eval_ap_linexpr0(itv_internal_t* intern,
   int i;
   ap_dim_t dim;
   ap_coeff_t* pcoeff;
+  bool exact,res;
   assert(p);
 
-  itv_set_ap_coeff(intern,itv, &expr->cst);
+  exact = itv_set_ap_coeff(intern,itv, &expr->cst);
+  res = exact;
   ap_linexpr0_ForeachLinterm(expr,i,dim,pcoeff){
     bool exact = itv_set_ap_coeff(intern,intern->eval_itv2,pcoeff);
+    res = res && exact;
     bool eq = exact && pcoeff->discr==AP_COEFF_SCALAR;
     if (eq){
       if (num_sgn(intern->eval_itv2->sup)!=0){
@@ -141,5 +148,6 @@ void itv_eval_ap_linexpr0(itv_internal_t* intern,
     if (itv_is_top(itv))
       break;
   }
+  return res;
 }
 

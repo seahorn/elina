@@ -63,15 +63,19 @@ void itv_linexpr_clear(itv_linexpr_t* expr);
 static inline void itv_lincons_init(itv_lincons_t* cons);
 static inline void itv_lincons_clear(itv_lincons_t* cons);
 
-void itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
+bool itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
 				 itv_linexpr_t* expr, 
 				 const ap_linexpr0_t* linexpr0);
-  /* Convert a ap_linexpr0_t into a itv_linexpr_t */
+  /* Convert a ap_linexpr0_t into a itv_linexpr_t
 
-void itv_lincons_set_ap_lincons0(itv_internal_t* intern,
+     Return true if the conversion is exact */
+
+bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
 				 itv_lincons_t* cons, 
 				 const ap_lincons0_t* lincons0);
-  /* Convert a ap_lincons0_t into a itv_lincons_t */
+  /* Convert a ap_lincons0_t into a itv_lincons_t 
+
+     Return true if the conversion is exact */
 
 void itv_eval_itv_linexpr(itv_internal_t* intern,
 			  itv_t itv,
@@ -80,12 +84,14 @@ void itv_eval_itv_linexpr(itv_internal_t* intern,
   /* Evaluate the interval linear expression, using the array p[]
      associating intervals to dimensions */
 
-void itv_eval_ap_linexpr0(itv_internal_t* intern,
+bool itv_eval_ap_linexpr0(itv_internal_t* intern,
 			  itv_t itv,
 			  const itv_t* p,
 			  const ap_linexpr0_t* expr);
   /* Evaluate the interval linear expression, using the array p[]
-     associating intervals to dimensions */
+     associating intervals to dimensions.
+
+     Return true if all conversions were exact */
 
 
 /* ********************************************************************** */
