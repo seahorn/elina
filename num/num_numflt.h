@@ -20,6 +20,7 @@
 #endif
 
 #include "numflt.h"
+
 typedef numflt_t num_t;
 
 #define NUM_NUMFLT

@@ -6,8 +6,9 @@
 #define _NUM_H_
 
 #include <stdio.h>
-#include <gmp.h>
-#include <mpfr.h>
+
+#include "gmp.h"
+#include "mpfr.h"
 
 /* Be aware: 
    we erase the (obsolete) GMP function mpq_set_num */
@@ -142,6 +143,7 @@ static inline bool double_set_num(double* a, const num_t b);
   /* num -> double */
 
 /* Optimized versions */
+/* mpfr should have exactly the precision NUMFLT_MANT_DIG */
 static inline bool num_set_mpz_tmp(num_t a, const mpz_t b, mpfr_t mpfr);
 static inline bool num_set_mpq_tmp(num_t a, const mpq_t b, 
 				   mpz_t q, mpz_t r, mpfr_t mpfr);
@@ -150,6 +152,8 @@ static inline bool num_set_double_tmp(num_t a, double k, mpq_t mpq);
 static inline bool int_set_num_tmp(long int* a, const num_t b, 
 				   mpz_t q, mpz_t r);
 static inline bool mpz_set_num_tmp(mpz_t a, const num_t b, mpz_t mpz);
+
+/* mpfr should have exactly the precision DBL_MANT_DIG */
 static inline bool double_set_num_tmp(double* a, const num_t b, 
 				      mpq_t mpq, mpfr_t mpfr);
 

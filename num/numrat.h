@@ -5,7 +5,7 @@
 #ifndef _NUMRAT_H_
 #define _NUMRAT_H_
 
-#include <gmp.h>
+#include "gmp.h"
 #include "num_config.h"
 
 /* We assume that the basic NUMINT on which rational is built is properly
@@ -116,6 +116,7 @@ static inline bool double_set_numrat(double* a, const numrat_t b);
 static inline bool int_set_numrat_tmp(long int* a, const numrat_t b, 
 				      mpz_t q, mpz_t r);
 static inline bool mpz_set_numrat_tmp(mpz_t a, const numrat_t b, mpz_t mpz);
+/* mpfr should have exactly the precision 53 bits (DOUBLE_MANT_DIG) */
 static inline bool double_set_numrat_tmp(double* a, const numrat_t b, 
 					 mpq_t mpq, mpfr_t mpfr);
 static inline bool numrat_set_double_tmp(numrat_t a, double k, mpq_t mpq);

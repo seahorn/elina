@@ -5,7 +5,8 @@
 #ifndef _NUMFLT_H_
 #define _NUMFLT_H_
 
-#include <gmp.h>
+#include "gmp.h"
+#include "mpfr.h"
 #include "num_config.h"
 
 #if defined(NUMFLT_DOUBLE) || defined(NUMFLT_LONGDOUBLE)
@@ -116,6 +117,7 @@ static inline bool double_set_numflt(double* a, const numflt_t b);
   /* num -> double */
 
 /* Optimized versions */
+/* mpfr should have exactly the precision NUMFLT_MANT_DIG */
 static inline bool numflt_set_mpz_tmp(numflt_t a, const mpz_t b, mpfr_t mpfr);
 static inline bool numflt_set_mpq_tmp(numflt_t a, const mpq_t b, mpfr_t mpfr);
 

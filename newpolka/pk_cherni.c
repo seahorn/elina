@@ -487,7 +487,8 @@ Throw exception.
 int cherni_simplify(pk_internal_t* pk,
 		    matrix_t* con, matrix_t* ray, satmat_t* satf, size_t nbline)
 {
-  size_t i,j,nb,nbj;
+  size_t i,j;
+  long int nb,nbj;
   size_t nbeq,rank;
   int w;
   bitstring_t m;
@@ -558,7 +559,7 @@ int cherni_simplify(pk_internal_t* pk,
   /* remove trivially redundants inequalities (nb < nbcols-nbeq-2) */
   i = nbeq;
   while (i < nbcons){
-    nb = numint_get_int(con->p[i][0]);
+    int_set_numint(&nb, con->p[i][0]);
     if (nb < nbcols-nbeq-2){ /* redundant constraint */
       nbcons--;
       matrix_exch_rows(con, i,nbcons);
@@ -570,11 +571,11 @@ int cherni_simplify(pk_internal_t* pk,
   /* remove others redundants inequalities */
   i=nbeq;
   while (i < nbcons){
-    nb = numint_get_int(con->p[i][0]);
+    int_set_numint(&nb,con->p[i][0]);
     redundant = false;
     j = nbeq;
     while (j < nbcons){
-      nbj = numint_get_int(con->p[j][0]);
+      int_set_numint(&nbj,con->p[j][0]);
       if (nbj > nb){
 	/* does j saturates a strictly overset ? */
 	redundant = true;

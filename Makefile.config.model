@@ -4,6 +4,10 @@
 #
 GMP_PREFIX = 
 
+# Where to find MPFR ($(MPFR_PREFIX)/include, ($MPFR_PREFIX)/lib
+#
+MPFR_PREFIX = 
+
 # Where to find OCAML ($(CAML_PREFIX)/bin, $(CAML_PREFIX)/lib/ocaml, ...)
 #
 CAML_PREFIX =

@@ -11,8 +11,9 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-#include <gmp.h>
-#include <mpfr.h>
+
+#include "gmp.h"
+#include "mpfr.h"
 
 #include "num_config.h"
 

@@ -423,7 +423,7 @@ static inline void scalar_of_upper_bound(oct_internal_t* pr,
   else if (pr->man->option.scalar_discr==AP_SCALAR_DOUBLE) {
     /* use double */
     ap_scalar_reinit(r,AP_SCALAR_DOUBLE);
-    r->val.dbl = num_get_double(bound_numref(b));
+    double_set_num(&r->val.dbl,bound_numref(b));
     if (div2) r->val.dbl /= 2;
     if (num_to_double_approx || div2) pr->conv = 1;
   }
@@ -448,7 +448,7 @@ static inline void scalar_of_lower_bound(oct_internal_t* pr,
   else if (pr->man->option.scalar_discr==AP_SCALAR_DOUBLE) {
     /* use double */
     ap_scalar_reinit(r,AP_SCALAR_DOUBLE);
-    r->val.dbl = num_get_double(bound_numref(b));
+    double_set_num(&r->val.dbl,bound_numref(b));
     if (div2) r->val.dbl /= 2;
     r->val.dbl = -r->val.dbl;
     if (num_to_double_approx || div2) pr->conv = 1;

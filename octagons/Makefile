@@ -170,6 +170,7 @@ octtest%: liboct%.a oct_test%.o
 	-L. -loct$* \
 	-L../newpolka -lpolkag_debug \
 	-L../apron -lapron \
+	-L$(MPFR_PREFIX)/lib -lmpfr \
 	-L$(GMP_PREFIX)/lib -lgmp \
 	-lm
 

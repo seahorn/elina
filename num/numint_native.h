@@ -11,7 +11,8 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
-#include <gmp.h>
+
+#include "gmp.h"
 
 #include "num_config.h"
 /* Require C99 compliant compiler */

@@ -5,7 +5,7 @@
 #ifndef _NUMINT_H_
 #define _NUMINT_H_
 
-#include <gmp.h>
+#include "gmp.h"
 
 #include "num_config.h"
 

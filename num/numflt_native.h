@@ -11,19 +11,22 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-#include <gmp.h>
-#include <mpfr.h>
+#include <float.h>
+#include "gmp.h"
+#include "mpfr.h"
 #include "num_config.h"
 
 #if defined(NUMFLT_DOUBLE)
 typedef double numflt_native;
 #define NUMFLT_ZERO 0.0
 #define NUMFLT_ONE 1.0
+#define NUMFLT_MANT_DIG DBL_MANT_DIG
 
 #elif defined(NUMFLT_LONGDOUBLE)
 typedef long double numflt_native;
 #define NUMFLT_ZERO 0.0L
 #define NUMFLT_ONE 1.0L
+#define NUMFLT_MANT_DIG LDBL_MANT_DIG
 
 #else
 #error "HERE"
@@ -166,18 +169,22 @@ static inline bool mpz_fits_numflt(const mpz_t a)
   double k = mpz_get_d(a);
   return (fabs(k)+1.0) != (double)1.0/(double)0.0;
 }
-/* mpfr is supposed to have exactly the IEEE754 double precision of 53 bits */
+/* mpfr is supposed to have exactly the IEEE754 double precision of NUMFLT_MANT_DIG bits */
 static inline bool numflt_set_mpz_tmp(numflt_t a, const mpz_t b, mpfr_t mpfr)
 { 
   int res = mpfr_set_z(mpfr,b,+1);
+#if defined(NUMFLT_DOUBLE)
   *a = mpfr_get_d(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+#else
+  *a = mpfr_get_ld(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+#endif
   return (res==0);
 }
 static inline bool numflt_set_mpz(numflt_t a, const mpz_t b)
 {
   mpfr_t mpfr;
   
-  mpfr_init2(mpfr,53);
+  mpfr_init2(mpfr,NUMFLT_MANT_DIG);
   bool res = numflt_set_mpz_tmp(a,b,mpfr);
   mpfr_clear(mpfr);
   return res;
@@ -188,18 +195,22 @@ static inline bool mpq_fits_numflt(const mpq_t a)
   double k = mpq_get_d(a);
   return (fabs(k)+1.0) != (double)1.0/(double)0.0;
 }
-/* mpfr is supposed to have exactly the IEEE754 double precision of 53 bits */
+/* mpfr is supposed to have exactly the IEEE754 double precision of NUMFLT_MANT_DIG bits */
 static inline bool numflt_set_mpq_tmp(numflt_t a, const mpq_t b, mpfr_t mpfr)
 {
   int res = mpfr_set_q(mpfr,b,+1);
+#if defined(NUMFLT_DOUBLE)
   *a = mpfr_get_d(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+#else
+  *a = mpfr_get_ld(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+#endif
   return (res==0);
 }  
 static inline bool numflt_set_mpq(numflt_t a, const mpq_t b)
 {
   mpfr_t mpfr;
   
-  mpfr_init2(mpfr,53);
+  mpfr_init2(mpfr,NUMFLT_MANT_DIG);
   bool res = numflt_set_mpq_tmp(a,b,mpfr);
   mpfr_clear(mpfr);
   return res;
