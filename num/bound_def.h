@@ -414,6 +414,64 @@ static inline int bound_snprint(char* s, size_t size, const bound_t a)
   else return num_snprint(s,size,bound_numref(a));
 }
 
+
+/* ====================================================================== */
+/* Conversions */
+/* ====================================================================== */
+
+/* Convert an ap_scalar_t into a bound_t */
+static inline
+bool bound_set_ap_scalar(bound_t a, const ap_scalar_t* b)
+{
+  switch (b->discr){
+  case AP_SCALAR_MPQ:
+    if (mpz_sgn(mpq_denref(b->val.mpq))==0){
+      assert(mpz_sgn(mpq_numref(b->val.mpq))>0);
+      bound_set_infty(a);
+      return true;
+    }
+    else {
+      return num_set_mpq(bound_numref(a),b->val.mpq);
+    }
+    break;
+  case AP_SCALAR_DOUBLE:
+    if (b->val.dbl==(double)1.0/(double)0.0){
+      bound_set_infty(a);
+      return true;
+    }
+    else {
+      return num_set_double(bound_numref(a),b->val.dbl);
+    }
+    break;
+  default:
+    abort();
+  }
+}
+/* Convert a bound_t into an ap_scalar_t */
+bool ap_scalar_set_bound(ap_scalar_t* a, const bound_t b)
+{
+#if defined(NUM_NUMFLT)
+  ap_scalar_reinit(a,AP_SCALAR_DOUBLE);
+  if (bound_infty(b)){
+    a->val.dbl = (double)1.0/(double)0.0;
+    return true;
+  }
+  else {
+    return double_set_num(&a->val.dbl,bound_numref(b));
+  }
+#else
+  ap_scalar_reinit(a,AP_SCALAR_MPQ);
+  if (bound_infty(b)){
+    mpz_set_si(mpq_numref(a->val.mpq),1);
+    mpz_set_ui(mpq_denref(a->val.mpq),0);
+    return true;
+  }
+  else {
+    return mpq_set_num(a->val.mpq,bound_numref(b));
+  }
+#endif
+}
+
 /* ====================================================================== */
 /* Serialization */
 /* ====================================================================== */

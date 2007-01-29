@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 
+#include "ap_scalar.h"
+
 #include "bound_def.h"
 
 static inline bool bound_infty(const bound_t a);
@@ -87,6 +89,15 @@ static inline int bound_snprint(char* s, size_t size, const bound_t a);
 /* ====================================================================== */
 /* Conversions */
 /* ====================================================================== */
+
+static inline bool bound_set_ap_scalar(bound_t a, const ap_scalar_t* b);
+  /* Convert a ap_scalar_t into a bound_t. */
+  /* Return true iff the conversion is exact */
+
+bool ap_scalar_set_bound(ap_scalar_t* a, const bound_t b);
+  /* Convert a bound_t into a ap_scalar_t */
+  /* Reinitialize a with the best type, depending on bound_t and num_t */
+  /* Return true iff the conversion is exact */
 
 /* ====================================================================== */
 /* Serialization */

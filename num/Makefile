@@ -34,8 +34,8 @@ clean:
 
 
 
-FLAGS = -Wswitch-default -Werror-implicit-function-declaration -Wall -std=c99 -g -I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include -L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib
-LIBS = -lmpfr -lgmp -lm
+FLAGS = -Wswitch-default -Werror-implicit-function-declaration -Wall -std=c99 -g -I$(APRON_PREFIX)/include -I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include -L$(APRON_PREFIX)/lib -L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib
+LIBS = -lapron -lmpfr -lgmp -lm
 
 test: testli testlli testlr testllr testmpz testmpq testdbl testldbl
 

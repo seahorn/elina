@@ -5,6 +5,9 @@ interface to different numbers representation. It took its inspiration from
 pk_int (integers in Newpolka library from Bertrand Jeannet) and oct_num
 (integers in Octagon Abstract Domain library from Antoine Miné).
 
+It requires the GMP and MPFR libraries. If bounds are used, it also requires
+the APRON library.
+
 It may be freely distributed and/or modified under the conditions of the LGPL
 license.
 
@@ -41,3 +44,6 @@ Bounds
 Bounds are *superior* bounds defined on top of num_t. They add +oo to num_t.
 First include properly num.h with the right macro, and then include bound.h.
 Signatures of operations in bound.h
+
+It requires the APRON library (more precisely, the module ap_scalar, for
+conversion functions).
