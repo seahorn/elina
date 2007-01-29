@@ -12,7 +12,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <gmp.h>
+#include "gmp.h"
 
 #include "ap_config.h"
 

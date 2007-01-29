@@ -11,7 +11,7 @@
 
 #include "numint.h"
 #include "numrat.h"
-#include <gmp.h>
+#include "gmp.h"
 
 #include "ap_coeff.h"
 #include "ap_dimension.h"
