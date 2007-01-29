@@ -86,7 +86,7 @@ static inline void numint_gcd(numint_t a, const numint_t b,  const numint_t c);
 static inline int numint_sgn(const numint_t a);
 static inline int numint_cmp(const numint_t a, const numint_t b);
 static inline int numint_cmp_int(const numint_t a, long int b);
-static inline int numint_equal(const numint_t a, const numint_t b);
+static inline bool numint_equal(const numint_t a, const numint_t b);
 
 /* ====================================================================== */
 /* Printing */

@@ -76,7 +76,7 @@ static inline int bound_sgn(const bound_t a);
 static inline int bound_cmp(const bound_t a, const bound_t b);
 static inline int bound_cmp_int(const bound_t a, long int b);
 static inline int bound_cmp_num(const bound_t a, const num_t b);
-static inline int bound_equal(const bound_t a, const bound_t b);
+static inline bool bound_equal(const bound_t a, const bound_t b);
 
 /* ====================================================================== */
 /* Printing */

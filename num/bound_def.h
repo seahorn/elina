@@ -346,7 +346,7 @@ static inline int bound_cmp_int(const bound_t a, long int b)
       { return num_cmp_int(a,b); }
 static inline int bound_cmp_num(const bound_t a, const num_t b)
       { return num_cmp(a,b); }
-static inline int bound_equal(const bound_t a, const bound_t b)
+static inline bool bound_equal(const bound_t a, const bound_t b)
       { return num_equal(a,b); }
 
 #else
@@ -374,7 +374,7 @@ static inline int bound_cmp_num(const bound_t a, const num_t b)
   else return num_cmp(bound_numref(a),b);
 }
 #if defined(NUM_NUMRAT)
-static inline int bound_equal(const bound_t a, const bound_t b)
+static inline bool bound_equal(const bound_t a, const bound_t b)
 {
   if (bound_infty(a)){
     return bound_infty(b);
@@ -384,7 +384,7 @@ static inline int bound_equal(const bound_t a, const bound_t b)
   }
 }
 #else
-static inline int bound_equal(const bound_t a, const bound_t b)
+static inline bool bound_equal(const bound_t a, const bound_t b)
 {
   if (a->inf==b->inf)
     return a->inf || num_equal(a->num,b->num);

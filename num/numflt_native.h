@@ -132,7 +132,7 @@ static inline int numflt_cmp_int(const numflt_t a, long int b)
   numflt_native bb = (numflt_native)b;
   return (*a==bb ? 0 : (*a>bb ? 1 : -1)); 
 }
-static inline int numflt_equal(const numflt_t a, const numflt_t b)
+static inline bool numflt_equal(const numflt_t a, const numflt_t b)
 { return *a==*b; }
 
 /* ====================================================================== */

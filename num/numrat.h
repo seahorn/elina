@@ -69,7 +69,7 @@ static inline void numrat_ceil(numrat_t a, const numrat_t b);
 static inline int numrat_sgn(const numrat_t a);
 static inline int numrat_cmp(const numrat_t a, const numrat_t b);
 static inline int numrat_cmp_int(const numrat_t a, long int b);
-static inline int numrat_equal(const numrat_t a, const numrat_t b);
+static inline bool numrat_equal(const numrat_t a, const numrat_t b);
 
 /* ====================================================================== */
 /* Printing */

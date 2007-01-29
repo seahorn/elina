@@ -198,7 +198,7 @@ static inline int numint_cmp(const numint_t a, const numint_t b)
 { return (*a==*b ? 0 : (*a>*b ? 1 : -1)); }
 static inline int numint_cmp_int(const numint_t a, long int b)
 { return (*a==b ? 0 : (*a>b ? 1 : -1)); }
-static inline int numint_equal(const numint_t a, const numint_t b)
+static inline bool numint_equal(const numint_t a, const numint_t b)
 { return *a==*b; }
 
 /* ====================================================================== */

@@ -187,7 +187,7 @@ static inline int numrat_cmp_int(const numrat_t a, long int b)
   *bb = *a->d * b;
   return numint_cmp(aa,bb);
 }
-static inline int numrat_equal(const numrat_t a, const numrat_t b)
+static inline bool numrat_equal(const numrat_t a, const numrat_t b)
 { return numint_equal(a->n,b->n) && numint_equal(a->d,b->d); }
 
 static inline void numrat_min(numrat_t a, const numrat_t b, const numrat_t c)

@@ -109,7 +109,7 @@ static inline int num_cmp(const num_t a, const num_t b)
       { return numflt_cmp(a,b); }
 static inline int num_cmp_int(const num_t a, long int b)
       { return numflt_cmp_int(a,b); }
-static inline int num_equal(const num_t a, const num_t b)
+static inline bool num_equal(const num_t a, const num_t b)
       { return numflt_equal(a,b); }
 
 /* ====================================================================== */

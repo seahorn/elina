@@ -137,7 +137,7 @@ static inline int numrat_cmp(const numrat_t a, const numrat_t b)
 { return mpq_cmp(a,b); }
 static inline int numrat_cmp_int(const numrat_t a, long int b)
 { return mpq_cmp_si(a,b,1); }
-static inline int numrat_equal(const numrat_t a, const numrat_t b)
+static inline bool numrat_equal(const numrat_t a, const numrat_t b)
 { return mpq_equal(a,b); }
 
 /* ====================================================================== */

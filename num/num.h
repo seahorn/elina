@@ -99,7 +99,7 @@ static inline void num_ceil(num_t a, const num_t b);
 static inline int num_sgn(const num_t a);
 static inline int num_cmp(const num_t a, const num_t b);
 static inline int num_cmp_int(const num_t a, long int b);
-static inline int num_equal(const num_t a, const num_t b);
+static inline bool num_equal(const num_t a, const num_t b);
 
 /* ====================================================================== */
 /* Printing */

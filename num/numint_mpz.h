@@ -119,7 +119,7 @@ static inline int numint_cmp(const numint_t a, const numint_t b)
 { return mpz_cmp(a,b); }
 static inline int numint_cmp_int(const numint_t a, long int b)
 { return mpz_cmp_si(a,b); }
-static inline int numint_equal(const numint_t a, const numint_t b)
+static inline bool numint_equal(const numint_t a, const numint_t b)
 { return mpz_cmp(a,b)==0; }
 
 /* ====================================================================== */

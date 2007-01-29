@@ -73,7 +73,7 @@ static inline void numflt_ceil(numflt_t a, const numflt_t b);
 static inline int numflt_sgn(const numflt_t a);
 static inline int numflt_cmp(const numflt_t a, const numflt_t b);
 static inline int numflt_cmp_int(const numflt_t a, long int b);
-static inline int numflt_equal(const numflt_t a, const numflt_t b);
+static inline bool numflt_equal(const numflt_t a, const numflt_t b);
 
 /* ====================================================================== */
 /* Printing */
