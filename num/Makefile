@@ -7,15 +7,13 @@ num_numint.h \
 num_numrat.h \
 num_numflt.h \
 numint.h \
-numint_longint.h \
-numint_longlongint.h \
+numint_native.h \
 numint_mpz.h \
 numrat.h \
 numrat_native.h \
 numrat_mpq.h \
 numflt.h \
-numflt_double.h \
-numflt_longdouble.h \
+numflt_native.h \
 bound.h \
 bound_def.h
 
