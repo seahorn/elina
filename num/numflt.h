@@ -8,10 +8,8 @@
 #include <gmp.h>
 #include "num_config.h"
 
-#if defined(NUMFLT_DOUBLE)
-#include "numflt_double.h"
-#elif defined(NUMFLT_LONGDOUBLE)
-#include "numflt_longdouble.h"
+#if defined(NUMFLT_DOUBLE) || defined(NUMFLT_LONGDOUBLE)
+#include "numflt_native.h"
 #else
 #error "HERE"
 #endif
