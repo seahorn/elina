@@ -12,7 +12,9 @@
 #include <assert.h>
 #include <math.h>
 #include <gmp.h>
-#include <num_config.h>
+#include <mpfr.h>
+
+#include "num_config.h"
 
 /* We assume that the basic NUMINT on which rational is built is properly
    defined */
@@ -242,41 +244,53 @@ static inline void numrat_set_int2(numrat_t a, long int i, unsigned long int j)
 /* mpz -> numrat */
 static inline bool mpz_fits_numrat(const mpz_t a)
 { return mpz_fits_numint(a); }
-static inline void numrat_set_mpz(numrat_t a, const mpz_t b)
+static inline bool numrat_set_mpz(numrat_t a, const mpz_t b)
 { 
   numint_set_mpz(a->n,b);
   numint_set_int(a->d,1);
+  return true;
 }
 
 /* mpq -> numrat */
 static inline bool mpq_fits_numrat(const mpq_t a)
 { return mpz_fits_numint(mpq_numref(a)) && mpz_fits_numint(mpq_denref(a)); }
-static inline void numrat_set_mpq(numrat_t a, const mpq_t b)
+static inline bool numrat_set_mpq(numrat_t a, const mpq_t b)
 { 
   numint_set_mpz(a->n,mpq_numref(b));
   numint_set_mpz(a->d,mpq_denref(b));
+  return true;
 }
 
 /* double -> numrat */
+static inline bool double_fits_numrat_tmp(double k, mpq_t mpq)
+{
+  mpq_set_d(mpq,k);
+  bool res = mpq_fits_numrat(mpq);
+  return res;
+}
+
 static inline bool double_fits_numrat(double k)
 {
-  bool res;
   mpq_t mpq;
   mpq_init(mpq);
-  mpq_set_d(mpq,k);
-  res = mpq_fits_numrat(mpq);
+  bool res = double_fits_numrat_tmp(k,mpq);
   mpq_clear(mpq);
   return res;
 }
-static inline void numrat_set_double(numrat_t a, double k)
+static inline bool numrat_set_double_tmp(numrat_t a, double k, mpq_t mpq)
+{
+  mpq_set_d(mpq,k);
+  numrat_set_mpq(a,mpq);
+  return true;
+}
+static inline bool numrat_set_double(numrat_t a, double k)
 {
   mpq_t mpq;
   mpq_init(mpq);
-  mpq_set_d(mpq,k);
-  numrat_set_mpq(a,mpq);
+  numrat_set_double_tmp(a,k,mpq);
   mpq_clear(mpq);
+  return true;
 }
-
 /* numrat -> int */
 static inline bool numrat_fits_int(const numrat_t a)
 {
@@ -284,34 +298,57 @@ static inline bool numrat_fits_int(const numrat_t a)
   numint_cdiv_q(b,a->n,a->d);
   return *b<=LONG_MAX && *b>=-LONG_MAX;
 }
-static inline long int numrat_get_int(const numrat_t a)
+static inline bool int_set_numrat(long int* a, const numrat_t b)
 { 
-  numint_t b;
-  numint_cdiv_q(b,a->n,a->d);
-  return *b;
+  numint_t q,r;
+  numint_cdiv_qr(q,r,b->n,b->d);
+  *a = *q;
+  return (*r==0);
 }
+static inline bool int_set_numrat_tmp(long int* a, const numrat_t b, 
+				      mpz_t q, mpz_t r)
+{ return int_set_numrat(a,b); }
+
 /* numrat -> mpz */
-static inline void mpz_set_numrat(mpz_t a, const numrat_t b)
+static inline bool mpz_set_numrat(mpz_t a, const numrat_t b)
 {
-  numint_t q;
-  numint_init(q);
-  numint_cdiv_q(q,numrat_numref(b),numrat_denref(b));
+  numint_t q,r;
+  numint_cdiv_qr(q,r,numrat_numref(b),numrat_denref(b));
   mpz_set_numint(a,q);
+  return (numint_sgn(r)==0);
 }
+static inline bool mpz_set_numrat_tmp(mpz_t a, const numrat_t b, mpz_t mpz)
+{ return mpz_set_numrat(a,b); }
+
 /* numrat -> mpq */
-static inline void mpq_set_numrat(mpq_t a, const numrat_t b)
+static inline bool mpq_set_numrat(mpq_t a, const numrat_t b)
 {
   mpz_set_numint(mpq_numref(a), numrat_numref(b));
   mpz_set_numint(mpq_denref(a), numrat_denref(b));
+  return true;
 }
 /* numrat -> double */
 static inline bool numrat_fits_double(const numrat_t a)
 { return true; }
-static inline double numrat_get_double(const numrat_t a)
+/* mpfr should have exactly a precision of 53 bits */
+static inline bool double_set_numrat_tmp(double* a, const numrat_t b, 
+					 mpq_t mpq, mpfr_t mpfr)
 {
-  double i = numint_get_double(numrat_numref(a));
-  double j = numint_get_double(numrat_denref(a));
-  return i/j;
+  mpq_set_numrat(mpq,b);
+  int res = mpfr_set_q(mpfr,mpq,+1);
+  *a = mpfr_get_d(mpfr,+1); /* should be exact */
+  return (res==0);
+}
+static inline bool double_set_numrat(double* a, const numrat_t b)
+{
+  mpq_t mpq;
+  mpfr_t mpfr;
+  mpq_init(mpq);
+  mpfr_init2(mpfr,53);
+  bool res = double_set_numrat_tmp(a,b,mpq,mpfr);
+  mpq_clear(mpq);
+  mpfr_clear(mpfr);
+  return res;
 }
 
 /* ====================================================================== */

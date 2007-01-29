@@ -132,38 +132,61 @@ static inline void num_set_int2(num_t a, long int i, unsigned long int j)
 
 static inline bool mpz_fits_num(const mpz_t a)
           { return mpz_fits_numflt(a); }
-static inline void num_set_mpz(num_t a, const mpz_t b)
-              { numflt_set_mpz(a,b); }
+static inline bool num_set_mpz(num_t a, const mpz_t b)
+          { return numflt_set_mpz(a,b); }
   /* mpz -> num */
 
 static inline bool mpq_fits_num(const mpq_t a)
           { return mpq_fits_numflt(a); }
-static inline void num_set_mpq(num_t a, const mpq_t b)
-              { numflt_set_mpq(a,b); }
+static inline bool num_set_mpq(num_t a, const mpq_t b)
+          { return numflt_set_mpq(a,b); }
   /* mpq -> num */
 
 static inline bool double_fits_num(double a)
           { return double_fits_numflt(a); }
-static inline void num_set_double(num_t a, double k)
-              { numflt_set_double(a,k); }
+static inline bool num_set_double(num_t a, double k)
+          { return numflt_set_double(a,k); }
   /* double -> num */
 
 static inline bool num_fits_int(const num_t a)
-       { return numflt_fits_int(a); }
-static inline long int num_get_int(const num_t a)
-           { return numflt_get_int(a); }
+          { return numflt_fits_int(a); }
+static inline bool int_set_num(long int*a, const num_t b)
+          { return int_set_numflt(a,b); }
   /* num -> int */
-static inline void mpz_set_num(mpz_t a, const num_t b)
-                 { mpz_set_numflt(a,b); }
+static inline bool mpz_set_num(mpz_t a, const num_t b)
+          { return mpz_set_numflt(a,b); }
   /* num -> mpz */
-static inline void mpq_set_num(mpq_t a, const num_t b)
-                 { mpq_set_numflt(a,b); }
+static inline bool mpq_set_num(mpq_t a, const num_t b)
+          { return mpq_set_numflt(a,b); }
   /* num -> mpq */
 static inline bool num_fits_double(const num_t a)
-       { return numflt_fits_double(a); }
-static inline double num_get_double(const num_t a)
-         { return numflt_get_double(a); }
+          { return numflt_fits_double(a); }
+static inline bool double_set_num(double* a, const num_t b)
+          { return double_set_numflt(a,b); }
   /* num -> double */
+
+/* Optimized versions */
+static inline bool num_set_mpz_tmp(numflt_t a, const mpz_t b, mpfr_t mpfr)
+{ return numflt_set_mpz_tmp(a,b,mpfr); }
+static inline bool num_set_mpq_tmp(numflt_t a, const mpq_t b, 
+				   mpz_t q, mpz_t r, mpfr_t mpfr)
+{ return numflt_set_mpq_tmp(a,b,mpfr); }
+
+
+static inline bool mpq_fits_num_tmp(const mpq_t a, mpz_t mpz)
+{ return mpq_fits_numflt(a); }
+static inline bool num_set_double_tmp(num_t a, double k, mpq_t mpq)
+{ return numflt_set_double(a,k); }
+static inline bool int_set_num_tmp(long int* a, const num_t b, 
+				   mpz_t q, mpz_t r)
+{ return int_set_numflt(a,b); }
+static inline bool mpz_set_num_tmp(mpz_t a, const num_t b, mpz_t mpz)
+{ return mpz_set_numflt(a,b); }
+static inline bool double_set_num_tmp(double* a, const num_t b, 
+				      mpq_t mpq, mpfr_t mpfr)
+{ return double_set_numflt(a,b); }
+static inline bool double_fits_num_tmp(double k, mpq_t mpq)
+{ return double_fits_numflt(k); }
 
 
 /* ====================================================================== */

@@ -13,8 +13,9 @@
 #include <assert.h>
 
 #include <gmp.h>
+#include <mpfr.h>
 
-#include <num_config.h>
+#include "num_config.h"
 
 /* Require C99 compliant compiler */
 
@@ -84,6 +85,8 @@ static inline void numint_fdiv_q(numint_t a, const numint_t b, const numint_t c)
 { mpz_fdiv_q(a,b,c); }
 static inline void numint_cdiv_q(numint_t a, const numint_t b, const numint_t c)
 { mpz_cdiv_q(a,b,c); }
+static inline void numint_cdiv_qr(numint_t a, numint_t b, const numint_t c, const numint_t d)
+{ mpz_cdiv_qr(a,b,c,d); }
 static inline void numint_cdiv_2(numint_t a, const numint_t b)
 { mpz_cdiv_q_2exp(a,b,1); }
 static inline void numint_cdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c)
@@ -155,35 +158,55 @@ static inline void numint_set_int2(numint_t a, long int i, unsigned long int j)
 /* mpz -> numint */
 static inline bool mpz_fits_numint(const mpz_t a)
 { return true; }
-static inline void numint_set_mpz(numint_t a, const mpz_t b)
-{ mpz_set(a,b); }
+static inline bool numint_set_mpz(numint_t a, const mpz_t b)
+{ mpz_set(a,b); return true; }
 
 /* mpq -> numint */
+static inline bool mpq_fits_numint_tmp(const mpq_t a, mpz_t mpz)
+{ return true; }
 static inline bool mpq_fits_numint(const mpq_t a)
 { return true; }
-static inline void numint_set_mpq(numint_t a, const mpq_t b)
-{ mpz_cdiv_q(a,mpq_numref(b),mpq_denref(b)); }
+static inline bool numint_set_mpq_tmp(numint_t a, const mpq_t b, 
+				      mpz_t q, mpz_t r)
+{
+  mpz_cdiv_qr(a, r, mpq_numref(b),mpq_denref(b));
+  bool res = (mpz_sgn(r)==0);
+  return res;
+}
+static inline bool numint_set_mpq(numint_t a, const mpq_t b)
+{ 
+  mpz_t r;
+  mpz_init(r);
+  bool res = numint_set_mpq_tmp(a,b,r,r);
+  mpz_clear(r);
+  return res;
+}
 
 /* double -> numint */
 static inline bool double_fits_numint(double a)
 { return true; }
-static inline void numint_set_double(numint_t a, double b)
-{ mpz_set_d(a,ceil(b)); }
+static inline bool numint_set_double(numint_t a, double b)
+{
+  double c = ceil(b);
+  mpz_set_d(a,c); 
+  return (b==c);
+}
 
 /* numint -> int */
 static inline bool numint_fits_int(const numint_t a)
 { return mpz_fits_slong_p(a); }
-static inline long int numint_get_int(const numint_t a)
-{ return mpz_get_si(a); }
+static inline bool int_set_numint(long int* a, const numint_t b)
+{ *a = mpz_get_si(b); return true; }
 
 /* numint -> mpz */
-static inline void mpz_set_numint(mpz_t a, const numint_t b)
-{ mpz_set(a,b); }
+static inline bool mpz_set_numint(mpz_t a, const numint_t b)
+{ mpz_set(a,b); return true; }
 /* numint -> mpq */
-static inline void mpq_set_numint(mpq_t a, const numint_t b)
+static inline bool mpq_set_numint(mpq_t a, const numint_t b)
 { 
   mpz_set(mpq_numref(a),b);
   mpz_set_ui(mpq_denref(a),1);
+  return true;
 }
 /* numint -> double */
 static inline bool numint_fits_double(const numint_t a)
@@ -191,9 +214,23 @@ static inline bool numint_fits_double(const numint_t a)
   double d = mpz_get_d(a);
   return fabs(d) != (double)1.0/(double)0.0;
 }
-static inline double numint_get_double(const numint_t a)
-{ return mpz_get_d(a); }
-
+/* mpfr is supposed to have exactly the IEEE754 double precision of 53 bits */
+static inline bool double_set_numint_tmp(double* a, const numint_t b, 
+					 mpfr_t mpfr)
+{
+  int res = mpfr_set_z(mpfr,b,+1);
+  *a = mpfr_get_d(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+  return (res==0);
+}
+static inline bool double_set_numint(double* a, const numint_t b)
+{
+  mpfr_t mpfr;
+  
+  mpfr_init2(mpfr,53);
+  bool res = double_set_numint_tmp(a,b,mpfr);
+  mpfr_clear(mpfr);
+  return res;
+}
 
 /* ====================================================================== */
 /* Serialization */

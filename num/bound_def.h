@@ -109,6 +109,7 @@ static inline void bound_set_array(bound_t* a, const bound_t* b, size_t size)
 
 #endif
 
+
 static inline void bound_set_int(bound_t a, long int i)
 { 
   num_set_int(bound_numref(a),i);

@@ -87,27 +87,39 @@ static inline void numrat_set_int2(numrat_t a, long int i, unsigned long int j);
   /* int2 -> numrat */
 
 static inline bool mpz_fits_numrat(const mpz_t a);
-static inline void numrat_set_mpz(numrat_t a, const mpz_t b);
+static inline bool numrat_set_mpz(numrat_t a, const mpz_t b);
   /* mpz -> numrat */
 
 static inline bool mpq_fits_numrat(const mpq_t a);
-static inline void numrat_set_mpq(numrat_t a, const mpq_t b);
+static inline bool numrat_set_mpq(numrat_t a, const mpq_t b);
   /* mpq -> numrat */
 
 static inline bool double_fits_numrat(double a);
-static inline void numrat_set_double(numrat_t a, double k);
+static inline bool numrat_set_double(numrat_t a, double b);
   /* double -> numrat */
 
 static inline bool numrat_fits_int(const numrat_t a);
-static inline long int numrat_get_int(const numrat_t a);
+static inline bool int_set_numrat(long int* a, const numrat_t b);
   /* numrat -> int */
-static inline void mpz_set_numrat(mpz_t a, const numrat_t b);
+
+static inline bool mpz_set_numrat(mpz_t a, const numrat_t b);
   /* numrat -> mpz */
-static inline void mpq_set_numrat(mpq_t a, const numrat_t b);
+
+static inline bool mpq_set_numrat(mpq_t a, const numrat_t b);
   /* numrat -> mpq */
+
 static inline bool numrat_fits_double(const numrat_t a);
-static inline double numrat_get_double(const numrat_t a);
+static inline bool double_set_numrat(double* a, const numrat_t b);
   /* numrat -> double */
+
+/* Optimized versions */
+static inline bool int_set_numrat_tmp(long int* a, const numrat_t b, 
+				      mpz_t q, mpz_t r);
+static inline bool mpz_set_numrat_tmp(mpz_t a, const numrat_t b, mpz_t mpz);
+static inline bool double_set_numrat_tmp(double* a, const numrat_t b, 
+					 mpq_t mpq, mpfr_t mpfr);
+static inline bool numrat_set_double_tmp(numrat_t a, double k, mpq_t mpq);
+static inline bool double_fits_numrat_tmp(double k, mpq_t mpq);
 
 
 /* ====================================================================== */

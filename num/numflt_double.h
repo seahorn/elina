@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <math.h>
 #include <gmp.h>
+#include <mpfr.h>
 
 #include "num_config.h"
 
@@ -117,31 +118,57 @@ static inline int numflt_snprint(char* s, size_t size, const numflt_t a)
 
 /* int2 -> numflt */
 static inline void numflt_set_int2(numflt_t a, long int i, unsigned long int j)
-{ *a = (double)i/(double)j; }
+{ *a = (double)i/(-((double)(-j))); }
 
 /* mpz -> numflt */
 static inline bool mpz_fits_numflt(const mpz_t a)
 {
   double k = mpz_get_d(a);
-  return fabs(k) != NUMFLT_MAX;
+  return (fabs(k)+1.0) != NUMFLT_MAX;
 }
-static inline void numflt_set_mpz(numflt_t a, const mpz_t b)
-{ *a = mpz_get_d(b); } /* not safe */
-
+/* mpfr is supposed to have exactly the IEEE754 double precision of 53 bits */
+static inline bool numflt_set_mpz_tmp(numflt_t a, const mpz_t b, mpfr_t mpfr)
+{ 
+  int res = mpfr_set_z(mpfr,b,+1);
+  *a = mpfr_get_d(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+  return (res==0);
+}
+static inline bool numflt_set_mpz(numflt_t a, const mpz_t b)
+{
+  mpfr_t mpfr;
+  
+  mpfr_init2(mpfr,53);
+  bool res = numflt_set_mpz_tmp(a,b,mpfr);
+  mpfr_clear(mpfr);
+  return res;
+}
 /* mpq -> numflt */
 static inline bool mpq_fits_numflt(const mpq_t a)
 {
   double k = mpq_get_d(a);
-  return fabs(k) != NUMFLT_MAX;
+  return (fabs(k)+1.0) != NUMFLT_MAX;
 }
-static inline void numflt_set_mpq(numflt_t a, const mpq_t b)
-{ *a = mpq_get_d(b); } /* not safe */
-
+/* mpfr is supposed to have exactly the IEEE754 double precision of 53 bits */
+static inline bool numflt_set_mpq_tmp(numflt_t a, const mpq_t b, mpfr_t mpfr)
+{
+  int res = mpfr_set_q(mpfr,b,+1);
+  *a = mpfr_get_d(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+  return (res==0);
+}  
+static inline bool numflt_set_mpq(numflt_t a, const mpq_t b)
+{
+  mpfr_t mpfr;
+  
+  mpfr_init2(mpfr,53);
+  bool res = numflt_set_mpq_tmp(a,b,mpfr);
+  mpfr_clear(mpfr);
+  return res;
+}
 /* double -> numflt */
 static inline bool double_fits_numflt(double a)
 { return true; }
-static inline void numflt_set_double(numflt_t a, double k)
-{ *a = k; }
+static inline bool numflt_set_double(numflt_t a, double k)
+{ *a = k; return true; }
 
 /* numflt -> int */
 static inline bool numflt_fits_int(const numflt_t a)
@@ -149,22 +176,29 @@ static inline bool numflt_fits_int(const numflt_t a)
   double d = ceil(*a);
   return d >= (double)(-LONG_MAX) && d<= (double)LONG_MAX;
 }
-static inline long int numflt_get_int(const numflt_t a)
-{ return (long int)*a; }
+static inline bool int_set_numflt(long int*a, const numflt_t b)
+{
+  double c = ceil(*b);
+  *a = (long int)c;
+  return (*b==c);
+}
 
 /* numflt -> mpz */
-static inline void mpz_set_numflt(mpz_t a, const numflt_t b)
-{ mpz_set_d(a,ceil(*b)); }
-
+static inline bool mpz_set_numflt(mpz_t a, const numflt_t b)
+{ 
+  double c = ceil(*b);
+  mpz_set_d(a,c);
+  return (*b==c);
+}
 /* numflt -> mpq */
-static inline void mpq_set_numflt(mpq_t a, const numflt_t b)
-{ mpq_set_d(a,*b); }
+static inline bool mpq_set_numflt(mpq_t a, const numflt_t b)
+{ mpq_set_d(a,*b); return true; }
 
 /* numflt -> double */
 static inline bool numflt_fits_double(const numflt_t a)
 { return true; }
-static inline double numflt_get_double(const numflt_t a)
-{ return *a; }
+static inline bool double_set_numflt(double* a, const numflt_t b)
+{ *a = *b; return true; }
 
 /* ====================================================================== */
 /* Only for floating point */

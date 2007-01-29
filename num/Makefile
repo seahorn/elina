@@ -19,16 +19,48 @@ numflt_longdouble.h \
 bound.h \
 bound_def.h
 
-all: 
+all:
 
 install:
 	mkdir -p $(NUM_PREFIX)/include
 	cp $(H_FILES) $(NUM_PREFIX)/include
-
-clean:
 
 distclean:
 	(cd $(NUM_PREFIX)/include; /bin/rm -f $(H_FILES))
 
 dist: $(H_FILES) Makefile README
 	(cd ..; tar zcvf num.tgz $(^:%=num/%))
+
+clean:
+	rm -f testl* testmp* testdbl testldbl
+
+
+
+FLAGS = -std=c99 -g -I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include -L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib
+LIBS = -lmpfr -lgmp -lm
+
+test: testli testlli testlr testllr testmpz testmpq testdbl testldbl
+
+testli: test.c
+	gcc $(FLAGS) -DNUM_LONGINT -o $@ test.c $(LIBS)
+
+testlli: test.c
+	gcc $(FLAGS) -DNUM_LONGLONGINT -o $@ test.c $(LIBS)
+
+testlr: test.c
+	gcc $(FLAGS) -DNUM_LONGRAT -o $@ test.c $(LIBS)
+
+testllr: test.c
+	gcc $(FLAGS) -DNUM_LONGLONGRAT -o $@ test.c $(LIBS)
+
+testmpz: test.c
+	gcc $(FLAGS) -DNUM_MPZ -o $@ test.c $(LIBS)
+
+testmpq: test.c
+	gcc $(FLAGS) -DNUM_MPQ -o $@ test.c $(LIBS)
+
+testdbl: test.c
+	gcc $(FLAGS) -DNUM_DOUBLE -o $@ test.c $(LIBS)
+
+testldbl: test.c
+	gcc $(FLAGS) -DNUM_LONGDOUBLE -o $@ test.c $(LIBS)

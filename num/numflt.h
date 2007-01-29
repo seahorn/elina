@@ -89,30 +89,37 @@ static inline int  numflt_snprint(char* s, size_t size, const numflt_t a);
 /* ====================================================================== */
 
 static inline void numflt_set_int2(numflt_t a, long int i, unsigned long int j);
-  /* int2 -> numflt */
+  /* int2 -> num */
 
 static inline bool mpz_fits_numflt(const mpz_t a);
-static inline void numflt_set_mpz(numflt_t a, const mpz_t b);
-  /* mpz -> numflt */
+static inline bool numflt_set_mpz(numflt_t a, const mpz_t b);
+  /* mpz -> num */
 
 static inline bool mpq_fits_numflt(const mpq_t a);
-static inline void numflt_set_mpq(numflt_t a, const mpq_t b);
-  /* mpq -> numflt */
+static inline bool numflt_set_mpq(numflt_t a, const mpq_t b);
+  /* mpq -> num */
 
 static inline bool double_fits_numflt(double a);
-static inline void numflt_set_double(numflt_t a, double k);
-  /* double -> numflt */
+static inline bool numflt_set_double(numflt_t a, double b);
+  /* double -> num */
 
 static inline bool numflt_fits_int(const numflt_t a);
-static inline long int numflt_get_int(const numflt_t a);
-  /* numflt -> int */
-static inline void mpz_set_numflt(mpz_t a, const numflt_t b);
-  /* numflt -> mpz */
-static inline void mpq_set_numflt(mpq_t a, const numflt_t b);
-  /* numflt -> mpq */
+static inline bool int_set_numflt(long int* a, const numflt_t b);
+  /* num -> int */
+
+static inline bool mpz_set_numflt(mpz_t a, const numflt_t b);
+  /* num -> mpz */
+
+static inline bool mpq_set_numflt(mpq_t a, const numflt_t b);
+  /* num -> mpq */
+
 static inline bool numflt_fits_double(const numflt_t a);
-static inline double numflt_get_double(const numflt_t a);
-  /* numflt -> double */
+static inline bool double_set_numflt(double* a, const numflt_t b);
+  /* num -> double */
+
+/* Optimized versions */
+static inline bool numflt_set_mpz_tmp(numflt_t a, const mpz_t b, mpfr_t mpfr);
+static inline bool numflt_set_mpq_tmp(numflt_t a, const mpq_t b, mpfr_t mpfr);
 
 /* ====================================================================== */
 /* Only for floating point */

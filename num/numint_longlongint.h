@@ -81,13 +81,23 @@ static inline void numint_fdiv_q(numint_t a, const numint_t b, const numint_t c)
     *a = *a - 1; /* rounding towards minus infty */
   }
 } 
-static inline void numint_cdiv_q(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_cdiv_q(numint_t q, const numint_t a, const numint_t b)
 {
-  lldiv_t d = lldiv(*b,*c); /* rounding towards 0 */
-  *a = d.quot;
+  lldiv_t d = lldiv(*a,*b); /* rounding towards 0 */
   if (d.quot>=0LL && d.rem!=0LL){
-    *a = *a + 1; /* rounding towards plus infty */
+    d.quot++; /* rounding towards plus infty */
   }
+  *q = d.quot;
+} 
+static inline void numint_cdiv_qr(numint_t q, numint_t r, const numint_t a, const numint_t b)
+{
+  lldiv_t d = lldiv(*a,*b); /* rounding towards 0 */
+  if (d.quot>=0LL && d.rem!=0LL){
+    d.quot++; /* rounding towards plus infty */
+    d.rem -= *b;
+  }
+  *q = d.quot;
+  *r = d.rem;
 } 
 static inline void numint_cdiv_2(numint_t a, const numint_t b)
 { *a = (*b>=0) ? (*b+1)/2 : *b/2; }
@@ -171,7 +181,7 @@ static inline bool mpz_fits_numint(const mpz_t a)
   size_t size = mpz_sizeinbase(a,2);
   return (size <= sizeof(numint_t)*8-1);
 }
-static inline void numint_set_mpz(numint_t a, const mpz_t b)
+static inline bool numint_set_mpz(numint_t a, const mpz_t b)
 {
   int sgn;
   size_t count; 
@@ -193,44 +203,60 @@ static inline void numint_set_mpz(numint_t a, const mpz_t b)
     }
     if (sgn<0) *a = -(*a);
   }
+  return true;
 }
 
 /* mpq -> numint */
-static inline bool mpq_fits_numint(const mpq_t a)
+static inline bool mpq_fits_numint_tmp(const mpq_t a, mpz_t mpz)
 {
-  mpz_t d;
-  bool res;
-  mpz_init(d);
-  mpz_cdiv_q(d,mpq_numref(a),mpq_denref(a));
-  res = mpz_fits_numint(d);
-  mpz_clear(d);
+  mpz_cdiv_q(mpz,mpq_numref(a),mpq_denref(a));
+  bool res = mpz_fits_slong_p(mpz);
   return res;
 }
-static inline void numint_set_mpq(numint_t a, const mpq_t b)
-{ 
-  mpz_t d;
-  mpz_init(d);
-  mpz_cdiv_q(d,mpq_numref(b),mpq_denref(b));
-  numint_set_mpz(a,d);
-  mpz_clear(d);
+static inline bool mpq_fits_numint(const mpq_t a)
+{
+  mpz_t mpz;
+  mpz_init(mpz);
+  bool res = mpq_fits_numint_tmp(a,mpz);
+  mpz_clear(mpz);
+  return res;
 }
-
+static inline bool numint_set_mpq_tmp(numint_t a, const mpq_t b, 
+				      mpz_t q, mpz_t r)
+{ 
+  mpz_cdiv_qr(q,r, mpq_numref(b),mpq_denref(b));
+  numint_set_mpz(a,q);
+  bool res = (mpz_sgn(r)==0);
+  return res;
+}
+static inline bool numint_set_mpq(numint_t a, const mpq_t b)
+{ 
+  mpz_t q,r;
+  mpz_init(q);mpz_init(r);
+  bool res = numint_set_mpq_tmp(a,b,q,r);
+  mpz_clear(q); mpz_clear(r);
+  return res;
+}
 /* double -> numint */
 static inline bool double_fits_numint(double a)
 {
   return a>=(double)(-LLONG_MAX) && a<=(double)LLONG_MAX;
 }
-static inline void numint_set_double(numint_t a, double b)
-{ *a = ceil(b); }
+static inline bool numint_set_double(numint_t a, double b)
+{
+  double c = ceil(b);
+  *a = c;
+  return (b==c);
+}
 
 /* numint -> int */
 static inline bool numint_fits_int(const numint_t a)
 { return (*a>=LONG_MIN && *a<=LONG_MAX); }
-static inline long int numint_get_int(const numint_t a)
-{ return (long int)*a; }
+static inline bool int_set_numint(long int* a, const numint_t b)
+{ *a = (long int)b; return true; }
 
 /* numint -> mpz */
-static inline void mpz_set_numint(mpz_t a, const numint_t b)
+static inline bool mpz_set_numint(mpz_t a, const numint_t b)
 {
   unsigned long long int n;
   unsigned long int rep[2];
@@ -241,19 +267,24 @@ static inline void mpz_set_numint(mpz_t a, const numint_t b)
   mpz_import(a,2,1,sizeof(unsigned long int),0,0,rep);
   if (*b<0)
     mpz_neg(a,a);
+  return true;
 }
 /* numint -> mpq */
-static inline void mpq_set_numint(mpq_t a, const numint_t b)
+static inline bool mpq_set_numint(mpq_t a, const numint_t b)
 { 
   mpz_set_numint(mpq_numref(a),b);
   mpz_set_ui(mpq_denref(a),1);
+  return true;
 }
 /* numint -> double */
 static inline bool numint_fits_double(const numint_t a)
 { return true; }
-static inline double numint_get_double(const numint_t a)
-{ return (double)(*a); }
-
+static inline bool double_set_numint(double* a, const numint_t b)
+{ 
+  *a = (double)(*b); 
+  double aa = (double)(-(*b));
+  return (*a==aa);
+}
 
 /* ====================================================================== */
 /* Serialization */

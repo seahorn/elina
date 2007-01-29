@@ -9,11 +9,8 @@
 
 #include "num_config.h"
 
-#if defined(NUMINT_LONGINT)
-#include "numint_longint.h"
-
-#elif defined(NUMINT_LONGLONGINT)
-#include "numint_longlongint.h"
+#if defined(NUMINT_LONGINT) || defined(NUMINT_LONGLONGINT)
+#include "numint_native.h"
 
 #elif defined(NUMINT_MPZ)
 #include "numint_mpz.h"
@@ -23,10 +20,10 @@
 #endif
 
 /*
-   NUMINT_INT and NUMINT_LONG also define
+   NUMINT_LONGINT and NUMINT_LONGLONGINT also define
 
    - NUMINT_MAX: max positive value.
-     It is assumed that (-NUMINT_MAX) is also repreentable
+     It is assumed that (-NUMINT_MAX) is also representable
 
    - NUMINT_NATIVE: no heap allocated memory
 */
@@ -66,7 +63,8 @@ static inline void numint_sub_uint(numint_t a, const numint_t b, unsigned long i
 static inline void numint_mul(numint_t a, const numint_t b, const numint_t c);
 static inline void numint_mul_2(numint_t a, const numint_t b);
 static inline void numint_fdiv_q(numint_t a, const numint_t b, const numint_t c);
-static inline void numint_cdiv_q(numint_t a, const numint_t b, const numint_t c);
+static inline void numint_cdiv_q(numint_t q, const numint_t a, const numint_t b);
+static inline void numint_cdiv_qr(numint_t q, numint_t r, const numint_t a, const numint_t b);
 static inline void numint_cdiv_2(numint_t a, const numint_t b);
 static inline void numint_cdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c);
 static inline void numint_fdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c);
@@ -106,30 +104,35 @@ static inline void numint_set_int2(numint_t a, long int i, unsigned long int j);
   /* int2 -> numint */
 
 static inline bool mpz_fits_numint(const mpz_t a);
-static inline void numint_set_mpz(numint_t a, const mpz_t b);
+static inline bool numint_set_mpz(numint_t a, const mpz_t b);
   /* mpz -> numint */
 
 static inline bool mpq_fits_numint(const mpq_t a);
-static inline void numint_set_mpq(numint_t a, const mpq_t b);
+static inline bool numint_set_mpq(numint_t a, const mpq_t b);
   /* mpq -> numint */
 
 static inline bool double_fits_numint(double a);
-static inline void numint_set_double(numint_t a, double b);
+static inline bool numint_set_double(numint_t a, double b);
   /* double -> numint */
 
 static inline bool numint_fits_int(const numint_t a);
-static inline long int numint_get_int(const numint_t a);
+static inline bool int_set_numint(long int* a, const numint_t b);
   /* numint -> int */
 
-static inline void mpz_set_numint(mpz_t a, const numint_t b);
+static inline bool mpz_set_numint(mpz_t a, const numint_t b);
   /* numint -> mpz */
 
-static inline void mpq_set_numint(mpq_t a, const numint_t b);
+static inline bool mpq_set_numint(mpq_t a, const numint_t b);
   /* numint -> mpq */
 
 static inline bool numint_fits_double(const numint_t a);
-static inline double numint_get_double(const numint_t a);
+static inline bool double_set_numint(double* a, const numint_t b);
   /* numint -> double */
+
+/* Optimized versions */
+static inline bool mpq_fits_numint_tmp(const mpq_t a, mpz_t mpz);
+static inline bool numint_set_mpq_tmp(numint_t a, const mpq_t b, 
+				      mpz_t q, mpz_t r);
 
 /* ====================================================================== */
 /* Serialization */
