@@ -156,16 +156,10 @@ static inline void numint_set_int2(numint_t a, long int i, unsigned long int j)
 }
 
 /* mpz -> numint */
-static inline bool mpz_fits_numint(const mpz_t a)
-{ return true; }
 static inline bool numint_set_mpz(numint_t a, const mpz_t b)
 { mpz_set(a,b); return true; }
 
 /* mpq -> numint */
-static inline bool mpq_fits_numint_tmp(const mpq_t a, mpz_t mpz)
-{ return true; }
-static inline bool mpq_fits_numint(const mpq_t a)
-{ return true; }
 static inline bool numint_set_mpq_tmp(numint_t a, const mpq_t b, 
 				      mpz_t q, mpz_t r)
 {
@@ -183,8 +177,6 @@ static inline bool numint_set_mpq(numint_t a, const mpq_t b)
 }
 
 /* double -> numint */
-static inline bool double_fits_numint(double a)
-{ return true; }
 static inline bool numint_set_double(numint_t a, double b)
 {
   double c = ceil(b);
@@ -193,8 +185,6 @@ static inline bool numint_set_double(numint_t a, double b)
 }
 
 /* numint -> int */
-static inline bool numint_fits_int(const numint_t a)
-{ return mpz_fits_slong_p(a); }
 static inline bool int_set_numint(long int* a, const numint_t b)
 { *a = mpz_get_si(b); return true; }
 
@@ -209,11 +199,6 @@ static inline bool mpq_set_numint(mpq_t a, const numint_t b)
   return true;
 }
 /* numint -> double */
-static inline bool numint_fits_double(const numint_t a)
-{  
-  double d = mpz_get_d(a);
-  return fabs(d) != (double)1.0/(double)0.0;
-}
 /* mpfr is supposed to have exactly the IEEE754 double precision of 53 bits */
 static inline bool double_set_numint_tmp(double* a, const numint_t b, 
 					 mpfr_t mpfr)
@@ -230,6 +215,22 @@ static inline bool double_set_numint(double* a, const numint_t b)
   bool res = double_set_numint_tmp(a,b,mpfr);
   mpfr_clear(mpfr);
   return res;
+}
+
+static inline bool mpz_fits_numint(const mpz_t a)
+{ return true; }
+static inline bool mpq_fits_numint_tmp(const mpq_t a, mpz_t mpz)
+{ return true; }
+static inline bool mpq_fits_numint(const mpq_t a)
+{ return true; }
+static inline bool double_fits_numint(double a)
+{ return true; }
+static inline bool numint_fits_int(const numint_t a)
+{ return mpz_fits_slong_p(a); }
+static inline bool numint_fits_double(const numint_t a)
+{  
+  double d = mpz_get_d(a);
+  return fabs(d) != (double)1.0/(double)0.0;
 }
 
 /* ====================================================================== */

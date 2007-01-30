@@ -115,32 +115,27 @@ static inline int num_snprint(char* s, size_t size, const num_t a);
 
 static inline void num_set_int2(num_t a, long int i, unsigned long int j);
   /* int2 -> num */
-
-static inline bool mpz_fits_num(const mpz_t a);
 static inline bool num_set_mpz(num_t a, const mpz_t b);
   /* mpz -> num */
-
-static inline bool mpq_fits_num(const mpq_t a);
 static inline bool num_set_mpq(num_t a, const mpq_t b);
   /* mpq -> num */
-
-static inline bool double_fits_num(double a);
 static inline bool num_set_double(num_t a, double b);
   /* double -> num */
 
-static inline bool num_fits_int(const num_t a);
 static inline bool int_set_num(long int* a, const num_t b);
   /* num -> int */
-
 static inline bool mpz_set_num(mpz_t a, const num_t b);
   /* num -> mpz */
-
 static inline bool mpq_set_num(mpq_t a, const num_t b);
   /* num -> mpq */
-
-static inline bool num_fits_double(const num_t a);
 static inline bool double_set_num(double* a, const num_t b);
   /* num -> double */
+
+static inline bool mpz_fits_num(const mpz_t a);
+static inline bool mpq_fits_num(const mpq_t a);
+static inline bool double_fits_num(double a);
+static inline bool num_fits_int(const num_t a);
+static inline bool num_fits_double(const num_t a);
 
 /* Optimized versions */
 /* mpfr should have exactly the precision NUMFLT_MANT_DIG */
@@ -152,7 +147,6 @@ static inline bool num_set_double_tmp(num_t a, double k, mpq_t mpq);
 static inline bool int_set_num_tmp(long int* a, const num_t b, 
 				   mpz_t q, mpz_t r);
 static inline bool mpz_set_num_tmp(mpz_t a, const num_t b, mpz_t mpz);
-
 /* mpfr should have exactly the precision DBL_MANT_DIG */
 static inline bool double_set_num_tmp(double* a, const num_t b, 
 				      mpq_t mpq, mpfr_t mpfr);

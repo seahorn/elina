@@ -171,8 +171,6 @@ static inline void numrat_set_int2(numrat_t a, long int i, unsigned long int j)
 { mpq_set_si(a,i,j); numrat_canonicalize(a); }
 
 /* mpz -> numrat */
-static inline bool mpz_fits_numrat(const mpz_t a)
-{ return true; }
 static inline bool numrat_set_mpz(numrat_t a, const mpz_t b)
 { 
   mpz_set(mpq_numref(a),b); 
@@ -181,16 +179,10 @@ static inline bool numrat_set_mpz(numrat_t a, const mpz_t b)
 }
 
 /* mpq -> numrat */
-static inline bool mpq_fits_numrat(const mpq_t a)
-{ return true; }
 static inline bool numrat_set_mpq(numrat_t a, const mpq_t b)
 { mpq_set(a,b); return true; }
 
 /* double -> numrat */
-static inline bool double_fits_numrat(double k)
-{ return true; }
-static inline bool double_fits_numrat_tmp(double k, mpq_t mpq)
-{ return true; }
 
 static inline bool numrat_set_double(numrat_t a, double k)
 { mpq_set_d(a,k); return true; }
@@ -198,11 +190,6 @@ static inline bool numrat_set_double_tmp(numrat_t a, double k, mpq_t mpq)
 { return numrat_set_double(a,k); }
 
 /* numrat -> int */
-static inline bool numrat_fits_int(const numrat_t a)
-{
-  double d = ceil(mpq_get_d(a));
-  return (d+1.0)<=LONG_MAX && (d-1.0)>=-LONG_MAX;
-}
 static inline bool int_set_numrat_tmp(long int* a, const numrat_t b, 
 				      mpz_t q, mpz_t r)
 { 
@@ -236,11 +223,6 @@ static inline bool mpz_set_numrat(mpz_t a, const numrat_t b)
 static inline bool mpq_set_numrat(mpq_t a, const numrat_t b)
 { mpq_set(a,b); return true; }
 /* numrat -> double */
-static inline bool numrat_fits_double(const numrat_t a)
-{ 
-  double k = mpq_get_d(a);
-  return (fabs(k)+1.0) != (double)1.0/(double)0.0;
-}
 /* mpfr should have exactly a precision of 53 bits */
 static inline bool double_set_numrat_tmp(double* a, const numrat_t b, 
 					 mpq_t mpq, // not used
@@ -257,6 +239,25 @@ static inline bool double_set_numrat(double* a, const numrat_t b)
   bool res = double_set_numrat_tmp(a,b,NULL,mpfr);
   mpfr_clear(mpfr);
   return res;
+}
+
+static inline bool mpz_fits_numrat(const mpz_t a)
+{ return true; }
+static inline bool mpq_fits_numrat(const mpq_t a)
+{ return true; }
+static inline bool double_fits_numrat(double k)
+{ return true; }
+static inline bool double_fits_numrat_tmp(double k, mpq_t mpq)
+{ return true; }
+static inline bool numrat_fits_int(const numrat_t a)
+{
+  double d = ceil(mpq_get_d(a));
+  return (d+1.0)<=LONG_MAX && (d-1.0)>=-LONG_MAX;
+}
+static inline bool numrat_fits_double(const numrat_t a)
+{ 
+  double k = mpq_get_d(a);
+  return (fabs(k)+1.0) != (double)1.0/(double)0.0;
 }
 
 /* ====================================================================== */

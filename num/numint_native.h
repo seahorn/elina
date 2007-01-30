@@ -235,16 +235,6 @@ static inline void numint_set_int2(numint_t a, long int i, unsigned long int j)
 }
 
 /* mpz -> numint */
-static inline bool mpz_fits_numint(const mpz_t a)
-#if defined(NUMINT_LONGINT)
-{ return mpz_fits_slong_p(a); }
-#else
-{
-  size_t size = mpz_sizeinbase(a,2);
-  return (size <= sizeof(numint_t)*8-1);
-}
-#endif
-
 static inline bool numint_set_mpz(numint_t a, const mpz_t b)
 #if defined(NUMINT_LONGINT)
 { *a = mpz_get_si(b); return true; }
@@ -275,20 +265,6 @@ static inline bool numint_set_mpz(numint_t a, const mpz_t b)
 #endif
 
 /* mpq -> numint */
-static inline bool mpq_fits_numint_tmp(const mpq_t a, mpz_t mpz)
-{
-  mpz_cdiv_q(mpz,mpq_numref(a),mpq_denref(a));
-  bool res = mpz_fits_numint(mpz);
-  return res;
-}
-static inline bool mpq_fits_numint(const mpq_t a)
-{
-  mpz_t mpz;
-  mpz_init(mpz);
-  bool res = mpq_fits_numint_tmp(a,mpz);
-  mpz_clear(mpz);
-  return res;
-}
 static inline bool numint_set_mpq_tmp(numint_t a, const mpq_t b, 
 				      mpz_t q, mpz_t r)
 { 
@@ -306,24 +282,13 @@ static inline bool numint_set_mpq(numint_t a, const mpq_t b)
   return res;
 }
 /* double -> numint */
-static inline bool double_fits_numint(double a)
-{
-  return a>=(double)(-NUMINT_MAX) && a<=(double)NUMINT_MAX;
-}
 static inline bool numint_set_double(numint_t a, double b)
 {
   double c = ceil(b);
   *a = c;
   return (b==c);
 }
-
 /* numint -> int */
-static inline bool numint_fits_int(const numint_t a)
-#if defined(NUMINT_LONGINT)
-{ return true; }
-#else
-{ return (*a>=-LONG_MAX && *a<=LONG_MAX); }
-#endif
 static inline bool int_set_numint(long int* a, const numint_t b)
 { *a = (long int)(*b); return true; }
 
@@ -359,14 +324,50 @@ static inline bool mpq_set_numint(mpq_t a, const numint_t b)
 #endif
 
 /* numint -> double */
-static inline bool numint_fits_double(const numint_t a)
-{ return true; }
 static inline bool double_set_numint(double* a, const numint_t b)
 { 
   *a = (double)(*b); 
   double aa = -((double)(-(*b)));
   return (*a==aa);
 }
+
+
+static inline bool mpz_fits_numint(const mpz_t a)
+#if defined(NUMINT_LONGINT)
+{ return mpz_fits_slong_p(a); }
+#else
+{
+  size_t size = mpz_sizeinbase(a,2);
+  return (size <= sizeof(numint_t)*8-1);
+}
+#endif
+
+static inline bool mpq_fits_numint_tmp(const mpq_t a, mpz_t mpz)
+{
+  mpz_cdiv_q(mpz,mpq_numref(a),mpq_denref(a));
+  bool res = mpz_fits_numint(mpz);
+  return res;
+}
+static inline bool mpq_fits_numint(const mpq_t a)
+{
+  mpz_t mpz;
+  mpz_init(mpz);
+  bool res = mpq_fits_numint_tmp(a,mpz);
+  mpz_clear(mpz);
+  return res;
+}
+static inline bool double_fits_numint(double a)
+{
+  return a>=(double)(-NUMINT_MAX) && a<=(double)NUMINT_MAX;
+}
+static inline bool numint_fits_int(const numint_t a)
+#if defined(NUMINT_LONGINT)
+{ return true; }
+#else
+{ return (*a>=-LONG_MAX && *a<=LONG_MAX); }
+#endif
+static inline bool numint_fits_double(const numint_t a)
+{ return true; }
 
 /* ====================================================================== */
 /* Serialization */

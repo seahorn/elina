@@ -164,11 +164,6 @@ static inline void numflt_set_int2(numflt_t a, long int i, unsigned long int j)
 { *a = (numflt_native)i/(-((numflt_native)(-j))); }
 
 /* mpz -> numflt */
-static inline bool mpz_fits_numflt(const mpz_t a)
-{
-  double k = mpz_get_d(a);
-  return (fabs(k)+1.0) != (double)1.0/(double)0.0;
-}
 /* mpfr is supposed to have exactly the IEEE754 double precision of NUMFLT_MANT_DIG bits */
 static inline bool numflt_set_mpz_tmp(numflt_t a, const mpz_t b, mpfr_t mpfr)
 { 
@@ -190,11 +185,6 @@ static inline bool numflt_set_mpz(numflt_t a, const mpz_t b)
   return res;
 }
 /* mpq -> numflt */
-static inline bool mpq_fits_numflt(const mpq_t a)
-{
-  double k = mpq_get_d(a);
-  return (fabs(k)+1.0) != (double)1.0/(double)0.0;
-}
 /* mpfr is supposed to have exactly the IEEE754 double precision of NUMFLT_MANT_DIG bits */
 static inline bool numflt_set_mpq_tmp(numflt_t a, const mpq_t b, mpfr_t mpfr)
 {
@@ -216,18 +206,10 @@ static inline bool numflt_set_mpq(numflt_t a, const mpq_t b)
   return res;
 }
 /* double -> numflt */
-static inline bool double_fits_numflt(double a)
-{ return true; }
 static inline bool numflt_set_double(numflt_t a, double k)
 { *a = (numflt_native)k; return true; }
 
 /* numflt -> int */
-static inline bool numflt_fits_int(const numflt_t a)
-{ 
-  numflt_native d;
-  numflt_ceil(&d,a);
-  return d >= (numflt_native)(-LONG_MAX) && d<= (numflt_native)LONG_MAX;
-}
 static inline bool int_set_numflt(long int* a, const numflt_t b)
 {
   numflt_native c;
@@ -254,6 +236,32 @@ static inline bool mpq_set_numflt(mpq_t a, const numflt_t b)
 }
 #endif
 /* numflt -> double */
+static inline bool double_set_numflt(double* a, const numflt_t b)
+#if defined(NUMFLT_DOUBLE)
+{ *a = *b; return true; }
+#else
+{ *a = *b; return ((numflt_native)(*a)==*b); }
+#endif
+
+
+static inline bool mpz_fits_numflt(const mpz_t a)
+{
+  double k = mpz_get_d(a);
+  return (fabs(k)+1.0) != (double)1.0/(double)0.0;
+}
+static inline bool mpq_fits_numflt(const mpq_t a)
+{
+  double k = mpq_get_d(a);
+  return (fabs(k)+1.0) != (double)1.0/(double)0.0;
+}
+static inline bool double_fits_numflt(double a)
+{ return true; }
+static inline bool numflt_fits_int(const numflt_t a)
+{ 
+  numflt_native d;
+  numflt_ceil(&d,a);
+  return d >= (numflt_native)(-LONG_MAX) && d<= (numflt_native)LONG_MAX;
+}
 static inline bool numflt_fits_double(const numflt_t a)
 #if defined(NUMFLT_DOUBLE)
 { return true; }
@@ -263,12 +271,7 @@ static inline bool numflt_fits_double(const numflt_t a)
   return fabs(k) != (double)1.0/(double)0.0;
 }
 #endif
-static inline bool double_set_numflt(double* a, const numflt_t b)
-#if defined(NUMFLT_DOUBLE)
-{ *a = *b; return true; }
-#else
-{ *a = *b; return ((numflt_native)(*a)==*b); }
-#endif
+
 /* ====================================================================== */
 /* Only for floating point */
 /* ====================================================================== */

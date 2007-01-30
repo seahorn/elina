@@ -103,35 +103,31 @@ static inline int numint_snprint(char* s, size_t size, const numint_t a);
 static inline void numint_set_int2(numint_t a, long int i, unsigned long int j);
   /* int2 -> numint */
 
-static inline bool mpz_fits_numint(const mpz_t a);
 static inline bool numint_set_mpz(numint_t a, const mpz_t b);
   /* mpz -> numint */
-
-static inline bool mpq_fits_numint(const mpq_t a);
 static inline bool numint_set_mpq(numint_t a, const mpq_t b);
   /* mpq -> numint */
-
-static inline bool double_fits_numint(double a);
 static inline bool numint_set_double(numint_t a, double b);
   /* double -> numint */
 
-static inline bool numint_fits_int(const numint_t a);
 static inline bool int_set_numint(long int* a, const numint_t b);
   /* numint -> int */
-
 static inline bool mpz_set_numint(mpz_t a, const numint_t b);
   /* numint -> mpz */
-
 static inline bool mpq_set_numint(mpq_t a, const numint_t b);
   /* numint -> mpq */
-
-static inline bool numint_fits_double(const numint_t a);
 static inline bool double_set_numint(double* a, const numint_t b);
   /* numint -> double */
 
+static inline bool mpz_fits_numint(const mpz_t a);
+static inline bool mpq_fits_numint(const mpq_t a);
+static inline bool double_fits_numint(double a);
+static inline bool numint_fits_int(const numint_t a);
+static inline bool numint_fits_double(const numint_t a);
+
 /* Optimized versions */
 static inline bool mpq_fits_numint_tmp(const mpq_t a, mpz_t mpz);
-static inline bool numint_set_mpq_tmp(numint_t a, const mpq_t b, 
+static inline bool numint_set_mpq_tmp(numint_t a, const mpq_t b,
 				      mpz_t q, mpz_t r);
 
 /* ====================================================================== */

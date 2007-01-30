@@ -243,8 +243,6 @@ static inline void numrat_set_int2(numrat_t a, long int i, unsigned long int j)
 }
 
 /* mpz -> numrat */
-static inline bool mpz_fits_numrat(const mpz_t a)
-{ return mpz_fits_numint(a); }
 static inline bool numrat_set_mpz(numrat_t a, const mpz_t b)
 { 
   numint_set_mpz(a->n,b);
@@ -253,8 +251,6 @@ static inline bool numrat_set_mpz(numrat_t a, const mpz_t b)
 }
 
 /* mpq -> numrat */
-static inline bool mpq_fits_numrat(const mpq_t a)
-{ return mpz_fits_numint(mpq_numref(a)) && mpz_fits_numint(mpq_denref(a)); }
 static inline bool numrat_set_mpq(numrat_t a, const mpq_t b)
 { 
   numint_set_mpz(a->n,mpq_numref(b));
@@ -263,21 +259,6 @@ static inline bool numrat_set_mpq(numrat_t a, const mpq_t b)
 }
 
 /* double -> numrat */
-static inline bool double_fits_numrat_tmp(double k, mpq_t mpq)
-{
-  mpq_set_d(mpq,k);
-  bool res = mpq_fits_numrat(mpq);
-  return res;
-}
-
-static inline bool double_fits_numrat(double k)
-{
-  mpq_t mpq;
-  mpq_init(mpq);
-  bool res = double_fits_numrat_tmp(k,mpq);
-  mpq_clear(mpq);
-  return res;
-}
 static inline bool numrat_set_double_tmp(numrat_t a, double k, mpq_t mpq)
 {
   mpq_set_d(mpq,k);
@@ -293,12 +274,6 @@ static inline bool numrat_set_double(numrat_t a, double k)
   return true;
 }
 /* numrat -> int */
-static inline bool numrat_fits_int(const numrat_t a)
-{
-  numint_t b;
-  numint_cdiv_q(b,a->n,a->d);
-  return *b<=LONG_MAX && *b>=-LONG_MAX;
-}
 static inline bool int_set_numrat(long int* a, const numrat_t b)
 { 
   numint_t q,r;
@@ -329,8 +304,6 @@ static inline bool mpq_set_numrat(mpq_t a, const numrat_t b)
   return true;
 }
 /* numrat -> double */
-static inline bool numrat_fits_double(const numrat_t a)
-{ return true; }
 /* mpfr should have exactly a precision of 53 bits */
 static inline bool double_set_numrat_tmp(double* a, const numrat_t b, 
 					 mpq_t mpq, mpfr_t mpfr)
@@ -351,6 +324,35 @@ static inline bool double_set_numrat(double* a, const numrat_t b)
   mpfr_clear(mpfr);
   return res;
 }
+
+static inline bool mpz_fits_numrat(const mpz_t a)
+{ return mpz_fits_numint(a); }
+static inline bool mpq_fits_numrat(const mpq_t a)
+{ return mpz_fits_numint(mpq_numref(a)) && mpz_fits_numint(mpq_denref(a)); }
+static inline bool double_fits_numrat_tmp(double k, mpq_t mpq)
+{
+  mpq_set_d(mpq,k);
+  bool res = mpq_fits_numrat(mpq);
+  return res;
+}
+static inline bool double_fits_numrat(double k)
+{
+  mpq_t mpq;
+  mpq_init(mpq);
+  bool res = double_fits_numrat_tmp(k,mpq);
+  mpq_clear(mpq);
+  return res;
+}
+static inline bool numrat_fits_int(const numrat_t a)
+{
+  numint_t b;
+  numint_cdiv_q(b,a->n,a->d);
+  return *b<=LONG_MAX && *b>=-LONG_MAX;
+}
+static inline bool numrat_fits_double(const numrat_t a)
+{ return true; }
+
+
 
 /* ====================================================================== */
 /* Serialization */
