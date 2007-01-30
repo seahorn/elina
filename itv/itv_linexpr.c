@@ -4,7 +4,7 @@
 
 #include "itv_linexpr.h"
 
-void itv_linexpr_init(itv_linexpr_t* expr, size_t size)
+void ITVFUN(linexpr_init)(itv_linexpr_t* expr, size_t size)
 {
   expr->linterm = NULL;
   expr->size = 0;
@@ -12,7 +12,7 @@ void itv_linexpr_init(itv_linexpr_t* expr, size_t size)
   expr->equality = true;
   itv_linexpr_reinit(expr,size);
 }
-void itv_linexpr_reinit(itv_linexpr_t* expr, size_t size)
+void ITVFUN(linexpr_reinit)(itv_linexpr_t* expr, size_t size)
 {
   size_t i;
   expr->linterm = realloc(expr->linterm,size*sizeof(itv_linterm_t));
@@ -27,7 +27,7 @@ void itv_linexpr_reinit(itv_linexpr_t* expr, size_t size)
   expr->size = size;
   return;
 }
-void itv_linexpr_clear(itv_linexpr_t* expr)
+void ITVFUN(linexpr_clear)(itv_linexpr_t* expr)
 {
   size_t i;
   if (expr->linterm){
@@ -40,8 +40,8 @@ void itv_linexpr_clear(itv_linexpr_t* expr)
   }
   itv_clear(expr->cst);
 }
-bool itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
-				 itv_linexpr_t* expr, const ap_linexpr0_t* linexpr0)
+bool ITVFUN(linexpr_set_ap_linexpr0)(itv_internal_t* intern,
+				     itv_linexpr_t* expr, const ap_linexpr0_t* linexpr0)
 {
   size_t i,k,size;
   ap_dim_t dim;
@@ -68,8 +68,8 @@ bool itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
   }
   return res;
 }
-bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
-				 itv_lincons_t* cons, const ap_lincons0_t* lincons0)
+bool ITVFUN(lincons_set_ap_lincons0)(itv_internal_t* intern,
+				     itv_lincons_t* cons, const ap_lincons0_t* lincons0)
 {
   bool exact = itv_linexpr_set_ap_linexpr0(intern, &cons->linexpr,lincons0->linexpr0);
   cons->constyp = lincons0->constyp;
@@ -77,10 +77,10 @@ bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
 }
 
 /* Evaluate an interval linear expression */
-void itv_eval_itv_linexpr(itv_internal_t* intern,
-			  itv_t itv,
-			  const itv_t* p,
-			  const itv_linexpr_t* expr)
+void ITVFUN(eval_itv_linexpr)(itv_internal_t* intern,
+			      itv_t itv,
+			      const itv_t* p,
+			      const itv_linexpr_t* expr)
 {
   int i;
   ap_dim_t dim;
@@ -91,7 +91,7 @@ void itv_eval_itv_linexpr(itv_internal_t* intern,
   itv_set(itv, expr->cst);
   itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq){
     if (*peq){
-      if (num_sgn(pitv->sup)!=0){
+      if (bound_sgn(pitv->sup)!=0){
 	itv_mul_bound(intern,
 		      intern->eval_itv,
 		      p[dim],
@@ -112,10 +112,10 @@ void itv_eval_itv_linexpr(itv_internal_t* intern,
 }
 
 /* Evaluate an interval linear expression */
-bool itv_eval_ap_linexpr0(itv_internal_t* intern,
-			  itv_t itv,
-			  const itv_t* p,
-			  const ap_linexpr0_t* expr)
+bool ITVFUN(eval_ap_linexpr0)(itv_internal_t* intern,
+			      itv_t itv,
+			      const itv_t* p,
+			      const ap_linexpr0_t* expr)
 {
   int i;
   ap_dim_t dim;
@@ -130,7 +130,7 @@ bool itv_eval_ap_linexpr0(itv_internal_t* intern,
     res = res && exact;
     bool eq = exact && pcoeff->discr==AP_COEFF_SCALAR;
     if (eq){
-      if (num_sgn(intern->eval_itv2->sup)!=0){
+      if (bound_sgn(intern->eval_itv2->sup)!=0){
 	itv_mul_bound(intern,
 		      intern->eval_itv,
 		      p[dim],

@@ -11,6 +11,35 @@
 #include "itv_config.h"
 #include "ap_global0.h"
 
+#if defined(NUM_LONGINT)
+#define NUM_SUFFIX li
+#elif defined(NUM_LONGLONGINT)
+#define NUM_SUFFIX lli
+#elif defined(NUM_MPZ)
+#define NUM_SUFFIX mpz
+#elif defined(NUM_LONGRAT)
+#define NUM_SUFFIX lr
+#elif defined(NUM_LONGLONGRAT)
+#define NUM_SUFFIX llr
+#elif defined(NUM_MPQ)
+#define NUM_SUFFIX mpq
+#elif defined(NUM_DOUBLE)
+#define NUM_SUFFIX dbl
+#elif defined(NUM_LONGDOUBLE)
+#define NUM_SUFFIX ldbl
+#else
+#error "HERE"
+#endif
+
+/* ITVFUN(add) expands to itvmpq_add, or itvli_add, ... */
+#define ITVFUN3(SUFFIX,NAME) itv ## SUFFIX ## _ ## NAME
+#define ITVFUN2(x,y) ITVFUN3(x,y)
+#define ITVFUN(x) ITVFUN2(NUM_SUFFIX,x)
+/* ITVAPFUN(ap_coeff_set_itv) expands to ap_coeff_set_itvmpq */
+#define ITVAPFUN3(SUFFIX,NAME) NAME ## SUFFIX
+#define ITVAPFUN2(x,y) ITVAPFUN3(x,y)
+#define ITVAPFUN(x) ITVAPFUN2(NUM_SUFFIX,x)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,13 +70,13 @@ typedef struct itv_internal_t {
 } itv_internal_t;
 
 
-itv_internal_t* itv_internal_alloc();
+static inline itv_internal_t* itv_internal_alloc();
   /* Allocate and initialize internal workspace */
-void itv_internal_free(itv_internal_t* intern);
+static inline void itv_internal_free(itv_internal_t* intern);
   /* Clear and free internal workspace */
 
-void itv_internal_init(itv_internal_t* intern);
-void itv_internal_clear(itv_internal_t* intern);
+static inline void itv_internal_init(itv_internal_t* intern);
+static inline void itv_internal_clear(itv_internal_t* intern);
   /* GMP Semantics */
 
 /* ********************************************************************** */
@@ -69,8 +98,8 @@ static inline void itv_set_top(itv_t a);
 static inline void itv_swap(itv_t a, itv_t b);
 
 /* Normalization and tests */
-bool itv_canonicalize(itv_internal_t* intern,
-		      itv_t a, bool integer);
+static inline bool itv_canonicalize(itv_internal_t* intern,
+				    itv_t a, bool integer);
   /* Canonicalize an interval:
      - if integer is true, narrows bound to integers
      - return true if the interval is bottom
@@ -94,49 +123,131 @@ static inline void itv_widening(itv_t a, const itv_t b, const itv_t c);
   /* Assign a with the standard interval widening of b by c */
 
 /* Arithmetic operations */
-static inline 
-void itv_add(itv_t a, const itv_t b, const itv_t c);
-void itv_sub(itv_t a, const itv_t b, const itv_t c);
-void itv_neg(itv_t a, const itv_t b);
-void itv_mul(itv_internal_t* intern,
-	     itv_t a, const itv_t b, const itv_t c);
-static inline
-void itv_add_bound(itv_t a, const itv_t b, const num_t c);
-void itv_mul_bound(itv_internal_t* intern,
-		   itv_t a, const itv_t b, const bound_t c);
-void itv_div_bound(itv_internal_t* intern,
-		   itv_t a, const itv_t b, const bound_t c);
+static inline void itv_add(itv_t a, const itv_t b, const itv_t c);
+static inline void itv_sub(itv_t a, const itv_t b, const itv_t c);
+static inline void itv_neg(itv_t a, const itv_t b);
+static inline void itv_mul(itv_internal_t* intern,
+			   itv_t a, const itv_t b, const itv_t c);
+static inline void itv_add_bound(itv_t a, const itv_t b, const bound_t c);
+static inline void itv_mul_bound(itv_internal_t* intern,
+				 itv_t a, const itv_t b, const bound_t c);
+static inline void itv_div_bound(itv_internal_t* intern,
+				 itv_t a, const itv_t b, const bound_t c);
   
 
 /* Printing */
-int itv_snprint(char* s, size_t size, const itv_t a);
-void itv_fprint(FILE* stream, const itv_t a);
-static inline
-void itv_print(const itv_t a);
+static inline int itv_snprint(char* s, size_t size, const itv_t a);
+static inline void itv_fprint(FILE* stream, const itv_t a);
+static inline void itv_print(const itv_t a);
 
 /* All these functions return true if the conversion is exact */
-bool itv_set_ap_scalar(itv_internal_t* intern,
-		       itv_t a, const ap_scalar_t* b);
+static inline bool itv_set_ap_scalar(itv_internal_t* intern,
+				     itv_t a, const ap_scalar_t* b);
   /* Convert a ap_scalar_t into a itv_t.
      Assumes the scalar is finite.
      If it returns true, the interval is a single point */
-bool itv_set_ap_interval(itv_internal_t* intern,
-			 itv_t a, const ap_interval_t* b);
+static inline bool itv_set_ap_interval(itv_internal_t* intern,
+				       itv_t a, const ap_interval_t* b);
   /* Convert a ap_interval_t into a itv_t */
-bool itv_set_ap_coeff(itv_internal_t* intern,
-		      itv_t a, const ap_coeff_t* b);
+static inline bool itv_set_ap_coeff(itv_internal_t* intern,
+				    itv_t a, const ap_coeff_t* b);
   /* Convert a ap_coeff_t into a itv_t. */
 
-bool ap_interval_set_itv(itv_internal_t* intern,
-			 ap_interval_t* a, const itv_t b);
+static inline bool ap_interval_set_itv(itv_internal_t* intern,
+				       ap_interval_t* a, const itv_t b);
   /* Convert a itv_t into a ap_interval_t */
-bool ap_coeff_set_itv(itv_internal_t* intern,
-		      ap_coeff_t* a, const itv_t b);
+static inline bool ap_coeff_set_itv(itv_internal_t* intern,
+				    ap_coeff_t* a, const itv_t b);
   /* Convert a itv_t into a ap_coeff_t */
 
 /* ********************************************************************** */
 /* Definition of inline functions */
 /* ********************************************************************** */
+
+void ITVFUN(internal_init)(itv_internal_t* intern);
+static inline void itv_internal_init(itv_internal_t* intern)
+{ ITVFUN(internal_init)(intern); }
+
+void ITVFUN(internal_clear)(itv_internal_t* intern);
+static inline void itv_internal_clear(itv_internal_t* intern)
+{ ITVFUN(internal_clear)(intern); }
+
+itv_internal_t* ITVFUN(internal_alloc)();
+static inline itv_internal_t* itv_internal_alloc()
+{ return ITVFUN(internal_alloc)(); }
+
+void ITVFUN(internal_free)(itv_internal_t* intern);
+static inline void itv_internal_free(itv_internal_t* intern)
+{ ITVFUN(internal_free)(intern); }
+
+bool ITVFUN(canonicalize)(itv_internal_t* intern,
+			  itv_t a, bool integer);
+static inline bool itv_canonicalize(itv_internal_t* intern,
+			       itv_t a, bool integer)
+{ return ITVFUN(canonicalize)(intern,a,integer); }
+
+void ITVFUN(mul_bound)(itv_internal_t* intern,
+		       itv_t a, const itv_t b, const bound_t c);
+static inline void itv_mul_bound(itv_internal_t* intern,
+		       itv_t a, const itv_t b, const bound_t c)
+{ ITVFUN(mul_bound)(intern,a,b,c); }
+
+void ITVFUN(div_bound)(itv_internal_t* intern,
+		       itv_t a, const itv_t b, const bound_t c);
+static inline void itv_div_bound(itv_internal_t* intern,
+			    itv_t a, const itv_t b, const bound_t c)
+{ ITVFUN(div_bound)(intern,a,b,c); }
+
+void ITVFUN(sub)(itv_t a, const itv_t b, const itv_t c);
+static inline void itv_sub(itv_t a, const itv_t b, const itv_t c)
+{ ITVFUN(sub)(a,b,c); }
+
+void ITVFUN(neg)(itv_t a, const itv_t b);
+static inline void itv_neg(itv_t a, const itv_t b)
+{ ITVFUN(neg)(a,b); }
+
+void ITVFUN(mul)(itv_internal_t* intern, itv_t a, const itv_t b, const itv_t c);
+static inline void itv_mul(itv_internal_t* intern, itv_t a, const itv_t b, const itv_t c)
+{ ITVFUN(mul)(intern,a,b,c); }
+
+void ITVFUN(fprint)(FILE* stream, const itv_t a);
+static inline void itv_fprint(FILE* stream, const itv_t a)
+{ ITVFUN(fprint)(stream,a); }
+
+int ITVFUN(snprint)(char* s, size_t size, const itv_t a);
+static inline int itv_snprint(char* s, size_t size, const itv_t a)
+{ return ITVFUN(snprint)(s,size,a); }
+
+bool ITVFUN(set_ap_scalar)(itv_internal_t* intern,
+			   itv_t a, const ap_scalar_t* b);
+static inline bool itv_set_ap_scalar(itv_internal_t* intern,
+				itv_t a, const ap_scalar_t* b)
+{ return ITVFUN(set_ap_scalar)(intern,a,b); }
+
+bool ITVFUN(set_ap_interval)(itv_internal_t* intern,
+			     itv_t a, const ap_interval_t* b);
+static inline bool itv_set_ap_interval(itv_internal_t* intern,
+				  itv_t a, const ap_interval_t* b)
+{ return ITVFUN(set_ap_interval)(intern,a,b); }
+
+bool ITVFUN(set_ap_coeff)(itv_internal_t* intern,
+			  itv_t itv, const ap_coeff_t* coeff);
+static inline bool itv_set_ap_coeff(itv_internal_t* intern,
+			       itv_t itv, const ap_coeff_t* coeff)
+{ return ITVFUN(set_ap_coeff)(intern,itv,coeff); }
+
+bool ITVAPFUN(ap_interval_set_itv)(itv_internal_t* intern,
+				   ap_interval_t* a, const itv_t b);
+static inline bool ap_interval_set_itv(itv_internal_t* intern,
+				  ap_interval_t* a, const itv_t b)
+{ return ITVAPFUN(ap_interval_set_itv)(intern,a,b); }
+
+bool ITVAPFUN(ap_coeff_set_itv)(itv_internal_t* intern,
+				ap_coeff_t* a, const itv_t b);
+static inline bool ap_coeff_set_itv(itv_internal_t* intern,
+			       ap_coeff_t* a, const itv_t b)
+{ return ITVAPFUN(ap_coeff_set_itv)(intern,a,b); }
+
 
 static inline void itv_init(itv_t a)
 {

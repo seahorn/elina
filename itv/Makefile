@@ -29,6 +29,7 @@ DVIPS = dvips
 # Use ICFLAGS to specify machine-independent compilation flags.
 ICFLAGS = \
 -I$(GMP_PREFIX)/include  \
+-I$(MPFR_PREFIX)/include  \
 -I../num \
 -I../apron \
 -Wall -Wconversion -Winline -Wimplicit-function-declaration \
@@ -56,9 +57,16 @@ CCSRC = itv_config.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 CCINC_TO_INSTALL = itv.h itv_config.h
 CCBIN_TO_INSTALL = 
 CCLIB_TO_INSTALL = \
-libitvmpq.a libitvmpq_debug.a \
+libitvli.a libitvli_debug.a \
+libitvlli.a libitvlli_debug.a \
+libitvlr.a libitvlr_debug.a \
 libitvllr.a libitvllr_debug.a \
-libitvdbl.a libitvdbl_debug.a
+libitvmpz.a libitvmpz_debug.a \
+libitvmpq.a libitvmpq_debug.a \
+libitvmpq.a libitvmpq_debug.a \
+libitvdbl.a libitvdbl_debug.a \
+libitvldbl.a libitvldbl_debug.a \
+libitv.a libitv_debug.a
 
 #---------------------------------------
 # Rules
@@ -68,7 +76,7 @@ libitvdbl.a libitvdbl_debug.a
 # depend doc install
 # and the following one
 
-all: allmpq allllr alldbl 
+all: allmpq allllr alldbl libitv.a libitv_debug.a
 
 allmpq: libitvmpq.a libitvmpq_debug.a
 
@@ -111,35 +119,57 @@ dist: $(CCSRC) Makefile itv.texi COPYING README
 # C part
 #-----------------------------------
 
-libitvmpq.a: $(CCMODULES:%=%mpq.o)
-	ar rcs $@ $^
-libitvmpq_debug.a: $(CCMODULES:%=%mpq_debug.o)
+libitv.a: $(CCMODULES:%=%li.o) $(CCMODULES:%=%lli.o) $(CCMODULES:%=%lr.o) $(CCMODULES:%=%llr.o) $(CCMODULES:%=%mpz.o) $(CCMODULES:%=%mpq.o) $(CCMODULES:%=%dbl.o) $(CCMODULES:%=%ldbl.o)
 	ar rcs $@ $^
 
-%mpq.o: %.c
-	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_MPQ -c -o $@ $<
-%mpq_debug.o: %.c
-	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_MPQ -c -o $@ $<
+libitv_debug.a: $(CCMODULES:%=%li_debug.o) $(CCMODULES:%=%lli_debug.o) $(CCMODULES:%=%lr_debug.o) $(CCMODULES:%=%llr_debug.o) $(CCMODULES:%=%mpz_debug.o) $(CCMODULES:%=%mpq_debug.o) $(CCMODULES:%=%dbl_debug.o) $(CCMODULES:%=%ldbl_debug.o)
+	ar rcs $@ $^
 
-libitvllr.a: $(CCMODULES:%=%llr.o)
+libitv%.a: $(subst .c,%.o,$(CCMODULES:%=%.c))
 	ar rcs $@ $^
-libitvllr_debug.a: $(CCMODULES:%=%llr_debug.o)
+libitv%_debug.a: $(subst .c,%_debug.o,$(CCMODULES:%=%.c))
 	ar rcs $@ $^
+
+%li.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_LONGINT -c -o $@ $<
+%li_debug.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_LONGINT -c -o $@ $<
+
+%lli.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_LONGLONGINT -c -o $@ $<
+%lli_debug.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_LONGLONGINT -c -o $@ $<
+
+%lr.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_LONGRAT -c -o $@ $<
+%lr_debug.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_LONGRAT -c -o $@ $<
 
 %llr.o: %.c
 	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
 %llr_debug.o: %.c
 	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_LONGLONGRAT -c -o $@ $<
 
-libitvdbl.a: $(CCMODULES:%=%dbl.o)
-	ar rcs $@ $^
-libitvdbl_debug.a: $(CCMODULES:%=%dbl_debug.o)
-	ar rcs $@ $^
+%mpz.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_MPZ -c -o $@ $<
+%mpz_debug.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_MPZ -c -o $@ $<
+
+%mpq.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_MPQ -c -o $@ $<
+%mpq_debug.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_MPQ -c -o $@ $<
+
 
 %dbl.o: %.c
 	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_DOUBLE -c -o $@ $<
 %dbl_debug.o: %.c
 	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_DOUBLE -c -o $@ $<
+
+%ldbl.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_LONGDOUBLE -c -o $@ $<
+%ldbl_debug.o: %.c
+	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_LONGDOUBLE -c -o $@ $<
 
 testmpq: testmpq_debug.o libitvmpq_debug.a
 	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvmpq_debug -lapron_debug -lgmp -lmpfr -lm
