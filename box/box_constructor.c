@@ -9,42 +9,7 @@
 #include "box_representation.h"
 #include "ap_generic.h"
 
-void box_bound_linexpr_internal(box_internal_t* intern,
-				itv_t itv, 
-				const box_t* a, 
-				const ap_linexpr0_t* expr)
-{
-  int i;
-  ap_dim_t dim;
-  ap_coeff_t *coeff;
-  bool eq;
-  assert(a->p);
-
-  itv_set_ap_coeff(intern->itv, itv, &expr->cst);
-  ap_linexpr0_ForeachLinterm(expr,i,dim,coeff){
-    eq = itv_set_ap_coeff(intern->itv,
-			  intern->bound_linexpr_internal_itv,
-			  coeff);
-    if (eq){
-      if (num_sgn(intern->bound_linexpr_internal_itv->sup)!=0){
-	itv_mul_bound(intern->itv,
-		      intern->bound_linexpr_internal_itv2,
-		      a->p[dim],
-		      intern->bound_linexpr_internal_itv->sup);
-	itv_add(itv, itv, intern->bound_linexpr_internal_itv2);
-      }
-    }
-    else {
-      itv_mul(intern->itv,
-	      intern->bound_linexpr_internal_itv2,
-	      a->p[dim],
-	      intern->bound_linexpr_internal_itv);
-      itv_add(itv, itv, intern->bound_linexpr_internal_itv2);
-    }
-    if (itv_is_top(itv))
-      break;
-  }
-}
+#include "itv_linexpr.h"
 
 /* ********************************************************************** */
 /* 1. Basic constructors */
@@ -224,7 +189,7 @@ tbool_t box_sat_interval(ap_manager_t* man,
   if (a->p==NULL)
     return tbool_true;
 
-  ap_interval_set_itv(intern->sat_interval_interval, a->p[dim]);
+  ap_interval_set_itv(intern->itv, intern->sat_interval_interval, a->p[dim]);
   return tbool_of_bool(ap_interval_is_leq(intern->sat_interval_interval,interval));
 }
 
@@ -241,10 +206,14 @@ tbool_t box_sat_lincons(ap_manager_t* man,
   if (a->p==NULL)
     return tbool_true;
   
-  box_bound_linexpr_internal(intern,
-			     intern->sat_lincons_itv, 
-			     a, 
-			     cons->linexpr0);
+  bool exact = itv_eval_ap_linexpr0(intern->itv,
+				    intern->sat_lincons_itv, 
+				    a->p, 
+				    cons->linexpr0);
+
+  man->result.flag_exact = man->result.flag_best = 
+    exact ? tbool_true : tbool_top;
+
   switch (cons->constyp){
   case AP_CONS_EQ:
     res =
@@ -281,38 +250,46 @@ tbool_t box_sat_lincons(ap_manager_t* man,
 /* ********************************************************************** */
 
 ap_interval_t* box_bound_dimension(ap_manager_t* man,
-				const box_t* a, ap_dim_t dim)
+				   const box_t* a, ap_dim_t dim)
 {
+  bool exact;
+  box_internal_t* intern = (box_internal_t*)man->internal;
   ap_interval_t* interval = ap_interval_alloc();
   if (a->p==NULL){
     ap_interval_set_bottom(interval);
+    exact = true;
   }
   else {
-    ap_interval_set_itv(interval,a->p[dim]);
+    exact = ap_interval_set_itv(intern->itv,interval,a->p[dim]);
+    
   }
   man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_exact = exact ? tbool_true : tbool_top;
   return interval;
 }
 
 /* Returns the interval taken by a linear expression
    over the abstract value */
 ap_interval_t* box_bound_linexpr(ap_manager_t* man,
-			      const box_t* a, const ap_linexpr0_t* expr)
+				 const box_t* a, const ap_linexpr0_t* expr)
 {
+  bool exact;
   ap_interval_t* interval = ap_interval_alloc();
   box_internal_t* intern = (box_internal_t*)man->internal;
 
   if (a->p==NULL){
     ap_interval_set_bottom(interval);
+    exact = true;
   }
   else {
-    box_bound_linexpr_internal(intern,
-			       intern->bound_linexpr_itv,a,expr);
-    ap_interval_set_itv(interval,intern->bound_linexpr_itv);
+    exact = itv_eval_ap_linexpr0(intern->itv,
+				 intern->bound_linexpr_itv,
+				 a->p,
+				 expr);
+    ap_interval_set_itv(intern->itv, interval,intern->bound_linexpr_itv);
   }
   man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_exact = exact ? tbool_true : tbool_top;
   return interval;
 }
 
@@ -355,7 +332,7 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, const box_t* a)
 	ap_coeff_reinit(&expr->cst,AP_COEFF_SCALAR,AP_SCALAR_DOUBLE);
 	scalar = expr->cst.val.scalar;
 
-	ap_scalar_set_num(scalar,bound_numref(a->p[i]->inf),+1);
+	ap_scalar_set_bound(scalar,a->p[i]->inf);
 	ap_scalar_neg(scalar,scalar);
 	array.p[size].constyp = AP_CONS_SUPEQ;
 	array.p[size].linexpr0 = expr;
@@ -365,7 +342,7 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, const box_t* a)
 	expr = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,1);
 	ap_coeff_set_scalar_int(&expr->p.linterm[0].coeff, -1);
 	expr->p.linterm[0].dim = i;
-	ap_scalar_set_num(expr->cst.val.scalar,a->p[i]->sup,+1);
+	ap_scalar_set_bound(expr->cst.val.scalar,a->p[i]->sup);
 	array.p[size].constyp = AP_CONS_SUPEQ;
 	array.p[size].linexpr0 = expr;
 	size++;
@@ -440,11 +417,11 @@ ap_generator0_array_t box_to_generator_array(ap_manager_t* man, const box_t* a)
       for (j=0; j<v; j++){
 	array.p[nblines+nbrays + v + j] = 
 	  ap_generator0_copy(&array.p[nblines+nbrays + j]);
-	ap_scalar_set_num(&scalar,itv->inf,+1);
+	ap_scalar_set_bound(&scalar,itv->inf);
 	ap_scalar_neg(&scalar,&scalar);
 	ap_linexpr0_set_coeff_scalar(array.p[nblines+nbrays + j].linexpr0,
 				     i,&scalar);
-	ap_scalar_set_num(&scalar,itv->sup,+1);
+	ap_scalar_set_bound(&scalar,itv->sup);
 	ap_linexpr0_set_coeff_scalar(array.p[nblines+nbrays + v + j].linexpr0,
 				     i,&scalar);
       }
@@ -469,7 +446,7 @@ ap_generator0_array_t box_to_generator_array(ap_manager_t* man, const box_t* a)
 	array.p[nblines+r] = ap_generator0_make(AP_GEN_RAY,expr);
 	r++;
 	for (j=nblines+nbrays; j<nblines+nbrays+v; j++){
-	  ap_scalar_set_num(&scalar,itv->inf,+1);
+	  ap_scalar_set_bound(&scalar,itv->inf);
 	  ap_scalar_neg(&scalar,&scalar);
 	  ap_linexpr0_set_coeff_scalar(expr,i,&scalar);
 	}	   
@@ -479,7 +456,7 @@ ap_generator0_array_t box_to_generator_array(ap_manager_t* man, const box_t* a)
 	array.p[nblines+r] = ap_generator0_make(AP_GEN_RAY,expr);
 	r++;
 	for (j=nblines+nbrays; j<nblines+nbrays+v; j++){
-	  ap_scalar_set_num(&scalar,itv->sup,+1);
+	  ap_scalar_set_bound(&scalar,itv->sup);
 	  ap_linexpr0_set_coeff_scalar(expr,i,&scalar);
 	}	   
       }
@@ -498,6 +475,7 @@ ap_interval_t** box_to_box(ap_manager_t* man, const box_t* a)
   int i;
   ap_interval_t** interval;
   size_t nbdims;
+  box_internal_t* intern = (box_internal_t*)man->internal;
 
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
@@ -511,7 +489,7 @@ ap_interval_t** box_to_box(ap_manager_t* man, const box_t* a)
        if (a->p==NULL){
 	 ap_interval_set_top(interval[i]);
        } else {
-	 ap_interval_set_itv(interval[i],a->p[i]);
+	 ap_interval_set_itv(intern->itv,interval[i],a->p[i]);
        }
      }
   }
