@@ -448,7 +448,7 @@ bool bound_set_ap_scalar(bound_t a, const ap_scalar_t* b)
   }
 }
 /* Convert a bound_t into an ap_scalar_t */
-bool ap_scalar_set_bound(ap_scalar_t* a, const bound_t b)
+static inline bool ap_scalar_set_bound(ap_scalar_t* a, const bound_t b)
 {
 #if defined(NUM_NUMFLT)
   ap_scalar_reinit(a,AP_SCALAR_DOUBLE);

@@ -100,9 +100,9 @@ static inline void numrat_clear_array(numrat_t* a, size_t size)
 /* ====================================================================== */
 
 static inline void numrat_neg(numrat_t a, const numrat_t b)
-{ numint_neg(a->n,b->n); }
+{ numint_neg(a->n,b->n); numint_set(a->d,b->d); }
 static inline void numrat_abs(numrat_t a, const numrat_t b)
-{ numint_abs(a->n,b->n); }
+{ numint_abs(a->n,b->n); numint_set(a->d,b->d); }
 static inline void numrat_add(numrat_t a, const numrat_t b, const numrat_t c)
 { 
   numint_t d;
@@ -113,8 +113,8 @@ static inline void numrat_add(numrat_t a, const numrat_t b, const numrat_t c)
 }
 static inline void numrat_add_uint(numrat_t a, const numrat_t b, unsigned long int c)
 { 
-  numint_add_uint(numrat_numref(a),numrat_numref(b),c);
-  numint_set(numrat_denref(a),numrat_denref(b));
+  *a->n = *b->n + (numint_native)c * (*b->d);
+  *a->d = *b->d;
   numrat_canonicalize(a);
 }
 static inline void numrat_sub(numrat_t a, const numrat_t b, const numrat_t c)
@@ -127,8 +127,8 @@ static inline void numrat_sub(numrat_t a, const numrat_t b, const numrat_t c)
 }
 static inline void numrat_sub_uint(numrat_t a, const numrat_t b, unsigned long int c)
 { 
-  numint_sub_uint(numrat_numref(a),numrat_numref(b),c);
-  numint_set(numrat_denref(a),numrat_denref(b));
+  *a->n = *b->n - (numint_native)c * (*b->d);
+  *a->d = *b->d;
   numrat_canonicalize(a);
 }
 static inline void numrat_mul(numrat_t a, const numrat_t b, const numrat_t c)
@@ -139,23 +139,35 @@ static inline void numrat_mul(numrat_t a, const numrat_t b, const numrat_t c)
 }
 static inline void numrat_mul_2(numrat_t a, const numrat_t b)
 {
-  if (*b->d % 2 == 0)
+  if (*b->d % 2 == 0){
+    *a->n = *b->n;
     *a->d = *b->d / 2;
-  else
+  }
+  else {
     *a->n = *b->n * 2;
+    *a->d = *b->d;
+  }
 }
 static inline void numrat_div(numrat_t a, const numrat_t b, const numrat_t c)
 {
   *a->n = *b->n * *c->d;
   *a->d = *b->d * *c->n;
+  if (*a->d<0){
+    *a->n = - *a->n;
+    *a->d = - *a->d;
+  }
   numrat_canonicalize(a);   
 }
 static inline void numrat_div_2(numrat_t a, const numrat_t b)
 {
-  if (*b->n % 2 == 0)
+  if (*b->n % 2 == 0){
     *a->n = *b->n / 2;
-  else
+    *a->d = *b->d;
+  }
+  else {
+    *a->n = *b->n;
     *a->d = *b->d * 2;
+  }
 }
 static inline void numrat_floor(numrat_t a, const numrat_t b)
 {
