@@ -97,7 +97,10 @@ static inline bool bound_set_ap_scalar(bound_t a, const ap_scalar_t* b);
 static inline bool ap_scalar_set_bound(ap_scalar_t* a, const bound_t b);
   /* Convert a bound_t into a ap_scalar_t */
   /* Reinitialize a with the best type, depending on bound_t and num_t */
-  /* Return true iff the conversion is exact */
+  /* Return true iff the conversion is exact.
+
+     Normally always return true, with the exception of long double type for
+     num. */
 
 /* ====================================================================== */
 /* Serialization */
