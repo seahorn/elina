@@ -71,9 +71,16 @@ bool ITVFUN(linexpr_set_ap_linexpr0)(itv_internal_t* intern,
 bool ITVFUN(lincons_set_ap_lincons0)(itv_internal_t* intern,
 				     itv_lincons_t* cons, const ap_lincons0_t* lincons0)
 {
-  bool exact = itv_linexpr_set_ap_linexpr0(intern, &cons->linexpr,lincons0->linexpr0);
+  bool exact1 = itv_linexpr_set_ap_linexpr0(intern, &cons->linexpr,lincons0->linexpr0);
   cons->constyp = lincons0->constyp;
-  return exact;
+  if (lincons0->scalar){
+    bool exact2 = num_set_ap_scalar(cons->num,lincons0->scalar);
+    return exact1 && exact2;
+  }
+  else {
+    num_set_int(cons->num,0);
+    return exact1;
+  }
 }
 
 /* Evaluate an interval linear expression */
@@ -150,4 +157,3 @@ bool ITVFUN(eval_ap_linexpr0)(itv_internal_t* intern,
   }
   return res;
 }
-

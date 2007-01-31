@@ -370,31 +370,31 @@ bool ITVAPFUN(ap_coeff_set_itv)(itv_internal_t* intern,
 				ap_coeff_t* a, const itv_t b)
 {
   bool exact;
-  if (bound_infty(b->inf) || bound_infty(b->sup))
-    goto ap_coeff_set_itv_default;
-  bound_neg(intern->ap_conversion_bound, b->inf);
-  if (!bound_equal(intern->ap_conversion_bound, b->sup))
-    goto ap_coeff_set_itv_default;
-  exact = ap_scalar_set_bound(intern->ap_conversion_scalar, b->sup);
-  if (exact){
-    ap_coeff_set_scalar(a, intern->ap_conversion_scalar);
-    return true;
+
+  if (itv_is_point(intern,b)){
+    exact = ap_scalar_set_bound(intern->ap_conversion_scalar, b->sup);
+    if (exact){
+      ap_coeff_set_scalar(a, intern->ap_conversion_scalar);
+      return true;
+    }
+    else {
+      ap_coeff_reinit(a,AP_COEFF_INTERVAL, 
+		      intern->ap_conversion_scalar->discr);
+      ap_scalar_set(a->val.interval->sup, intern->ap_conversion_scalar);
+      bound_neg(intern->ap_conversion_bound, b->inf); /* we now it is finite */
+      ap_scalar_set_bound(a->val.interval->inf, intern->ap_conversion_bound);
+      return false;
+    }
   }
   else {
     ap_coeff_reinit(a,AP_COEFF_INTERVAL, 
-		    intern->ap_conversion_scalar->discr);
-    ap_scalar_set(a->val.interval->sup, intern->ap_conversion_scalar);
-    ap_scalar_set_bound(a->val.interval->inf, intern->ap_conversion_bound);
-    return false;
-  }
- ap_coeff_set_itv_default:
-  ap_coeff_reinit(a,AP_COEFF_INTERVAL, 
 #if defined(NUM_NUMFLT)
-		  AP_SCALAR_DOUBLE
+		    AP_SCALAR_DOUBLE
 #else
-		  AP_SCALAR_MPQ
+		    AP_SCALAR_MPQ
 #endif
-		  );
-  return ap_interval_set_itv(intern,a->val.interval,b);
+		    );
+    return ap_interval_set_itv(intern,a->val.interval,b);
+  }
 }
 

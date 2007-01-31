@@ -32,6 +32,7 @@ typedef struct itv_linexpr_t {
 typedef struct itv_lincons_t {
   itv_linexpr_t linexpr;
   ap_constyp_t constyp;
+  num_t num;
 } itv_lincons_t;
 
 /* Iterator (Macro): use:
@@ -115,11 +116,13 @@ static inline
 void itv_lincons_init(itv_lincons_t* cons)
 {
   itv_linexpr_init(&cons->linexpr,0);
+  num_init(cons->num);
 }
 static inline
 void itv_lincons_clear(itv_lincons_t* cons)
 {
   itv_linexpr_clear(&cons->linexpr);
+  num_clear(cons->num);
 }
 
 bool ITVFUN(linexpr_set_ap_linexpr0)(itv_internal_t* intern,

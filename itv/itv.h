@@ -108,6 +108,8 @@ static inline bool itv_canonicalize(itv_internal_t* intern,
 static inline bool itv_is_top(const itv_t a);
 static inline bool itv_is_bottom(itv_internal_t* intern, itv_t a);
   /* Return true iff the interval is resp. [-oo,+oo] or empty */
+static inline bool itv_is_point(itv_internal_t* intern, const itv_t a);
+  /* Return true iff the interval is a single point */
 static inline bool itv_is_leq(const itv_t a, const itv_t b);
   /* Inclusion test */
 static inline bool itv_is_eq(const itv_t a, const itv_t b);
@@ -239,13 +241,13 @@ static inline bool itv_set_ap_coeff(itv_internal_t* intern,
 bool ITVAPFUN(ap_interval_set_itv)(itv_internal_t* intern,
 				   ap_interval_t* a, const itv_t b);
 static inline bool ap_interval_set_itv(itv_internal_t* intern,
-				  ap_interval_t* a, const itv_t b)
+				       ap_interval_t* a, const itv_t b)
 { return ITVAPFUN(ap_interval_set_itv)(intern,a,b); }
 
 bool ITVAPFUN(ap_coeff_set_itv)(itv_internal_t* intern,
 				ap_coeff_t* a, const itv_t b);
 static inline bool ap_coeff_set_itv(itv_internal_t* intern,
-			       ap_coeff_t* a, const itv_t b)
+				    ap_coeff_t* a, const itv_t b)
 { return ITVAPFUN(ap_coeff_set_itv)(intern,a,b); }
 
 
@@ -307,6 +309,15 @@ static inline bool itv_is_top(const itv_t a)
 static inline bool itv_is_bottom(itv_internal_t* intern, itv_t a)
 {
   return itv_canonicalize(intern, a, false);
+}
+static inline bool itv_is_point(itv_internal_t* intern, const itv_t a)
+{
+  if (!bound_infty(a->inf) && !bound_infty(a->sup)){
+    num_neg(intern->canonicalize_num,bound_numref(a->inf));
+    return num_equal(intern->canonicalize_num,bound_numref(a->sup));
+  }
+  else
+    return false;
 }
 static inline bool itv_is_leq(const itv_t a, const itv_t b)
 {
