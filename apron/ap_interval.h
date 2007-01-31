@@ -35,6 +35,9 @@ void ap_interval_reinit(ap_interval_t* interval, ap_scalar_discr_t ap_scalar_dis
 void ap_interval_free(ap_interval_t* interval);
   /* Free an interval */
 void ap_interval_fprint(FILE* stream, const ap_interval_t* a);
+static inline 
+void ap_interval_print(const ap_interval_t* a)
+{ ap_interval_fprint(stdout,a); }
   /* Printing */
 static inline
 void ap_interval_swap(ap_interval_t* a, ap_interval_t* b)
