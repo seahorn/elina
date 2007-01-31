@@ -48,9 +48,12 @@ typedef struct ap_lincons1_array_t {
 /* ====================================================================== */
 
 static inline
-ap_lincons1_t ap_lincons1_make(ap_constyp_t constyp, ap_linexpr1_t* expr);
+ap_lincons1_t ap_lincons1_make(ap_constyp_t constyp, 
+			       ap_linexpr1_t* expr,
+			       ap_scalar_t* scalar);
   /* Create a constraint of given type with the given expression.
-     The expression is not duplicated. */
+     The expression and the optional coefficient are not duplicated,
+     just pointed to. */
 
 ap_lincons1_t ap_lincons1_make_unsat(ap_environment_t* env);
   /* Create the constraint -1>=0 */
@@ -84,6 +87,10 @@ ap_environment_t* ap_lincons1_envref(const ap_lincons1_t* cons);
 static inline
 ap_constyp_t* ap_lincons1_constypref(ap_lincons1_t* cons);
   /* Get a reference to the type of constraint */
+
+static inline
+ap_scalar_t* ap_lincons1_scalarref(ap_lincons1_t* cons);
+  /* Get a reference to the auxiliary coefficient of the constraint */
 
 static inline
 ap_linexpr1_t ap_lincons1_linexpr1ref(const ap_lincons1_t* cons);
@@ -207,10 +214,12 @@ ap_lincons1_array_extend_environment(ap_lincons1_array_t* narray,
 /* ********************************************************************** */
 
 static inline
-ap_lincons1_t ap_lincons1_make(ap_constyp_t constyp, ap_linexpr1_t* expr)
+ap_lincons1_t ap_lincons1_make(ap_constyp_t constyp, 
+			       ap_linexpr1_t* expr,
+			       ap_scalar_t* scalar)
 {
   ap_lincons1_t cons;
-  cons.lincons0 = ap_lincons0_make(constyp,expr->linexpr0);
+  cons.lincons0 = ap_lincons0_make(constyp,expr->linexpr0,scalar);
   cons.env = expr->env;
   return cons;
 }
@@ -234,6 +243,10 @@ ap_environment_t* ap_lincons1_envref(const ap_lincons1_t* cons){
 static inline
 ap_constyp_t* ap_lincons1_constypref(ap_lincons1_t* cons){
   return &cons->lincons0.constyp;
+}
+static inline
+ap_scalar_t* ap_lincons1_scalarref(ap_lincons1_t* cons){
+  return cons->lincons0.scalar;
 }
 static inline
 ap_linexpr1_t ap_lincons1_linexpr1ref(const ap_lincons1_t* cons){

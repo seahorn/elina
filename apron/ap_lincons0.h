@@ -28,13 +28,19 @@ extern "C" {
 typedef enum ap_constyp_t {
   AP_CONS_EQ,    /* equality constraint */
   AP_CONS_SUPEQ, /* >= constraint */
-  AP_CONS_SUP   /* > constraint */
+  AP_CONS_SUP,   /* > constraint */
+  AP_CONS_EQMOD, /* congruence equality constraint */
+  AP_CONS_DISEQ  /* disequality constraint */
 } ap_constyp_t;
 
 /* Represents the constraint "expr constyp 0" */
 typedef struct ap_lincons0_t {
-  ap_linexpr0_t* linexpr0;   /* expression */
-  ap_constyp_t constyp; /* type of constraint */
+  ap_linexpr0_t* linexpr0;  /* expression */
+  ap_constyp_t constyp;     /* type of constraint */
+  ap_scalar_t* scalar;      /* maybe NULL.  
+
+			       For EQMOD constraint, indicates the
+			       modulo */
 } ap_lincons0_t;
 
 /* Array of constraints */
@@ -52,9 +58,11 @@ typedef struct ap_lincons0_array_t {
 /* ====================================================================== */
 
 static inline
-ap_lincons0_t ap_lincons0_make(ap_constyp_t constyp, ap_linexpr0_t* linexpr);
+ap_lincons0_t ap_lincons0_make(ap_constyp_t constyp, 
+			       ap_linexpr0_t* linexpr,
+			       ap_scalar_t* scalar);
   /* Create a constraint of given type with the given expression.
-     The expression is not duplicated, just pointed to */
+     The expression and the coefficient are not duplicated, just pointed to */
 
 ap_lincons0_t ap_lincons0_make_unsat(void);
   /* Create the constraint -1>=0 */
@@ -68,7 +76,7 @@ void ap_lincons0_clear(ap_lincons0_t* cons);
   /* Free the linear expression of the constraint and set pointer to NULL */
 
 void ap_lincons0_fprint(FILE* stream,
-                     const ap_lincons0_t* cons, char** name_of_dim);
+			const ap_lincons0_t* cons, char** name_of_dim);
   /* Printing a linear constraint */
 
 /* ====================================================================== */
@@ -85,17 +93,17 @@ bool ap_lincons0_is_unsat(const ap_lincons0_t* cons);
 
 static inline
 void ap_lincons0_add_dimensions_with(ap_lincons0_t* cons,
-				  const ap_dimchange_t* dimchange);
+				     const ap_dimchange_t* dimchange);
 static inline
 ap_lincons0_t ap_lincons0_add_dimensions(const ap_lincons0_t* cons,
-				   const ap_dimchange_t* dimchange);
+					 const ap_dimchange_t* dimchange);
 
 static inline
 void ap_lincons0_permute_dimensions_with(ap_lincons0_t* cons,
-				      const ap_dimperm_t* perm);
+					 const ap_dimperm_t* perm);
 static inline
 ap_lincons0_t ap_lincons0_permute_dimensions(const ap_lincons0_t* cons,
-				       const ap_dimperm_t* perm);
+					     const ap_dimperm_t* perm);
 
 /* ********************************************************************** */
 /* II. Array of linear constraints */
@@ -109,37 +117,40 @@ void ap_lincons0_array_clear(ap_lincons0_array_t* array);
   /* Clear the constraints of the array, and then the array itself */
 
 void ap_lincons0_array_fprint(FILE* stream,
-                         const ap_lincons0_array_t* ap_lincons0_array,
-                         char** name_of_dim);
+			      const ap_lincons0_array_t* ap_lincons0_array,
+			      char** name_of_dim);
   /* Printing */
 
 /* ====================================================================== */
 /* II.1 Change of dimensions and permutations */
 /* ====================================================================== */
 void ap_lincons0_array_add_dimensions_with(ap_lincons0_array_t* array,
-					const ap_dimchange_t* dimchange);
+					   const ap_dimchange_t* dimchange);
 ap_lincons0_array_t ap_lincons0_array_add_dimensions(const ap_lincons0_array_t* array,
-					       const ap_dimchange_t* dimchange);
+						     const ap_dimchange_t* dimchange);
 
 void ap_lincons0_array_permute_dimensions_with(ap_lincons0_array_t* array,
-					    const ap_dimperm_t* perm);
+					       const ap_dimperm_t* perm);
 ap_lincons0_array_t ap_lincons0_array_permute_dimensions(const ap_lincons0_array_t* array,
-						   const ap_dimperm_t* perm);
+							 const ap_dimperm_t* perm);
 
 /* ********************************************************************** */
 /* III. Inline functions definitions */
 /* ********************************************************************** */
 
-static inline ap_lincons0_t ap_lincons0_make(ap_constyp_t constyp, ap_linexpr0_t* linexpr)
+static inline ap_lincons0_t ap_lincons0_make(ap_constyp_t constyp, ap_linexpr0_t* linexpr, ap_scalar_t* scalar)
 {
   ap_lincons0_t cons;
   cons.constyp = constyp;
   cons.linexpr0 = linexpr;
+  cons.scalar = scalar;
   return cons;
 }
 static inline ap_lincons0_t ap_lincons0_copy(const ap_lincons0_t* cons)
 {
-  return ap_lincons0_make(cons->constyp, ap_linexpr0_copy(cons->linexpr0));
+  return ap_lincons0_make(cons->constyp, 
+			  ap_linexpr0_copy(cons->linexpr0),
+			  cons->scalar ? ap_scalar_alloc_set(cons->scalar) : NULL);
 }
 static inline void ap_lincons0_clear(ap_lincons0_t* lincons)
 {
@@ -147,6 +158,10 @@ static inline void ap_lincons0_clear(ap_lincons0_t* lincons)
     ap_linexpr0_free(lincons->linexpr0);
   }
   lincons->linexpr0 = NULL;
+  if (lincons->scalar){
+    ap_scalar_free(lincons->scalar);
+  }
+  lincons->scalar = NULL;
 }
 
 static inline
@@ -158,7 +173,8 @@ ap_lincons0_t ap_lincons0_add_dimensions(const ap_lincons0_t* cons,
 				   const ap_dimchange_t* dimchange)
 {
   return ap_lincons0_make(cons->constyp,
-		       ap_linexpr0_add_dimensions(cons->linexpr0,dimchange));
+			  ap_linexpr0_add_dimensions(cons->linexpr0,dimchange),
+			  cons->scalar ? ap_scalar_alloc_set(cons->scalar) : NULL);
 }
 static inline
 void ap_lincons0_permute_dimensions_with(ap_lincons0_t* cons,
@@ -169,9 +185,10 @@ ap_lincons0_t ap_lincons0_permute_dimensions(const ap_lincons0_t* cons,
 					     const ap_dimperm_t* perm)
 {
   return ap_lincons0_make(cons->constyp,
-		       ap_linexpr0_permute_dimensions(cons->linexpr0,perm));
+			  ap_linexpr0_permute_dimensions(cons->linexpr0,perm),
+			  cons->scalar ? ap_scalar_alloc_set(cons->scalar) : NULL);
 }
-
+  
 #ifdef __cplusplus
 }
 #endif

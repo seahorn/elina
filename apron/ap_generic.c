@@ -211,7 +211,7 @@ ap_generic_asssub_linexpr_array(bool assign,
     ap_dim_t dimp = permutation.dim[dim];
     ap_linexpr0_t* expr = ap_linexpr0_add_dimensions(texpr[i],&dimchange);
     ap_linexpr0_set_coeff_scalar_double(expr,dimp,-1.0);
-    ap_lincons0_t cons = ap_lincons0_make(AP_CONS_EQ,expr);
+    ap_lincons0_t cons = ap_lincons0_make(AP_CONS_EQ,expr,NULL);
     array.p[i] = cons;
   }
   /* 6. Permute unprimed and primed dimensions if !assign */

@@ -125,8 +125,8 @@ bool ap_lincons1_set_list(ap_lincons1_t* cons, ...)
 /* ====================================================================== */
 
 bool ap_lincons1_extend_environment(ap_lincons1_t* ncons,
-				 const ap_lincons1_t* cons,
-				 ap_environment_t* nenv)
+				    const ap_lincons1_t* cons,
+				    ap_environment_t* nenv)
 {
   ap_dimchange_t* dimchange = ap_environment_dimchange(cons->env,nenv);
   if (dimchange==NULL) return true;
@@ -185,7 +185,7 @@ void ap_lincons1_array_fprint(FILE* stream,
 /* ====================================================================== */
 
 ap_lincons1_t ap_lincons1_array_get(const ap_lincons1_array_t* array,
-			      size_t index)
+				    size_t index)
 {
   ap_lincons1_t cons;
   cons.lincons0 = array->lincons0_array.p[index];
@@ -224,8 +224,8 @@ ap_lincons1_array_extend_environment_with(ap_lincons1_array_t* array,
 }
 bool
 ap_lincons1_array_extend_environment(ap_lincons1_array_t* narray,
-				  const ap_lincons1_array_t* array,
-				  ap_environment_t* nenv)
+				     const ap_lincons1_array_t* array,
+				     ap_environment_t* nenv)
 {
   ap_dimchange_t* dimchange = ap_environment_dimchange(array->env,nenv);
   if (dimchange==NULL) return true;

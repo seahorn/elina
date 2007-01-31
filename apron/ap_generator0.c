@@ -13,12 +13,26 @@
 
 void ap_generator0_fprint(FILE* stream, const ap_generator0_t* gen, char** name_of_dim)
 {
-  fprintf(stream,
-	  gen->gentyp == AP_GEN_LINE ?
-	  "LINE:   " :
-	  ( gen->gentyp == AP_GEN_RAY ?
-	    "RAY:    " :
-	    "VERTEX: " ));
+  char* str = NULL;
+
+  switch(gen->gentyp){
+  case AP_GEN_LINE:
+    str = "LINE:    ";
+    break;
+  case AP_GEN_RAY:
+    str = "RAY:     ";
+    break;
+  case AP_GEN_VERTEX:
+    str = "VERTEX:  ";
+    break;
+  case AP_GEN_LINEMOD:
+    str = "LINEMOD: ";
+    break;
+  case AP_GEN_RAYMOD:
+    str = "RAYMOD:  ";
+    break;
+  }
+  fprintf(stream,str);
   ap_linexpr0_fprint(stream,gen->linexpr0,name_of_dim);
 }
 
@@ -75,7 +89,7 @@ void ap_generator0_array_fprint(FILE* stream,
 /* ====================================================================== */
 
 void ap_generator0_array_add_dimensions_with(ap_generator0_array_t* array,
-					  const ap_dimchange_t* dimchange)
+					     const ap_dimchange_t* dimchange)
 {
   size_t i;
   for(i=0; i<array->size; i++){
@@ -91,10 +105,7 @@ ap_generator0_array_t ap_generator0_array_add_dimensions(const ap_generator0_arr
 
   narray = ap_generator0_array_make(array->size);
   for(i=0; i<array->size; i++){
-    const ap_linexpr0_t* expr = array->p[i].linexpr0;
-    ap_linexpr0_t* nexpr = expr ? ap_linexpr0_add_dimensions(expr,dimchange) : NULL;
-    narray.p[i].linexpr0 = nexpr;
-    narray.p[i].gentyp = array->p[i].gentyp;
+    narray.p[i] = ap_generator0_add_dimensions(&array->p[i], dimchange);
   }
   return narray;
 }
@@ -116,10 +127,7 @@ ap_generator0_array_t ap_generator0_array_permute_dimensions(const ap_generator0
   
   narray = ap_generator0_array_make(array->size);
   for(i=0; i<array->size; i++){
-    const ap_linexpr0_t* expr = array->p[i].linexpr0;
-    ap_linexpr0_t* nexpr = expr ? ap_linexpr0_permute_dimensions(expr,perm) : NULL;
-    narray.p[i].linexpr0 = nexpr;
-    narray.p[i].gentyp = array->p[i].gentyp;
+    narray.p[i] = ap_generator0_permute_dimensions(&array->p[i], perm);
   }
   return narray;
 }

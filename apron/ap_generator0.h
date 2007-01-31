@@ -28,7 +28,9 @@ extern "C" {
 typedef enum ap_gentyp_t {
   AP_GEN_LINE,
   AP_GEN_RAY,
-  AP_GEN_VERTEX
+  AP_GEN_VERTEX,
+  AP_GEN_LINEMOD,
+  AP_GEN_RAYMOD
 } ap_gentyp_t;
 
 /* Generator */
@@ -62,7 +64,7 @@ void ap_generator0_clear(ap_generator0_t* gen);
   /* Free the linear expression of the generator and set pointer to NULL */
 
 void ap_generator0_fprint(FILE* stream,
-                       const ap_generator0_t* gen, char** name_of_dim);
+			  const ap_generator0_t* gen, char** name_of_dim);
   /* Printing a generator */
 
 /* ====================================================================== */
@@ -71,17 +73,17 @@ void ap_generator0_fprint(FILE* stream,
 
 static inline
 void ap_generator0_add_dimensions_with(ap_generator0_t* gen,
-				    const ap_dimchange_t* dimchange);
+				       const ap_dimchange_t* dimchange);
 static inline
 ap_generator0_t ap_generator0_add_dimensions(const ap_generator0_t* gen,
-				       const ap_dimchange_t* dimchange);
+					     const ap_dimchange_t* dimchange);
 
 static inline
 void ap_generator0_permute_dimensions_with(ap_generator0_t* gen,
-					const ap_dimperm_t* perm);
+					   const ap_dimperm_t* perm);
 static inline
 ap_generator0_t ap_generator0_permute_dimensions(const ap_generator0_t* gen,
-					   const ap_dimperm_t* perm);
+						 const ap_dimperm_t* perm);
 
 /* ********************************************************************** */
 /* II. Array of Generators */
@@ -95,17 +97,17 @@ void ap_generator0_array_clear(ap_generator0_array_t* ap_generator0_array);
   /* Clear the generators of the array, and then the array itself */
 
 void ap_generator0_array_fprint(FILE* stream,
-                           const ap_generator0_array_t* ap_generator0_array,
-			     char** name_of_dim);
+				const ap_generator0_array_t* ap_generator0_array,
+				char** name_of_dim);
 /* Printing */
 
 /* ====================================================================== */
 /* II.1 Change of dimensions and permutations */
 /* ====================================================================== */
 void ap_generator0_array_add_dimensions_with(ap_generator0_array_t* array,
-					  const ap_dimchange_t* dimchange);
+					     const ap_dimchange_t* dimchange);
 ap_generator0_array_t ap_generator0_array_add_dimensions(const ap_generator0_array_t* array,
-						   const ap_dimchange_t* dimchange);
+							 const ap_dimchange_t* dimchange);
 
 void ap_generator0_array_permute_dimensions_with(ap_generator0_array_t* array,
 						 const ap_dimperm_t* perm);
@@ -137,25 +139,25 @@ static inline void ap_generator0_clear(ap_generator0_t* generator)
 
 static inline
 void ap_generator0_add_dimensions_with(ap_generator0_t* gen,
-				  const ap_dimchange_t* dimchange)
+				       const ap_dimchange_t* dimchange)
 { ap_linexpr0_add_dimensions_with(gen->linexpr0,dimchange); }
 static inline
 ap_generator0_t ap_generator0_add_dimensions(const ap_generator0_t* gen,
-				   const ap_dimchange_t* dimchange)
+					     const ap_dimchange_t* dimchange)
 {
   return ap_generator0_make(gen->gentyp,
-			 ap_linexpr0_add_dimensions(gen->linexpr0,dimchange));
+			    ap_linexpr0_add_dimensions(gen->linexpr0,dimchange));
 }
 static inline
 void ap_generator0_permute_dimensions_with(ap_generator0_t* gen,
-				      const ap_dimperm_t* perm)
+					   const ap_dimperm_t* perm)
 { ap_linexpr0_permute_dimensions_with(gen->linexpr0,perm); }
 static inline
 ap_generator0_t ap_generator0_permute_dimensions(const ap_generator0_t* gen,
-				       const ap_dimperm_t* perm)
+						 const ap_dimperm_t* perm)
 {
   return ap_generator0_make(gen->gentyp,
-			 ap_linexpr0_permute_dimensions(gen->linexpr0,perm));
+			    ap_linexpr0_permute_dimensions(gen->linexpr0,perm));
 }
 
 #ifdef __cplusplus
