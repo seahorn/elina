@@ -6,6 +6,7 @@
 #define _NUMRAT_H_
 
 #include "gmp.h"
+#include "ap_scalar.h"
 #include "num_config.h"
 
 /* We assume that the basic NUMINT on which rational is built is properly
@@ -91,6 +92,8 @@ static inline bool numrat_set_mpq(numrat_t a, const mpq_t b);
   /* mpq -> numrat */
 static inline bool numrat_set_double(numrat_t a, double b);
   /* double -> numrat */
+static inline bool numrat_set_ap_scalar(numrat_t a, const ap_scalar_t* b);
+  /* (finite) ap_scalar -> numrat */
 static inline bool int_set_numrat(long int* a, const numrat_t b);
   /* numrat -> int */
 static inline bool mpz_set_numrat(mpz_t a, const numrat_t b);
@@ -99,6 +102,8 @@ static inline bool mpq_set_numrat(mpq_t a, const numrat_t b);
   /* numrat -> mpq */
 static inline bool double_set_numrat(double* a, const numrat_t b);
   /* numrat -> double */
+static inline bool ap_scalar_set_numrat(ap_scalar_t* a, const numrat_t b);
+  /* numrat -> ap_scalar */
 
 static inline bool mpz_fits_numrat(const mpz_t a);
 static inline bool mpq_fits_numrat(const mpq_t a);
@@ -138,5 +143,24 @@ static inline unsigned char numrat_serialize_id(void);
 static inline size_t numrat_serialize(void* dst, const numrat_t src);
 static inline size_t numrat_deserialize(numrat_t dst, const void* src);
 static inline size_t numrat_serialized_size(const numrat_t a);
+
+
+/* */
+static inline bool numrat_set_ap_scalar(numrat_t a, const ap_scalar_t* b)
+{
+  assert (ap_scalar_infty(b)==0);
+  switch (b->discr){
+  case AP_SCALAR_MPQ:
+    return numrat_set_mpq(a,b->val.mpq);
+  case AP_SCALAR_DOUBLE:
+    return numrat_set_double(a,b->val.dbl);
+  default: abort();
+  }
+}
+static inline bool ap_scalar_set_numrat(ap_scalar_t* a, const numrat_t b)
+{
+  ap_scalar_reinit(a,AP_SCALAR_MPQ);
+  return mpq_set_numrat(a->val.mpq,b);
+}
 
 #endif

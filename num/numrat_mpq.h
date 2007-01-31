@@ -14,6 +14,7 @@
 
 #include "gmp.h"
 #include "mpfr.h"
+#include "ap_scalar.h"
 
 #include "num_config.h"
 

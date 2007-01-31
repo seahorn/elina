@@ -13,6 +13,7 @@
 #include <assert.h>
 
 #include "gmp.h"
+#include "ap_scalar.h"
 
 #include "num_config.h"
 /* Require C99 compliant compiler */

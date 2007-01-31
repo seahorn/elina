@@ -121,6 +121,8 @@ static inline bool num_set_mpq(num_t a, const mpq_t b);
   /* mpq -> num */
 static inline bool num_set_double(num_t a, double b);
   /* double -> num */
+static inline bool num_set_ap_scalar(num_t a, const ap_scalar_t* b);
+  /* (finite) ap_scalar -> num */
 
 static inline bool int_set_num(long int* a, const num_t b);
   /* num -> int */
@@ -130,6 +132,8 @@ static inline bool mpq_set_num(mpq_t a, const num_t b);
   /* num -> mpq */
 static inline bool double_set_num(double* a, const num_t b);
   /* num -> double */
+static inline bool ap_scalar_set_num(ap_scalar_t* a, const num_t b);
+  /* num -> ap_scalar */
 
 static inline bool mpz_fits_num(const mpz_t a);
 static inline bool mpq_fits_num(const mpq_t a);

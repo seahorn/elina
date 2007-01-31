@@ -7,6 +7,7 @@
 
 #include "gmp.h"
 #include "mpfr.h"
+#include "ap_scalar.h"
 #include "num_config.h"
 
 #if defined(NUMFLT_DOUBLE) || defined(NUMFLT_LONGDOUBLE)
@@ -88,22 +89,26 @@ static inline int  numflt_snprint(char* s, size_t size, const numflt_t a);
 /* ====================================================================== */
 
 static inline void numflt_set_int2(numflt_t a, long int i, unsigned long int j);
-  /* int2 -> num */
+  /* int2 -> numflt */
 static inline bool numflt_set_mpz(numflt_t a, const mpz_t b);
-  /* mpz -> num */
+  /* mpz -> numflt */
 static inline bool numflt_set_mpq(numflt_t a, const mpq_t b);
-  /* mpq -> num */
+  /* mpq -> numflt */
 static inline bool numflt_set_double(numflt_t a, double b);
-  /* double -> num */
+  /* double -> numflt */
+static inline bool numflt_set_ap_scalar(numflt_t a, const ap_scalar_t* b);
+  /* (finite) ap_scalar -> numflt */
 
 static inline bool int_set_numflt(long int* a, const numflt_t b);
-  /* num -> int */
+  /* numflt -> int */
 static inline bool mpz_set_numflt(mpz_t a, const numflt_t b);
-  /* num -> mpz */
+  /* numflt -> mpz */
 static inline bool mpq_set_numflt(mpq_t a, const numflt_t b);
-  /* num -> mpq */
+  /* numflt -> mpq */
 static inline bool double_set_numflt(double* a, const numflt_t b);
-  /* num -> double */
+  /* numflt -> double */
+static inline bool ap_scalar_set_numflt(ap_scalar_t* a, const numflt_t b);
+  /* numflt -> ap_scalar */
 
 static inline bool mpz_fits_numflt(const mpz_t a);
 static inline bool mpq_fits_numflt(const mpq_t a);
@@ -133,5 +138,24 @@ static inline unsigned char numflt_serialize_id(void)
 static inline size_t numflt_serialize(void* dst, const numflt_t src);
 static inline size_t numflt_deserialize(numflt_t dst, const void* src);
 static inline size_t numflt_serialized_size(const numflt_t a);
+
+
+/* */
+static inline bool numflt_set_ap_scalar(numflt_t a, const ap_scalar_t* b)
+{
+  assert (ap_scalar_infty(b)==0);
+  switch (b->discr){
+  case AP_SCALAR_MPQ:
+    return numflt_set_mpq(a,b->val.mpq);
+  case AP_SCALAR_DOUBLE:
+    return numflt_set_double(a,b->val.dbl);
+  default: abort();
+  }
+}
+static inline bool ap_scalar_set_numflt(ap_scalar_t* a, const numflt_t b)
+{
+  ap_scalar_reinit(a,AP_SCALAR_DOUBLE);
+  return double_set_numflt(&a->val.dbl,b);
+}
 
 #endif

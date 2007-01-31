@@ -6,6 +6,7 @@
 #define _NUMINT_H_
 
 #include "gmp.h"
+#include "ap_scalar.h"
 
 #include "num_config.h"
 
@@ -109,6 +110,8 @@ static inline bool numint_set_mpq(numint_t a, const mpq_t b);
   /* mpq -> numint */
 static inline bool numint_set_double(numint_t a, double b);
   /* double -> numint */
+static inline bool numint_set_ap_scalar(numint_t a, const ap_scalar_t* b);
+  /* (finite) ap_scalar -> numint */
 
 static inline bool int_set_numint(long int* a, const numint_t b);
   /* numint -> int */
@@ -118,6 +121,8 @@ static inline bool mpq_set_numint(mpq_t a, const numint_t b);
   /* numint -> mpq */
 static inline bool double_set_numint(double* a, const numint_t b);
   /* numint -> double */
+static inline bool ap_scalar_set_numint(ap_scalar_t* a, const numint_t b);
+  /* numint -> ap_scalar */
 
 static inline bool mpz_fits_numint(const mpz_t a);
 static inline bool mpq_fits_numint(const mpq_t a);
@@ -138,5 +143,24 @@ static inline unsigned char numint_serialize_id(void);
 static inline size_t numint_serialize(void* dst, const numint_t src);
 static inline size_t numint_deserialize(numint_t dst, const void* src);
 static inline size_t numint_serialized_size(const numint_t a);
+
+
+/* */
+static inline bool numint_set_ap_scalar(numint_t a, const ap_scalar_t* b)
+{
+  assert (ap_scalar_infty(b)==0);
+  switch (b->discr){
+  case AP_SCALAR_MPQ:
+    return numint_set_mpq(a,b->val.mpq);
+  case AP_SCALAR_DOUBLE:
+    return numint_set_double(a,b->val.dbl);
+  default: abort();
+  }
+}
+static inline bool ap_scalar_set_numint(ap_scalar_t* a, const numint_t b)
+{
+  ap_scalar_reinit(a,AP_SCALAR_MPQ);
+  return mpq_set_numint(a->val.mpq,b);
+}
 
 #endif
