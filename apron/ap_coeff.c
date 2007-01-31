@@ -109,6 +109,18 @@ void ap_coeff_free(ap_coeff_t* coeff)
   free(coeff);
 }
 
+void ap_coeff_fprint(FILE* stream, const ap_coeff_t* a)
+{
+  switch(a->discr){
+  case AP_COEFF_SCALAR:
+    ap_scalar_fprint(stdout,a->val.scalar);
+    break;
+  case AP_COEFF_INTERVAL:
+    ap_interval_fprint(stdout,a->val.interval);
+    break;
+  }
+}
+
 void ap_coeff_reduce(ap_coeff_t* coeff)
 {
   if (coeff->discr==AP_COEFF_INTERVAL){

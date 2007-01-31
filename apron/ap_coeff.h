@@ -30,7 +30,7 @@ typedef enum ap_coeff_discr_t {
 typedef struct ap_coeff_t {
   ap_coeff_discr_t discr; /* discriminant for coefficient */
   union {
-    ap_scalar_t* scalar;         /* cst (normal linear expression) */
+    ap_scalar_t* scalar;       /* cst (normal linear expression) */
     ap_interval_t* interval;   /* interval (quasi-linear expression) */
   } val;
 } ap_coeff_t;
@@ -45,6 +45,11 @@ void ap_coeff_reinit(ap_coeff_t* coeff, ap_coeff_discr_t ap_coeff_discr, ap_scal
   /* Changing the type of scalar(s) and the type of the coefficient */
 void ap_coeff_free(ap_coeff_t* a);
   /* Free a coefficient */
+void ap_coeff_fprint(FILE* stream, const ap_coeff_t* a);
+static inline 
+void ap_coeff_print(const ap_coeff_t* a)
+{ ap_coeff_fprint(stdout,a); }
+  /* Printing */
 
 void ap_coeff_reduce(ap_coeff_t* coeff);
   /* If the coefficient is an interval [a;a], convert it to a scalar */
