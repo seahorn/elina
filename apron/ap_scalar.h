@@ -53,6 +53,8 @@ void ap_scalar_free(ap_scalar_t* scalar);
 void ap_scalar_reinit(ap_scalar_t* scalar, ap_scalar_discr_t d);
   /* Change the type of an already allocated scalar
      (mainly for internal use */
+static inline 
+void ap_scalar_print(const ap_scalar_t* a);
 void ap_scalar_fprint(FILE* stream, const ap_scalar_t* a);
   /* Printing */
 
@@ -164,6 +166,8 @@ void ap_scalar_clear(ap_scalar_t* scalar)
     break;
   }
 }
+static inline void ap_scalar_print(const ap_scalar_t* a)
+{ ap_scalar_fprint(stdout,a); }
 static inline
 void ap_scalar_swap(ap_scalar_t* a, ap_scalar_t* b){ ap_scalar_t t = *a; *a = *b; *b = t; }
 
