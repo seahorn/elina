@@ -18,7 +18,6 @@ s/ap_dimperm_t/perm/g;
 s/ap_dimension_t/dimension/g;
 s/ap_linexpr0_ptr/t/g;
 s/external ap_linexpr0_/external /g;
-s/constyp/typ/g;
 s/^and ap_lincons0_array_t = ap_lincons0_t array//g;
 s/ap_lincons0_t/t/g;
 s/ap_lincons0_array_t/t array/g;

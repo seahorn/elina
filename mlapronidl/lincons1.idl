@@ -19,7 +19,7 @@ import "environment.idl";
 import "linexpr1.idl";
 
 struct ap_lincons1_t {
-  [mlname(mutable_lincons0)] struct ap_lincons0_t lincons0;
+  [mlname(mutable_lincons0)] ap_lincons0_t lincons0;
   [mlname(mutable_env)] ap_environment_ptr env;
 };
 struct ap_lincons1_array_t {
@@ -34,6 +34,8 @@ type typ = Lincons0.typ =\n\
   | EQ\n\
   | SUPEQ\n\
   | SUP\n\
+  | DISEQ\n\
+  | EQMOD of Scalar.t\n\
 ")
 quote(MLI,"\n\
 (** Make a linear constraint. Modifying later the linear expression ({e not\n\

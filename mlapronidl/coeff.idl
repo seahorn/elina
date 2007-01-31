@@ -15,6 +15,15 @@ quote(C, "\n\
 import "scalar.idl";
 import "interval.idl";
 
+/* For ap_coeff_t, 
+
+- the conversion from ML to C may use allocation, but it is automatically freed 
+  by Camlidl mechanisms
+- the conversion from C to ML duplicate the C allocated memory.
+  Hence, the C type should be explicitly deallocated
+  (if allocated from the underlying C function)
+*/
+
 struct ap_coeff_t {
   int discr; /* discriminant for coefficient */
   [switch_is(discr)] union {

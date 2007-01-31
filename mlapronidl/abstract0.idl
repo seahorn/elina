@@ -147,7 +147,7 @@ enum tbool_t ap_abstract0_is_eq(ap_manager_ptr man, ap_abstract0_ptr a1, ap_abst
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Does the abstract value satisfy the linear constraint ? *)")
-enum tbool_t ap_abstract0_sat_lincons(ap_manager_ptr man, ap_abstract0_ptr a, [ref]struct ap_lincons0_t* v)
+enum tbool_t ap_abstract0_sat_lincons(ap_manager_ptr man, ap_abstract0_ptr a, [ref]ap_lincons0_t* v)
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Does the abstract value satisfy the constraint [dim in interval] ? *)")

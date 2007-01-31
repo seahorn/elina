@@ -88,10 +88,10 @@ mldep: $(MLSRC)
 # Misc rules
 #---------------------------------------
 
-tar: $(IDLMODULES:%=%.idl) apron_lexer.mll apron_lexer.mli apron_parser.mly parser.ml parser.mli apron_caml.c apron_caml.h macros.m4 Makefile COPYING README mlapronidl.tex sedscript_caml
+tar: $(IDLMODULES:%=%.idl) apron_lexer.mll apron_lexer.mli apron_parser.mly parser.ml parser.mli apron_caml.c apron_caml.h macros.m4 Makefile COPYING README mlapronidl.tex sedscript_caml sedscript_c
 	(cd ..; tar zcvf mlapronidl.tgz $(^:%=mlapronidl/%))
 
-dist: $(IDLMODULES:%=%.idl) $(MLSRC) $(CCSRC) macros.m4 apron_caml.c apron_caml.h Makefile COPYING README mlapronidl.tex sedscript_caml mlapronidl.pdf html
+dist: $(IDLMODULES:%=%.idl) $(MLSRC) $(CCSRC) macros.m4 apron_caml.c apron_caml.h Makefile COPYING README mlapronidl.tex sedscript_caml sedscript_c mlapronidl.pdf html
 	(cd ..; tar zcvf mlapronidl.tgz $(^:%=mlapronidl/%))
 
 clean:
@@ -201,11 +201,11 @@ html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc
 # IDL generic rules
 #---------------------------------------
 
-%.mli %_caml.c %.ml: %.idl sedscript_caml mpz.idl mpq.idl
+%.mli %_caml.c %.ml: %.idl sedscript_caml sedscript_c mpz.idl mpq.idl
 	mkdir -p tmp
 	cp $*.idl tmp/$*.idl
 	$(CAMLIDL) -no-include -prepro "$(M4) --prefix-builtins macros.m4" -I $(SRCDIR) tmp/$*.idl
-	sed -e '1 a\\n/* This file is part of the APRON Library, released under LGPL license.\n  Please read the COPYING file packaged in the distribution  */' tmp/$*_stubs.c >$*_caml.c
+	sed -f sedscript_c tmp/$*_stubs.c >$*_caml.c
 	sed -f sedscript_caml tmp/$*.ml >$*.ml
 	sed -f sedscript_caml tmp/$*.mli >$*.mli
 

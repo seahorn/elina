@@ -48,6 +48,15 @@ typedef struct ap_linexpr0_t* ap_linexpr0_ptr;
 typedef struct ap_manager_t* ap_manager_ptr;
 typedef struct ap_manager_t* ap_manager_opt_ptr;
 
+typedef union ap_lincons0_typ {
+  ap_scalar_t* scalar;
+} ap_lincons0_typ;
+struct ap_lincons0_ptr {
+  ap_linexpr0_t* linexpr0;
+  ap_constyp_t constyp;
+  union ap_lincons0_typ typ;
+};
+
 typedef struct apron_var_t {
   char* name;
   size_t count;
@@ -69,6 +78,13 @@ typedef struct ap_abstract1_ptr {
 
 void camlidl_apron_dimchange_ml2c(value v, ap_dimchange_t* dimchange);
 value camlidl_apron_dimchange_c2ml(ap_dimchange_t* dimchange);
+
+/* ********************************************************************** */
+/* scalar */
+/* ********************************************************************** */
+
+void camlidl_apron_scalar_ml2c(value v, struct ap_scalar_t* scalar);
+value camlidl_apron_scalar_c2ml(struct ap_scalar_t* scalar);
 
 /* ********************************************************************** */
 /* linexpr0 */
