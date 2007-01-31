@@ -212,7 +212,7 @@ ap_linexpr0_t* random_from_linexpr(ap_linexpr0_t* a)
 
 ap_lincons0_t random_from_lincons(ap_lincons0_t a)
 {
-  return ap_lincons0_make(a.constyp,random_from_linexpr(a.linexpr0));
+  return ap_lincons0_make(a.constyp,random_from_linexpr(a.linexpr0),NULL);
 }
 
 
@@ -514,7 +514,8 @@ void test_lincons_conversion(exprmode mode)
       t.p[i] = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ:
 				(lrand48()%100>=90)?AP_CONS_SUP:
 				AP_CONS_SUPEQ,
-				random_linexpr(mode,dim));
+				random_linexpr(mode,dim),
+				NULL);
       tt.p[i] = random_from_lincons(t.p[i]);
     }
     p  = ap_abstract0_of_lincons_array(mp,0,dim,&tt);
@@ -806,7 +807,8 @@ void test_add_lincons(exprmode mode)
       ar.p[i] = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ:
 				 (lrand48()%100>=90)?AP_CONS_SUP:
 				 AP_CONS_SUPEQ,
-				 random_linexpr(mode,dim));
+				 random_linexpr(mode,dim),
+				 NULL);
       arr.p[i] = random_from_lincons(ar.p[i]);
     }
     o1 = oct_meet_lincons_array(mo,false,o,&ar); FLAG(mo);
@@ -850,7 +852,8 @@ void test_sat_lincons(exprmode mode)
     o = random_oct(dim,.1);
     p = poly_of_oct(o);
     l = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ: AP_CONS_SUPEQ,
-			 random_linexpr(mode,dim));
+			 random_linexpr(mode,dim),
+			 NULL);
     ll = random_from_lincons(l);
     ar.p[0] = l;
     o1 = oct_meet_lincons_array(mo,false,o,&ar); FLAG(mo);

@@ -564,7 +564,7 @@ static inline ap_lincons0_t lincons_of_bound(oct_internal_t* pr,
     ap_scalar_set_int(e->p.linterm[1].coeff.val.scalar,(i&1) ? -1 :  1);
     scalar_of_upper_bound(pr,e->cst.val.scalar,m,false);
   }
-  return ap_lincons0_make(AP_CONS_SUPEQ,e);
+  return ap_lincons0_make(AP_CONS_SUPEQ,e,NULL);
 }
 
 
