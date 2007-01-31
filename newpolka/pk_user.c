@@ -86,6 +86,9 @@ void vector_set_lincons(pk_internal_t* pk,
 			size_t intdim, size_t realdim,
 			bool integer)
 {
+  assert(cons->constyp == AP_CONS_EQ || 
+	 cons->constyp == AP_CONS_SUPEQ ||
+	 cons->constyp == AP_CONS_SUP);
   vector_set_linexpr(pk, vec, cons->linexpr0, intdim+realdim, -1);
   vector_normalize(pk,vec,pk->dec+intdim+realdim);
   if (cons->constyp == AP_CONS_EQ)
@@ -119,7 +122,10 @@ void vector_set_generator(pk_internal_t* pk,
   if (pk->strict)
     numint_set_int(vec[polka_eps],0);
 
-  numint_set_int(vec[0], gen->gentyp == AP_GEN_LINE ? 0 : 1);
+  numint_set_int(vec[0], 
+		 ( ((gen->gentyp == AP_GEN_LINE) || (gen->gentyp == AP_GEN_LINEMOD)) ?
+		   0 : 
+		   1 ));
   if (gen->gentyp != AP_GEN_VERTEX){
     numint_set_int(vec[polka_cst],0);
     vector_normalize(pk,vec, pk->dec + intdim + realdim);
@@ -198,11 +204,22 @@ matrix_t* matrix_of_lincons_array(pk_internal_t* pk,
 				  size_t intdim, size_t realdim,
 				  bool integer)
 {
-  int i;
+  int i,j;
   matrix_t* mat = matrix_alloc(array->size,pk->dec+intdim+realdim,false);
+  j = 0;
   for (i=0; i<array->size; i++){
-    vector_set_lincons(pk,mat->p[i],&array->p[i],intdim,realdim,integer);
+    switch (array->p[i].constyp){
+    case AP_CONS_EQ:
+    case AP_CONS_SUPEQ:
+    case AP_CONS_SUP:
+      vector_set_lincons(pk,mat->p[j],&array->p[i],intdim,realdim,integer);
+      j++;
+      break;
+    default:
+      break;
+    }
   }
+  mat->nbrows = j;
   return mat;
 }
 

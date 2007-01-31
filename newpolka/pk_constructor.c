@@ -384,8 +384,18 @@ poly_t* poly_of_lincons_array(ap_manager_t* man,
   row = pk->dec - 1;
   dim = intdim + realdim;
   for (i=0; i<cons->size; i++){
-    vector_set_lincons(pk, C->p[row+i], &cons->p[i], intdim, realdim, true);
+    switch (cons->p[i].constyp){
+    case AP_CONS_EQ:
+    case AP_CONS_SUPEQ:
+    case AP_CONS_SUP:
+      vector_set_lincons(pk, C->p[row], &cons->p[i], intdim, realdim, true);
+      row++;
+      break;
+    default:
+      break;
+    }
   }
+  C->nbrows = row;
   assert(poly_check(pk,po));
   man->result.flag_exact = man->result.flag_best = tbool_true;
   return po;

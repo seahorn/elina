@@ -235,6 +235,15 @@ tbool_t poly_sat_lincons(ap_manager_t* man, const poly_t* po, const ap_lincons0_
     man->result.flag_exact = man->result.flag_best = tbool_true;
     return tbool_true;
   }
+  switch (lincons->constyp){
+  case AP_CONS_EQ:
+  case AP_CONS_SUPEQ:
+  case AP_CONS_SUP:
+    break;
+  default:
+    man->result.flag_exact = man->result.flag_best = tbool_top;
+    return tbool_top;
+  }
   dim = po->intdim + po->realdim;
   vector_set_lincons(pk,
 		     pk->poly_numintp,
