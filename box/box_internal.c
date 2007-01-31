@@ -16,6 +16,7 @@ void box_internal_init(box_internal_t* intern)
   itv_init(intern->bound_linexpr_internal_itv2);
   intern->sat_interval_interval = ap_interval_alloc();
   itv_init(intern->sat_lincons_itv);
+  num_init(intern->sat_lincons_num);
   itv_init(intern->bound_linexpr_itv);
   itv_init(intern->meet_lincons_internal_itv);
   itv_init(intern->meet_lincons_internal_itv2);
@@ -30,6 +31,7 @@ void box_internal_clear(box_internal_t* intern)
   ap_interval_free(intern->sat_interval_interval); 
   intern->sat_interval_interval = NULL; 
   itv_clear(intern->sat_lincons_itv);
+  num_clear(intern->sat_lincons_num);
   itv_clear(intern->bound_linexpr_itv);
   itv_clear(intern->meet_lincons_internal_itv);
   itv_clear(intern->meet_lincons_internal_itv2);

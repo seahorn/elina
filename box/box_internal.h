@@ -29,6 +29,7 @@ typedef struct box_internal_t {
   itv_t bound_linexpr_internal_itv2;
   ap_interval_t* sat_interval_interval;
   itv_t sat_lincons_itv;
+  num_t sat_lincons_num;
   itv_t bound_linexpr_itv;
   itv_t meet_lincons_internal_itv;
   itv_t meet_lincons_internal_itv2;

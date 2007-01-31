@@ -222,6 +222,13 @@ tbool_t box_sat_lincons(ap_manager_t* man,
       tbool_true :
       tbool_top;
     break;
+  case AP_CONS_DISEQ:
+    res =
+      (bound_sgn(intern->sat_lincons_itv->inf)<0 ||
+       bound_sgn(intern->sat_lincons_itv->sup)<0) ?
+      tbool_true :
+      tbool_top;
+    break;
   case AP_CONS_SUPEQ:
     if (bound_sgn(intern->sat_lincons_itv->inf)<=0)
       res = tbool_true;
@@ -238,6 +245,37 @@ tbool_t box_sat_lincons(ap_manager_t* man,
     else
       res = tbool_top;
      break;
+  case AP_CONS_EQMOD:
+    assert(cons->scalar!=NULL);
+    if (itv_is_point(intern->itv,intern->sat_lincons_itv)){
+      if (num_sgn(intern->sat_lincons_itv->sup)==0){
+	return true;
+      }
+      else {
+#if defined(NUM_NUMINT) || defined(NUM_NUMRAT)
+	bool exact = num_set_ap_scalar(intern->sat_lincons_num,cons->scalar);
+	if (!exact) return tbool_top;
+#if defined(NUM_NUMINT)
+	numint_mod(intern->sat_lincons_num,intern->sat_lincons_itv->sup,intern->sat_lincons_num);
+	return (numint_sgn(intern->sat_lincons_num)==0) ? tbool_true : tbool_top;
+#else
+	numrat_div(intern->sat_lincons_num,intern->sat_lincons_itv->sup,intern->sat_lincons_num);
+	return (numint_cmp_int(numrat_denref(intern->sat_lincons_num),1)==0) ? tbool_true : tbool_top;
+#endif
+#else
+	return tbool_top;
+#endif
+      }
+    }
+    else {
+      man->result.flag_exact = man->result.flag_best = tbool_top;
+      return tbool_top;
+      /* could be improved: if we have only integers variables, 
+	 rational scalar coefficients, the constraint is satisfied if
+	 the modulo is an integer fraction of the common denominator
+	 of all coefficients */
+    }
+    break;
   default:
     abort();
     res = tbool_top;
@@ -300,6 +338,8 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, const box_t* a)
 {
   int i;
   ap_lincons0_array_t array;
+  box_internal_t* intern = (box_internal_t*)man->internal;
+
   size_t nbdims = a->intdim + a->realdim;
 
   man->result.flag_best = tbool_true;
@@ -323,7 +363,8 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, const box_t* a)
     }
     array = ap_lincons0_array_make(size);
     size = 0;
-    for (i=0;i<nbdims;i++){
+    for (i=0;i<nbdims;i++){      
+      bool point = false;
       if (!bound_infty(a->p[i]->inf)){
 	expr = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,1);
 	ap_coeff_set_scalar_int(&expr->p.linterm[0].coeff, 1);
@@ -331,18 +372,22 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, const box_t* a)
 
 	ap_coeff_reinit(&expr->cst,AP_COEFF_SCALAR,AP_SCALAR_DOUBLE);
 	scalar = expr->cst.val.scalar;
-
 	ap_scalar_set_bound(scalar,a->p[i]->inf);
 	ap_scalar_neg(scalar,scalar);
-	array.p[size].constyp = AP_CONS_SUPEQ;
+
+	point = itv_is_point(intern->itv,a->p[i]);
+	array.p[size].constyp = point ? AP_CONS_EQ : AP_CONS_SUPEQ;
 	array.p[size].linexpr0 = expr;
 	size++;
       }
-      if (!bound_infty(a->p[i]->sup)){
+      if (!point && !bound_infty(a->p[i]->sup)){
 	expr = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,1);
 	ap_coeff_set_scalar_int(&expr->p.linterm[0].coeff, -1);
 	expr->p.linterm[0].dim = i;
+
+	ap_coeff_reinit(&expr->cst,AP_COEFF_SCALAR,AP_SCALAR_DOUBLE);
 	ap_scalar_set_bound(expr->cst.val.scalar,a->p[i]->sup);
+
 	array.p[size].constyp = AP_CONS_SUPEQ;
 	array.p[size].linexpr0 = expr;
 	size++;
