@@ -21,6 +21,13 @@ ap_abstract0_t* ap_abstract0_cons(ap_manager_t* man, void* value)
   res->man = ap_manager_copy(man);
   return res;
 }
+static inline
+void _ap_abstract0_free(ap_abstract0_t* a)
+{
+  void (*ptr)(ap_manager_t*,ap_abstract0_t*) = a->man->funptr[AP_FUNID_FREE];
+  ptr(a->man,a->value);
+  ap_manager_free(a->man);
+}
 
 /* ====================================================================== */
 /* 0.1 Checking typing w.r.t. manager */
@@ -878,7 +885,7 @@ ap_abstract0_t* ap_abstract0_meetjoin(ap_funid_t funid,
   }
   else {
     ap_dimension_t dimension = _ap_abstract0_dimension(a1);
-    if (destructive) ap_abstract0_free(a1->man,a1->value);
+    if (destructive) _ap_abstract0_free(a1);
     return ap_abstract0_top(man,
 			 dimension.intdim,
 			 dimension.realdim);
@@ -941,7 +948,7 @@ ap_abstract0_t* ap_abstract0_meet_lincons_array(ap_manager_t* man,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			 dimension.intdim,
 			 dimension.realdim);
@@ -968,7 +975,7 @@ ap_abstract0_t* ap_abstract0_add_ray_array(ap_manager_t* man,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			 dimension.intdim,
 			 dimension.realdim);
@@ -1004,7 +1011,7 @@ ap_abstract0_t* ap_abstract0_asssub_linexpr(ap_funid_t funid,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			    dimension.intdim,
 			    dimension.realdim);
@@ -1055,7 +1062,7 @@ ap_abstract0_t* ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			 dimension.intdim,
 			 dimension.realdim);
@@ -1110,7 +1117,7 @@ ap_abstract0_t* ap_abstract0_forget_array(ap_manager_t* man,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			 dimension.intdim,
 			 dimension.realdim);
@@ -1143,7 +1150,7 @@ ap_abstract0_t* ap_abstract0_add_dimensions(ap_manager_t* man,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			 dimension.intdim+dimchange->intdim,
 			 dimension.realdim+dimchange->realdim);
@@ -1170,7 +1177,7 @@ ap_abstract0_t* ap_abstract0_remove_dimensions(ap_manager_t* man,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			 dimension.intdim-dimchange->intdim >= 0 ? dimension.intdim-dimchange->intdim : 0,
 			 dimension.realdim-dimchange->realdim >= 0 ? dimension.realdim-dimchange->realdim : 0);
@@ -1197,7 +1204,7 @@ ap_abstract0_t* ap_abstract0_permute_dimensions(ap_manager_t* man,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			 dimension.intdim,
 			 dimension.realdim);
@@ -1229,7 +1236,7 @@ ap_abstract0_t* ap_abstract0_expand(ap_manager_t* man,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			 dimension.intdim + (dim<dimension.intdim ? n : 0),
 			 dimension.realdim + (dim<dimension.intdim ? 0 : n));
@@ -1258,7 +1265,7 @@ ap_abstract0_t* ap_abstract0_fold(ap_manager_t* man,
     return ap_abstract0_cons(man,value);
   }
   else {
-    if (destructive) ap_abstract0_free(a->man,a->value);
+    if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			 dimension.intdim - ( (size>0 && tdim[0]<dimension.intdim) ? (size-1) : 0),
 			 dimension.realdim - ( (size>0 && tdim[0]<dimension.intdim) ? 0 : (size-1)));
@@ -1304,7 +1311,7 @@ ap_dimension_t dimension = _ap_abstract0_dimension(a);
    return ap_abstract0_cons(man,value);
  }
  else {
-   if (destructive) ap_abstract0_free(a->man,a->value);
+   if (destructive) _ap_abstract0_free(a);
    return ap_abstract0_top(man,
 			dimension.intdim,
 			dimension.realdim);
