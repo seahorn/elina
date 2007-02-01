@@ -10,6 +10,7 @@
 #include "box_assign.h"
 
 #include "ap_generic.h"
+#include "itv_linexpr.h"
 
 box_t* box_assign_linexpr(ap_manager_t* man,
 			  bool destructive,
@@ -17,6 +18,7 @@ box_t* box_assign_linexpr(ap_manager_t* man,
 			  ap_dim_t dim, const ap_linexpr0_t* linexpr,
 			  const box_t* dest)
 {
+  bool exact;
   box_t* res;
   box_internal_t* intern = man->internal;
 
@@ -26,9 +28,9 @@ box_t* box_assign_linexpr(ap_manager_t* man,
     man->result.flag_exact = tbool_true;
     return res;
   }
-  box_bound_linexpr_internal(intern,
-			     res->p[dim],
-			     a,linexpr);
+  exact = itv_eval_ap_linexpr0(intern->itv,
+			       res->p[dim],
+			       a,linexpr);
   if (dest)
     res = box_meet(man,true,res,dest);
   man->result.flag_exact = tbool_top;
@@ -54,9 +56,9 @@ box_t* box_assign_linexpr_array(ap_manager_t* man,
   }
   res = box_copy(man,a);
   for (i=0;i<size;i++){
-    box_bound_linexpr_internal(intern,
-			       res->p[tdim[i]],
-			       a,texpr[i]);
+    itv_eval_ap_linexpr0(intern->itv,
+			 res->p[tdim[i]],
+			 a,texpr[i]);
   }
   if (destructive) box_free(man,a);
   if (dest)

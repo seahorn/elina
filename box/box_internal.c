@@ -59,7 +59,7 @@ ap_manager_t* box_manager_alloc()
   void** funptr;
 
   itv = box_internal_alloc();
-  man = ap_manager_alloc("itv",
+  man = ap_manager_alloc("box",
 #if defined(NUM_MPQ)
 			 "1.0 with NUM_MPQ",
 #elif defined(NUM_LONGLONGRAT)

@@ -51,10 +51,6 @@ box_t* box_expand(ap_manager_t* man,
 
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
-  if (a->p==NULL || dimsup==0){
-    return destructive ? a : box_copy(man,a);
-  }
-
   if (dim<a->intdim){
     intdimsup = dimsup;
     realdimsup = 0;
@@ -63,6 +59,12 @@ box_t* box_expand(ap_manager_t* man,
     intdimsup = 0;
     realdimsup = dimsup;
     offset = a->intdim+a->realdim;
+  }
+  if (a->p==NULL || dimsup==0){
+    res = destructive ? a : box_copy(man,a);
+    res->intdim = a->intdim+intdimsup;
+    res->realdim = a->realdim+realdimsup;
+    return res;
   }
   ap_dimchange_init(&dimchange,intdimsup,realdimsup);
   for (i=0;i<dimsup;i++){
@@ -102,8 +104,8 @@ box_t* box_fold(ap_manager_t* man,
     realdimsup = dimsup;
   }
   if (a->p==NULL || dimsup==0){
-    res->intdim -= intdimsup;
-    res->realdim -= realdimsup;
+    res->intdim = a->intdim-intdimsup;
+    res->realdim = a->realdim-realdimsup;
     return res;
   }
   for (i=1; i<size; i++){

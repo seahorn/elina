@@ -37,8 +37,8 @@ box_t* box_add_dimensions(ap_manager_t* man,
     }
   }  
  box_add_dimensions_exit:
-  res->intdim += dimchange->intdim;
-  res->realdim += dimchange->realdim;
+  res->intdim = a->intdim+dimchange->intdim;
+  res->realdim = a->realdim+dimchange->realdim;
   return res;
 }
 
@@ -71,8 +71,8 @@ box_t* box_remove_dimensions(ap_manager_t* man,
   }
   res->p = realloc(res->p,(size-dimsup)*sizeof(itv_t));
  box_remove_dimensions_exit:
-  res->intdim -= dimchange->intdim;
-  res->realdim -= dimchange->realdim;
+  res->intdim = a->intdim-dimchange->intdim;
+  res->realdim = a->realdim-dimchange->realdim;
   return res;
 }
 
