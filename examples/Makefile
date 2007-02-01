@@ -10,7 +10,9 @@ ICFLAGS = \
 
 LCFLAGS = \
 -L$(GMP_PREFIX)/lib \
--L$(APRON_PREFIX)/lib 
+-L$(MPFR_PREFIX)/lib \
+-L$(APRON_PREFIX)/lib \
+-L$(CAMLIDL_PREFIX)/lib/ocaml
 
 CFLAGS = $(ICFLAGS) -O3 -DNDEBUG
 CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG
@@ -26,15 +28,15 @@ OCAMLINC = \
 OCAMLFLAGS = $(OCAMLINC)
 
 OCAMLLDFLAGS = \
--ccopt "$(LCFLAGS)" \
+-noautolink -ccopt "$(LCFLAGS)" \
 bigarray.cma gmp.cma apron.cma \
-box.cma -cclib "-lboxmpq_debug -litvmpq_debug -lapron" \
-polka.cma -cclib "-lpolkag_debug"
+box.cma polka.cma \
+-cclib "-lpolka_caml -lpolkag_debug -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lgmp -lmpfr -lbigarray -lcamlidl"
 
 OCAMLOPTLDFLAGS = \
 -ccopt "$(LCFLAGS)" \
 bigarray.cmxa gmp.cmxa apron.cmxa \
-box.cmxa -cclib "-lboxmpq_debug -litvmpq_debug -lapron" \
+box.cmxa -cclib "-lboxmpq_debug -litvmpq_debug -lapron_debug" \
 polka.cmxa -cclib "-lpolkag_debug"
 
 all: C ml

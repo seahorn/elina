@@ -28,7 +28,7 @@ void ex1(ap_manager_t* man)
 
   /* 1.a Creation of an equality constraint 1/2x+2/3y=1 */
   ap_linexpr1_t expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  ap_lincons1_t cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  ap_lincons1_t cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
     /* Now expr is memory-managed by cons */ 
 
   /* 1.b Fill the constraint */ 
@@ -43,7 +43,7 @@ void ex1(ap_manager_t* man)
 
   /* 2.a Creation of an inequality constraint [1,2]<=z+2w */
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
     /* The old cons is not lost, because it is stored in the array.
        It would be an error to clear it (same for expr). */
   /* 2.b Fill the constraint */ 
@@ -57,7 +57,7 @@ void ex1(ap_manager_t* man)
   
   /* 2.a Creation of an inequality constraint */
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
     /* The old cons is not lost, because it is stored in the array.
        It would be an error to clear it (same for expr). */
   /* 2.b Fill the constraint */ 
@@ -101,7 +101,7 @@ void ex1(ap_manager_t* man)
   /* =================================================================== */
   array = ap_lincons1_array_make(env,6);
   expr = ap_linexpr1_make(env,AP_LINEXPR_DENSE,0);
-  cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
   ap_linexpr1_set_list(&expr,
 		       AP_COEFF_S_INT,1,"x",
 		       AP_COEFF_S_INT,1,"y",
@@ -111,23 +111,23 @@ void ex1(ap_manager_t* man)
 		       AP_END);
   ap_lincons1_array_set(&array,0,&cons);
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,0);
-  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
   ap_linexpr1_set_list(&expr, AP_COEFF_S_INT,1,"w",AP_END);
   ap_lincons1_array_set(&array,1,&cons);
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,0);
-  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
   ap_linexpr1_set_list(&expr, AP_COEFF_S_INT,-1,"w",AP_CST_S_INT,5, AP_END);
   ap_lincons1_array_set(&array,2,&cons);
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,0);
-  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
   ap_linexpr1_set_list(&expr, AP_COEFF_S_INT,1,"u",AP_CST_S_INT,5, AP_END);
   ap_lincons1_array_set(&array,3,&cons);
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,0);
-  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
   ap_linexpr1_set_list(&expr, AP_COEFF_S_INT,-1,"u",AP_END);
   ap_lincons1_array_set(&array,4,&cons);
   expr = ap_linexpr1_make(env,AP_LINEXPR_DENSE,0);
-  cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
   ap_linexpr1_set_list(&expr,
 		       AP_COEFF_S_INT,1,"x",
 		       AP_COEFF_S_INT,1,"y",
@@ -177,6 +177,9 @@ void ex1(ap_manager_t* man)
 
   /* deallocation */
   ap_abstract1_clear(man,&abs);
+  ap_abstract1_clear(man,&abs2);
+
+  ap_environment_free(env);
 }
 
 
@@ -204,7 +207,7 @@ void ex2(ap_manager_t* man)
 
   /* 1.a Creation of constraint -39x + 40y >= 0 */
   ap_linexpr1_t expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  ap_lincons1_t cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  ap_lincons1_t cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
     /* Now expr is memory-managed by cons */ 
 
   /* 1.b Fill the constraint */ 
@@ -219,7 +222,7 @@ void ex2(ap_manager_t* man)
 
   /* 2.a Creation of an inequality constraint -6x - 20y + 85 >= 0 */
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
     /* The old cons is not lost, because it is stored in the array.
        It would be an error to clear it (same for expr). */
   /* 2.b Fill the constraint */ 
@@ -233,7 +236,7 @@ void ex2(ap_manager_t* man)
 
   /* 3.a Creation of an inequality constraint x >= 0 */
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,1);
-  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
     /* The old cons is not lost, because it is stored in the array.
        It would be an error to clear it (same for expr). */
   /* 3.b Fill the constraint */ 
@@ -282,7 +285,7 @@ void ex3(ap_manager_t* man)
 
   /* 1.a Creation of constraint -39x + 40y = 0 */
   ap_linexpr1_t expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  ap_lincons1_t cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  ap_lincons1_t cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
     /* Now expr is memory-managed by cons */ 
 
   /* 1.b Fill the constraint */ 
@@ -297,7 +300,7 @@ void ex3(ap_manager_t* man)
 
   /* 2.a Creation of an inequality constraint -6x - 20z + 85 = 0 */
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
     /* The old cons is not lost, because it is stored in the array.
        It would be an error to clear it (same for expr). */
   /* 2.b Fill the constraint */ 
@@ -311,7 +314,7 @@ void ex3(ap_manager_t* man)
 
   /* 3.a Creation of an inequality constraint -6x - 20y + 85 >= 0 */
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
     /* The old cons is not lost, because it is stored in the array.
        It would be an error to clear it (same for expr). */
   /* 2.b Fill the constraint */ 
@@ -342,7 +345,7 @@ void ex3(ap_manager_t* man)
   array = ap_lincons1_array_make(env,4);
 
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
   ap_lincons1_set_list(&cons,
 		       AP_COEFF_S_INT,-39,"x",
 		       AP_COEFF_S_INT,40,"u",
@@ -350,7 +353,7 @@ void ex3(ap_manager_t* man)
 		       AP_END);
   ap_lincons1_array_set(&array,0,&cons);
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
   ap_lincons1_set_list(&cons,
 		       AP_COEFF_S_INT,-1,"u",
 		       AP_COEFF_S_INT,1,"y",
@@ -358,7 +361,7 @@ void ex3(ap_manager_t* man)
 		       AP_END);
   ap_lincons1_array_set(&array,1,&cons);
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
   ap_lincons1_set_list(&cons,
 		       AP_COEFF_S_INT,-1,"v",
 		       AP_COEFF_S_INT,1,"x",
@@ -367,7 +370,7 @@ void ex3(ap_manager_t* man)
 		       AP_END);
   ap_lincons1_array_set(&array,1,&cons);
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
   ap_lincons1_set_list(&cons,
 		       AP_COEFF_S_INT,-1,"v",
 		       AP_COEFF_S_INT,1,"x",
@@ -376,7 +379,7 @@ void ex3(ap_manager_t* man)
 		       AP_END);
   ap_lincons1_array_set(&array,2,&cons);
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
-  cons = ap_lincons1_make(AP_CONS_EQ,&expr);
+  cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
   ap_lincons1_set_list(&cons,
 		       AP_COEFF_S_INT,-6,"v",
 		       AP_COEFF_S_INT,-14,"z",
@@ -406,6 +409,7 @@ void ex3(ap_manager_t* man)
   ap_abstract1_clear(man,&abs2);
   ap_abstract1_clear(man,&abs3);
   ap_abstract1_clear(man,&abs4);
+
   ap_environment_free(env);
 }
 
@@ -415,9 +419,10 @@ void main()
   ex1(man);
   ex2(man);
   ap_manager_free(man);
-  
+
   man = pkeq_manager_alloc();
   ex3(man);
   ex2(man);
   ap_manager_free(man);
+  
 }

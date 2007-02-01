@@ -59,6 +59,7 @@ pk_internal_t* pk_internal_alloc(bool strict)
   pk->dec = strict ? 3 : 2;
   pk->max_coeff_size = 0;
   pk->approximate_max_coeff_size = 2;
+
   pk_internal_init(pk,10);
 
   return pk;

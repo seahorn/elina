@@ -95,7 +95,7 @@ void ITVFUN(eval_itv_linexpr)(itv_internal_t* intern,
   bool* peq;
   assert(p);
 
-  itv_set(itv, expr->cst);
+  itv_set(intern->eval_itv2, expr->cst);
   itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq){
     if (*peq){
       if (bound_sgn(pitv->sup)!=0){
@@ -103,7 +103,7 @@ void ITVFUN(eval_itv_linexpr)(itv_internal_t* intern,
 		      intern->eval_itv,
 		      p[dim],
 		      pitv->sup);
-	itv_add(itv, itv, intern->eval_itv);
+	itv_add(intern->eval_itv2, intern->eval_itv2, intern->eval_itv);
       }
     }
     else {
@@ -111,11 +111,12 @@ void ITVFUN(eval_itv_linexpr)(itv_internal_t* intern,
 	      intern->eval_itv,
 	      p[dim],
 	      pitv);
-      itv_add(itv, itv, intern->eval_itv);
+      itv_add(intern->eval_itv2, intern->eval_itv2, intern->eval_itv);
     }
-    if (itv_is_top(itv))
+    if (itv_is_top(intern->eval_itv2))
       break;
   }
+  itv_set(itv,intern->eval_itv2);
 }
 
 /* Evaluate an interval linear expression */
@@ -130,7 +131,7 @@ bool ITVFUN(eval_ap_linexpr0)(itv_internal_t* intern,
   bool exact,res;
   assert(p);
 
-  exact = itv_set_ap_coeff(intern,itv, &expr->cst);
+  exact = itv_set_ap_coeff(intern, intern->eval_itv3, &expr->cst);
   res = exact;
   ap_linexpr0_ForeachLinterm(expr,i,dim,pcoeff){
     bool exact = itv_set_ap_coeff(intern,intern->eval_itv2,pcoeff);
@@ -142,7 +143,7 @@ bool ITVFUN(eval_ap_linexpr0)(itv_internal_t* intern,
 		      intern->eval_itv,
 		      p[dim],
 		      intern->eval_itv2->sup);
-	itv_add(itv, itv, intern->eval_itv);
+	itv_add(intern->eval_itv3, intern->eval_itv3, intern->eval_itv);
       }
     }
     else {
@@ -150,10 +151,11 @@ bool ITVFUN(eval_ap_linexpr0)(itv_internal_t* intern,
 	      intern->eval_itv,
 	      p[dim],
 	      intern->eval_itv2);
-      itv_add(itv, itv, intern->eval_itv);
+      itv_add(intern->eval_itv3, intern->eval_itv3, intern->eval_itv);
     }
-    if (itv_is_top(itv))
+    if (itv_is_top(intern->eval_itv3))
       break;
   }
+  itv_set(itv,intern->eval_itv3);
   return res;
 }

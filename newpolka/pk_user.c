@@ -158,6 +158,7 @@ ap_lincons0_t lincons_of_vector(pk_internal_t* pk,
     lincons.constyp = AP_CONS_EQ;
   }
   lincons.linexpr0 = linexpr;
+  lincons.scalar = NULL;
   return lincons;
 }
 

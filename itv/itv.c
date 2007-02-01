@@ -18,6 +18,7 @@ void ITVFUN(internal_init)(itv_internal_t* intern)
   bound_init(intern->ap_conversion_bound);
   itv_init(intern->eval_itv);
   itv_init(intern->eval_itv2);
+  itv_init(intern->eval_itv3);
 }
 void ITVFUN(internal_clear)(itv_internal_t* intern)
 {
@@ -30,6 +31,7 @@ void ITVFUN(internal_clear)(itv_internal_t* intern)
   bound_clear(intern->ap_conversion_bound);
   itv_clear(intern->eval_itv);
   itv_clear(intern->eval_itv2);
+  itv_clear(intern->eval_itv3);
 }
 
 itv_internal_t* ITVFUN(internal_alloc)()

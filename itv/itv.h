@@ -67,6 +67,7 @@ typedef struct itv_internal_t {
   bound_t ap_conversion_bound;
   itv_t eval_itv;
   itv_t eval_itv2;
+  itv_t eval_itv3;
 } itv_internal_t;
 
 
