@@ -147,25 +147,38 @@ void ap_scalar_set_infty(ap_scalar_t* scalar, int sgn)
 /* Conversions */
 /* ====================================================================== */
 
-void ap_mpq_set_scalar(mpq_t mpq, const ap_scalar_t* scalar, int round)
+int ap_mpq_set_scalar(mpq_t mpq, const ap_scalar_t* scalar, mp_rnd_t round)
 {
   switch(scalar->discr){
   case AP_SCALAR_MPQ:
     mpq_set(mpq,scalar->val.mpq);
+    return 0;
     break;
   case AP_SCALAR_DOUBLE:
     mpq_set_d(mpq,scalar->val.dbl);
+    return 0;
     break;
+  default:
+    abort();
   }
 }
 
-double ap_scalar_get_double(const ap_scalar_t* scalar, int round)
+int ap_double_set_scalar(double* k, const ap_scalar_t* scalar, mp_rnd_t round)
 {
   switch(scalar->discr){
   case AP_SCALAR_MPQ:
+    {
+      mpfr_t mpfr;
+      mpfr_init2(mpfr,53);
+      int res = mpfr_set_q(mpfr,scalar->val.mpq,round);
+      *k = mpfr_get_d(mpfr,round); /* normally, exact */
+      mpfr_clear(mpfr);
+      return res;
+    }
     return mpq_get_d(scalar->val.mpq);
   case AP_SCALAR_DOUBLE:
-    return scalar->val.dbl;
+    *k = scalar->val.dbl;
+    return 0;
   default:
     abort();
   }

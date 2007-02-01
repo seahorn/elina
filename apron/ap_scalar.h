@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "gmp.h"
+#include "mpfr.h"
 
 #include "ap_config.h"
 
@@ -96,15 +97,16 @@ ap_scalar_t* ap_scalar_alloc_set_double(double k);
 /* Conversions */
 /* ====================================================================== */
 
-void ap_mpq_set_scalar(mpq_t mpq, const ap_scalar_t* scalar, int round);
+/* For the two next functions, the returned value is zero if conversion is
+   exact, positive if the result is greater, negative if it is lower. */
+
+int ap_mpq_set_scalar(mpq_t mpq, const ap_scalar_t* scalar, mp_rnd_t round);
   /* Assign mpq with the value of scalar,
      possibly converting from DOUBLE type.
-     round currently unused. */
-double ap_scalar_get_double(const ap_scalar_t* scalar, int round);
+     Currently, round is not needed, as the conversion is exact */
+int ap_double_set_scalar(double* k, const ap_scalar_t* scalar, mp_rnd_t round);
   /* Return the value of scalar in DOUBLE type,
-     possibly converting from MPQ type.
-     Conversion may be not exact.
-     round currently unused. */
+     possibly converting from MPQ type. */
 
 /* ====================================================================== */
 /* Tests */
