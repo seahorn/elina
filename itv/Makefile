@@ -106,7 +106,7 @@ distclean:
 	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(PREFIX)/bin/$$i; done
 	/bin/rm -f Makefile.depend
 
-dist: $(CCSRC) Makefile itv.texi COPYING README
+dist: $(CCSRC) Makefile COPYING README
 	(cd ..; tar zcvf itv.tgz $(^:%=itv/%))
 
 #---------------------------------------
