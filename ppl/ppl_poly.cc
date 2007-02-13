@@ -14,12 +14,6 @@
  * Please read the COPYING file packaged in the distribution.
  */
 
-/*
-   TODO:
-   - handle intervals in linear expressions
-   - better result flags
-*/
-
 #include <assert.h>
 #include "apron_ppl.h"
 #include "ppl_user.h"
@@ -33,7 +27,7 @@ class PPL_Poly {
 
  public:
   Polyhedron* p;
-  int intdim;
+  size_t intdim;
   bool strict;
 
   PPL_Poly(const PPL_Poly& x) 
@@ -46,8 +40,15 @@ class PPL_Poly {
   PPL_Poly(size_t intdim,size_t realdim,Degenerate_Element kind,bool strict)
     : intdim(intdim), strict(strict)
   {
-    if (strict) p = new NNC_Polyhedron(intdim+realdim,kind);
-    else p = new C_Polyhedron(intdim+realdim,kind);
+    try {
+      if (strict) p = new NNC_Polyhedron(intdim+realdim,kind);
+      else p = new C_Polyhedron(intdim+realdim,kind);
+    }
+    catch (std::logic_error e) {
+      intdim = 0;
+      if (strict) p = new NNC_Polyhedron(1,kind);
+      else p = new C_Polyhedron(1,kind);
+    }
   }
 
   ~PPL_Poly() { delete p; }
@@ -58,14 +59,15 @@ class PPL_Poly {
 
 /* returns a polyhedron, of specified size if possible */
 #define CATCH_WITH_DIM(funid,intdim,realdim,strict)			\
+  catch (cannot_convert w) {						\
+    /* bailing out, not an error */					\
+    man->result.flag_exact = man->result.flag_best = tbool_top;		\
+    return new PPL_Poly(intdim,realdim,UNIVERSE,strict);		\
+  }									\
   catch (std::logic_error e) {						\
+    /* actual error */							\
     ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,funid,e.what()); \
-    try {								\
-      return new PPL_Poly(intdim,realdim,UNIVERSE,strict);		\
-    }									\
-    catch (std::logic_error e) {					\
-      return new PPL_Poly(0,1,UNIVERSE,strict);				\
-    }									\
+    return new PPL_Poly(intdim,realdim,UNIVERSE,strict);		\
   }
 
 /* returns a polyhedron, with size compatible with poly if possible */
@@ -73,14 +75,32 @@ class PPL_Poly {
   CATCH_WITH_DIM(funid,poly->intdim,poly->p->space_dimension()-poly->intdim,poly->strict)
 
 /* returns v */
-#define CATCH_WITH_VAL(funid,v)					\
+#define CATCH_WITH_VAL(funid,v)						\
+  catch (cannot_convert w) {						\
+    /* bailing out, not an error */					\
+    man->result.flag_exact = man->result.flag_best = tbool_top;		\
+    return v;								\
+  }									\
   catch (std::logic_error e) {						\
+    /* actual error */							\
     ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,funid,e.what()); \
     return v;								\
   }
 
 /* returns nothing */
 #define CATCH_WITH_VOID(funid) CATCH_WITH_VAL(funid,)
+
+/* prints message */
+#define CATCH_WITH_MSG(funid)						\
+  catch (cannot_convert w) {						\
+    /* bailing out, not an error */					\
+    fprintf(stream,"!exception!");					\
+  }									\
+  catch (std::logic_error e) {						\
+    /* actual error */							\
+    ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,funid,e.what()); \
+    fprintf(stream,"!exception!");					\
+  }
 
 
 extern "C"
@@ -118,7 +138,7 @@ void ap_ppl_poly_minimize(ap_manager_t* man, const PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
-    /* although we ignore their results, the call force in-place minimisation */
+    /* the calls force in-place minimisation */
     (void)a->p->minimized_constraints();
     (void)a->p->minimized_generators();
   }
@@ -139,22 +159,6 @@ void ap_ppl_poly_approximate(ap_manager_t* man, PPL_Poly* a, int algorithm)
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_APPROXIMATE,"not implemented");
 }
 
-/* NOT IMPLEMENTED! */
-extern "C" 
-tbool_t ap_ppl_poly_is_minimal(ap_manager_t* man, const PPL_Poly* a)
-{
-  ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_IS_MINIMAL,"not implemented");
-  return tbool_top;
-}
-
-/* NOT IMPLEMENTED! */
-extern "C" 
-tbool_t ap_ppl_poly_is_canonical(ap_manager_t* man, const PPL_Poly* a)
-{
-  ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_IS_CANONICAL,"not implemented");
-  return tbool_top;
-}
-
 extern "C" 
 void ap_ppl_poly_fprint(FILE* stream,
 			ap_manager_t* man,
@@ -167,7 +171,7 @@ void ap_ppl_poly_fprint(FILE* stream,
     ap_lincons0_array_fprint(stream,&ar,name_of_dim);
     ap_lincons0_array_clear(&ar);
   }
-  CATCH_WITH_VOID(AP_FUNID_FPRINT);
+  CATCH_WITH_MSG(AP_FUNID_FPRINT);
 }
 
 /* NOT IMPLEMENTED! */
@@ -177,6 +181,7 @@ void ap_ppl_poly_fprintdiff(FILE* stream,
 			     const PPL_Poly* a1, const PPL_Poly* a2,
 			     char** name_of_dim)
 {
+  fprintf(stream,"not implemented");
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_FPRINTDIFF,"not implemented");
 }
 
@@ -193,11 +198,14 @@ void ap_ppl_poly_fdump(FILE* stream, ap_manager_t* man, const PPL_Poly* a)
     ap_lincons0_array_clear(&ar);
     /* dump generators */
     fprintf(stream,"generators: ");
-    ap_generator0_array_t ar2 = ap_ppl_to_generator_array(a->p->generators());
+    bool inexact = false;
+    ap_generator0_array_t ar2 = 
+      ap_ppl_to_generator_array(a->p->generators(),inexact);
+    if (inexact) fprintf(stream,"(inexact) ");
     ap_generator0_array_fprint(stream,&ar2,NULL);
     ap_generator0_array_clear(&ar2);
   }
-  CATCH_WITH_VOID(AP_FUNID_FPRINTDIFF);
+  CATCH_WITH_MSG(AP_FUNID_FPRINTDIFF);
 }
 
 /* NOT IMPLEMENTED! */
@@ -249,9 +257,10 @@ PPL_Poly* ap_ppl_poly_of_box(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = 
     intdim ? tbool_top : tbool_true;
   try {
-    Constraint_System c;
-    ap_ppl_of_box(c,intdim+realdim,tinterval);
     PPL_Poly* r = new PPL_Poly(intdim,realdim,UNIVERSE,strict);
+    Constraint_System c;
+    if (ap_ppl_of_box(c,intdim+realdim,tinterval))
+      man->result.flag_exact = man->result.flag_best = tbool_top;
     r->p->add_constraints(c);
     return r;
   }
@@ -267,21 +276,16 @@ PPL_Poly* ap_ppl_poly_of_lincons_array(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = 
     intdim ? tbool_top : tbool_true;
   try {
-    Constraint_System c;
-    ap_ppl_of_lincons_array(c,array,strict);
-    if (!strict)
-      for (size_t i=0;i<array->size;i++)
-	if (array->p[i].constyp==AP_CONS_SUP) {
-	  man->result.flag_exact = man->result.flag_best = tbool_top;
-	  break;
-	}
     PPL_Poly* r = new PPL_Poly(intdim,realdim,UNIVERSE,strict);
+    Constraint_System c;
+    /* if strict=false, c will not contain any strict constraint */
+    if (ap_ppl_of_lincons_array(c,array,strict))
+      man->result.flag_exact = man->result.flag_best = tbool_top;
     r->p->add_constraints(c);
     return r;
   }
   CATCH_WITH_DIM(AP_FUNID_OF_LINCONS_ARRAY,intdim,realdim,strict);
 }
-
 
 
 
@@ -347,9 +351,7 @@ PPL_Poly* ap_ppl_nncpoly_of_lincons_array(ap_manager_t* man,
 }
 
 
-
-
-
+/* functions common to NNC_Polyhedron and C_Polyhedron */
 
 extern "C" 
 ap_dimension_t ap_ppl_poly_dimension(ap_manager_t* man, const PPL_Poly* a)
@@ -413,14 +415,18 @@ extern "C"
 tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, const PPL_Poly* a, 
 				const ap_lincons0_t* lincons)
 {
-  man->result.flag_exact = man->result.flag_best = 
-    a->intdim ? tbool_top : tbool_true;
+  man->result.flag_exact = man->result.flag_best = tbool_top;
   try {
     Constraint c = Constraint::zero_dim_positivity();
-    ap_ppl_of_lincons(c,lincons,a->strict);
-    if (lincons->constyp==AP_CONS_SUP)
-      man->result.flag_exact = man->result.flag_best = tbool_top;
-    return a->p->relation_with(c) == Poly_Con_Relation::is_included() ? tbool_true : (a->intdim ? tbool_top : tbool_false);
+    /* may throw cannot_convert, which will be caught by CATCH_WITH_VAL */
+    /* also, we allow strict constraint even if a->strict=false */
+    bool inexact = ap_ppl_of_lincons(c,lincons,true);
+    if (a->p->relation_with(c) == Poly_Con_Relation::is_included()) {
+      if (inexact) return tbool_top;
+      return tbool_true;
+    }
+    if (a->intdim) return tbool_top;
+    return tbool_false;
   }
   CATCH_WITH_VAL(AP_FUNID_SAT_LINCONS,tbool_top);
 }
@@ -429,20 +435,31 @@ extern "C"
 tbool_t ap_ppl_poly_sat_interval(ap_manager_t* man, const PPL_Poly* a,
 				 ap_dim_t dim, const ap_interval_t* i)
 {
-  man->result.flag_exact = man->result.flag_best = 
-    a->intdim ? tbool_top : tbool_true;
+  man->result.flag_exact = man->result.flag_best = tbool_top;
   try {
     mpq_class temp;
     /* inf */
-    ap_mpq_set_scalar(temp.get_mpq_t(),i->inf,0);
+    bool inexact = ap_mpq_set_scalar(temp.get_mpq_t(),i->inf,GMP_RNDD);
     Constraint c = ( temp.get_den() * Variable(dim) >= temp.get_num() );
-    if (a->p->relation_with(c) != Poly_Con_Relation::is_included()) 
-      return a->intdim ? tbool_top : tbool_false;
+    if (a->p->relation_with(c) != Poly_Con_Relation::is_included())
+      return a->intdim ? tbool_top :  tbool_false;
+    if (inexact) {
+      ap_mpq_set_scalar(temp.get_mpq_t(),i->inf,GMP_RNDU);
+      c = ( temp.get_den() * Variable(dim) >= temp.get_num() );
+      if (a->p->relation_with(c) != Poly_Con_Relation::is_included())
+	return tbool_top;
+    }
     /* sup */
-    ap_mpq_set_scalar(temp.get_mpq_t(),i->sup,0);
+    inexact = ap_mpq_set_scalar(temp.get_mpq_t(),i->sup,GMP_RNDU);
     c = temp.get_den() * Variable(dim) <= temp.get_num();
     if (a->p->relation_with(c) != Poly_Con_Relation::is_included()) 
       return a->intdim ? tbool_top : tbool_false;
+    if (inexact) {
+       ap_mpq_set_scalar(temp.get_mpq_t(),i->sup,GMP_RNDD);
+       c = temp.get_den() * Variable(dim) <= temp.get_num();
+       if (a->p->relation_with(c) != Poly_Con_Relation::is_included()) 
+	 return tbool_top;
+    }   
     return tbool_true;
   }
   CATCH_WITH_VAL(AP_FUNID_SAT_INTERVAL,tbool_top);
@@ -480,6 +497,7 @@ ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
       Linear_Expression l;
       mpz_class den;
       bool ok;
+      /* may throw cannot_convert, which will be caught by CATCH_WITH_VAL */
       ap_ppl_of_linexpr(l,den,expr);
       /* sup bound */
       if (a->p->maximize(l,sup_n,sup_d,ok)) {
@@ -499,17 +517,19 @@ ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
   CATCH_WITH_VAL(AP_FUNID_BOUND_LINEXPR,(ap_interval_set_top(r),r));
 }
 
-/* utility shared by XXX_bound_dimension & XXX_to_box */
+/* utility shared by XXX_bound_dimension & XXX_to_box (exact) */
 static void ap_ppl_poly_bound_dim(ap_interval_t* r,const PPL_Poly* a,int dim)
 {
   Coefficient sup_n,sup_d,inf_n,inf_d;
   Linear_Expression l = Variable(dim);
   bool ok;
   /* sup bound */
-  if (a->p->maximize(l,sup_n,sup_d,ok)) ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
+  if (a->p->maximize(l,sup_n,sup_d,ok)) 
+    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
   else ap_scalar_set_infty(r->sup,1);
   /* inf bound */
-  if (a->p->minimize(l,inf_n,inf_d,ok)) ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
+  if (a->p->minimize(l,inf_n,inf_d,ok)) 
+    ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
   else ap_scalar_set_infty(r->inf,-1);
 }
 
@@ -568,7 +588,11 @@ ap_generator0_array_t ap_ppl_poly_to_generator_array(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
   try {
-    return ap_ppl_to_generator_array(a->p->generators());
+    bool inexact = false;
+    ap_generator0_array_t r = 
+      ap_ppl_to_generator_array(a->p->generators(),inexact);
+    if (inexact) man->result.flag_exact = man->result.flag_best = tbool_top;
+    return r;
   }
   CATCH_WITH_VAL(AP_FUNID_TO_GENERATOR_ARRAY,ap_ppl_generator_universe(a->p->space_dimension()));
 }
@@ -587,7 +611,6 @@ PPL_Poly* ap_ppl_poly_meet(ap_manager_t* man, bool destructive,
   CATCH_WITH_POLY(AP_FUNID_MEET,a1);
 }
  
-/* TODO: flag_exact */
 extern "C" 
 PPL_Poly* ap_ppl_poly_join(ap_manager_t* man, bool destructive, 
 			   PPL_Poly* a1, const PPL_Poly* a2)
@@ -643,14 +666,11 @@ PPL_Poly* ap_ppl_poly_meet_lincons_array(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
   try {
-    Constraint_System c;
-    ap_ppl_of_lincons_array(c,array,a->strict);
-    for (size_t i=0;i<array->size;i++)
-      if (array->p[i].constyp==AP_CONS_SUP) {
-	man->result.flag_exact = man->result.flag_best = tbool_top;
-	break;
-      }
     PPL_Poly* r = destructive ? a : new PPL_Poly(*a);
+    Constraint_System c;
+    /* when a->strict=false, c will not contain any strict constraint */
+    if (ap_ppl_of_lincons_array(c,array,a->strict))
+      man->result.flag_exact = man->result.flag_best = tbool_top;
     r->p->add_recycled_constraints(c);
     return r;
   }
@@ -666,9 +686,9 @@ PPL_Poly* ap_ppl_poly_add_ray_array(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
   try {
+    PPL_Poly* r = destructive ? a : new PPL_Poly(*a);
     Generator_System c;
     ap_ppl_of_generator_array(c,array);
-    PPL_Poly* r = destructive ? a : new PPL_Poly(*a);
     r->p->add_recycled_generators(c);
     return r;
   }
@@ -689,7 +709,14 @@ PPL_Poly* ap_ppl_poly_assign_linexpr(ap_manager_t* man,
     mpz_class den;
     ap_ppl_of_linexpr(e,den,expr);
     PPL_Poly* r = destructive ? org : new PPL_Poly(*org);
-    r->p->affine_image(Variable(dim),e,den);
+    try {
+      r->p->affine_image(Variable(dim),e,den);
+    }
+    catch (cannot_convert x) {
+      /* defaults to forget */
+      r->p->add_generator(Generator::line(Variable(dim)));
+      man->result.flag_exact = man->result.flag_best = tbool_top;
+    }
     if (dest) r->p->intersection_assign(*dest->p);
     return r;
   }
@@ -711,7 +738,14 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr(ap_manager_t* man,
     mpz_class den;
     ap_ppl_of_linexpr(e,den,expr);
     PPL_Poly* r = destructive ? org : new PPL_Poly(*org);
-    r->p->affine_preimage(Variable(dim),e,den);
+    try {
+      r->p->affine_preimage(Variable(dim),e,den);
+    }
+    catch (cannot_convert x) {
+      /* defaults to forget */
+      r->p->add_generator(Generator::line(Variable(dim)));
+      man->result.flag_exact = man->result.flag_best = tbool_top;
+    }
     if (dest) r->p->intersection_assign(*dest->p);
     return r;
   }
@@ -738,8 +772,14 @@ PPL_Poly* ap_ppl_poly_assign_linexpr_array(ap_manager_t* man,
     r->p->add_space_dimensions_and_embed(size);
     /* assign expression to temp */
     for (size_t i=0;i<size;i++) {
-      ap_ppl_of_linexpr(e,den,texpr[i]);
-      r->p->affine_image(Variable(dim+i),e,den);
+      try {
+	ap_ppl_of_linexpr(e,den,texpr[i]);
+	r->p->affine_image(Variable(dim+i),e,den);
+      } 
+      catch (cannot_convert x) {
+	/* defaults to forget (nothing to do, actually) */
+	man->result.flag_exact = man->result.flag_best = tbool_top;
+      }
     }
     /* copy temp back to original */
     for (size_t i=0;i<size;i++)
@@ -776,8 +816,14 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
       r->p->affine_preimage(Variable(tdim[i]),Linear_Expression(Variable(dim+i)));
     /* perform substitutions */
     for (size_t i=0;i<size;i++) {
-      ap_ppl_of_linexpr(e,den,texpr[i]);
-      r->p->affine_preimage(Variable(dim+i),e,den);
+      try {
+	ap_ppl_of_linexpr(e,den,texpr[i]);
+	r->p->affine_preimage(Variable(dim+i),e,den);
+      }
+      catch (cannot_convert x) {
+	/* defaults to forget (nothing to do, actually) */
+	man->result.flag_exact = man->result.flag_best = tbool_top;
+      }
     }
     /* remove temp */
     r->p->remove_higher_space_dimensions(dim);
@@ -914,11 +960,22 @@ PPL_Poly* ap_ppl_poly_expand(ap_manager_t* man,
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
+    size_t olddim = a->p->space_dimension();
     PPL_Poly* r = destructive ? a : new PPL_Poly(*a);
     r->p->expand_space_dimension(Variable(dim),n);
-    /* TODO: need some reordering if there are integer variables */
-    if (a->intdim)
-      throw invalid_argument("integer dimensions not handled in ap_ppl_polu_expand");
+    if (dim<r->intdim) {
+      /* expanded an integer dimension => needs some reordering */
+      ap_ppl_map map = ap_ppl_map(olddim+n,olddim+n);
+      size_t i;
+      for (i=0;i<r->intdim;i++)
+	map.set(i,i);
+      for (i=0;i<n;i++)
+	map.set(olddim+i,r->intdim+i);
+      for (i=r->intdim;i<olddim;i++)
+	map.set(i,i+n);
+      map.do_map(r);
+      r->intdim += n;
+    }
     return r;
   }
   CATCH_WITH_DIM(AP_FUNID_EXPAND,a->intdim,a->p->space_dimension()-a->intdim+n,a->strict);
@@ -940,9 +997,7 @@ PPL_Poly* ap_ppl_poly_fold(ap_manager_t* man,
     for (size_t i=1;i<size;i++)
       s.insert(Variable(tdim[i]));
     r->p->fold_space_dimensions(s,Variable(tdim[0]));
-    /* TODO: update intdim */
-    if (a->intdim)
-      throw invalid_argument("integer dimensions not handled in ap_ppl_polu_expand");
+    if (tdim[0]<a->intdim) r->intdim -= size-1;
     return r;
   }
   CATCH_WITH_DIM(AP_FUNID_FOLD,a->intdim,a->p->space_dimension()-a->intdim-size,a->strict);
@@ -974,6 +1029,7 @@ PPL_Poly* ap_ppl_poly_widening_threshold(ap_manager_t* man,
   int algo = man->option.funopt[AP_FUNID_WIDENING].algorithm;
   try {
     Constraint_System c;
+    /* when a1->strict=false, c will not contain any strict constraint */
     ap_ppl_of_lincons_array(c,array,a1->strict);
     PPL_Poly* r = new PPL_Poly(*a2);
     if (algo>2) r->p->bounded_BHRZ03_extrapolation_assign(*a1->p,c);
@@ -1036,8 +1092,6 @@ extern "C" ap_manager_t* ap_ppl_poly_manager_alloc(bool strict)
   man->funptr[AP_FUNID_MINIMIZE] = (void*)ap_ppl_poly_minimize;
   man->funptr[AP_FUNID_CANONICALIZE] = (void*)ap_ppl_poly_canonicalize;
   man->funptr[AP_FUNID_APPROXIMATE] = (void*)ap_ppl_poly_approximate;
-  man->funptr[AP_FUNID_IS_MINIMAL] = (void*)ap_ppl_poly_is_minimal;
-  man->funptr[AP_FUNID_IS_CANONICAL] = (void*)ap_ppl_poly_is_canonical;
   man->funptr[AP_FUNID_FPRINT] = (void*)ap_ppl_poly_fprint;
   man->funptr[AP_FUNID_FPRINTDIFF] = (void*)ap_ppl_poly_fprintdiff;
   man->funptr[AP_FUNID_FDUMP] = (void*)ap_ppl_poly_fdump;

@@ -23,14 +23,23 @@
 using namespace std;
 using namespace Parma_Polyhedra_Library;
 
-/* GMP => scalar */
+/* inidicates that a an object cannot be exactly converted into another one
+   should be caught in transfer functions
+*/
+class cannot_convert: public exception {
+public: 
+  cannot_convert() {};
+};
+
+
+/* GMP => scalar (exact) */
 static inline void ap_ppl_mpz_to_scalar(ap_scalar_t* s, const mpz_class& i)
 {
   ap_scalar_reinit(s,AP_SCALAR_MPQ);
   mpq_set_num(s->val.mpq,i.get_mpz_t());
 }
 
-/* GMP / GMP => scalar */
+/* GMP / GMP => scalar (exact) */
 static inline void ap_ppl_mpz2_to_scalar(ap_scalar_t* s, 
 					 const mpz_class& n, const mpz_class& d)
 {
@@ -39,19 +48,48 @@ static inline void ap_ppl_mpz2_to_scalar(ap_scalar_t* s,
   mpq_set_den(s->val.mpq,d.get_mpz_t());
 }
 
+/* coeff => GMP */
+/* fail if the coeff cannot be exactely represented as a finite mpq */
+static inline void ap_ppl_mpq_of_coef(mpq_class& res, const ap_coeff_t coef)
+{
+
+  switch (coef.discr) {
+  case AP_COEFF_SCALAR:
+    if (ap_scalar_infty(coef.val.scalar) ||
+	ap_mpq_set_scalar(res.get_mpq_t(),coef.val.scalar,GMP_RNDU))
+      throw cannot_convert();
+    break;
+  case AP_COEFF_INTERVAL:
+    {
+      mpq_class tmp;
+      if (ap_scalar_infty(coef.val.interval->sup) ||
+	  ap_scalar_infty(coef.val.interval->inf) ||
+	  ap_mpq_set_scalar(res.get_mpq_t(),coef.val.interval->sup,GMP_RNDU) ||
+	  ap_mpq_set_scalar(tmp.get_mpq_t(),coef.val.interval->inf,GMP_RNDD) ||
+	  tmp!=res) 
+	throw cannot_convert();
+    }
+    break;
+  default: 
+    throw invalid_argument("Coefficient type ap_ppl_mpq_of_coef");
+  }
+}
+
+/* some of these may raise cannot_convert */
+/* returned booleans are true when inexact */
+/* reference booleans are set to true when inexact, left unchanged otherwise */
 extern ap_lincons0_t ap_ppl_to_lincons(const Constraint& c);
 extern ap_lincons0_array_t ap_ppl_to_lincons_array(const Constraint_System& c);
-extern ap_generator0_t ap_ppl_to_generator(const Generator& c);
-extern ap_generator0_array_t ap_ppl_to_generator_array(const Generator_System& c);
+extern ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& exact);
+extern ap_generator0_array_t ap_ppl_to_generator_array(const Generator_System& c, bool& exact);
 extern ap_generator0_array_t ap_ppl_generator_universe(size_t dim);
 extern ap_interval_t** ap_ppl_box_universe(ap_interval_t** i,size_t nb);
-
 extern void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,const ap_linexpr0_t* c);
-extern void ap_ppl_of_lincons(Constraint& r,const ap_lincons0_t* c,bool allow_strict);
-extern void ap_ppl_of_lincons_array(Constraint_System& r,const ap_lincons0_array_t* a,bool allow_strict);
-extern void ap_ppl_of_box(Constraint_System& r,size_t nb, const ap_interval_t*const* a);
-extern void ap_ppl_of_generator(Generator& r,const ap_generator0_t* c);
-extern void ap_ppl_of_generator_array(Generator_System& r,const ap_generator0_array_t* a);
+extern bool ap_ppl_of_lincons(Constraint& r,const ap_lincons0_t* c,bool allow_strict);
+extern bool ap_ppl_of_lincons_array(Constraint_System& r,const ap_lincons0_array_t* a,bool allow_strict);
+extern bool ap_ppl_of_generator(Generator& r,const ap_generator0_t* c);
+extern bool ap_ppl_of_generator_array(Generator_System& r,const ap_generator0_array_t* a);
+bool ap_ppl_of_box(Constraint_System& r,size_t nb, const ap_interval_t*const* a);
 
 static ap_abstract0_t* ap_ppl_make_abstract0(ap_manager_t* man, void* v)
 {
@@ -72,8 +110,6 @@ static ap_abstract0_t* ap_ppl_invalid_abstract0(ap_manager_t* man, const ap_abst
   else 
     return ap_abstract0_top(man,0,1);
 }
-
-
 
 #define arg_assert(cond,action,funid)					\
   do { if (!(cond)) {							\

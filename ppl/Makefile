@@ -30,7 +30,7 @@ INSTALLd = install -d
 CC = gcc
 
 # C++ compiler
-CXX = $(CC)
+CXX = g++
 
 # Library creation
 AR = ar
@@ -59,7 +59,6 @@ ICFLAGS = \
 -Wdisabled-optimization \
 -Wno-unused
 # -Winline
-
 CCFLAGS = $(OPTFLAGS) $(ICFLAGS) -DNDEBUG
 CXXFLAGS = $(OPTFLAGS) $(ICFLAGS) -DNDEBUG
 
@@ -123,12 +122,12 @@ libapronppl.a: $(subst .cc,.o,$(CXXSOURCES))
 	$(AR) rcs $@ $^
 
 ppl_test: libapronppl.a ppl_test.o
-	$(CXX) -o $@ ppl_test.o \
+	$(CXX) $(CXXFLAGS) -o $@ ppl_test.o \
 	-L. -lapronppl \
 	-L$(POLKA_PREFIX)/lib -lpolkag_debug \
 	-L$(APRON_PREFIX)/lib -lapron \
 	`ppl-config --ldflags` \
-	-L$(GMP_PREFIX)/lib -lgmp -lm
+	-L$(GMP_PREFIX)/lib -lmpfr -lgmp -lm
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

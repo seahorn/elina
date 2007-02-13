@@ -27,7 +27,6 @@ What are provided:
 Limitations:
 - no support for intervals in linear expressions and constraints
 - no support for other domains in PPL (Grid, BD_Shape)
-- the precision of flag_exact and flag_best could be inproved
 - integer dimensions are abstracted as real ones; the functions will set
   flag_exact and flag_best to top whenever intdim>0
 - only PPL 0.9 was tested, other PPL version might not work

@@ -24,6 +24,7 @@
 
 ap_manager_t* ppl;
 ap_manager_t* pk;
+int intdim;
 
 
 /* utilities */
@@ -82,7 +83,11 @@ ap_abstract0_t* random_poly(ap_manager_t* man,int dim)
   for (i=0;i<dim;i++)
     ar.p[i] = random_generator(dim,(lrand48()%100>=90)?AP_GEN_RAY:AP_GEN_VERTEX);
   //ap_generator0_array_fprint(stderr,&ar,NULL);
-  p = ap_abstract0_of_box(man,0,dim,(const ap_interval_t**)t);
+  if (intdim)
+    p = ap_abstract0_of_box(man,dim/2,dim-dim/2,(const ap_interval_t**)t);
+  else
+    p = ap_abstract0_of_box(man,0,dim,(const ap_interval_t**)t);
+    
   ap_abstract0_add_ray_array(man,true,p,&ar);
   ap_generator0_array_clear(&ar);
   ap_interval_array_free(t,dim);
@@ -96,7 +101,7 @@ ap_abstract0_t* convert(ap_manager_t* man, ap_abstract0_t* a)
   ap_dimension_t d = ap_abstract0_dimension(a->man,a);
   if (a->man==man) return a;
   l = ap_abstract0_to_lincons_array(a->man,a);
-  a = ap_abstract0_of_lincons_array(man,0,d.realdim,&l);
+  a = ap_abstract0_of_lincons_array(man,d.intdim,d.realdim,&l);
   ap_lincons0_array_clear(&l);
   return a;
 }
@@ -123,7 +128,7 @@ void print_poly(const char* msg, ap_abstract0_t* p)
 /* loop */
 /* **** */
 
-#define N 60
+#define N 70
 
 char b1_[N+4]= " [";
 char b2_[N+4];
@@ -277,11 +282,14 @@ void test_dimadd(void)
     ap_dimchange_t* a = ap_dimchange_alloc(0,3);
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
     int proj = lrand48()%2;
+    ap_dimension_t d;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
-    for (i=0;i<a->realdim;i++) {
+    d = ap_abstract0_dimension(pk,pka);
+    for (i=0;i<a->intdim+a->realdim;i++) {
       a->dim[i] = lrand48()%3;
       if (i) a->dim[i] += a->dim[i-1];
+      if (a->dim[i]<d.intdim) { a->intdim++; a->realdim--; }
       assert(a->dim[i]<dim);
     }
     pkr = ap_abstract0_add_dimensions(pk,false,pka,a,proj);
@@ -305,11 +313,14 @@ void test_dimrem(void)
     size_t i, dim = 8;
     ap_dimchange_t* a = ap_dimchange_alloc(0,2);
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
+    ap_dimension_t d;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
-    for (i=0;i<a->realdim;i++) {
+    d = ap_abstract0_dimension(pk,pka);
+    for (i=0;i<a->intdim+a->realdim;i++) {
       a->dim[i] = lrand48()%3 + 1;
       if (i) a->dim[i] += a->dim[i-1];
+      if (a->dim[i]<d.intdim) { a->intdim++; a->realdim--; }
       assert(a->dim[i]<dim);
     }
     pkr = ap_abstract0_remove_dimensions(pk,false,pka,a);
@@ -333,12 +344,15 @@ void test_forget(void)
     size_t i, dim = 8;
     ap_dimchange_t* a = ap_dimchange_alloc(0,2);
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
+    ap_dimension_t d;
     int proj = lrand48()%2;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
-    for (i=0;i<a->realdim;i++) {
+    d = ap_abstract0_dimension(pk,pka);
+    for (i=0;i<a->intdim+a->realdim;i++) {
       a->dim[i] = lrand48()%3 + 1;
       if (i) a->dim[i] += a->dim[i-1];
+      if (a->dim[i]<d.intdim) { a->intdim++; a->realdim--; }
       assert(a->dim[i]<dim);
     }
     pkr = ap_abstract0_forget_array(pk,false,pka,a->dim,a->realdim,proj);
@@ -362,13 +376,17 @@ void test_permute(void)
     size_t i, dim = 6;
     ap_dimperm_t* p = ap_dimperm_alloc(dim);
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
+    ap_dimension_t d;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
+    d = ap_abstract0_dimension(pk,pka);
     /* random permutation */
     ap_dimperm_set_id(p);
     for (i=0;i<p->size-1;i++) {
-      int j = i + (lrand48() % (p->size-i));
-      int a = p->dim[j]; p->dim[j] = p->dim[i]; p->dim[i] = a;
+      int a, j;
+      if (i<d.intdim) j = i + (lrand48() % (d.intdim-i));
+      else j = i + (lrand48() % (d.intdim+d.realdim-i));
+      a = p->dim[j]; p->dim[j] = p->dim[i]; p->dim[i] = a;
     }
     pkr = ap_abstract0_permute_dimensions(pk,false,pka,p);
     pplr = ap_abstract0_permute_dimensions(ppl,false,ppla,p);
@@ -389,17 +407,19 @@ void test_expand(void)
   printf("\nexpand dimensions\n");
   LOOP {
     size_t i, dim = 6;
-    ap_dim_t d = lrand48() % dim;
+    ap_dim_t dd = lrand48() % dim;
     size_t n = (lrand48() % 2) + 1;
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
+    ap_dimension_t d;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
-    pkr = ap_abstract0_expand(pk,false,pka,d,n);
-    pplr = ap_abstract0_expand(ppl,false,ppla,d,n);
+    d = ap_abstract0_dimension(pk,pka);
+    pkr = ap_abstract0_expand(pk,false,pka,dd,n);
+    pplr = ap_abstract0_expand(ppl,false,ppla,dd,n);
     RESULT('*');
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results");
-      fprintf(stderr,"dim %i expanded %i times\n",(int)d,(int)n);
+      fprintf(stderr,"dim %i expanded %i times\n",(int)dd,(int)n);
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
     }
     ap_abstract0_free(pk,pka); ap_abstract0_free(ppl,ppla);
@@ -414,13 +434,18 @@ void test_fold(void)
     size_t i, dim = 6;
     ap_dim_t dd[3];
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
+    ap_dimension_t d;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
-    dd[0] = lrand48() % (dim-3);
-    dd[1] = dd[0] + 1 + (lrand48() % (dim-2-dd[0]));
-    dd[2] = dd[1] + 1 + (lrand48() % (dim-1-dd[1]));
-    pkr = ap_abstract0_fold(pk,false,pka,dd,3);
-    pplr = ap_abstract0_fold(ppl,false,ppla,dd,3);
+    d = ap_abstract0_dimension(pk,pka);
+    do {
+      dd[0] = lrand48() % dim;
+      if (dd[0]<d.intdim) dd[1] = lrand48() % (d.intdim-1);
+      else dd[1] = d.intdim + lrand48() % (d.realdim-1);
+    }
+    while (dd[0]>=dd[1]);
+    pkr = ap_abstract0_fold(pk,false,pka,dd,2);
+    pplr = ap_abstract0_fold(ppl,false,ppla,dd,2);
     RESULT('*');
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results");
@@ -445,7 +470,7 @@ void test_add_lincons(void)
     for (i=0;i<nb;i++) {
       ar.p[i] = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ:
 				 (lrand48()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
-				 random_linexpr(dim));
+				 random_linexpr(dim),NULL);
     }
     pkr = ap_abstract0_meet_lincons_array(pk,false,pka,&ar);
     pplr = ap_abstract0_meet_lincons_array(ppl,false,ppla,&ar);
@@ -503,8 +528,8 @@ void test_box(void)
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results");
       for (i=0;i<dim;i++) {
-	fprintf(stderr,"pki[%i]=",i); ap_interval_fprint(stderr,pki[i]);
-	fprintf(stderr," ppli[%i]=",i); ap_interval_fprint(stderr,ppli[i]);
+	fprintf(stderr,"pki[%i]=",(int)i); ap_interval_fprint(stderr,pki[i]);
+	fprintf(stderr," ppli[%i]=",(int)i); ap_interval_fprint(stderr,ppli[i]);
 	fprintf(stderr,"\n");
       }
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -535,8 +560,8 @@ void test_vbound(void)
       if (pkd!=ppld || ap_interval_cmp(pki,ppli)) {
 	ERROR("different results");
 	print_poly("pka",pka);
-	fprintf(stderr,"pki[%i]=",i); ap_interval_fprint(stderr,pki);
-	fprintf(stderr," ppli[%i]=",i); ap_interval_fprint(stderr,ppli);
+	fprintf(stderr,"pki[%i]=",(int)i); ap_interval_fprint(stderr,pki);
+	fprintf(stderr," ppli[%i]=",(int)i); ap_interval_fprint(stderr,ppli);
 	fprintf(stderr," pkd=%i ppld=%i\n",pkd,ppld);
       }
       ap_interval_free(pki);
@@ -581,7 +606,7 @@ void test_csat(void)
     ap_abstract0_t* pka,*ppla;
     ap_lincons0_t l = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ:
 				       (lrand48()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
-				       random_linexpr(dim));
+				       random_linexpr(dim),NULL);
     tbool_t pks,ppls;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
@@ -618,7 +643,7 @@ void test_isat(void)
       ERROR("different results");
       print_poly("pka",pka);
       ap_interval_fprint(stderr,i);
-      fprintf(stderr,"\nvar=%i\npks=%i ppls=%i\n",p,pks,ppls);
+      fprintf(stderr,"\nvar=%i\npks=%i ppls=%i\n",(int)p,pks,ppls);
     }
     ap_abstract0_free(pk,pka); ap_abstract0_free(ppl,ppla);
     ap_interval_free(i);
@@ -640,7 +665,7 @@ void test_assign(void)
     RESULT('*');
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results");
-      fprintf(stderr,"x%i <- ",p); ap_linexpr0_fprint(stderr,l,NULL); fprintf(stderr,"\n");
+      fprintf(stderr,"x%i <- ",(int)p); ap_linexpr0_fprint(stderr,l,NULL); fprintf(stderr,"\n");
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
     }
     ap_abstract0_free(pk,pka); ap_abstract0_free(ppl,ppla);
@@ -698,7 +723,7 @@ void test_subst(void)
     RESULT('*');
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results");
-      fprintf(stderr,"x%i -> ",p); ap_linexpr0_fprint(stderr,l,NULL); fprintf(stderr,"\n");
+      fprintf(stderr,"x%i -> ",(int)p); ap_linexpr0_fprint(stderr,l,NULL); fprintf(stderr,"\n");
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
     }
     ap_abstract0_free(pk,pka); ap_abstract0_free(ppl,ppla);
@@ -741,7 +766,6 @@ void test_par_subst(void)
   } ENDLOOP;
 }
 
-
 void test_widen()
 {
   int dim = 5;
@@ -776,6 +800,9 @@ int main(void)
   int i, strict;
   srand48(time(NULL));
 
+  intdim = 0;
+  /*for (intdim=1;intdim<2;intdim++) {*/
+
   for (strict=0;strict<2;strict++) {
     /* init */
     pk = pk_manager_alloc(strict);
@@ -786,9 +813,8 @@ int main(void)
       ppl->option.abort_if_exception[i] = true;
     }
     
-    printf("\n\ncomparing libraries:\n- %s (%s)\n- %s (%s)\nwith strict=%i\n\n",
-	   pk->library,pk->version,ppl->library,ppl->version,strict);
-    
+    printf("\n\ncomparing libraries:\n- %s (%s)\n- %s (%s)\nwith strict=%i int=%i\n\n",
+	   pk->library,pk->version,ppl->library,ppl->version,strict,intdim);
     /* run tests */
     test_conv();
     test_join();
@@ -800,9 +826,9 @@ int main(void)
     test_forget();
     test_permute();
     test_expand();
-    if (0) test_fold(); // bug in NewPolka ?
+    test_fold();
     test_add_lincons();
-    if (!strict) test_add_ray(); // buf in strict mode ?
+    test_add_ray();
     test_box();
     test_vbound();
     test_lbound();
@@ -812,12 +838,14 @@ int main(void)
     test_par_assign();
     test_subst();
     test_par_subst();
-    if (!strict) test_widen(); // behave differently in strict mode ?
-    
+    if (!strict) test_widen(); // behave differently in strict mode
+   
     /* clean-up */
     ap_manager_free(pk);
     ap_manager_free(ppl);
   }
+
+  /*}*/
 
   if (error_) printf("\n%i error(s)!\n",error_);
   else printf("\nall tests passed\n");
