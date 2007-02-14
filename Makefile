@@ -9,7 +9,7 @@ c:
 	(cd itv; make all)
 	(cd newpolka; make allg)
 	(cd box; make all)
-	(cd octagons; make allQg allFd)
+	(cd octagons; make Qg Fd)
 
 ml:
 	(cd mlgmpidl; make all)
