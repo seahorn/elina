@@ -33,3 +33,6 @@ import "manager.idl";
 
 ap_manager_ptr ap_ppl_poly_manager_alloc(boolean strict);
 quote(MLI,"(** Allocate a new manager to manipulate PPL Polyhedra. *)\n\n")
+
+ap_manager_ptr ap_ppl_grid_manager_alloc();
+quote(MLI,"(** Allocate a new manager to manipulate PPL Grids. *)\n\n")

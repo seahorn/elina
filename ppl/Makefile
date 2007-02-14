@@ -79,7 +79,7 @@ OCAMLOPTFLAGS = -inline 20
 # Files
 #---------------------------------------
 
-CXXSOURCES = ppl_user.cc ppl_poly.cc
+CXXSOURCES = ppl_user.cc ppl_poly.cc ppl_grid.cc
 CSOURCES = ppl_test.c
 CCINC = ppl_user.h apron_ppl.h
 

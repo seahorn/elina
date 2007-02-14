@@ -1,5 +1,5 @@
 /*
- * apron_user.cc
+ * ppl_user.cc
  *
  * APRON Library / PPL library wrapper
  *
@@ -79,17 +79,26 @@ static inline void ap_ppl_mpq_of_coef(mpq_class& res, const ap_coeff_t coef)
 /* returned booleans are true when inexact */
 /* reference booleans are set to true when inexact, left unchanged otherwise */
 extern ap_lincons0_t ap_ppl_to_lincons(const Constraint& c);
+extern ap_lincons0_t ap_ppl_to_lincons(const Congruence& c);
 extern ap_lincons0_array_t ap_ppl_to_lincons_array(const Constraint_System& c);
+extern ap_lincons0_array_t ap_ppl_to_lincons_array(const Congruence_System& c);
 extern ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& exact);
+extern ap_generator0_t ap_ppl_to_generator(const Grid_Generator& c);
 extern ap_generator0_array_t ap_ppl_to_generator_array(const Generator_System& c, bool& exact);
+extern ap_generator0_array_t ap_ppl_to_generator_array(const Grid_Generator_System& c);
 extern ap_generator0_array_t ap_ppl_generator_universe(size_t dim);
 extern ap_interval_t** ap_ppl_box_universe(ap_interval_t** i,size_t nb);
 extern void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,const ap_linexpr0_t* c);
 extern bool ap_ppl_of_lincons(Constraint& r,const ap_lincons0_t* c,bool allow_strict);
+extern bool ap_ppl_of_lincons(Congruence& r,const ap_lincons0_t* c);
 extern bool ap_ppl_of_lincons_array(Constraint_System& r,const ap_lincons0_array_t* a,bool allow_strict);
+extern bool ap_ppl_of_lincons_array(Congruence_System& r,const ap_lincons0_array_t* a);
 extern bool ap_ppl_of_generator(Generator& r,const ap_generator0_t* c);
+extern bool ap_ppl_of_generator(Grid_Generator& r,const ap_generator0_t* c);
 extern bool ap_ppl_of_generator_array(Generator_System& r,const ap_generator0_array_t* a);
-bool ap_ppl_of_box(Constraint_System& r,size_t nb, const ap_interval_t*const* a);
+extern bool ap_ppl_of_generator_array(Grid_Generator_System& r,const ap_generator0_array_t* a);
+extern bool ap_ppl_of_box(Constraint_System& r,size_t nb, const ap_interval_t*const* a);
+extern bool ap_ppl_of_box(Congruence_System& r,size_t nb, const ap_interval_t*const* a);
 
 static ap_abstract0_t* ap_ppl_make_abstract0(ap_manager_t* man, void* v)
 {

@@ -15,8 +15,22 @@ Requirements:
 - GMPXX (normally installed with GMP)
 - for apron_ppl_test: NewPolka APRON module
 
-What are provided:
+
+IMPORTANT
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+   PPL 0.9 misses Grid_Generator::coefficient and must be patched
+
+   please apply ppl.patch against PPL 0.9
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+What is provided:
 - a manager to access the C_Polyhedron and NCC_Polyhedron classes
+- a manager to access the Grid class
 - C++ exceptions are mapped back to APRON exceptions
 - flag_exact and flag_best are correcty sets
 - all the widenings are available through the algorithm parameter
@@ -26,10 +40,16 @@ What are provided:
   comparing the result of PPL and NewPolka on random polyhedra
 
 Limitations:
-- no support for other domains in PPL (Grid, BD_Shape)
-- integer dimensions are abstracted as real ones; the functions will set
-  flag_exact and flag_best to top whenever intdim>0
+- Polyhedra are experimental but tested
+- GRIDS ARE UNTESTED AND MAY NOT WORK
+- semantics of assign and subst on grids with integer variables is not
+  fully aggreed upon and may change
+- no support for other domains in PPL (BD_Shape, Powerset)
 - only PPL 0.9 was tested, other PPL version might not work
+- not implemented: canonicalize, approximate, fprintfdiff, (de)serialize_raw
+- precision could be improved for:
+  . intervals in linear functions
+  . sat_lincons
 
 How to install:
 - setup in ../Makefile.config (PPL_PREFIX, APRON_PPL_PREFIX)

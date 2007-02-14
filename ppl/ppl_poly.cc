@@ -1,5 +1,5 @@
 /*
- * apron_ppl.cc
+ * ppl_poly.cc
  *
  * APRON Library / PPL library wrapper
  *
@@ -422,7 +422,7 @@ tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, const PPL_Poly* a,
     /* also, we allow strict constraint even if a->strict=false */
     bool inexact = ap_ppl_of_lincons(c,lincons,true);
     if (a->p->relation_with(c) == Poly_Con_Relation::is_included()) {
-      if (inexact) return tbool_top;
+      if (inexact) return tbool_top; /* we could check !lincons & try to return tbool_false */
       return tbool_true;
     }
     if (a->intdim) return tbool_top;
@@ -431,38 +431,38 @@ tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, const PPL_Poly* a,
   CATCH_WITH_VAL(AP_FUNID_SAT_LINCONS,tbool_top);
 }
 
+/* utility shared by _bound_dimension & _to_box, _sat_interval (exact) */
+static void ap_ppl_poly_bound_dim(ap_interval_t* r,const PPL_Poly* a,int dim)
+{
+  Coefficient sup_n,sup_d,inf_n,inf_d;
+  Linear_Expression l = Variable(dim);
+  bool ok;
+  /* sup bound */
+  if (a->p->maximize(l,sup_n,sup_d,ok)) 
+    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
+  else ap_scalar_set_infty(r->sup,1);
+  /* inf bound */
+  if (a->p->minimize(l,inf_n,inf_d,ok)) 
+    ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
+  else ap_scalar_set_infty(r->inf,-1);
+}
+
 extern "C" 
 tbool_t ap_ppl_poly_sat_interval(ap_manager_t* man, const PPL_Poly* a,
 				 ap_dim_t dim, const ap_interval_t* i)
 {
+  ap_interval_t* ig = ap_interval_alloc();
   man->result.flag_exact = man->result.flag_best = tbool_top;
   try {
-    mpq_class temp;
-    /* inf */
-    bool inexact = ap_mpq_set_scalar(temp.get_mpq_t(),i->inf,GMP_RNDD);
-    Constraint c = ( temp.get_den() * Variable(dim) >= temp.get_num() );
-    if (a->p->relation_with(c) != Poly_Con_Relation::is_included())
-      return a->intdim ? tbool_top :  tbool_false;
-    if (inexact) {
-      ap_mpq_set_scalar(temp.get_mpq_t(),i->inf,GMP_RNDU);
-      c = ( temp.get_den() * Variable(dim) >= temp.get_num() );
-      if (a->p->relation_with(c) != Poly_Con_Relation::is_included())
-	return tbool_top;
-    }
-    /* sup */
-    inexact = ap_mpq_set_scalar(temp.get_mpq_t(),i->sup,GMP_RNDU);
-    c = temp.get_den() * Variable(dim) <= temp.get_num();
-    if (a->p->relation_with(c) != Poly_Con_Relation::is_included()) 
-      return a->intdim ? tbool_top : tbool_false;
-    if (inexact) {
-       ap_mpq_set_scalar(temp.get_mpq_t(),i->sup,GMP_RNDD);
-       c = temp.get_den() * Variable(dim) <= temp.get_num();
-       if (a->p->relation_with(c) != Poly_Con_Relation::is_included()) 
-	 return tbool_top;
-    }   
-    return tbool_true;
+    ap_ppl_poly_bound_dim(ig,a,dim);
+    bool r = ap_interval_is_leq(ig,i);
+    ap_interval_free(ig);
+    if (a->p->is_empty()) return tbool_true;
+    if (r) return tbool_true;
+    if (a->intdim) return tbool_top;
+    return tbool_false;
   }
-  CATCH_WITH_VAL(AP_FUNID_SAT_INTERVAL,tbool_top);
+  CATCH_WITH_VAL(AP_FUNID_SAT_INTERVAL,(ap_interval_free(ig),tbool_top)); 
 }
 
 extern "C" 
@@ -515,22 +515,6 @@ ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
     return r;
   }
   CATCH_WITH_VAL(AP_FUNID_BOUND_LINEXPR,(ap_interval_set_top(r),r));
-}
-
-/* utility shared by XXX_bound_dimension & XXX_to_box (exact) */
-static void ap_ppl_poly_bound_dim(ap_interval_t* r,const PPL_Poly* a,int dim)
-{
-  Coefficient sup_n,sup_d,inf_n,inf_d;
-  Linear_Expression l = Variable(dim);
-  bool ok;
-  /* sup bound */
-  if (a->p->maximize(l,sup_n,sup_d,ok)) 
-    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
-  else ap_scalar_set_infty(r->sup,1);
-  /* inf bound */
-  if (a->p->minimize(l,inf_n,inf_d,ok)) 
-    ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
-  else ap_scalar_set_infty(r->inf,-1);
 }
 
 extern "C" 
@@ -705,11 +689,11 @@ PPL_Poly* ap_ppl_poly_assign_linexpr(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = 
     org->intdim ? tbool_top : tbool_true;
   try {
-    Linear_Expression e;
-    mpz_class den;
-    ap_ppl_of_linexpr(e,den,expr);
     PPL_Poly* r = destructive ? org : new PPL_Poly(*org);
     try {
+      Linear_Expression e;
+      mpz_class den;
+      ap_ppl_of_linexpr(e,den,expr);
       r->p->affine_image(Variable(dim),e,den);
     }
     catch (cannot_convert x) {
@@ -734,11 +718,11 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = 
     org->intdim ? tbool_top : tbool_true;
   try {
-    Linear_Expression e;
-    mpz_class den;
-    ap_ppl_of_linexpr(e,den,expr);
     PPL_Poly* r = destructive ? org : new PPL_Poly(*org);
     try {
+      Linear_Expression e;
+      mpz_class den;
+      ap_ppl_of_linexpr(e,den,expr);
       r->p->affine_preimage(Variable(dim),e,den);
     }
     catch (cannot_convert x) {
@@ -988,8 +972,8 @@ PPL_Poly* ap_ppl_poly_fold(ap_manager_t* man,
 			   const ap_dim_t* tdim,
 			   size_t size)
 {
-  man->result.flag_exact = man->result.flag_best = 
-    a->intdim ? tbool_top : tbool_true;
+  man->result.flag_exact = tbool_top;
+  man->result.flag_best = a->intdim ? tbool_top : tbool_true;
   try {
     PPL_Poly* r = destructive ? a : new PPL_Poly(*a);
     Variables_Set s;
