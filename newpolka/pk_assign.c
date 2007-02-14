@@ -573,6 +573,8 @@ poly_t* poly_asssub_linear_linexpr(bool assign,
   if (po->C && po->F){
     po->nbeq = pa->nbeq;
     po->nbline = pa->nbline;
+    po->satC = (destructive || pa->satC==NULL) ? pa->satC : satmat_copy(pa->satC);
+    po->satF = (destructive || pa->satF==NULL) ? pa->satF : satmat_copy(pa->satF);
   } else {
     po->nbeq = 0;
     po->nbline = 0;
