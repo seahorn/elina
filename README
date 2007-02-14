@@ -30,6 +30,11 @@ octagons:
 box:
 	interval library
 
+ppl:
+	wrapper to call the Parma Polyhedra Library from APRON (C & OCaml)
+	requires PPL 0.9 and GMPXX
+	not compiled-in by default
+
 Makefile.config.model:
 	common configuration file model (to be copied to Makefile.config)
 	(installation directories mainly)

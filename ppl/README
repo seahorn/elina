@@ -11,8 +11,9 @@ This package is a wrapper for the the Parma Polyhedra Library.
 
 Requirements:
 - APRON
-- PPL library version 0.9, with gmp support
-- for ppl_test: NewPolka APRON module
+- PPL library version 0.9, with GMP support
+- GMPXX (normally installed with GMP)
+- for apron_ppl_test: NewPolka APRON module
 
 What are provided:
 - a manager to access the C_Polyhedron and NCC_Polyhedron classes
@@ -21,13 +22,18 @@ What are provided:
 - all the widenings are available through the algorithm parameter
 - functions not availble in PPL are emulated (e.g., _array and _parallel 
   functions)
-- a unit testing program ppl_test for regression testing; it works by
+- a unit testing program apron_ppl_test for regression testing; it works by
   comparing the result of PPL and NewPolka on random polyhedra
 
 Limitations:
-- no support for intervals in linear expressions and constraints
 - no support for other domains in PPL (Grid, BD_Shape)
 - integer dimensions are abstracted as real ones; the functions will set
   flag_exact and flag_best to top whenever intdim>0
 - only PPL 0.9 was tested, other PPL version might not work
 
+How to install:
+- setup in ../Makefile.config (PPL_PREFIX, APRON_PPL_PREFIX)
+- compile and optionally install APRON with NewPolka
+- make         => C libary
+- make ml      => OCaml library
+- make install => install C and (if compiled) OCaml libraries
