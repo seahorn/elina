@@ -159,10 +159,10 @@ oct_t* oct_of_lincons_array(ap_manager_t* man,
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_OF_LINCONS_ARRAY,
 					     2*(intdim+realdim+6));
   oct_t* r = oct_alloc_internal(pr,intdim+realdim,intdim);
-  int exact;
+  bool respect_closure = true, exact;
   if (!ar->size) { r->closed = hmat_alloc_top(pr,r->dim); return r; } /* full */
   r->m = hmat_alloc_top(pr,r->dim);
-  if (hmat_add_lincons(pr,r->m,r->dim,ar,&exact)) {
+  if (hmat_add_lincons(pr,r->m,r->dim,ar,&exact,&respect_closure)) {
     /* empty result */
     hmat_free(pr,r->m,r->dim);
     r->m = NULL;
@@ -171,7 +171,12 @@ oct_t* oct_of_lincons_array(ap_manager_t* man,
     /* exact on Q if octagonal constraints & no conversion error */
     if (num_incomplete || !exact || intdim) flag_incomplete;
     else if (pr->conv) flag_conv;
-    /* TODO: use incremental closure if possible */
+
+    /* do we have a closed result ? */
+    if (respect_closure) {
+      r->closed = r->m;
+      r->m = NULL;
+    }
   }
   return r;
 }
@@ -185,6 +190,7 @@ oct_t* oct_of_generator_array(ap_manager_t* man,
 					     2*(dim+1));
   oct_t* r = oct_alloc_internal(pr,intdim+realdim,intdim);
   size_t i,j,k;
+
   /* find one vertex */
   for (i=0;i<ar->size;i++) {
     bound_t* b;
@@ -195,6 +201,7 @@ oct_t* oct_of_generator_array(ap_manager_t* man,
       for (k=0;k<=(j|1);k++,b++) bound_sub(*b,pr->tmp[j],pr->tmp[k]);
     break;
   }
+
   if (r->m) {
     /* not empty */
     hmat_add_generators(pr,r->m,dim,ar);

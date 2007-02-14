@@ -184,7 +184,8 @@ bool hmat_check_closed(bound_t* m, size_t dim);
 /* see oct_transfer.c */
   
 bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
-		      const ap_lincons0_array_t* ar, int* exact);
+		      const ap_lincons0_array_t* ar, bool* exact,
+		      bool* respect_closure);
 
 void hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
 			 const ap_generator0_array_t* ar);

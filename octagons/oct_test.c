@@ -41,7 +41,7 @@ char b2_[N+4];
 int i_;
 int error_ = 0;
 
-typedef enum { none, best, exact } exactness;
+typedef enum { none = 0, best = 1, exact = 2 } exactness;
 
 exactness flag;
 
@@ -425,7 +425,7 @@ void test_polyhedra_conversion(void)
   LOOP {
     oct_t *o, *o2;
     ap_abstract0_t *p, *p2;
-    o = random_oct(7,.1);
+    o = random_oct(6,.1);
     p = poly_of_oct(o);
     o2 = oct_of_poly(p);
     p2 = poly_of_oct(o2);
@@ -435,7 +435,7 @@ void test_polyhedra_conversion(void)
       print_oct("o",o); 
       print_poly("p",p); 
       print_oct("o2",o2); 
-      print_poly("p2",p2); 
+      print_poly("p2",p2);
     }
     if (oct_is_eq(mo,o,o2)==tbool_true && ap_abstract0_is_eq(mp,p,p2)==tbool_true)
       RESULT('*');
@@ -445,17 +445,21 @@ void test_polyhedra_conversion(void)
   {
     oct_t *o;
     ap_abstract0_t *p;
+    tbool_t r;
     o = oct_bottom(mo,0,7);
     p = poly_of_oct(o);
-    if (ap_abstract0_is_bottom(mp,p)!=tbool_true) printf("poly_is_bottom failed\n");
+    r = ap_abstract0_is_bottom(mp,p); FLAG(mp);
+    if (flag>=best && r!=tbool_true) printf("poly_is_bottom failed\n");
     oct_free(mo,o); ap_abstract0_free(mp,p);
   }
   {
     oct_t *o;
     ap_abstract0_t *p;
+    tbool_t r;
     o = oct_top(mo,0,7);
     p = poly_of_oct(o);
-    if (ap_abstract0_is_top(mp,p)!=tbool_true) printf("poly_is_top failed\n");
+    r = ap_abstract0_is_top(mp,p); FLAG(mp);
+    if (flag>=best && r!=tbool_true) printf("poly_is_top failed\n");
     oct_free(mo,o); ap_abstract0_free(mp,p);
   }
 }
@@ -895,7 +899,7 @@ void test_join(void)
 {
   printf("\njoin (*,x expected)\n");
   LOOP {
-    int dim = 5;
+    int dim = 2;
     oct_t *o1, *o2, *o3, *o;
     ap_abstract0_t *p1, *p2, *p, *pp;
     o1 = random_oct(dim,.1);
@@ -1163,7 +1167,7 @@ void test_expand(void)
     p2 = ap_abstract0_expand(mp,false,p1,d,n); FLAG(mp);
     p3 = poly_of_oct(o2);
     RESULT(check(o1)); check(o2); check(o3); check(o3);
-    if (oct_is_eq(mo,o1,o3)!=tbool_true) {
+    if (flag>=best && oct_is_eq(mo,o1,o3)!=tbool_true) {
       ERROR("not eq");
       fprintf(stderr,"dim %i expanded %i times\n",(int)d,(int)n);
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o3",o3);
@@ -1347,7 +1351,7 @@ void test_assign(int subst, exprmode mode)
     ap_linexpr0_t* ll = random_from_linexpr(l);
     o = random_oct(dim,.1);
     p = poly_of_oct(o);
-    if (lrand48()%10>=8) oct_close(pr,o);
+    if (lrand48()%10>=5) oct_close(pr,o);
     o1 = subst ? oct_substitute_linexpr(mo,false,o,d,l,NULL) : oct_assign_linexpr(mo,false,o,d,l,NULL);
     FLAG(mo);
     p1 = subst ? ap_abstract0_substitute_linexpr(mp,false,p,d,ll,NULL) : ap_abstract0_assign_linexpr(mp,false,p,d,ll,NULL);;
@@ -1478,7 +1482,7 @@ void tests(int algo)
   test_closure();
   test_incremental_closure();
   test_polyhedra_conversion();
-  //test_polyhedra_conversion2(); /* poly_check: F not normalized */
+  test_polyhedra_conversion2(); /* poly_check: F not normalized */
   test_lincons_conversion(expr_oct);
   test_lincons_conversion(expr_lin);
   test_lincons_conversion(expr_interv);
@@ -1558,7 +1562,7 @@ int main(int argc, const char** argv)
   pk_set_approximate_max_coeff_size(pk,0);
   info();
 
-  tests(0);
+  tests(-1);
 
   /* quit */
   ap_manager_free(mo);

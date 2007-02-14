@@ -53,7 +53,7 @@ ICFLAGS = \
 -I../mlapronidl \
 -I../num \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml \
--Wall -W -Wundef -Wbad-function-cast -Wcast-align \
+-Wall -Wextra -Wundef -Wbad-function-cast -Wcast-align \
 -Wstrict-prototypes -Wdisabled-optimization \
 -Wno-unused \
 -std=c99
@@ -98,23 +98,23 @@ all: allZi allZl allZg allQi allQl allQg allFd allFl
 ml: mlZi mlZl mlZg mlQi mlQl mlQg mlFd mlFl
 
 
-allZi: Zi octtestZi
-allZl: Zl octtestZl
-allZg: Zg octtestZg
-allQi: Qi octtestQi
-allQl: Ql octtestQl
-allQg: Qg octtestQg
-allFd: Fd octtestFd
-allFl: Fl octtestFl
+allZi: Zi mlZi
+allZl: Zl mlZl
+allZg: Zg mlZg
+allQi: Qi mlQi
+allQl: Ql mlQl
+allQg: Qg mlQg
+allFd: Fd mlFd
+allFl: Fl mlFl
 
-Zi: liboctZi.a
-Zl: liboctZl.a
-Zg: liboctZg.a
-Qi: liboctQi.a
-Ql: liboctQl.a
-Qg: liboctQg.a
-Fd: liboctFd.a
-Fl: liboctFl.a
+Zi: liboctZi.a octtestZi
+Zl: liboctZl.a octtestZl
+Zg: liboctZg.a octtestZg
+Qi: liboctQi.a octtestQi
+Ql: liboctQl.a octtestQl
+Qg: liboctQg.a octtestQg
+Fd: liboctFd.a octtestFd
+Fl: liboctFl.a octtestFl
 
 clean:
 	/bin/rm -f *.[ao] *.so octtest*
@@ -127,13 +127,13 @@ install:
 	$(INSTALLd) $(INCDIR) $(INCDIR)/oct $(LIBDIR) $(BINDIR)
 	$(INSTALL) oct.h $(INCDIR)
 	$(INSTALL) $(CCINC) $(INCDIR)/oct
-	for i in liboct??.* liboct??_caml.* oct.idl; do \
+	for i in liboct??.* liboct_caml.* oct.idl; do \
 		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
 	done
 	for i in octtest?? octtop?? octrun??; do \
 		if test -f $$i; then $(INSTALL) $$i $(BINDIR); fi; \
 	done
-	for i in oct.mli oct.cmi oct??.cma oct??.cmxa oct??.a; do \
+	for i in oct.mli oct.cmi oct.cma oct.cmxa oct.a; do \
 		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
 	done
 
@@ -217,16 +217,16 @@ mlFd: oct.mli oct.cmi oct.cma oct.cmxa octtopFd octrunFd
 mlFl: oct.mli oct.cmi oct.cma oct.cmxa octtopFl octrunFl
 
 octtop%: oct.cma liboct_caml.a liboct%.a
-	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
+	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
 
 octrun%: oct.cma liboct_caml.a
-	$(OCAMLC) -verbose $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
+	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
 
-oct.cma: oct.cmo liboct_caml.a
-	$(OCAMLC) -verbose $(OCAMLINC) -a -o $@ oct.cmo -ccopt -L. -cclib -loct_caml
+oct.cma: oct.cmi oct.cmo liboct_caml.a
+	$(OCAMLMKLIB) $(OCAMLINC) -o oct oct.cmo -loct_caml
 
-oct.cmxa oct.a: oct.cmx liboct_caml.a
-	$(OCAMLOPT) -verbose $(OCAMLINC) -a -o $@ oct.cmx -ccopt -L. -cclib -loct_caml
+oct.cmxa oct.a: oct.cmi oct.cmx liboct_caml.a
+	$(OCAMLMKLIB) $(OCAMLINC) -o oct oct.cmx -loct_caml
 
 liboct_caml.a: oct_caml.o
 	$(AR) rcs $@ $^
@@ -246,7 +246,7 @@ liboct_caml.so: oct_caml.o
 manager.idl: ../mlapronidl/manager.idl
 	cp $^ $@
 
-.PRECIOUS: %_caml.c %.ml %.mli liboct%_caml.a liboct%_caml.so oct.cmx oct.cmo
+.PRECIOUS: %_caml.c %.ml %.mli %.cmi liboct%_caml.a liboct%_caml.so oct.cmx oct.cmo
 
 #---------------------------------------
 # ML generic rules

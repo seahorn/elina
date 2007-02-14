@@ -193,6 +193,7 @@ oct_t* oct_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size)
     r->closed = hmat_alloc(pr,dim);
     *size = 10 + bound_deserialize_array(r->closed,(char*)ptr+10,matsize(dim));
     break;
+  default: assert(0);
   }
   return r;
 }

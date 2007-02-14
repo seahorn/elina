@@ -33,7 +33,7 @@ bool init_fpu(void)
 #elif defined(__ppc__)
 bool init_fpu(void) 
 { 
-  asm volatile ("mtfsfi 7,2");
+  __asm volatile ("mtfsfi 7,2");
   return true;
 }
 

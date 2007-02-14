@@ -107,18 +107,44 @@ void bounds_of_generator(oct_internal_t* pr, bound_t* dst,
 /* Adding constraints / generators */
 /* ============================================================ */
 
-/* not very precise for non octagonal constraints (do nothing!) 
-   set *exact to 1 if all all constraints are octagonal ones
+/* set *exact to 1 if all all constraints are octagonal ones
    return true if empty
  */
 bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
-		      const ap_lincons0_array_t* ar, int* exact)
+		      const ap_lincons0_array_t* ar, bool* exact,
+		      bool* respect_closure)
 {
   size_t i, j, k, ui, uj;
+  size_t var_pending = 0; /* delay incremental closure as long as possible */
+  int closure_pending = 0;
   *exact = 1;
   for (i=0;i<ar->size;i++) {
     ap_constyp_t c = ar->p[i].constyp;
-    uexpr u = uexpr_of_linexpr(pr,pr->tmp,ar->p[i].linexpr0,dim);
+    uexpr u;
+
+    switch (c) {
+
+      /* skipped */
+    case AP_CONS_EQMOD:
+    case AP_CONS_DISEQ:
+      *exact = 0;
+      continue;
+
+      /* handled */
+    case AP_CONS_EQ:
+    case AP_CONS_SUPEQ:
+    case AP_CONS_SUP:
+      break;
+
+      /* error */
+    default:
+      assert(0);
+    }
+
+
+    /* now handle ==, >=, > */
+
+    u = uexpr_of_linexpr(pr,pr->tmp,ar->p[i].linexpr0,dim);
 
     switch (u.type) {
 
@@ -135,6 +161,14 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
       break;
 
     case UNARY:
+
+      /* can we delay incremental closure further? */
+      if (*respect_closure && closure_pending && var_pending!=u.i) {
+	if (hmat_close_incremental(b,dim,var_pending)) return true;
+      }
+      closure_pending = 1;
+      var_pending = u.i;
+
       if (u.coef_i==1) ui = 2*u.i; else ui = 2*u.i+1;
       bound_mul_2(pr->tmp[0],pr->tmp[0]);
       bound_mul_2(pr->tmp[1],pr->tmp[1]);
@@ -146,6 +180,15 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
       break;
 
     case BINARY:
+
+      /* can we delay incremental closure further? */
+      if (*respect_closure && closure_pending && 
+	  var_pending!=u.i && var_pending!=u.j) {
+	if (hmat_close_incremental(b,dim,var_pending)) return true;
+      }
+      closure_pending = 1;
+      var_pending = u.i;
+
       if ( u.coef_i==1) ui = 2*u.i; else ui = 2*u.i+1;
       if ( u.coef_j==1) uj = 2*u.j; else uj = 2*u.j+1;
       bound_bmin(b[matpos2(uj,ui^1)],pr->tmp[1]);
@@ -165,6 +208,8 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 	int cinf = 0;            /* number of infinite lower bounds */
 	size_t cj1 = 0, cj2 = 0; /* variable index with infinite bound */
 	
+	*respect_closure = false; /* do not respect closure */
+
 	bound_init(tmpa); bound_init(tmpb); bound_init(Cb); bound_init(cb);
 
 	/* compute 2 * upper bound, ignoring components leading to +oo */
@@ -344,6 +389,11 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
     default: assert(0);
     }
   }
+
+  /* apply pending incremental closure now */
+  if (*respect_closure && closure_pending)
+    if (hmat_close_incremental(b,dim,var_pending)) return true;
+
   return false;
 }
 
@@ -365,23 +415,32 @@ void hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
       }
   }
   
-  /* add rays */
+  /* add others */
   for (i=0;i<ar->size;i++) {
-    if (ar->p[i].gentyp!=AP_GEN_RAY) continue;
-    bounds_of_generator(pr,pr->tmp,ar->p[i].linexpr0,dim);
-    for (bb=b,j=0;j<2*dim;j++) 
-      for (k=0;k<=(j|1);k++,bb++)
-	if (bound_cmp(pr->tmp[j],pr->tmp[k])>0) bound_set_infty(*bb);
-   }
+    switch (ar->p[i].gentyp) {
 
-  /* add lines */
-  for (i=0;i<ar->size;i++) {
-    if (ar->p[i].gentyp!=AP_GEN_LINE) continue;
-    bounds_of_generator(pr,pr->tmp,ar->p[i].linexpr0,dim);
-    for (bb=b,j=0;j<2*dim;j++) 
-      for (k=0;k<=(j|1);k++,bb++)
-	if (bound_cmp(pr->tmp[j],pr->tmp[k])) bound_set_infty(*bb);
-   }
+      /* rays */
+    case AP_GEN_RAY:
+    case AP_GEN_RAYMOD:
+      bounds_of_generator(pr,pr->tmp,ar->p[i].linexpr0,dim);
+      for (bb=b,j=0;j<2*dim;j++) 
+	for (k=0;k<=(j|1);k++,bb++)
+	  if (bound_cmp(pr->tmp[j],pr->tmp[k])>0) bound_set_infty(*bb);
+      break;
+     
+      /* lines */
+    case AP_GEN_LINE:
+    case AP_GEN_LINEMOD:
+      bounds_of_generator(pr,pr->tmp,ar->p[i].linexpr0,dim);
+      for (bb=b,j=0;j<2*dim;j++) 
+	for (k=0;k<=(j|1);k++,bb++)
+	  if (bound_cmp(pr->tmp[j],pr->tmp[k])) bound_set_infty(*bb);
+      break;
+      
+    case AP_GEN_VERTEX: continue; /* already done */
+    default: assert(0);
+    }
+  }
 }
 
 
@@ -401,11 +460,16 @@ oct_t* oct_meet_lincons_array(ap_manager_t* man,
     /* definitively empty */
     return oct_set_mat(pr,a,NULL,NULL,destructive);
   else {
-    int exact;
+    bool exact, respect_closure;
     size_t i;
     bound_t* m = a->closed ? a->closed : a->m;
     if (!destructive) m = hmat_copy(pr,m,a->dim);
-    if (hmat_add_lincons(pr,m,a->dim,array,&exact)) {
+
+    /* can / should we try to respect closure */
+    respect_closure = (m==a->closed) && (pr->funopt->algorithm>=0);
+
+    /* go */
+    if (hmat_add_lincons(pr,m,a->dim,array,&exact,&respect_closure)) {
       /* empty */
       if (!destructive) hmat_free(pr,m,a->dim);
       return oct_set_mat(pr,a,NULL,NULL,destructive);
@@ -414,8 +478,9 @@ oct_t* oct_meet_lincons_array(ap_manager_t* man,
       /* exact if octagonal constraints & no conversion error */
       if (num_incomplete || !exact) flag_incomplete;
       else if (pr->conv) flag_conv;
-      return oct_set_mat(pr,a,m,NULL,destructive);
-      /* TODO: use incremental closure, if possible */
+
+      if (respect_closure) return oct_set_mat(pr,a,NULL,m,destructive);
+      else return oct_set_mat(pr,a,m,NULL,destructive);
     }
   }
 }
@@ -467,20 +532,42 @@ static inline void hmat_forget_var(bound_t* m, size_t dim, size_t d)
 }
 
 /* internal helper function: apply assignment */
+/* if *respect_closure=true, try to respect closure, 
+   when returning, *respect_closure=true only if this was possible
+ */
 static void hmat_assign(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim, 
-			size_t d)
+			size_t d, bool* respect_closure)
 {
   size_t i,k;
 
   if (u.type==ZERO ) {
     /* X <- [-a,b], non-invertible */
-    hmat_forget_var(m,dim,d);
+
+    if (*respect_closure) {
+      /* 'respect closure' version */
+      for (k=0;k<2*d;k++) {
+	bound_div_2(m[matpos(k^1,k)],pr->tmp[2]);
+	bound_add(m[matpos(2*d,k)],pr->tmp[2],pr->tmp[0]);
+	bound_add(m[matpos(2*d+1,k)],pr->tmp[2],pr->tmp[1]);
+      }
+      for (k=2*d+2;k<2*dim;k++) {
+	bound_div_2(m[matpos(k,k^1)],pr->tmp[2]);
+	bound_add(m[matpos(k,2*d)],pr->tmp[2],pr->tmp[1]);
+	bound_add(m[matpos(k,2*d+1)],pr->tmp[2],pr->tmp[0]);
+      }
+    }
+    else {
+      /* plain version */
+      hmat_forget_var(m,dim,d);
+    }
+
     bound_mul_2(m[matpos(2*d,2*d+1)],pr->tmp[0]);
     bound_mul_2(m[matpos(2*d+1,2*d)],pr->tmp[1]);
   }
 
   else if (u.type==UNARY && u.i!=d) {
     /* X <- c_i X_i + [-a,b], X_i!=X, non-invertible */
+    /* always respect closure */
     hmat_forget_var(m,dim,d);
     i = 2*u.i + (u.coef_i==1 ? 0 : 1);
     bound_set(m[matpos2(2*d,i)],pr->tmp[0]);
@@ -489,6 +576,7 @@ static void hmat_assign(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
 
   else if (u.type==UNARY && u.coef_i==-1) {
     /* X <- - X + [-a,b], invertible */
+    /* always respect closure */
     for (k=0;k<2*d;k++) {
       bound_set(pr->tmp[2],m[matpos(2*d,k)]);
       bound_add(m[matpos(2*d,k)],m[matpos(2*d+1,k)],pr->tmp[0]);
@@ -508,6 +596,7 @@ static void hmat_assign(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
   
   else if (u.type==UNARY && u.coef_i==1) {
     /* X <- X + [-a,b], invertible */
+    /* always respect closure */
     for (k=0;k<2*d;k++) {
       bound_badd(m[matpos(2*d,k)],pr->tmp[0]);
       bound_badd(m[matpos(2*d+1,k)],pr->tmp[1]);
@@ -529,6 +618,8 @@ static void hmat_assign(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
     int Cinf = 0;          /* number of infinite upper bounds */
     int cinf = 0;          /* number of infinite lower bounds */
     size_t Ci = 0, ci = 0; /* variable index with infinite bound */
+
+    *respect_closure = false; /* does not respect closure */
 
     bound_init(tmpa); bound_init(tmpb); bound_init(Cb); bound_init(cb);
 
@@ -615,11 +706,13 @@ static void hmat_assign(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
 
 /* internal helper function: apply substitution, retrun true if empty */
 static bool hmat_subst(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim, 
-		       size_t d, const bound_t* dst)
+		       size_t d, const bound_t* dst, bool* respect_closure)
 {
   size_t i,k;
   if (u.type==ZERO ) {
     /* X -> [-a,b], non-invertible */
+
+    *respect_closure = false; /* TODO: does it respect closure? */
 
     /* test satisfiability */
     bound_mul_2(pr->tmp[2],pr->tmp[0]);
@@ -653,6 +746,8 @@ static bool hmat_subst(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
     k = u.i*2 + (u.coef_i==1 ? 0 : 1 );
     /* X -> cX_i + [-a,b], X_i!=X, non-invertible */
 
+    *respect_closure = false; /* TODO: does it respect closure? */
+
     /* test satisfiability */
     bound_add(pr->tmp[2],pr->tmp[0],m[matpos2(k,2*d)]);
     bound_add(pr->tmp[3],pr->tmp[1],m[matpos2(2*d,k)]);
@@ -685,9 +780,9 @@ static bool hmat_subst(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
   }
 
   else if (u.type==UNARY && u.coef_i==-1) {
-    /* X -> - X + [-a,b], invertible */
+    /* X -> - X + [-a,b], invertible */    
     /* equivalent to X <- -X + [-a,b] */
-    hmat_assign(pr,u,m,dim,d);
+    hmat_assign(pr,u,m,dim,d,respect_closure);
     return false;
   }
 
@@ -697,7 +792,7 @@ static bool hmat_subst(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
     bound_set(pr->tmp[dim*2+3],pr->tmp[0]);
     bound_set(pr->tmp[0],pr->tmp[1]);
     bound_set(pr->tmp[1],pr->tmp[dim*2+3]);
-    hmat_assign(pr,u,m,dim,d);
+    hmat_assign(pr,u,m,dim,d,respect_closure);
     return false;
   }
 
@@ -705,6 +800,8 @@ static bool hmat_subst(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
     /* general, approximated case */
 
     /* TODO */
+
+    /* for now, respects closure... */
 
     hmat_forget_var(m,dim,d);
     return false;
@@ -741,6 +838,7 @@ oct_t* oct_assign_linexpr(ap_manager_t* man,
     oct_init_from_manager(man,AP_FUNID_ASSIGN_LINEXPR,2*(a->dim+5));
   uexpr u = uexpr_of_linexpr(pr,pr->tmp,expr,a->dim);
   bound_t* m;
+  bool respect_closure;
   arg_assert(d<a->dim,return NULL;);
   
   if (dest && !dest->closed && !dest->m)
@@ -754,40 +852,28 @@ oct_t* oct_assign_linexpr(ap_manager_t* man,
   if (!m) return oct_set_mat(pr,a,NULL,NULL,destructive); /* empty */
   if (!destructive) m = hmat_copy(pr,m,a->dim);
 
-  hmat_assign(pr,u,m,a->dim,d);
+  /* can / should we try to respect the closure */
+  respect_closure = (m==a->closed) && (pr->funopt->algorithm>=0) && (!dest);
 
-  if (u.type==UNARY && u.i==d) {
-    /* exact if no conv error */
-    if (pr->conv) flag_conv;
+  /* go */
+  hmat_assign(pr,u,m,a->dim,d,&respect_closure);
 
-    /* respects closure */
-    if (a->closed && !dest) return oct_set_mat(pr,a,NULL,m,destructive);
-  }
-  else {
-    /* exact on Q if zeroary or unary, closed arg and no conv error */
-    if (u.type==BINARY || u.type==OTHER) flag_incomplete;
-    else if (num_incomplete || a->intdim) flag_incomplete;
-    else if (!a->closed) flag_algo;
-    else if (pr->conv) flag_conv;
+  /* exact on Q if zeroary or unary, closed arg and no conv error */
+  if (u.type==BINARY || u.type==OTHER) flag_incomplete;
+  else if (num_incomplete || a->intdim) flag_incomplete;
+  else if (!a->closed) flag_algo;
+  else if (pr->conv) flag_conv;
 
-    /* close incrementally if this guarantees the closure */
-    if (a->closed && !dest) {
-      if (hmat_close_incremental(m,a->dim,d)) {
-	if (!destructive) hmat_free(pr,m,a->dim);
-	return oct_set_mat(pr,a,NULL,NULL,destructive);
-      }
-      else return oct_set_mat(pr,a,NULL,m,destructive);
-    }
-  }
-
-  /* intersect with dest => not closed */
+  /* intersect with dest */
   if (dest) {
     bound_t* m2 = dest->closed ? dest->closed : dest->m;
     size_t i;
     for (i=0;i<matsize(a->dim);i++)
       bound_min(m[i],m[i],m2[i]);
   }
-  return oct_set_mat(pr,a,m,NULL,destructive);
+
+  if (respect_closure) return oct_set_mat(pr,a,NULL,m,destructive);
+  else return oct_set_mat(pr,a,m,NULL,destructive);
 }
 
 
@@ -800,6 +886,7 @@ oct_t* oct_substitute_linexpr(ap_manager_t* man,
     oct_init_from_manager(man,AP_FUNID_SUBSTITUTE_LINEXPR,2*(a->dim+5));
   uexpr u = uexpr_of_linexpr(pr,pr->tmp,expr,a->dim);
   bound_t * m, *m2;
+  bool respect_closure;
   arg_assert(d<a->dim,return NULL;);
   m2 = dest ? (dest->closed ? dest->closed : dest->m) : NULL;
   if (dest && !m2)
@@ -813,27 +900,20 @@ oct_t* oct_substitute_linexpr(ap_manager_t* man,
   if (!m) return oct_set_mat(pr,a,NULL,NULL,destructive); /* empty */
   if (!destructive) m = hmat_copy(pr,m,a->dim);
 
-  if (hmat_subst(pr,u,m,a->dim,d,(const bound_t*)m2)) {
+  /* can / should we try to respect the closure */
+  respect_closure = (m==a->closed) && (pr->funopt->algorithm>=0) && (!dest);
+
+  /* go */
+  if (hmat_subst(pr,u,m,a->dim,d,(const bound_t*)m2,&respect_closure)) {
     /* empty */
     if (!destructive) hmat_free(pr,m,a->dim);
     return oct_set_mat(pr,a,NULL,NULL,destructive);
   }
 
-  if (u.type==UNARY && u.i==d) {
-    /* exact if no conv error */
-    if (pr->conv) flag_conv;
-
-    /* respects closure */
-    if (a->closed && !dest) return oct_set_mat(pr,a,NULL,m,destructive);
-  }
-  else {
-    /* exact on Q if zeroary or unary, closed arg and no conv error */
-    if (u.type==BINARY || u.type==OTHER) flag_incomplete;
-    else if (num_incomplete || a->intdim) flag_incomplete;
-    else if (!a->closed) flag_algo;
-    else if (pr->conv) flag_conv;
-    /* TODO: 2-variables incremental closure */
-  }
+  if (u.type==BINARY || u.type==OTHER) flag_incomplete;
+  else if (num_incomplete || a->intdim) flag_incomplete;
+  else if (!a->closed) flag_algo;
+  else if (pr->conv) flag_conv;
 
   /* intersect with dest */
   if (m2) {
@@ -841,7 +921,9 @@ oct_t* oct_substitute_linexpr(ap_manager_t* man,
     for (i=0;i<matsize(a->dim);i++)
       bound_min(m[i],m[i],m2[i]);
   }
-  return oct_set_mat(pr,a,m,NULL,destructive);
+
+  if (respect_closure) return oct_set_mat(pr,a,NULL,m,destructive);
+  else return oct_set_mat(pr,a,m,NULL,destructive);
 }
 
 oct_t* oct_assign_linexpr_array(ap_manager_t* man,
@@ -858,6 +940,7 @@ oct_t* oct_assign_linexpr_array(ap_manager_t* man,
   size_t i;
   ap_dim_t p = a->dim;
   int inexact = 0;
+  bool respect_closure = false; /* TODO */
 
   /* checks */
   arg_assert(size>0,return NULL;);
@@ -887,7 +970,7 @@ oct_t* oct_assign_linexpr_array(ap_manager_t* man,
   for (i=0;i<size;i++) {
     uexpr u = uexpr_of_linexpr(pr,pr->tmp,texpr[i],a->dim);
     if (u.type==BINARY || u.type==OTHER) inexact = 1;
-    hmat_assign(pr,u,mm,a->dim+size,a->dim+i);
+    hmat_assign(pr,u,mm,a->dim+size,a->dim+i,&respect_closure);
   }
 
   /* now close & remove temporary variables */
@@ -938,6 +1021,7 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
   size_t i,j;
   ap_dim_t p = a->dim;
   int inexact = 0;
+  bool respect_closure = false; /* TODO */
 
   /* checks */
   arg_assert(size>0,return NULL;);
@@ -984,7 +1068,8 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
   for (i=0;i<size;i++) {
     uexpr u = uexpr_of_linexpr(pr,pr->tmp,texpr[i],a->dim);
     if (u.type==BINARY || u.type==OTHER) inexact = 1;
-    if (hmat_subst(pr,u,mm,a->dim+size,a->dim+i,(const bound_t*)m2)) {
+    if (hmat_subst(pr,u,mm,a->dim+size,a->dim+i,(const bound_t*)m2,
+		   &respect_closure)) {
       /* empty */
       hmat_free(pr,mm,a->dim+size);
       return oct_set_mat(pr,a,NULL,NULL,destructive);

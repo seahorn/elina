@@ -214,8 +214,29 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
     bound_t* b = a->closed ? a->closed : a->m;
     size_t i, ui, uj;
     ap_constyp_t c = lincons->constyp;
-    uexpr u = uexpr_of_linexpr(pr,pr->tmp,lincons->linexpr0,a->dim);
+    uexpr u;
     bool r;
+
+    switch (c) {
+
+      /* skipped */
+    case AP_CONS_EQMOD:
+    case AP_CONS_DISEQ:
+      return tbool_top;
+
+      /* handled */
+    case AP_CONS_EQ:
+    case AP_CONS_SUPEQ:
+    case AP_CONS_SUP:
+      break;
+
+      /* error */
+    default:
+      assert(0);
+    }
+
+    u = uexpr_of_linexpr(pr,pr->tmp,lincons->linexpr0,a->dim);
+
     switch (u.type) {      
 
     case ZERO:
@@ -227,7 +248,13 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
   	  /* [-a,b] = 0 <=> a=b=0 */
 	  )
 	return tbool_true; /* always saturates */
-      else return tbool_false; /* does not always saturate */
+      else {
+	/* does not always saturate on Q, if closed and no conv error */
+ 	if (num_incomplete || a->intdim) { flag_incomplete; return tbool_top; }
+	else if (!a->closed) { flag_algo; return tbool_top; }
+	else if (pr->conv) { flag_conv; return tbool_top; }
+	return tbool_false;
+      }
       
    case UNARY:
       if (u.coef_i==1) ui = 2*u.i; else ui = 2*u.i+1;
@@ -307,8 +334,11 @@ ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
     uexpr u = uexpr_of_linexpr(pr,pr->tmp,expr,a->dim);
     switch (u.type) {      
     case ZERO:
-      /* always exact */
       interval_of_bounds(pr,r,pr->tmp[0],pr->tmp[1],false);
+      /* exact on Q if closed and no conversion error */
+      if (num_incomplete || a->intdim) flag_incomplete;
+      else if (!a->closed) flag_algo;
+      else if (pr->conv) flag_conv;
       break;
       
     case UNARY:
@@ -385,7 +415,6 @@ ap_interval_t* oct_bound_dimension(ap_manager_t* man,
   }
   return r;
 }
-
 
 ap_lincons0_array_t oct_to_lincons_array(ap_manager_t* man, oct_t* a)
 {

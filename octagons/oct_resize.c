@@ -91,8 +91,8 @@ void hmat_addrem_dimensions(bound_t* dst, const bound_t* src,
     
     /* copy lines */
     {
-      const num_t* org_c = src + matsize(org_j/2);
-      num_t* new_c = dst + matsize(new_j/2);
+      const bound_t* org_c = src + matsize(org_j/2);
+      bound_t* new_c = dst + matsize(new_j/2);
       size_t last_org_j = ((j<nb_pos-1) ? pos[j+1] : dim)*2;
       for (;org_j<last_org_j;org_j++,new_j++) {
 	size_t size_org_line = org_j+2-(org_j&1);
@@ -258,7 +258,8 @@ oct_t* oct_expand(ap_manager_t* man,
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_EXPAND,0);
   bound_t* m = a->closed ? a->closed : a->m;
-  size_t i, j, pos = (dim < a->intdim) ? a->intdim : a->dim;
+  size_t i, j;
+  ap_dim_t pos = (dim < a->intdim) ? a->intdim : a->dim;
   bound_t* mm;
   oct_t* r;
   arg_assert(dim<a->dim,return NULL;);
