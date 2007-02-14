@@ -202,7 +202,7 @@ bool ap_ppl_of_lincons(Constraint& r,const ap_lincons0_t* c,bool allow_strict)
   case AP_CONS_SUP:   
     if (allow_strict) { r = ( l > 0 ); return false; }
     else { r = (l >= 0); return true; }
-  case AP_CONS_EQMOD: r = ( l == 0 ); return true;
+  case AP_CONS_EQMOD:
   case AP_CONS_DISEQ: 
     throw cannot_convert();
   default: 
