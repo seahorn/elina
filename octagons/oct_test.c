@@ -232,11 +232,13 @@ ap_abstract0_t* random_poly(int dim)
   int i;
   ap_interval_t** t = ap_interval_array_alloc(dim);
   ap_generator0_array_t ar = ap_generator0_array_make(dim);
+  for (i=0;i<dim;i++) {
+    int l = (lrand48()%15) - 10;
+    int h = l + (lrand48()%5);
+    ap_interval_set_int(t[i],l,h);
+  }
   for (i=0;i<dim;i++)
-    ap_interval_set_int(t[i],0,0);
-  for (i=0;i<dim;i++)
-    ar.p[i] = random_generator(dim,
-			       (lrand48()%100>=90)?AP_GEN_RAY:AP_GEN_VERTEX);
+    ar.p[i] = random_generator(dim,AP_GEN_RAY);
   p = ap_abstract0_of_box(mp,0,dim,(const ap_interval_t**)t);
   ap_abstract0_add_ray_array(mp,true,p,&ar);
   /*ap_generator0_array_fprint(stderr,&ar,NULL);*/
@@ -470,7 +472,7 @@ void test_polyhedra_conversion2(void)
   LOOP {
     ap_abstract0_t *p, *p2;
     oct_t *o, *o2;
-    p = random_poly(7);
+    p = random_poly(5);
     o = oct_of_poly(p);
     p2 = poly_of_oct(o);
     o2 = oct_of_poly(p2);
@@ -1562,6 +1564,7 @@ int main(int argc, const char** argv)
   pk_set_approximate_max_coeff_size(pk,0);
   info();
 
+  tests(0);
   tests(-1);
 
   /* quit */
