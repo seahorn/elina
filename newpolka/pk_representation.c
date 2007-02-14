@@ -355,6 +355,12 @@ bool _poly_approximate_n1(ap_manager_t* man, poly_t* po, const poly_t* pa, int a
     }
     change = matrix_normalize_constraint_int(pk,po->C,po->intdim,po->realdim);
     if (change){
+      {
+	/* Add positivity and strictness that may not be implied any more */
+	size_t nbrows = po->C->nbrows;
+	matrix_realloc_lazy(po->C,nbrows+pk->dec-1);
+	_matrix_fill_constraint_top(pk,po->C,nbrows);
+      }
       if (po==pa){
 	if (po->F){ matrix_free(po->F); po->F = NULL; }
 	if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
@@ -394,7 +400,7 @@ bool matrix_approximate_constraint_1(pk_internal_t* pk, matrix_t* C)
     }
   }
   if (change){
-    /* Add for safety positivity and strictness that may not be implied any more */
+    /* Add positivity and strictness that may not be implied any more */
     size_t nbrows = C->nbrows;
     matrix_realloc_lazy(C,nbrows+pk->dec-1);
     _matrix_fill_constraint_top(pk,C,nbrows);
@@ -417,19 +423,19 @@ bool _poly_approximate_1(ap_manager_t* man, poly_t* po, const poly_t* pa)
     po->C = matrix_copy(pa->C);
   }
   change = matrix_approximate_constraint_1(pk,po->C);
-  if (change){
-    if (po==pa){
-      if (po->F){ matrix_free(po->F); po->F = NULL; }
-      if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
-      if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
-    }
-    po->status = 0;
-    man->result.flag_exact = tbool_false;
-  } else {
-    poly_set_save_C(po,pa);
-    man->result.flag_exact = tbool_true;
-  }
-  return change;
+   if (change){
+     if (po==pa){
+       if (po->F){ matrix_free(po->F); po->F = NULL; }
+       if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
+       if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
+     }
+     po->status = 0;
+     man->result.flag_exact = tbool_false;
+   } else {
+     poly_set_save_C(po,pa);
+     man->result.flag_exact = tbool_true;
+   }
+   return change;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -617,7 +623,7 @@ bool matrix_approximate_constraint_10(pk_internal_t* pk, matrix_t* C, matrix_t* 
     if (!removed) i++;
   }
   if (change){
-    /* Add for safety positivity and strictness that may not be implied any more */
+    /* Add positivity and strictness that may not be implied any more */
     size_t nbrows = C->nbrows;
     matrix_realloc_lazy(C,nbrows+pk->dec-1);
     _matrix_fill_constraint_top(pk,C,nbrows);
@@ -976,7 +982,13 @@ bool poly_check(pk_internal_t* pk, const poly_t* poly)
       return false;
     }
   }
-  if (!(po->C && po->F))
+  if (po->C && po->F){
+    if (!po->satC && !po->satF){
+      fprintf(stderr,"poly_check: we have both constraints and generators, but no saturation matrix !\n");
+      return false;
+    }
+  }
+  else
     return true;
 
   if (po->C->nbcolumns != nbcols || po->F->nbcolumns != nbcols){
