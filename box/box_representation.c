@@ -163,7 +163,7 @@ void box_fprint(FILE* stream,
   size_t nbdims = a->intdim + a->realdim;
 
   fprintf(stream,"interval of dim (%ld,%ld):",
-	  (long)a->intdim,(long)a->intdim);
+	  (long)a->intdim,(long)a->realdim);
   if (a->p){
     fprintf(stream,"\n");
     for(i=0; i<nbdims; i++){
@@ -191,7 +191,7 @@ void box_fdump(FILE* stream,
   size_t nbdims = a->intdim + a->realdim;
 
   fprintf(stream,"interval of dim (%ld,%ld):",
-	  (long)a->intdim,(long)a->intdim);
+	  (long)a->intdim,(long)a->realdim);
   if (a->p){
     fprintf(stream,"\n");
     for(i=0; i<nbdims; i++){
