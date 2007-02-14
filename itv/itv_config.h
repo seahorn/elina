@@ -9,11 +9,9 @@ extern "C" {
 
 #ifndef HAS_BOOL
 #define HAS_BOOL
-
-typedef enum bool {
-  false=0,
-  true=1
-} bool;
+typedef char bool;
+static const bool false = 0;
+static const bool true  = 1;
 #endif
 
 #ifdef __cplusplus

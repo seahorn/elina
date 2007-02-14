@@ -34,7 +34,7 @@ void ITVFUN(internal_clear)(itv_internal_t* intern)
   itv_clear(intern->eval_itv3);
 }
 
-itv_internal_t* ITVFUN(internal_alloc)()
+itv_internal_t* ITVFUN(internal_alloc)(void)
 {
   itv_internal_t* intern = malloc(sizeof(itv_internal_t));
   itv_internal_init(intern);

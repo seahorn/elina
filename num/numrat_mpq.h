@@ -275,8 +275,10 @@ static inline size_t numrat_serialize(void* dst, const numrat_t src)
   *((char*)dst) = mpq_sgn(src);
   mpz_export((char*)dst+9,&count1,1,1,1,0,mpq_numref(src));
   mpz_export((char*)dst+count1+9,&count2,1,1,1,0,mpq_denref(src));
-  num_dump_word32((char*)dst+1,count1);
-  num_dump_word32((char*)dst+5,count2);
+  assert(((unsigned)count1)==count1);
+  assert(((unsigned)count2)==count2);
+  num_dump_word32((char*)dst+1,(unsigned)count1);
+  num_dump_word32((char*)dst+5,(unsigned)count2);
   return count1+count2+9;
 }
 

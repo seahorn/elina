@@ -18,10 +18,11 @@ BINDIR = $(PREFIX)/bin
 #---------------------------------------
 # C part
 #---------------------------------------
-CC = gcc -pg
+CC = gcc
 ICFLAGS = \
 -I$(GMP_PREFIX)/include  \
--Wall -Winline -Wimplicit-function-declaration -std=c99
+-Wall -Wimplicit-function-declaration -std=c99
+# -Winline -Wconversion
 
 CFLAGS = $(ICFLAGS) $(OPTFLAGS) -DNDEBUG
 CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG

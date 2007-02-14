@@ -13,14 +13,14 @@
 
 #ifdef __cplusplus
 #define HAS_BOOL
+extern "C" {
 #endif
 
 #ifndef HAS_BOOL
 #define HAS_BOOL
-typedef enum bool {
-  false=0,
-  true=1
-} bool;
+typedef char bool;
+static const bool false = 0;
+static const bool true  = 1;
 #endif
 
 #if !(defined __USE_SVID || defined __USE_BSD || defined __USE_XOPEN_EXTENDED)
@@ -31,6 +31,10 @@ static inline char* strdup(const char* s){
   s2 = malloc(strlen(s)+1);
   strcpy(s2,s);
   return s2;
+}
+#endif
+
+#ifdef __cplusplus
 }
 #endif
 

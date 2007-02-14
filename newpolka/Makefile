@@ -38,8 +38,9 @@ ICFLAGS = \
 -I../num \
 -I../mlgmpidl \
 -I../mlapronidl \
--Wall -Wconversion -Winline -Wimplicit-function-declaration \
+-Wall -Wstrict-prototypes -Wimplicit-function-declaration \
 -std=c99
+# -Winline -Wconversion
 
 CFLAGS =  $(ICFLAGS) $(OPTFLAGS) -DNDEBUG
 # For debugging purpose

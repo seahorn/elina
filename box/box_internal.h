@@ -21,7 +21,7 @@ struct box_t {
   size_t realdim;
 };
 
-ap_manager_t* box_manager_alloc();
+ap_manager_t* box_manager_alloc(void);
 
 typedef struct box_internal_t {
   itv_internal_t* itv;
@@ -40,7 +40,7 @@ typedef struct box_internal_t {
 void box_internal_init(box_internal_t* intern);
 void box_internal_clear(box_internal_t* intern);
 
-box_internal_t* box_internal_alloc();
+box_internal_t* box_internal_alloc(void);
 void box_internal_free(box_internal_t* intern);
 
 /* Initializes some fields of pk from manager */

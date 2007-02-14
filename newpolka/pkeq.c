@@ -643,7 +643,7 @@ pk_internal_t* pkeq_manager_get_internal(ap_manager_t* man)
 }
 
 
-ap_manager_t* pkeq_manager_alloc()
+ap_manager_t* pkeq_manager_alloc(void)
 {
   ap_manager_t* man;
   void** funptr;

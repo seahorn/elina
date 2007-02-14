@@ -23,6 +23,13 @@
 extern "C" {
 #endif
 
+#ifndef HAS_BOOL
+#define HAS_BOOL
+typedef char bool;
+static const bool false = 0;
+static const bool true  = 1;
+#endif
+
 /* Extension to the num package */
 /* size in words */
 static inline size_t numint_size(numint_t a)
@@ -106,19 +113,6 @@ static inline size_t numint_size2(numint_t a)
 /* Do not change ! */
 static const int polka_cst = 1;
 static const int polka_eps = 2;
-
-
-
-
-
-#ifndef HAS_BOOL
-#define HAS_BOOL
-
-typedef enum bool {
-  false=0,
-  true=1
-} bool;
-#endif
 
 #ifdef __cplusplus
 }

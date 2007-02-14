@@ -44,8 +44,9 @@ ICFLAGS = \
 -I../apron \
 -I../mlgmpidl \
 -I../mlapronidl \
--Wall -Wconversion -Winline -Wimplicit-function-declaration \
+-Wall -Wstrict-prototypes -Wimplicit-function-declaration \
 -O3 -g -DNDEBUG -std=c99
+# -Winline -Wconversion
 
 # Use XCFLAGS to specify machine-dependent compilation flags.
 XCFLAGS =

@@ -30,7 +30,7 @@ box_t* box_assign_linexpr(ap_manager_t* man,
   }
   exact = itv_eval_ap_linexpr0(intern->itv,
 			       res->p[dim],
-			       a,linexpr);
+			       (const itv_t*)a->p,linexpr);
   if (dest)
     res = box_meet(man,true,res,dest);
   man->result.flag_exact = tbool_top;
@@ -58,7 +58,7 @@ box_t* box_assign_linexpr_array(ap_manager_t* man,
   for (i=0;i<size;i++){
     itv_eval_ap_linexpr0(intern->itv,
 			 res->p[tdim[i]],
-			 a,texpr[i]);
+			 (const itv_t*)a->p,texpr[i]);
   }
   if (destructive) box_free(man,a);
   if (dest)

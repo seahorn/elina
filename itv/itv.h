@@ -71,7 +71,7 @@ typedef struct itv_internal_t {
 } itv_internal_t;
 
 
-static inline itv_internal_t* itv_internal_alloc();
+static inline itv_internal_t* itv_internal_alloc(void);
   /* Allocate and initialize internal workspace */
 static inline void itv_internal_free(itv_internal_t* intern);
   /* Clear and free internal workspace */
@@ -175,8 +175,8 @@ void ITVFUN(internal_clear)(itv_internal_t* intern);
 static inline void itv_internal_clear(itv_internal_t* intern)
 { ITVFUN(internal_clear)(intern); }
 
-itv_internal_t* ITVFUN(internal_alloc)();
-static inline itv_internal_t* itv_internal_alloc()
+itv_internal_t* ITVFUN(internal_alloc)(void);
+static inline itv_internal_t* itv_internal_alloc(void)
 { return ITVFUN(internal_alloc)(); }
 
 void ITVFUN(internal_free)(itv_internal_t* intern);

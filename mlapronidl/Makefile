@@ -35,7 +35,8 @@ ICFLAGS = \
 -I../mlgmpidl -I../apron \
 -I$(GMP_PREFIX)/include \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml \
--Wall -Winline -Wimplicit-function-declaration -std=c99
+-Wall -Wimplicit-function-declaration -std=c99
+# -Winline -Wconversion
 
 CFLAGS = $(ICFLAGS) $(OPTFLAGS) -DNDEBUG
 CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG

@@ -30,7 +30,7 @@ extern "C" {
 /* A. Constructor for APRON manager (to be freed with ap_manager_free). */
 /* ============================================================ */
 
-ap_manager_t* pkeq_manager_alloc();
+ap_manager_t* pkeq_manager_alloc(void);
 pk_internal_t* pkeq_manager_get_internal(ap_manager_t*);
 
 /* ********************************************************************** */

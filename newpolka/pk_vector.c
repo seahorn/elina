@@ -76,7 +76,7 @@ void vector_clear(numint_t* q, size_t size)
 void vector_print(const numint_t* q, size_t size)
 {
   int i;
-  printf("vector %d: ", size);
+  printf("vector %ld: ", (long)size);
   for (i=0; i<size; i++){
     numint_print(q[i]); printf(" ");
   }

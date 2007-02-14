@@ -246,7 +246,8 @@ static inline size_t numint_serialize(void* dst, const numint_t src)
   size_t count = 0;
   *((char*)dst) = mpz_sgn(src);
   mpz_export((char*)dst+5,&count,1,1,1,0,src);
-  num_dump_word32((char*)dst+1,count);
+  assert(((unsigned)count)==count);
+  num_dump_word32((char*)dst+1,(unsigned)count);
   return count+5;
 }
 

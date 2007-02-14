@@ -159,18 +159,18 @@ void box_fprint(FILE* stream,
 	       const box_t* a,
 	       char** name_of_dim)
 {
-  int i;
+  size_t i;
   size_t nbdims = a->intdim + a->realdim;
 
-  fprintf(stream,"interval of dim (%d,%d):",
-	  a->intdim,a->intdim);
+  fprintf(stream,"interval of dim (%ld,%ld):",
+	  (long)a->intdim,(long)a->intdim);
   if (a->p){
     fprintf(stream,"\n");
     for(i=0; i<nbdims; i++){
       if (name_of_dim){
 	fprintf(stream,"%8s in ", name_of_dim[i]);
       } else {
-	fprintf(stream,"x%d in ", i);
+	fprintf(stream,"x%ld in ", (long)i);
       }
       itv_fprint(stream,a->p[i]);
       fprintf(stream,"\n");
@@ -187,15 +187,15 @@ void box_fdump(FILE* stream,
 	      ap_manager_t* man,
 	      const box_t* a)
 {
-  int i;
+  size_t i;
   size_t nbdims = a->intdim + a->realdim;
 
-  fprintf(stream,"interval of dim (%d,%d):",
-	  a->intdim,a->intdim);
+  fprintf(stream,"interval of dim (%ld,%ld):",
+	  (long)a->intdim,(long)a->intdim);
   if (a->p){
     fprintf(stream,"\n");
     for(i=0; i<nbdims; i++){
-      fprintf(stream,"dim %3d in ",i);
+      fprintf(stream,"dim %3ld in ",(long)i);
       itv_fprint(stream,a->p[i]);
       fprintf(stream,"\n");
     }
@@ -213,14 +213,14 @@ void box_fprintdiff(FILE* stream,
 		   const box_t* a, const box_t* b,
 		   char** name_of_dim)
 {
-  int i;
+  size_t i;
   size_t nbdims;
   char* str;
 
   nbdims = a->intdim + a->realdim;
 
-  fprintf(stream,"diff of 2 intervals of dim (%d,%d)",
-	  a->intdim,b->intdim);
+  fprintf(stream,"diff of 2 intervals of dim (%ld,%ld)",
+	  (long)a->intdim,(long)b->intdim);
   if (box_is_eq(man,a,b)){
     fprintf(stream," : none\n");
   }

@@ -166,8 +166,8 @@ bool _poly_meet_particularcases(bool meet, bool lazy,
     }
     /* if one want information about exactness, also test inclusion */
     if (pk->funopt->flag_exact_wanted){
-      poly_dual(pa);
-      poly_dual(pb);
+      poly_dual((poly_t*)pa);
+      poly_dual((poly_t*)pb);
       if (poly_is_leq(man,pa,pb)==tbool_true){
 	poly_set(po,pb);
 	goto _poly_meet_particularcases_exit;
@@ -175,8 +175,8 @@ bool _poly_meet_particularcases(bool meet, bool lazy,
       else if (poly_is_leq(man,pb,pa)==tbool_true){
 	poly_set(po,pa);
       _poly_meet_particularcases_exit:
-	poly_dual(pa);
-	poly_dual(pb);
+	poly_dual((poly_t*)pa);
+	poly_dual((poly_t*)pb);
 	if (po!=pa) poly_dual(po);
 	return true;
       }

@@ -5,8 +5,9 @@ CC = gcc
 ICFLAGS = \
 -I$(GMP_PREFIX)/include \
 -I$(APRON_PREFIX)/include \
--Wall -Wconversion -Winline -Wimplicit-function-declaration \
+-Wall -Wstrict-prototypes -Wimplicit-function-declaration \
 -std=c99
+# -Winline -Wconversion
 
 LCFLAGS = \
 -L$(GMP_PREFIX)/lib \

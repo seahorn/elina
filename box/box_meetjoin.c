@@ -203,7 +203,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
     /* 2. evaluate e' */
     itv_eval_itv_linexpr(intern->itv,
 			 intern->meet_lincons_internal_itv3,
-			 a->p,
+			 (const itv_t*)a->p,
 			 expr);
     change = false;
     if (!itv_is_top(intern->meet_lincons_internal_itv3)){

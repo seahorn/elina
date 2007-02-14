@@ -159,25 +159,30 @@ apron_var_ptr ap_var_of_string(char* name)
 }
 
 static inline
-int ap_var_compare(apron_var_ptr p1, apron_var_ptr p2)
+int ap_var_compare(ap_var_t pp1, ap_var_t pp2)
 {
+  apron_var_ptr p1 = (apron_var_ptr)pp1;
+  apron_var_ptr p2 = (apron_var_ptr)pp2;
   return (p1==p2) ? 0 : strcmp(p1->name,p2->name);
 }
 static inline
-apron_var_ptr ap_var_copy(apron_var_ptr p){
+ap_var_t ap_var_copy(ap_var_t pp){
+  apron_var_ptr p = (apron_var_ptr)pp;
   p->count++; 
-  return p; 
+  return (ap_var_t)p; 
 }
 static inline
-void ap_var_free(apron_var_ptr p){
+void ap_var_free(ap_var_t pp){
+  apron_var_ptr p = (apron_var_ptr)pp;
   if (p->count<=1){
     free(p->name);
     free(p);
   }
 }
 static inline
-char* ap_var_to_string(apron_var_ptr p)
+char* ap_var_to_string(ap_var_t pp)
 {
+  apron_var_ptr p = (apron_var_ptr)pp;
   size_t l;
   char* res;
 
@@ -188,8 +193,9 @@ char* ap_var_to_string(apron_var_ptr p)
 }
 static 
 inline
-long ap_var_hash(apron_var_ptr p)
+long ap_var_hash(ap_var_t pp)
 {
+  apron_var_ptr p = (apron_var_ptr)pp;
   unsigned char* str;
   unsigned long res = 0;
 

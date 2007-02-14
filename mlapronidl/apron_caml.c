@@ -95,7 +95,7 @@ static
 void camlidl_apron_abstract0_ptr_finalize(value v)
 {
   ap_abstract0_ptr* p = (ap_abstract0_ptr *) Data_custom_val(v);
-  const ap_abstract0_t* a = *p;
+  ap_abstract0_t* a = *p;
   ap_abstract0_free(a->man,a);
 }
 
@@ -131,7 +131,6 @@ unsigned long camlidl_apron_abstract0_deserialize(void * dst)
   if (deserialize_man) {
     size_t size = deserialize_uint_8(), realsize;
     void* data;
-    ap_abstract0_t* a;
     data = malloc(size);
     assert(data);
     deserialize_block_1(data,size);

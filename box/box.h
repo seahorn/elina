@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 /* OCaml interface */
-ap_manager_t* box_manager_alloc();
+ap_manager_t* box_manager_alloc(void);
 
 typedef struct box_t box_t;
 

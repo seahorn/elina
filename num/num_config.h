@@ -4,15 +4,14 @@
 
 #ifdef __cplusplus
 #define HAS_BOOL
+extern "C" {
 #endif
 
 #ifndef HAS_BOOL
 #define HAS_BOOL
-
-typedef enum bool {
-  false=0,
-  true=1
-} bool;
+typedef char bool;
+static const bool false = 0;
+static const bool true  = 1;
 #endif
 
 
@@ -46,7 +45,8 @@ static inline unsigned num_undump_word32(const void* src)
     ((unsigned)(((const unsigned char*)src)[3]));
 }
 
-
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

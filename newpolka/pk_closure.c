@@ -51,7 +51,8 @@ poly_t* poly_closure(ap_manager_t* man, bool destructive, poly_t* pa)
   positivity = false;
   for (i=0;i<C->nbrows; i++){
     if (numint_sgn(C->p[i][polka_eps])<0){
-      if (vector_is_positivity_constraint(pk,C->p[i],C->nbcolumns)){
+      if (vector_is_positivity_constraint(pk,(const numint_t*)C->p[i],
+					  C->nbcolumns)){
 	/* we keep the positivity constraint epsilon<=1 */
 	positivity = true;
       }

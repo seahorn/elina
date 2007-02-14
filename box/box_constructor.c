@@ -208,7 +208,7 @@ tbool_t box_sat_lincons(ap_manager_t* man,
   
   bool exact = itv_eval_ap_linexpr0(intern->itv,
 				    intern->sat_lincons_itv, 
-				    a->p, 
+				    (const itv_t*)a->p, 
 				    cons->linexpr0);
 
   man->result.flag_exact = man->result.flag_best = 
@@ -322,7 +322,7 @@ ap_interval_t* box_bound_linexpr(ap_manager_t* man,
   else {
     exact = itv_eval_ap_linexpr0(intern->itv,
 				 intern->bound_linexpr_itv,
-				 a->p,
+				 (const itv_t*)a->p,
 				 expr);
     ap_interval_set_itv(intern->itv, interval,intern->bound_linexpr_itv);
   }

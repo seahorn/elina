@@ -39,7 +39,7 @@ void box_internal_clear(box_internal_t* intern)
   bound_clear(intern->meet_lincons_internal_bound);
 }
 
-box_internal_t* box_internal_alloc()
+box_internal_t* box_internal_alloc(void)
 {
   box_internal_t* intern = malloc(sizeof(box_internal_t));
   box_internal_init(intern);
@@ -51,7 +51,7 @@ void box_internal_free(box_internal_t* intern)
   free(intern);
 }
 
-ap_manager_t* box_manager_alloc()
+ap_manager_t* box_manager_alloc(void)
 {
   size_t i;
   box_internal_t* itv;

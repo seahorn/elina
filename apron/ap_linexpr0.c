@@ -839,7 +839,7 @@ long ap_linexpr0_hash(const ap_linexpr0_t* expr)
     res = expr->size << 8;
     dec = 0;
     for (i=0; i<expr->size; i += (expr->size+7)/8){
-      pcoeff = ap_linexpr0_coeffref(expr,i);
+      pcoeff = ap_linexpr0_coeffref((ap_linexpr0_t*)expr,i);
       res1 = (pcoeff==NULL) ? 0 : ap_coeff_hash(pcoeff);
       res += res1<<dec;
       dec++;

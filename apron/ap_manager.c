@@ -157,6 +157,8 @@ ap_manager_t* ap_manager_alloc(char* library, char* version,
 {
   ap_manager_t* man;
 
+  assert(sizeof(bool)==1);
+
   man = (ap_manager_t*)malloc(sizeof(ap_manager_t));
   man->library = library;
   man->version = version;

@@ -914,7 +914,7 @@ static bool matrix_check3(pk_internal_t* pk, const matrix_t* mat)
 
   res = true;
   for (i=0; i<mat->nbrows-1; i++){
-    if (vector_compare(pk,mat->p[i],mat->p[i+1],mat->nbcolumns)>0){
+    if (vector_compare(pk,(const numint_t*)mat->p[i],(const numint_t*)mat->p[i+1],mat->nbcolumns)>0){
       res = false;
       break;
     }
