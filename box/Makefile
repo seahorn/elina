@@ -44,6 +44,7 @@ ICFLAGS = \
 -I../apron \
 -I../mlgmpidl \
 -I../mlapronidl \
+-I $(CAMLIDL_PREFIX)/lib/ocaml -I $(CAML_PREFIX)/lib/ocaml \
 -Wall -Wstrict-prototypes -Wimplicit-function-declaration \
 -O3 -g -DNDEBUG -std=c99
 # -Winline -Wconversion
@@ -218,9 +219,9 @@ manager.idl: ../mlapronidl/manager.idl
 #---------------------------------------
 
 %.o: %.c
-	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include $(ICFLAGS) $(XCFLAGS) -DNUM_MPQ -c -o $@ $<
+	$(CC) $(ICFLAGS) $(XCFLAGS) -DNUM_MPQ -c -o $@ $<
 %_debug.o: %.c
-	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_MPQ -c -o $@ $<
+	$(CC) $(ICFLAGS) $(XCFLAGS) $(CFLAGS_DEBUG) -DNUM_MPQ -c -o $@ $<
 
 #-----------------------------------
 # DEPENDENCIES

@@ -38,6 +38,7 @@ ICFLAGS = \
 -I../num \
 -I../mlgmpidl \
 -I../mlapronidl \
+-I $(CAMLIDL_PREFIX)/lib/ocaml -I $(CAML_PREFIX)/lib/ocaml \
 -Wall -Wstrict-prototypes -Wimplicit-function-declaration \
 -std=c99
 # -Winline -Wconversion
@@ -223,9 +224,9 @@ manager.idl: ../mlapronidl/manager.idl
 #---------------------------------------
 
 %.o: %.c
-	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include  $(CFLAGS) -DNUMINT_MPZ -c -o $@ $<
+	$(CC) $(CFLAGS) -DNUMINT_MPZ -c -o $@ $<
 %_debug.o: %.c
-	$(CC) -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml -I$(MLGMPIDL_PREFIX)/include -I$(MLAPRONIDL_PREFIX)/include  $(CFLAGS_DEBUG) -DNUMINT_MPZ -c -o $@ $<
+	$(CC) $(CFLAGS_DEBUG) -DNUMINT_MPZ -c -o $@ $<
 
 #---------------------------------------
 # ML generic rules

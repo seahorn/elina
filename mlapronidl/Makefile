@@ -226,6 +226,9 @@ html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc
 #---------------------------------------
 # Dependencies
 #---------------------------------------
+scalar.cmi: scalar.cmi mpz.idl mpq.idl
+scalar.cmo: scalar.cmi mpz.idl mpq.idl
+scalar.cmx: scalar.cmi mpz.idl mpq.idl
 interval.cmi: scalar.cmi
 coeff.cmi: scalar.cmi interval.cmi
 linexpr0.cmi: dim.cmi coeff.cmi
@@ -243,8 +246,6 @@ apron_parser.cmi: lincons0.cmi generator0.cmi coeff.cmi
 apron_lexer.cmi: apron_parser.cmi
 parser.cmi: manager.cmi linexpr1.cmi lincons1.cmi generator1.cmi \
     environment.cmi abstract1.cmi
-scalar.cmo: scalar.cmi
-scalar.cmx: scalar.cmi
 interval.cmo: scalar.cmi interval.cmi
 interval.cmx: scalar.cmx interval.cmi
 coeff.cmo: scalar.cmi interval.cmi coeff.cmi
