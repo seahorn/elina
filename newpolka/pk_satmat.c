@@ -12,7 +12,6 @@
 #include <assert.h>
 
 #include "pk_satmat.h"
-#include "mf_qsort.h"
 
 /* ********************************************************************** */
 /* I. basic operations: creation, destruction, copying and printing */

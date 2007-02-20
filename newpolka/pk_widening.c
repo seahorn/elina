@@ -176,16 +176,18 @@ poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
       bitstring_clear(bitstringp,sat_nbcols);
       cherni_buildsatline(pk, pa->F, (const numint_t*)pb->C->p[i], bitstringp);
       index = esatmat_index_in_sorted_rows(bitstringp,tab,pa->satF);
-      if ( index>=0 &&
-	   (!widening_affine ||
+      if (index>=0){
+	index = tab[index].index;
+	if (!widening_affine ||
 	    !vector_is_positivity_constraint(pk, 
 					     (const numint_t*)pa->C->p[index],
-					     pa->C->nbcolumns)) ){
-	/* Belongs to saturation matrix, and does not correspond to the
-	   positivity constraint. */
-	vector_copy(po->C->p[nbrows],(const numint_t*)pb->C->p[i], 
-		    pa->C->nbcolumns);
+					     pa->C->nbcolumns)){
+	  /* Belongs to saturation matrix, and does not correspond to the
+	     positivity constraint. */
+	  vector_copy(po->C->p[nbrows],(const numint_t*)pb->C->p[i], 
+		      pa->C->nbcolumns);
 	  nbrows++;
+	}
       }
     }
     free(tab);
