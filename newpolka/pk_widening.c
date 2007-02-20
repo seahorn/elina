@@ -18,6 +18,8 @@
 #include "pk_test.h"
 #include "pk_widening.h"
 
+#include "mf_qsort.h"
+
 typedef struct satmat_row_t {
   bitstring_t* p; 
     /* pointing somewhere in the field pinit of an underlying satmat_t object */
@@ -61,21 +63,25 @@ static void esatmat_isort_rows(satmat_row_t* tab, const satmat_t* sat)
 /* Row sorting.
 
 We use here the quick sort. */
-static size_t qsort_size = 0;
-static int qsort_rows_compar(const void* p1, const void* p2)
+typedef struct qsort_man_t {
+  size_t size;
+} qsort_man_t;
+static int qsort_rows_compar(void* qsort_man, const void* p1, const void* p2)
 {
+  qsort_man_t* qm = (qsort_man_t*)qsort_man;
   return (bitstring_cmp( ((satmat_row_t*)p1)->p,
 			 ((satmat_row_t*)p2)->p,
-			 qsort_size));
+			 qm->size));
 }
 
 static void esatmat_sort_rows(satmat_row_t* tab, const satmat_t* sat)
 {
   if (sat->nbrows>=6){
-    qsort_size = sat->nbcolumns;
-    qsort(tab,
+    qsort_man_t qsort_man;
+    qsort_man.size = sat->nbcolumns;
+    qsort2(tab,
 	  (size_t)sat->nbrows, sizeof(satmat_row_t),
-	  qsort_rows_compar);
+	   qsort_rows_compar, &qsort_man);
   }
   else {
     esatmat_isort_rows(tab,sat);
@@ -88,17 +94,19 @@ The following function tests if the given row belongs to the sorted saturation
 matrix. If it is the case, it returns its rank in the saturation
 matrix. Otherwise, it returns -1 */
 
-static const bitstring_t* index_satline = NULL;
-static satmat_row_t* index_tab = NULL;
-static size_t index_size = 0;
+typedef struct bsearch_man_t {
+  const bitstring_t* satline;
+  satmat_row_t* tab;
+  size_t size;
+} bsearch_man_t;
 
-static bool index2(size_t low, size_t high)
+static bool bsearch2(bsearch_man_t* man, size_t low, size_t high)
 {
   if (high - low <= 4){
     int i;
     int res=-1;
     for (i=low; i<high; i++){
-      int cmp = bitstring_cmp(index_tab[i].p,index_satline,index_size);
+      int cmp = bitstring_cmp(man->tab[i].p, man->satline, man->size);
       if (cmp==0){
 	res=i; break;
       }
@@ -108,11 +116,11 @@ static bool index2(size_t low, size_t high)
   }
   else {
     size_t mid = low+(high-low)/2;
-    int cmp = bitstring_cmp(index_tab[mid].p,index_satline,index_size);
+    int cmp = bitstring_cmp(man->tab[mid].p,man->satline,man->size);
     if (cmp<0)
-      return (index2(mid+1,high));
+      return (bsearch2(man,mid+1,high));
     else if (cmp>0)
-      return (index2(low,mid));
+      return (bsearch2(man,low,mid));
     else
       return mid;
   }
@@ -123,10 +131,11 @@ int esatmat_index_in_sorted_rows(const bitstring_t* const satline,
 				 satmat_row_t* tab, 
 				 const satmat_t* const sat)
 {
-  index_satline = satline;
-  index_tab = tab;
-  index_size = sat->nbcolumns;
-  return (index2(0,sat->nbrows));
+  bsearch_man_t man;
+  man.satline = satline;
+  man.tab = tab;
+  man.size = sat->nbcolumns;
+  return bsearch2(&man,0,sat->nbrows);
 }
 
 /* This function defines the standard widening operator.  The resulting
