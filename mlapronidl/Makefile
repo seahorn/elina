@@ -178,7 +178,7 @@ mpz.idl: ../mlgmpidl/mpz.idl
 mpq.idl: ../mlgmpidl/mpq.idl
 	ln -s $^ $@
 
-/* Generate for each %.idl: %i.ml, %i.mli, %_caml.c 
+# Generate for each %.idl: %i.ml, %i.mli, %_caml.c 
 rebuild: mpz.idl mpq.idl
 	mkdir -p tmp
 	for i in $(IDLMODULES); do \
