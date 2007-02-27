@@ -5,6 +5,12 @@ Version 0.9.5
 - NewPolka offers a layer for linear equalities only, in addition to more
   general linear inequalities.
 
+- Use of const qualifier removed in the API, except for strings (const char *)
+	
+- Improved Makefiles and Makefile.config.model
+
+- Bugs corrected
+
 Version 0.9.4
 
 - Modification of Makefile and Makefile.config.model

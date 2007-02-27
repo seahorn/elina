@@ -56,10 +56,8 @@ clean:
 	rm -fr online tmp
 
 mostlyclean: clean
-	(cd apron; make mostlyclean)
 	(cd mlgmpidl; make mostlyclean)
 	(cd mlapronidl; make mostlyclean)
-	(cd itv; make mostlyclean)
 	(cd box; make mostlyclean)
 	(cd octagons; make mostlyclean)
 	(cd newpolka; make mostlyclean)
