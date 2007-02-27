@@ -1,22 +1,9 @@
-% -*- mode: Noweb; noweb-code-mode: c-mode -*-
-
-% This file is part of the APRON Library, released under LGPL license.
-% Please read the COPYING file packaged in the distribution 
-
-%**********************************************************************
-\chapter{Var: définition et manipulation de variables génériques, fichier [[ap_var.h]]}
-\label{chap:var}
-%**********************************************************************
-
-<<*>>=
 /* ********************************************************************** */
 /* ap_var.h: variables (strings or user-defined) */
 /* ********************************************************************** */
 
 /* This file is part of the APRON Library, released under LGPL license.  Please
    read the COPYING file packaged in the distribution */
-
-/* GENERATED FROM ap_var.nw: DO NOT MODIFY ! */
 
 #ifndef _AP_VAR_H_
 #define _AP_VAR_H_
@@ -25,13 +12,6 @@
 extern "C" {
 #endif
 
-@
-
-%======================================================================
-\section{Datatypes}
-%======================================================================
-
-<<*>>=
 
 /* ====================================================================== */
 /* Datatype */
@@ -65,4 +45,3 @@ extern ap_var_operations_t* ap_var_operations;
 #endif
 
 #endif
-@  

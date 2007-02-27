@@ -30,7 +30,7 @@ void ap_coeff_init(ap_coeff_t* coeff, ap_coeff_discr_t coeff_discr)
   }
 }
 /* FOR INTERNAL USE ONLY */
-void ap_coeff_init_set(ap_coeff_t* coeff, const ap_coeff_t* coeff2)
+void ap_coeff_init_set(ap_coeff_t* coeff, ap_coeff_t* coeff2)
 {
   coeff->discr = coeff2->discr;
   switch (coeff2->discr){
@@ -109,7 +109,7 @@ void ap_coeff_free(ap_coeff_t* coeff)
   free(coeff);
 }
 
-void ap_coeff_fprint(FILE* stream, const ap_coeff_t* a)
+void ap_coeff_fprint(FILE* stream, ap_coeff_t* a)
 {
   switch(a->discr){
   case AP_COEFF_SCALAR:
@@ -137,21 +137,21 @@ void ap_coeff_reduce(ap_coeff_t* coeff)
 /* ====================================================================== */
 /* Combined allocation and assignement */
 /* ====================================================================== */
-ap_coeff_t* ap_coeff_alloc_set_scalar(const ap_scalar_t* scalar)
+ap_coeff_t* ap_coeff_alloc_set_scalar(ap_scalar_t* scalar)
 {
   ap_coeff_t* coeff = malloc(sizeof(ap_coeff_t));
   coeff->discr = AP_COEFF_SCALAR;
   coeff->val.scalar = ap_scalar_alloc_set(scalar);
   return coeff;
 }
-ap_coeff_t* ap_coeff_alloc_set_interval(const ap_interval_t* interval)
+ap_coeff_t* ap_coeff_alloc_set_interval(ap_interval_t* interval)
 {
   ap_coeff_t* coeff = malloc(sizeof(ap_coeff_t));
   coeff->discr = AP_COEFF_INTERVAL;
   coeff->val.interval = ap_interval_alloc_set(interval);
   return coeff;
 }
-ap_coeff_t* ap_coeff_alloc_set(const ap_coeff_t* coeff)
+ap_coeff_t* ap_coeff_alloc_set(ap_coeff_t* coeff)
 {
   switch (coeff->discr){
   case AP_COEFF_SCALAR:
@@ -168,7 +168,7 @@ ap_coeff_t* ap_coeff_alloc_set(const ap_coeff_t* coeff)
 /* Assignements */
 /* ====================================================================== */
 
-void ap_coeff_set(ap_coeff_t* a, const ap_coeff_t* b)
+void ap_coeff_set(ap_coeff_t* a, ap_coeff_t* b)
 {
 
   if(a->discr != b->discr){
@@ -183,12 +183,12 @@ void ap_coeff_set(ap_coeff_t* a, const ap_coeff_t* b)
     break;
   }
 }
-void ap_coeff_set_scalar(ap_coeff_t* coeff, const ap_scalar_t* scalar)
+void ap_coeff_set_scalar(ap_coeff_t* coeff, ap_scalar_t* scalar)
 {
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,scalar->discr); 
   ap_scalar_set(coeff->val.scalar,scalar); 
 }
-void ap_coeff_set_scalar_mpq(ap_coeff_t* coeff, const mpq_t mpq)
+void ap_coeff_set_scalar_mpq(ap_coeff_t* coeff, mpq_t mpq)
 {
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPQ); 
   ap_scalar_set_mpq(coeff->val.scalar,mpq); 
@@ -208,16 +208,16 @@ void ap_coeff_set_scalar_double(ap_coeff_t* coeff, double num)
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_DOUBLE); 
   ap_scalar_set_double(coeff->val.scalar,num); 
 }
-void ap_coeff_set_interval(ap_coeff_t* coeff, const ap_interval_t* itv)
+void ap_coeff_set_interval(ap_coeff_t* coeff, ap_interval_t* itv)
 {
   ap_coeff_reinit(coeff,AP_COEFF_INTERVAL,AP_SCALAR_DOUBLE); 
   ap_interval_set(coeff->val.interval,itv); 
 }
-void ap_coeff_set_interval_scalar(ap_coeff_t* coeff, const ap_scalar_t* inf, const ap_scalar_t* sup)
+void ap_coeff_set_interval_scalar(ap_coeff_t* coeff, ap_scalar_t* inf, ap_scalar_t* sup)
 {
   ap_interval_set_scalar(coeff->val.interval,inf,sup);
 }
-void ap_coeff_set_interval_mpq(ap_coeff_t* coeff, const mpq_t inf, const mpq_t sup)
+void ap_coeff_set_interval_mpq(ap_coeff_t* coeff, mpq_t inf, mpq_t sup)
 {
   ap_interval_set_mpq(coeff->val.interval,inf,sup);
 }
@@ -243,7 +243,7 @@ void ap_coeff_set_interval_double(ap_coeff_t* coeff, double inf, double sup)
 /* Tests */
 /* ====================================================================== */
 
-int ap_coeff_cmp(const ap_coeff_t* coeff1, const ap_coeff_t* coeff2)
+int ap_coeff_cmp(ap_coeff_t* coeff1, ap_coeff_t* coeff2)
 {
   if (coeff1->discr==coeff2->discr){
     switch (coeff1->discr){
@@ -260,7 +260,7 @@ int ap_coeff_cmp(const ap_coeff_t* coeff1, const ap_coeff_t* coeff2)
     return (coeff1->discr==AP_COEFF_SCALAR) ? -3 : 3;
   }
 }
-bool ap_coeff_equal(const ap_coeff_t* coeff1, const ap_coeff_t* coeff2)
+bool ap_coeff_equal(ap_coeff_t* coeff1, ap_coeff_t* coeff2)
 {
   if (coeff1->discr==coeff2->discr){
     switch (coeff1->discr){
@@ -275,7 +275,7 @@ bool ap_coeff_equal(const ap_coeff_t* coeff1, const ap_coeff_t* coeff2)
   else
     return false;
 }
-bool ap_coeff_zero(const ap_coeff_t* coeff)
+bool ap_coeff_zero(ap_coeff_t* coeff)
 {
   switch (coeff->discr){
   case AP_COEFF_SCALAR:
@@ -291,7 +291,7 @@ bool ap_coeff_zero(const ap_coeff_t* coeff)
 /* Other operations */
 /* ====================================================================== */
 
-void ap_coeff_neg(ap_coeff_t* a, const ap_coeff_t* b)
+void ap_coeff_neg(ap_coeff_t* a, ap_coeff_t* b)
 {
   ap_coeff_set(a,b);
   switch(b->discr){
@@ -308,7 +308,7 @@ void ap_coeff_neg(ap_coeff_t* a, const ap_coeff_t* b)
 
 /* Hash */
 
-long ap_coeff_hash(const ap_coeff_t* coeff)
+long ap_coeff_hash(ap_coeff_t* coeff)
 {
   switch (coeff->discr){
   case AP_COEFF_SCALAR:

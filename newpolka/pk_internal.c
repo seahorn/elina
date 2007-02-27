@@ -20,7 +20,7 @@
 
 void pk_internal_init(pk_internal_t* pk, size_t maxdims)
 {
-  int i;
+  size_t i;
 
   pk->maxdims = maxdims;
   pk->maxcols = maxdims+3;
@@ -68,7 +68,7 @@ pk_internal_t* pk_internal_alloc(bool strict)
 /* Clear pk */
 void pk_internal_clear(pk_internal_t* pk)
 {
-  int i;
+  size_t i;
 
   if (pk->vector_numintp) vector_free(pk->vector_numintp,pk->maxcols);
   pk->vector_numintp = 0;
@@ -261,7 +261,7 @@ poly_t* pk_to_poly(ap_abstract0_t* abstract)
 			       "pk_to_poly: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPOlka polyhedra");
     return NULL;
   }
-  return (poly_t*)abstract->value;
+  return abstract->value;
 }
 
 ap_abstract0_t* pk_of_poly(ap_manager_t* man, poly_t* poly)

@@ -7,7 +7,7 @@
 
 box_t* box_add_dimensions(ap_manager_t* man,
 			  bool destructive, box_t* a,
-			  const ap_dimchange_t* dimchange)
+			  ap_dimchange_t* dimchange)
 {
   box_t* res;
   size_t size;
@@ -23,15 +23,15 @@ box_t* box_add_dimensions(ap_manager_t* man,
   size = res->intdim+res->realdim;
   dimsup = dimchange->intdim+dimchange->realdim;
   res->p = realloc(res->p,(size+dimsup)*sizeof(itv_t));
-  for (i=size;i<size+dimsup;i++){
+  for (i=(int)size;i<(int)(size+dimsup);i++){
     itv_init(res->p[i]);
   }
   k = dimsup;
-  for (i=size; i>=0; i--){
-    if (i<size){
+  for (i=(int)size; i>=0; i--){
+    if (i<(int)size){
       itv_set(res->p[i+k],a->p[i]);
     }
-    while (k>=1 && dimchange->dim[k-1]==i){
+    while (k>=1 && dimchange->dim[k-1]==(ap_dim_t)i){
       k--;
       itv_set_top(res->p[i+k]);
     }
@@ -44,12 +44,12 @@ box_t* box_add_dimensions(ap_manager_t* man,
 
 box_t* box_remove_dimensions(ap_manager_t* man,
 			     bool destructive, box_t* a,
-			     const ap_dimchange_t* dimchange)
+			     ap_dimchange_t* dimchange)
 {
   box_t* res;
   size_t size;
   size_t dimsup;
-  int i,k;
+  size_t i,k;
   
   man->result.flag_best = tbool_true;  
   man->result.flag_exact = tbool_true;  
@@ -79,11 +79,11 @@ box_t* box_remove_dimensions(ap_manager_t* man,
 box_t* box_permute_dimensions(ap_manager_t* man,
 			      bool destructive,
 			      box_t* a,
-			      const ap_dimperm_t* perm)
+			      ap_dimperm_t* perm)
 {
   box_t* res;
   size_t size;
-  int i;
+  size_t i;
   
   man->result.flag_best = tbool_true;  
   man->result.flag_exact = tbool_true;  

@@ -1,4 +1,3 @@
-
 include ../Makefile.config
 
 PREFIX = $(POLKA_PREFIX)
@@ -8,24 +7,6 @@ SRCDIR = $(shell pwd)
 #---------------------------------------
 # Programs
 #---------------------------------------
-
-# Installation program
-INSTALL = install
-INSTALLd = install -d
-# C compiler and C preprocessor
-CC = gcc
-CPP = gcc -E
-
-# LATEX and others
-LATEX = latex
-TEXI2DVI = texi2dvi
-MAKEINFO = makeinfo
-DVIPS = dvips
-
-OCAMLC = $(CAML_PREFIX)/bin/ocamlc.opt 
-OCAMLOPT = $(CAML_PREFIX)/bin/ocamlopt.opt
-OCAMLMKTOP = $(CAML_PREFIX)/bin/ocamlmktop
-CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 
 #---------------------------------------
 # Flags
@@ -38,20 +19,10 @@ ICFLAGS = \
 -I../num \
 -I../mlgmpidl \
 -I../mlapronidl \
--I $(CAMLIDL_PREFIX)/lib/ocaml -I $(CAML_PREFIX)/lib/ocaml \
--Wall -Wstrict-prototypes -Wimplicit-function-declaration \
--std=c99
-# -Winline -Wconversion
-
-CFLAGS =  $(ICFLAGS) $(OPTFLAGS) -DNDEBUG
-# For debugging purpose
-CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG
-CFLAGS_PROF = -g -pg
+-I $(CAMLIDL_PREFIX)/lib/ocaml -I $(CAML_PREFIX)/lib/ocaml
 
 # Caml
 OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
-OCAMLFLAGS = -g
-OCAMLOPTFLAGS = -inline 20
 
 #---------------------------------------
 # Files
@@ -59,22 +30,22 @@ OCAMLOPTFLAGS = -inline 20
 
 CCMODULES = \
 mf_qsort \
-pk_user \
-pk_internal pk_bit pk_satmat pk_vector pk_matrix pk_cherni \
+pk_user pk_internal pk_bit pk_satmat pk_vector pk_matrix pk_cherni \
 pk_representation pk_constructor pk_test pk_extract \
-pk_meetjoin pk_assign pk_project pk_resize pk_expandfold pk_widening pk_closure \
+pk_meetjoin pk_assign pk_project pk_resize pk_expandfold \
+pk_widening pk_closure \
 pkeq
 
 CCSRC = pk_config.h pk_int.h pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = pk.h pkeq.h
-CCBIN_TO_INSTALL = 
-CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a 
+CCBIN_TO_INSTALL =
+CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a
 
 CAML_TO_INSTALL = polka.idl polkaeq.idl \
 polka.cma polka.cmxa polka.a \
 polka.cmi polka.cmx polka.mli polka.ml \
-polkaeq.cmi polkaeq.cmx polkaeq.mli polkaeq.ml 
+polkaeq.cmi polkaeq.cmx polkaeq.mli polkaeq.ml
 
 #---------------------------------------
 # Rules
@@ -88,7 +59,7 @@ all: allg
 
 ml: $(CAML_TO_INSTALL) libpolka_caml.a libpolka_caml_debug.a
 
-allg: libpolkag.a libpolkag_debug.a 
+allg: libpolkag.a libpolkag_debug.a
 
 test0g: test0g_debug.o libpolkag_debug.a
 	$(CC) $(ICFLAGS) $(XCFLAGS) -I$(GMP_PREFIX)/include -o $@ $< \
@@ -99,10 +70,10 @@ test1g: test1g_debug.o libpolkag_debug.a
 	-L. -lpolkag_debug -L$(APRON_PREFIX)/lib -lapron_debug -lgmp -lm
 
 clean:
-	/bin/rm -f *.[ao] 
+	/bin/rm -f *.[ao]
 	/bin/rm -f *.?.tex *.log *.aux *.bbl *.blg *.toc *.dvi *.ps *.pstex*
 	/bin/rm -f test[01][ilg] test[ilg]_caml polkarun[ilg] polkatop[ilg]
-	/bin/rm -fr *.cm[ioax] 
+	/bin/rm -fr *.cm[ioax]
 	/bin/rm -f manager.idl
 	/bin/rm -fr tmp
 
@@ -130,7 +101,7 @@ distclean:
 	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
 	/bin/rm -f Makefile.depend
 
-dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polkaeq.idl polkaeq.ml polkaeq.mli polka_caml.c COPYING README
+dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polkaeq.idl polkaeq.ml polkaeq.mli polka_caml.c polkaeq_caml.c COPYING README
 	(cd ..; tar zcvf newpolka.tgz $(^:%=newpolka/%))
 
 #---------------------------------------
@@ -144,19 +115,22 @@ dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.ml
 #-----------------------------------
 
 libpolkag.a: $(CCMODULES:%=%g.o)
-	ar rcs $@ $^
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
+
 libpolkag_debug.a: $(CCMODULES:%=%g_debug.o)
-	ar rcs $@ $^
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 %i.o: %.c
-	$(CC) $(CFLAGS) -DNUMINT_LONGINT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUMINT_LONGINT -c -o $@ $<
 %l.o: %.c
-	$(CC) $(CFLAGS) -DNUMINT_LONGLONGINT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUMINT_LONGLONGINT -c -o $@ $<
 %g.o: %.c
-	$(CC) $(CFLAGS) -DNUMINT_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUMINT_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 %g_debug.o: %.c
-	$(CC) $(CFLAGS_DEBUG) -DNUMINT_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUMINT_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 #-----------------------------------
 # Caml part
@@ -166,7 +140,7 @@ polkatopg: polka.cma libpolka_caml.a libpolkag_debug.a
 	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -verbose -o $@ \
 	bigarray.cma gmp.cma apron.cma polka.cma \
 	-ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron" \
-	-cclib "-lpolkag_debug" 
+	-cclib "-lpolkag_debug"
 
 polkarung: polka.cma libpolka_caml_debug.a libpolkag_debug.a
 	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -verbose -o $@ \
@@ -174,9 +148,9 @@ polkarung: polka.cma libpolka_caml_debug.a libpolkag_debug.a
 	-ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron" \
 	-cclib "-lpolkag_debug"
 
-testg_caml: test.cmo polkarung 
+testg_caml: test.cmo polkarung
 	$(OCAMLC) -g $(OCAMLINC) -o $@ -use-runtime polkarung \
-	bigarray.cma gmp.cma apron.cma polka.cma test.cmo 
+	bigarray.cma gmp.cma apron.cma polka.cma test.cmo
 
 test.cmo: test.ml
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -I $(CAMLLIB_PREFIX)/lib -c $<
@@ -186,9 +160,12 @@ test.cmo: test.ml
 #---------------------------------------
 
 libpolka_caml.a: polka_caml.o polkaeq_caml.o
-	ar rcs $@ $^
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
+
 libpolka_caml_debug.a: polka_caml_debug.o polkaeq_caml_debug.o
-	ar rcs $@ $^
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 #---------------------------------------
 # ML rules
@@ -203,30 +180,35 @@ polka.cmxa: polka.cmx polkaeq.cmx libpolka_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
 	polka.cmx polkaeq.cmx \
 	-ccopt "-L$(POLKA_PREFIX)/lib" -cclib "-lpolka_caml"
+	$(RANLIB) polka.a
 
 #---------------------------------------
 # IDL rules
 #---------------------------------------
 
-%_caml.c %.ml %.mli: %.idl sedscript_caml manager.idl
-	mkdir -p tmp
-	cp $*.idl tmp/$*.idl
-	$(CAMLIDL) -no-include -nocpp -I $(MLAPRONIDL_PREFIX)/lib tmp/$*.idl
-	cp tmp/$*_stubs.c $*_caml.c
-	sed -f sedscript_caml tmp/$*.ml >$*.ml
-	sed -f sedscript_caml tmp/$*.mli >$*.mli
-
 manager.idl: ../mlapronidl/manager.idl
-	cp $^ $@
+	ln -s $< $@
+
+# generates X.ml, X.mli, X_caml.c for X = polka, polkaeq
+rebuild: manager.idl polka.idl polkaeq.idl
+	mkdir -p tmp
+	for i in polka polkaeq; do \
+		echo "module $$i"; \
+		cp $${i}.idl tmp/$${i}.idl; \
+		$(CAMLIDL) -no-include -nocpp tmp/$${i}.idl; \
+		cp tmp/$${i}_stubs.c $${i}_caml.c; \
+		$(SED) -f sedscript_caml tmp/$${i}.ml >$${i}.ml; \
+		$(SED) -f sedscript_caml tmp/$${i}.mli >$${i}.mli; \
+	done
 
 #---------------------------------------
 # C generic rules
 #---------------------------------------
 
 %.o: %.c
-	$(CC) $(CFLAGS) -DNUMINT_MPZ -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUMINT_MPZ -c -o $@ $<
 %_debug.o: %.c
-	$(CC) $(CFLAGS_DEBUG) -DNUMINT_MPZ -c -o $@ $<
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUMINT_MPZ -c -o $@ $<
 
 #---------------------------------------
 # ML generic rules

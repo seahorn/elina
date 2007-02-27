@@ -14,7 +14,7 @@
 /* I. Bitindices */
 /* ********************************************************************** */
 
-void bitindex_fprint(FILE* stream, const bitindex_t* bi)
+void bitindex_fprint(FILE* stream, bitindex_t* bi)
 {
   int k;
   bitstring_t m = bi->bit;
@@ -27,7 +27,7 @@ void bitindex_fprint(FILE* stream, const bitindex_t* bi)
   fprintf(stream,"index=%lu, word=%lu, bit=%d\n",
 	  (unsigned long)bi->index,(unsigned long)bi->word,k);
 }
-void bitindex_print(const bitindex_t* bi)
+void bitindex_print(bitindex_t* bi)
 {
   bitindex_fprint(stdout,bi);
 }
@@ -99,18 +99,18 @@ void bitstring_free(bitstring_t* b){
 }
 
 void bitstring_clear(bitstring_t* b, size_t size){
-  int i;
+  size_t i;
   for (i=0; i<size; i++) b[i]=0;
 }
 
-void bitstring_copy(bitstring_t* b2, const bitstring_t* b1, size_t size){
-  int i;
+void bitstring_copy(bitstring_t* b2, bitstring_t* b1, size_t size){
+  size_t i;
   for (i=0; i<size; i++) b2[i]=b1[i];
 }
 
-void bitstring_fprint(FILE* stream, const bitstring_t* b, size_t size)
+void bitstring_fprint(FILE* stream, bitstring_t* b, size_t size)
 {
-  int j,k;
+  size_t j,k;
   bitstring_t m;
 
   for (j=0; j<size; j++){
@@ -123,13 +123,13 @@ void bitstring_fprint(FILE* stream, const bitstring_t* b, size_t size)
     }
   }
 }
-void bitstring_print(const bitstring_t* b, size_t size)
+void bitstring_print(bitstring_t* b, size_t size)
 {
   bitstring_fprint(stdout,b,size);
 }
 
-int bitstring_cmp(const bitstring_t* const r1, const bitstring_t* const r2, size_t size){
-  int i;
+int bitstring_cmp(bitstring_t* const r1, bitstring_t* const r2, size_t size){
+  size_t i;
   int res=0;
   for (i=0; i<size; i++){
     if (r1[i] < r2[i]){ res=-1; break; }
@@ -141,15 +141,15 @@ int bitstring_cmp(const bitstring_t* const r1, const bitstring_t* const r2, size
 /* These functions allow to read, set or clear individual bits of a bitstring, 
    referenced by a bitindex. */
 
-int bitstring_get(const bitstring_t* const b, const bitindex_t ix) { 
+int bitstring_get(bitstring_t* const b, bitindex_t ix) { 
   return b[ix.word] & ix.bit; 
 }
 
-void bitstring_set(bitstring_t* const b, const bitindex_t ix){
+void bitstring_set(bitstring_t* const b, bitindex_t ix){
   b[ix.word] |= ix.bit; 
 }
 
-void bitstring_clr(bitstring_t* const b, const bitindex_t ix){ 
+void bitstring_clr(bitstring_t* const b, bitindex_t ix){ 
   b[ix.word] &= ~ix.bit; 
 }
 

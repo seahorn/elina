@@ -18,36 +18,11 @@ BINDIR = $(PREFIX)/bin
 #---------------------------------------
 # C part
 #---------------------------------------
-CC = gcc
-ICFLAGS = \
--I$(GMP_PREFIX)/include  \
--Wall -Wimplicit-function-declaration -std=c99
-# -Winline -Wconversion
-
-CFLAGS = $(ICFLAGS) $(OPTFLAGS) -DNDEBUG
-CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG
-CFLAGS_PROF = $(CFLAGS) -g -pg
-
-#---------------------------------------
-# Latex part
-#---------------------------------------
-LATEX=latex
-DVIPDF=dvipdf
+ICFLAGS = -I$(GMP_PREFIX)/include
 
 #---------------------------------------
 # Files
 #---------------------------------------
-
-NOWEB_FILES = \
-ap_general.nw \
-ap_coefficients.nw ap_dimension.nw ap_expr0.nw \
-ap_manager.nw ap_abstract0.nw \
-ap_var.nw ap_environment.nw ap_expr1.nw \
-ap_abstract1.nw \
-ap_implementorman.nw
-
-TEX_FILES = $(NOWEB_FILES:%.nw=%.tex)
-TEX_MAIN = ap.tex
 
 H_FILES = \
 ap_config.h \
@@ -71,21 +46,16 @@ ap_abstract1.c
 # Rules
 #---------------------------------------
 
-all: src allbis
-
-allbis: $(H_FILES) libapron.a libapron_debug.a
-
-#used to generate .h files from .nw files
-src: $(H_FILES) $(TEX_FILES)
+all: libapron.a libapron_debug.a
 
 #---------------------------------------
 # Misc rules
 #---------------------------------------
 
-tar: $(NOWEB_FILES) $(H_FILES) $(C_FILES) apron.texi apronrationale.tex Makefile README
+tar: $(H_FILES) $(C_FILES) apron.texi Makefile COPYING README
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
-dist: $(NOWEB_FILES) $(TEX_FILES) $(H_FILES) $(C_FILES) apron.texi apronrationale.tex Makefile COPYING README apronrationale.pdf apron.info apron.dvi html
+dist: $(H_FILES) $(C_FILES) apron.texi Makefile COPYING README apron.info apron.dvi html
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
 clean:
@@ -93,10 +63,7 @@ clean:
 	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
 	/bin/rm -fr html
 
-mostlyclean:
-	/bin/rm -f $(NOWEB_FILES:%.nw=%.h) $(TEX_FILES)
-
-install: $(H_FILES) libapron.a libapron_debug.a
+install: libapron.a libapron_debug.a
 	mkdir -p $(APRON_PREFIX)/include
 	cp $(H_FILES) $(APRON_PREFIX)/include
 	mkdir -p $(APRON_PREFIX)/lib
@@ -111,13 +78,7 @@ distclean:
 # Latex rules
 #---------------------------------------
 
-.PHONY : apronrationale.dvi html
-
-apronrationale.pdf: apronrationale.dvi
-	$(DVIPDF) apronrationale $@
-
-apronrationale.dvi: apronrationale.tex $(TEX_FILES)
-	$(LATEX) $^
+.PHONY : html
 
 newpolka.texi: ../newpolka/newpolka.texi
 	ln -s $< $@
@@ -128,14 +89,14 @@ apron.pdf: apron.dvi
 	$(DVIPDF) apron.dvi $@
 
 apron.dvi: apron.texi newpolka.texi box.texi
-	texi2dvi -o $@ $<
+	$(TEXI2DVI) -o $@ $<
 
 apron.info: apron.texi newpolka.texi box.texi
-	makeinfo -o $@ $<
+	$(MAKEINFO) -o $@ $<
 
 
 html: apron.texi newpolka.texi box.texi
-	texi2html -split=section -nonumber -menu -subdir=html $<
+	$(TEXI2HTML) -split=section -nonumber -menu -subdir=html $<
 	cp -f ../octagons/oct_doc.html html
 
 #---------------------------------------
@@ -143,9 +104,11 @@ html: apron.texi newpolka.texi box.texi
 #---------------------------------------
 
 libapron.a: $(C_FILES:%.c=%.o)
-	ar rcs $@ $^
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 libapron_debug.a: $(C_FILES:%.c=%_debug.o)
-	ar rcs $@ $^
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 .PHONY : dep
 
@@ -158,27 +121,17 @@ dep: $(H_FILES)
 # IMPLICIT RULES AND DEPENDENCIES
 #--------------------------------------------------------------
 
-.SUFFIXES: .tex .fig .c .h .o _debug.o _prof.o .nw
-
-#---------------------------------------
-# Noweb generic rules
-#---------------------------------------
-
-%.h: %.nw
-	notangle -L'#line %L "$(SRCDIR)/%F"%N' $^ >$@
-
-%.tex: %.nw
-	LC_ALL=C noweave -n $^ >$@
+.SUFFIXES: .c .h .o
 
 #---------------------------------------
 # C generic rules
 #---------------------------------------
 
 %.o: %.c %.h 
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -c $<
 
-%_debug.o: %.c %.h $(H_FILES)
-	$(CC) $(CFLAGS_DEBUG) -c -o $@ $<
+%_debug.o: %.c %.h
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -c -o $@ $<
 
 #---------------------------------------
 # dependencies (generated with make dep)

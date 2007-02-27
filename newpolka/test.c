@@ -1132,8 +1132,8 @@ void poly_test_check(manager_t* man, size_t intdim, size_t realdim,
     PRINT((printf("\n")));
   }
       
-  p1 = (poly_t*)tpoly[0];
-  p2 = (poly_t*)tpoly[1];
+  p1 = tpoly[0];
+  p2 = tpoly[1];
   
   /* minimize */
   PRINT((printf("minimize\n")));

@@ -34,7 +34,7 @@ void ap_interval_free(ap_interval_t* itv)
   ap_scalar_free(itv->sup);
   free(itv);
 }
-void ap_interval_fprint(FILE* stream, const ap_interval_t* a)
+void ap_interval_fprint(FILE* stream, ap_interval_t* a)
 {
   fprintf(stream,"[");
   ap_scalar_fprint(stream,a->inf);
@@ -47,17 +47,17 @@ void ap_interval_fprint(FILE* stream, const ap_interval_t* a)
 /* Assignements */
 /* ====================================================================== */
 
-void ap_interval_set(ap_interval_t* interval, const ap_interval_t* interval2)
+void ap_interval_set(ap_interval_t* interval, ap_interval_t* interval2)
 {
   ap_scalar_set(interval->inf,interval2->inf);
   ap_scalar_set(interval->sup,interval2->sup);
 }
-void ap_interval_set_scalar(ap_interval_t* interval, const ap_scalar_t* inf, const ap_scalar_t* sup)
+void ap_interval_set_scalar(ap_interval_t* interval, ap_scalar_t* inf, ap_scalar_t* sup)
 {
   ap_scalar_set(interval->inf,inf);
   ap_scalar_set(interval->sup,sup);
 }
-void ap_interval_set_mpq(ap_interval_t* interval, const mpq_t inf, const mpq_t sup)
+void ap_interval_set_mpq(ap_interval_t* interval, mpq_t inf, mpq_t sup)
 {
   ap_scalar_set_mpq(interval->inf,inf);
   ap_scalar_set_mpq(interval->sup,sup);
@@ -98,7 +98,7 @@ void ap_interval_set_bottom(ap_interval_t* interval)
 /* Combined allocation and assignements */
 /* ====================================================================== */
 
-ap_interval_t* ap_interval_alloc_set(const ap_interval_t* interval)
+ap_interval_t* ap_interval_alloc_set(ap_interval_t* interval)
 {
   ap_interval_t* itv = malloc(sizeof(ap_interval_t));
   itv->inf = ap_scalar_alloc_set(interval->inf);
@@ -110,21 +110,21 @@ ap_interval_t* ap_interval_alloc_set(const ap_interval_t* interval)
 /* Tests */
 /* ====================================================================== */
 
-bool ap_interval_is_top(const ap_interval_t* interval)
+bool ap_interval_is_top(ap_interval_t* interval)
 {
   return ap_scalar_infty(interval->inf)<0 && ap_scalar_infty(interval->sup)>0;
 }
-bool ap_interval_is_bottom(const ap_interval_t* interval)
+bool ap_interval_is_bottom(ap_interval_t* interval)
 {
   return ap_scalar_cmp(interval->inf,interval->sup)>0;
 }
-bool ap_interval_is_leq(const ap_interval_t* itv1, const ap_interval_t* itv2)
+bool ap_interval_is_leq(ap_interval_t* itv1, ap_interval_t* itv2)
 {
   int sinf = ap_scalar_cmp(itv1->inf,itv2->inf);
   int ssup = ap_scalar_cmp(itv1->sup,itv2->sup);
   return (sinf>=0 && ssup<=0) || ap_interval_is_bottom(itv1);
 }
-int ap_interval_cmp(const ap_interval_t* itv1, const ap_interval_t* itv2)
+int ap_interval_cmp(ap_interval_t* itv1, ap_interval_t* itv2)
 {
   int sinf = ap_scalar_cmp(itv1->inf,itv2->inf);
   int ssup = ap_scalar_cmp(itv1->sup,itv2->sup);
@@ -141,7 +141,7 @@ int ap_interval_cmp(const ap_interval_t* itv1, const ap_interval_t* itv2)
     else return sinf > 0 ? 2 : -2;
   }
 }
-bool ap_interval_equal(const ap_interval_t* itv1, const ap_interval_t* itv2)
+bool ap_interval_equal(ap_interval_t* itv1, ap_interval_t* itv2)
 {  
   bool inf = ap_scalar_equal(itv1->inf,itv2->inf);
   bool sup = ap_scalar_equal(itv1->sup,itv2->sup);
@@ -153,7 +153,7 @@ bool ap_interval_equal(const ap_interval_t* itv1, const ap_interval_t* itv2)
 /* Other operations */
 /* ====================================================================== */
 
-void ap_interval_neg(ap_interval_t* a, const ap_interval_t* b)
+void ap_interval_neg(ap_interval_t* a, ap_interval_t* b)
 {
   if (a==b){
     ap_scalar_swap(a->inf,a->sup);
@@ -165,7 +165,7 @@ void ap_interval_neg(ap_interval_t* a, const ap_interval_t* b)
   }
 }
 
-long ap_interval_hash(const ap_interval_t* itv)
+long ap_interval_hash(ap_interval_t* itv)
 {
   if (ap_interval_is_bottom(itv)) return 0;
   else return ap_scalar_hash(itv->inf) + 2*ap_scalar_hash(itv->sup);

@@ -42,9 +42,9 @@ typedef numflt_native numflt_t[1];
 /* ====================================================================== */
 /* Assignement */
 /* ====================================================================== */
-static inline void numflt_set(numflt_t a, const numflt_t b)
+static inline void numflt_set(numflt_t a, numflt_t b)
 { *a = *b; }
-static inline void numflt_set_array(numflt_t* a, const numflt_t* b, size_t size)
+static inline void numflt_set_array(numflt_t* a, numflt_t* b, size_t size)
 { memcpy(a,b,size*sizeof(numflt_t)); }
 static inline void numflt_set_int(numflt_t a, long int i)
 { *a = (numflt_native)i; }
@@ -60,7 +60,7 @@ static inline void numflt_init_array(numflt_t* a, size_t size)
   size_t i; 
   for (i=0; i<size; i++) *(a[i]) = NUMFLT_ZERO; 
 }
-static inline void numflt_init_set(numflt_t a, const numflt_t b)
+static inline void numflt_init_set(numflt_t a, numflt_t b)
 { numflt_set(a,b); }
 static inline void numflt_init_set_int(numflt_t a, long int i)
 { numflt_set_int(a,i); }
@@ -74,66 +74,66 @@ static inline void numflt_clear_array(numflt_t* a, size_t size)
 /* Arithmetic Operations */
 /* ====================================================================== */
 
-static inline void numflt_neg(numflt_t a, const numflt_t b)
+static inline void numflt_neg(numflt_t a, numflt_t b)
 { *a = -(*b); }
-static inline void numflt_add(numflt_t a, const numflt_t b, const numflt_t c)
+static inline void numflt_add(numflt_t a, numflt_t b, numflt_t c)
 { *a = *b + *c; }
-static inline void numflt_add_uint(numflt_t a, const numflt_t b, unsigned long int c)
+static inline void numflt_add_uint(numflt_t a, numflt_t b, unsigned long int c)
 { *a = *b + (numflt_native)c; }
-static inline void numflt_sub(numflt_t a, const numflt_t b, const numflt_t c)
+static inline void numflt_sub(numflt_t a, numflt_t b, numflt_t c)
 { *a = *b - *c; }
-static inline void numflt_sub_uint(numflt_t a, const numflt_t b, unsigned long int c)
+static inline void numflt_sub_uint(numflt_t a, numflt_t b, unsigned long int c)
 { *a = *b - (numflt_native)c; }
-static inline void numflt_mul(numflt_t a, const numflt_t b, const numflt_t c)
+static inline void numflt_mul(numflt_t a, numflt_t b, numflt_t c)
 { *a = *b * *c; }
-static inline void numflt_div(numflt_t a, const numflt_t b, const numflt_t c)
+static inline void numflt_div(numflt_t a, numflt_t b, numflt_t c)
 { *a = *b / *c; }
 
 #if defined(NUMFLT_DOUBLE)
-static inline void numflt_abs(numflt_t a, const numflt_t b)
+static inline void numflt_abs(numflt_t a, numflt_t b)
 { *a = fabs(*b); }
-static inline void numflt_mul_2(numflt_t a, const numflt_t b)
+static inline void numflt_mul_2(numflt_t a, numflt_t b)
 { *a = ldexp(*b,1); }
-static inline void numflt_div_2(numflt_t a, const numflt_t b)
+static inline void numflt_div_2(numflt_t a, numflt_t b)
 { *a = ldexp(*b,-1); }
-static inline void numflt_min(numflt_t a, const numflt_t b, const numflt_t c)
+static inline void numflt_min(numflt_t a, numflt_t b, numflt_t c)
 { *a = fmin(*b,*c); }
-static inline void numflt_max(numflt_t a, const numflt_t b, const numflt_t c)
+static inline void numflt_max(numflt_t a, numflt_t b, numflt_t c)
 { *a = fmax(*b,*c); }
-static inline void numflt_floor(numflt_t a, const numflt_t b)
+static inline void numflt_floor(numflt_t a, numflt_t b)
 { *a = floor(*b); }
-static inline void numflt_ceil(numflt_t a, const numflt_t b)
+static inline void numflt_ceil(numflt_t a, numflt_t b)
 { *a = ceil(*b); }
 #else
-static inline void numflt_abs(numflt_t a, const numflt_t b)
+static inline void numflt_abs(numflt_t a, numflt_t b)
 { *a = fabsl(*b); }
-static inline void numflt_mul_2(numflt_t a, const numflt_t b)
+static inline void numflt_mul_2(numflt_t a, numflt_t b)
 { *a = ldexpl(*b,1); }
-static inline void numflt_div_2(numflt_t a, const numflt_t b)
+static inline void numflt_div_2(numflt_t a, numflt_t b)
 { *a = ldexpl(*b,-1); }
-static inline void numflt_min(numflt_t a, const numflt_t b, const numflt_t c)
+static inline void numflt_min(numflt_t a, numflt_t b, numflt_t c)
 { *a = fminl(*b,*c); }
-static inline void numflt_max(numflt_t a, const numflt_t b, const numflt_t c)
+static inline void numflt_max(numflt_t a, numflt_t b, numflt_t c)
 { *a = fmaxl(*b,*c); }
-static inline void numflt_floor(numflt_t a, const numflt_t b)
+static inline void numflt_floor(numflt_t a, numflt_t b)
 { *a = floorl(*b); }
-static inline void numflt_ceil(numflt_t a, const numflt_t b)
+static inline void numflt_ceil(numflt_t a, numflt_t b)
 { *a = ceill(*b); }
 #endif
 /* ====================================================================== */
 /* Arithmetic Tests */
 /* ====================================================================== */
 
-static inline int numflt_sgn(const numflt_t a)
+static inline int numflt_sgn(numflt_t a)
 { return (*a==NUMFLT_ZERO ? 0 : (*a>NUMFLT_ZERO ? 1 : -1)); }
-static inline int numflt_cmp(const numflt_t a, const numflt_t b)
+static inline int numflt_cmp(numflt_t a, numflt_t b)
 { return (*a==*b ? 0 : (*a>*b ? 1 : -1)); }
-static inline int numflt_cmp_int(const numflt_t a, long int b)
+static inline int numflt_cmp_int(numflt_t a, long int b)
 { 
   numflt_native bb = (numflt_native)b;
   return (*a==bb ? 0 : (*a>bb ? 1 : -1)); 
 }
-static inline bool numflt_equal(const numflt_t a, const numflt_t b)
+static inline bool numflt_equal(numflt_t a, numflt_t b)
 { return *a==*b; }
 
 /* ====================================================================== */
@@ -141,18 +141,18 @@ static inline bool numflt_equal(const numflt_t a, const numflt_t b)
 /* ====================================================================== */
 
 #if defined(NUMFLT_DOUBLE)
-static inline void numflt_print(const numflt_t a)
+static inline void numflt_print(numflt_t a)
 { printf("%.20g",*a+NUMFLT_ZERO); }
-static inline void numflt_fprint(FILE* stream, const numflt_t a)
+static inline void numflt_fprint(FILE* stream, numflt_t a)
 { fprintf(stream,"%.20g",*a+NUMFLT_ZERO); }
-static inline int numflt_snprint(char* s, size_t size, const numflt_t a)
+static inline int numflt_snprint(char* s, size_t size, numflt_t a)
 { return snprintf(s,size,"%.20g",*a+NUMFLT_ZERO); }
 #else
-static inline void numflt_print(const numflt_t a)
+static inline void numflt_print(numflt_t a)
 { printf("%.20Lg",*a+NUMFLT_ZERO); }
-static inline void numflt_fprint(FILE* stream, const numflt_t a)
+static inline void numflt_fprint(FILE* stream, numflt_t a)
 { fprintf(stream,"%.20Lg",*a+NUMFLT_ZERO); }
-static inline int numflt_snprint(char* s, size_t size, const numflt_t a)
+static inline int numflt_snprint(char* s, size_t size, numflt_t a)
 { return snprintf(s,size,"%.20Lg",*a+NUMFLT_ZERO); }
 #endif
 
@@ -166,7 +166,7 @@ static inline void numflt_set_int2(numflt_t a, long int i, unsigned long int j)
 
 /* mpz -> numflt */
 /* mpfr is supposed to have exactly the IEEE754 double precision of NUMFLT_MANT_DIG bits */
-static inline bool numflt_set_mpz_tmp(numflt_t a, const mpz_t b, mpfr_t mpfr)
+static inline bool numflt_set_mpz_tmp(numflt_t a, mpz_t b, mpfr_t mpfr)
 { 
   int res = mpfr_set_z(mpfr,b,+1);
 #if defined(NUMFLT_DOUBLE)
@@ -176,7 +176,7 @@ static inline bool numflt_set_mpz_tmp(numflt_t a, const mpz_t b, mpfr_t mpfr)
 #endif
   return (res==0);
 }
-static inline bool numflt_set_mpz(numflt_t a, const mpz_t b)
+static inline bool numflt_set_mpz(numflt_t a, mpz_t b)
 {
   mpfr_t mpfr;
   
@@ -187,7 +187,7 @@ static inline bool numflt_set_mpz(numflt_t a, const mpz_t b)
 }
 /* mpq -> numflt */
 /* mpfr is supposed to have exactly the IEEE754 double precision of NUMFLT_MANT_DIG bits */
-static inline bool numflt_set_mpq_tmp(numflt_t a, const mpq_t b, mpfr_t mpfr)
+static inline bool numflt_set_mpq_tmp(numflt_t a, mpq_t b, mpfr_t mpfr)
 {
   int res = mpfr_set_q(mpfr,b,+1);
 #if defined(NUMFLT_DOUBLE)
@@ -197,7 +197,7 @@ static inline bool numflt_set_mpq_tmp(numflt_t a, const mpq_t b, mpfr_t mpfr)
 #endif
   return (res==0);
 }  
-static inline bool numflt_set_mpq(numflt_t a, const mpq_t b)
+static inline bool numflt_set_mpq(numflt_t a, mpq_t b)
 {
   mpfr_t mpfr;
   
@@ -211,7 +211,7 @@ static inline bool numflt_set_double(numflt_t a, double k)
 { *a = (numflt_native)k; return true; }
 
 /* numflt -> int */
-static inline bool int_set_numflt(long int* a, const numflt_t b)
+static inline bool int_set_numflt(long int* a, numflt_t b)
 {
   numflt_native c;
   numflt_ceil(&c,b);
@@ -219,14 +219,14 @@ static inline bool int_set_numflt(long int* a, const numflt_t b)
   return (*b==c);
 }
 /* numflt -> mpz */
-static inline bool mpz_set_numflt(mpz_t a, const numflt_t b)
+static inline bool mpz_set_numflt(mpz_t a, numflt_t b)
 { 
   double c = ceil(*b);
   mpz_set_d(a,c);
   return (*b==(numflt_native)c);
 }
 /* numflt -> mpq */
-static inline bool mpq_set_numflt(mpq_t a, const numflt_t b)
+static inline bool mpq_set_numflt(mpq_t a, numflt_t b)
 #if defined(NUMFLT_DOUBLE)
 { mpq_set_d(a,*b); return true; }
 #else
@@ -237,7 +237,7 @@ static inline bool mpq_set_numflt(mpq_t a, const numflt_t b)
 }
 #endif
 /* numflt -> double */
-static inline bool double_set_numflt(double* a, const numflt_t b)
+static inline bool double_set_numflt(double* a, numflt_t b)
 #if defined(NUMFLT_DOUBLE)
 { *a = *b; return true; }
 #else
@@ -245,25 +245,25 @@ static inline bool double_set_numflt(double* a, const numflt_t b)
 #endif
 
 
-static inline bool mpz_fits_numflt(const mpz_t a)
+static inline bool mpz_fits_numflt(mpz_t a)
 {
   double k = mpz_get_d(a);
   return (fabs(k)+1.0) != (double)1.0/(double)0.0;
 }
-static inline bool mpq_fits_numflt(const mpq_t a)
+static inline bool mpq_fits_numflt(mpq_t a)
 {
   double k = mpq_get_d(a);
   return (fabs(k)+1.0) != (double)1.0/(double)0.0;
 }
 static inline bool double_fits_numflt(double a)
 { return true; }
-static inline bool numflt_fits_int(const numflt_t a)
+static inline bool numflt_fits_int(numflt_t a)
 { 
   numflt_native d;
   numflt_ceil(&d,a);
   return d >= (numflt_native)(-LONG_MAX) && d<= (numflt_native)LONG_MAX;
 }
-static inline bool numflt_fits_double(const numflt_t a)
+static inline bool numflt_fits_double(numflt_t a)
 #if defined(NUMFLT_DOUBLE)
 { return true; }
 #else
@@ -277,7 +277,7 @@ static inline bool numflt_fits_double(const numflt_t a)
 /* Only for floating point */
 /* ====================================================================== */
 
-static inline bool numflt_infty(const numflt_t a)
+static inline bool numflt_infty(numflt_t a)
 #if defined(NUMFLT_DOUBLE)
 { return fabs(*a) == NUMFLT_MAX; }
 #else
@@ -290,7 +290,7 @@ static inline void numflt_set_infty(numflt_t a)
 /* Serialization */
 /* ====================================================================== */
 
-static inline size_t numflt_serialize(void* dst, const numflt_t src)
+static inline size_t numflt_serialize(void* dst, numflt_t src)
 {
   num_store_words8(dst,src,sizeof(numflt_t));
   return sizeof(numflt_t);
@@ -302,7 +302,7 @@ static inline size_t numflt_deserialize(numflt_t dst, const void* src)
   return sizeof(numflt_t);
 }
 
-static inline size_t numflt_serialized_size(const numflt_t a)
+static inline size_t numflt_serialized_size(numflt_t a)
 { return sizeof(numflt_t); }
 
 #endif

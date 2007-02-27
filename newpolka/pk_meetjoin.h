@@ -47,18 +47,18 @@ extern "C" {
 bool _poly_meet_matrix(bool meet, bool lazy,
 		       ap_manager_t* man,
 		       poly_t* po, 
-		       const poly_t* pa, matrix_t* mat);
+		       poly_t* pa, matrix_t* mat);
 
 /* Meet/Join of two polyhedra */
 void _poly_meet(bool meet,
 		bool lazy,
 		ap_manager_t* man,
-		poly_t* po, const poly_t* pa, const poly_t* pb);
+		poly_t* po, poly_t* pa, poly_t* pb);
 /* Meet/Join of an array of polyhedra */
 poly_t* _poly_meet_array(bool meet,
 			 bool lazy,
 			 ap_manager_t* man,
-			 const poly_t** po, size_t size);
+			 poly_t** po, size_t size);
 
 /* ********************************************************************** */
 /* II. Meet */
@@ -67,12 +67,12 @@ poly_t* _poly_meet_array(bool meet,
 void _poly_meet_lincons_array(bool lazy,
 			      ap_manager_t* man,
 			      poly_t* po, 
-			      const poly_t* pa, const ap_lincons0_array_t* array);
-poly_t* poly_meet(ap_manager_t* man, bool destructive, poly_t* a1, const poly_t* a2);
-poly_t* poly_meet_array(ap_manager_t* man, const poly_t** tab, size_t size);
+			      poly_t* pa, ap_lincons0_array_t* array);
+poly_t* poly_meet(ap_manager_t* man, bool destructive, poly_t* a1, poly_t* a2);
+poly_t* poly_meet_array(ap_manager_t* man, poly_t** tab, size_t size);
 poly_t* poly_meet_lincons_array(ap_manager_t* man,
 				bool destructive, poly_t* a,
-				const ap_lincons0_array_t* array);
+				ap_lincons0_array_t* array);
 
 /* ********************************************************************** */
 /* II. Join */
@@ -80,12 +80,12 @@ poly_t* poly_meet_lincons_array(ap_manager_t* man,
 
 void _poly_add_ray_array(bool lazy, 
 			 ap_manager_t* man,
-			 poly_t* po, const poly_t* pa, const ap_generator0_array_t* array);
+			 poly_t* po, poly_t* pa, ap_generator0_array_t* array);
 
-poly_t* poly_join(ap_manager_t* man, bool destructive, poly_t* a1, const poly_t* a2);
-poly_t* poly_join_array(ap_manager_t* man, const poly_t** po, size_t size);
+poly_t* poly_join(ap_manager_t* man, bool destructive, poly_t* a1, poly_t* a2);
+poly_t* poly_join_array(ap_manager_t* man, poly_t** po, size_t size);
 poly_t* poly_add_ray_array(ap_manager_t* man, 
-			   bool destructive, poly_t* pa, const ap_generator0_array_t* array);
+			   bool destructive, poly_t* pa, ap_generator0_array_t* array);
 
 #ifdef __cplusplus
 }

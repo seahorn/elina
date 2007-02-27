@@ -34,8 +34,8 @@ typedef struct bitindex_t {
 #define bitstring_msb (1U<<(bitstring_size-1))
 
 /* Operations on \verb-bitindex_t- */
-void bitindex_print(const bitindex_t* bi);
-void bitindex_fprint(FILE* stream, const bitindex_t* bi);
+void bitindex_print(bitindex_t* bi);
+void bitindex_fprint(FILE* stream, bitindex_t* bi);
 bitindex_t bitindex_init(size_t col);
 void bitindex_inc(bitindex_t*);
 void bitindex_dec(bitindex_t*);
@@ -46,13 +46,13 @@ bitstring_t* bitstring_alloc(size_t n);
 bitstring_t* bitstring_realloc(bitstring_t* b, size_t n);
 void bitstring_free(bitstring_t* b);
 void bitstring_clear(bitstring_t* b, size_t size);
-void bitstring_copy(bitstring_t* b2, const bitstring_t* b1, size_t size);
-int bitstring_cmp(const bitstring_t* r1, const bitstring_t* r2, size_t size);
+void bitstring_copy(bitstring_t* b2, bitstring_t* b1, size_t size);
+int bitstring_cmp(bitstring_t* r1, bitstring_t* r2, size_t size);
 
-void bitstring_print(const bitstring_t* b, size_t size);
-void bitstring_fprint(FILE* stream, const bitstring_t* b, size_t size);
+void bitstring_print(bitstring_t* b, size_t size);
+void bitstring_fprint(FILE* stream, bitstring_t* b, size_t size);
 
-int bitstring_get(const bitstring_t* b, bitindex_t ix);
+int bitstring_get(bitstring_t* b, bitindex_t ix);
 void bitstring_set(bitstring_t* b, bitindex_t ix);
 void bitstring_clr(bitstring_t* b, bitindex_t ix);
 

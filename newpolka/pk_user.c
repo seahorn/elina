@@ -14,7 +14,7 @@
 /* */
 /* ********************************************************************** */
 
-void ap_coeff_set_scalar_numint(ap_coeff_t* coeff, const numint_t num){
+void ap_coeff_set_scalar_numint(ap_coeff_t* coeff, numint_t num){
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPQ);
   mpq_set_numint(coeff->val.scalar->val.mpq,num);
 }
@@ -24,14 +24,14 @@ void ap_coeff_set_scalar_numint(ap_coeff_t* coeff, const numint_t num){
 
 void vector_set_linexpr(pk_internal_t* pk,
 			numint_t* vec,
-			const ap_linexpr0_t* expr,
+			ap_linexpr0_t* expr,
 			size_t dim,
 			int mode)
 {
   size_t i;
   ap_dim_t j;
   mpq_t* mpq;
-  const ap_coeff_t* coeff;
+  ap_coeff_t* coeff;
 
   mpq = pk->vector_mpqp;
   /* Fill the array mpq */
@@ -82,7 +82,7 @@ void vector_set_linexpr(pk_internal_t* pk,
 
 void vector_set_lincons(pk_internal_t* pk,
 			numint_t* vec,
-			const ap_lincons0_t* cons,
+			ap_lincons0_t* cons,
 			size_t intdim, size_t realdim,
 			bool integer)
 {
@@ -114,7 +114,7 @@ void vector_set_lincons(pk_internal_t* pk,
 
 void vector_set_generator(pk_internal_t* pk,
 			  numint_t* vec,
-			  const ap_generator0_t* gen,
+			  ap_generator0_t* gen,
 			  size_t intdim, size_t realdim)
 {
   vector_set_linexpr(pk, vec, gen->linexpr0, intdim+realdim, -1);
@@ -201,11 +201,11 @@ ap_generator0_t generator_of_vector(pk_internal_t* pk,
 /* ====================================================================== */
 
 matrix_t* matrix_of_lincons_array(pk_internal_t* pk,
-				  const ap_lincons0_array_t* array,
+				  ap_lincons0_array_t* array,
 				  size_t intdim, size_t realdim,
 				  bool integer)
 {
-  int i,j;
+  size_t i,j;
   matrix_t* mat = matrix_alloc(array->size,pk->dec+intdim+realdim,false);
   j = 0;
   for (i=0; i<array->size; i++){
@@ -225,10 +225,10 @@ matrix_t* matrix_of_lincons_array(pk_internal_t* pk,
 }
 
 matrix_t* matrix_of_generator_array(pk_internal_t* pk,
-				    const ap_generator0_array_t* array,
+				    ap_generator0_array_t* array,
 				    size_t intdim, size_t realdim)
 {
-  int i;
+  size_t i;
   matrix_t* mat = matrix_alloc(array->size,pk->dec+intdim+realdim,false);
   for (i=0; i<array->size; i++){
     vector_set_generator(pk,mat->p[i],&array->p[i],intdim,realdim);

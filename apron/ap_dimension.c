@@ -80,7 +80,7 @@ void ap_dimperm_set_id(ap_dimperm_t* perm)
 }
 
 /* Compose 2 permutations */
-void ap_dimperm_compose(ap_dimperm_t* perm, const ap_dimperm_t* perm1, const ap_dimperm_t* perm2)
+void ap_dimperm_compose(ap_dimperm_t* perm, ap_dimperm_t* perm1, ap_dimperm_t* perm2)
 {
   size_t i;
   
@@ -90,7 +90,7 @@ void ap_dimperm_compose(ap_dimperm_t* perm, const ap_dimperm_t* perm1, const ap_
   }
 }
 /* Invert a permutation */
-void ap_dimperm_invert(ap_dimperm_t* nperm, const ap_dimperm_t* perm)
+void ap_dimperm_invert(ap_dimperm_t* nperm, ap_dimperm_t* perm)
 {
   size_t i;
 

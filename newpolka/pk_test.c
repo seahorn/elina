@@ -19,7 +19,7 @@
 /* Emptiness test */
 /* ====================================================================== */
 
-tbool_t poly_is_bottom(ap_manager_t* man, const poly_t* po)
+tbool_t poly_is_bottom(ap_manager_t* man, poly_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_IS_BOTTOM);
   if (!po->C && !po->F)
@@ -51,7 +51,7 @@ tbool_t poly_is_bottom(ap_manager_t* man, const poly_t* po)
 /* Universe test */
 /* ====================================================================== */
 
-tbool_t poly_is_top(ap_manager_t* man, const poly_t* po)
+tbool_t poly_is_top(ap_manager_t* man, poly_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_IS_TOP);
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -85,16 +85,16 @@ mode for the library.
 
 */
 
-bool do_generators_sat_constraint(pk_internal_t* pk, const matrix_t* F, const numint_t* tab, bool is_strict)
+bool do_generators_sat_constraint(pk_internal_t* pk, matrix_t* F, numint_t* tab, bool is_strict)
 {
-  int i;
+  size_t i;
 
   if (numint_sgn(tab[0])==0){
     /* 1. constraint is an equality */
     for (i=0; i<F->nbrows; i++){
       vector_product_strict(pk,pk->poly_prod,
-			    (const numint_t*)F->p[i],
-			    (const numint_t*)tab,F->nbcolumns);
+			    F->p[i],
+			    tab,F->nbcolumns);
       if (numint_sgn(pk->poly_prod)) return false;
     }
     return true;
@@ -105,8 +105,8 @@ bool do_generators_sat_constraint(pk_internal_t* pk, const matrix_t* F, const nu
 
     for (i=0; i<F->nbrows; i++){
       vector_product_strict(pk,pk->poly_prod,
-			    (const numint_t*)F->p[i],
-			    (const numint_t*)tab,F->nbcolumns);
+			    F->p[i],
+			    tab,F->nbcolumns);
       sign = numint_sgn(pk->poly_prod);
 
       if (sign<0){
@@ -133,7 +133,7 @@ bool do_generators_sat_constraint(pk_internal_t* pk, const matrix_t* F, const nu
    result is true if and only if all frames of pa verify the
    constraints of pb. We do not require minimality. */
 
-tbool_t poly_is_leq(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
+tbool_t poly_is_leq(ap_manager_t* man, poly_t* pa, poly_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_IS_LEQ);
 
@@ -173,11 +173,11 @@ tbool_t poly_is_leq(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
     }
   else {
     /* does the frames of pa satisfy constraints of pb ? */
-    int i;
+    size_t i;
     for (i=0; i<pb->C->nbrows; i++){
       bool sat = do_generators_sat_constraint(pk,
 					      pa->F,
-					      (const numint_t*)pb->C->p[i],
+					      pb->C->p[i],
 					      pk->strict && 
 					      numint_sgn(pb->C->p[i][polka_eps])<0);
       if (sat==false) return tbool_false;
@@ -190,7 +190,7 @@ tbool_t poly_is_leq(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
 /* Equality test */
 /* ====================================================================== */
 
-tbool_t poly_is_eq(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
+tbool_t poly_is_eq(ap_manager_t* man, poly_t* pa, poly_t* pb)
 {
   pk_init_from_manager(man,AP_FUNID_IS_EQ);
 
@@ -216,7 +216,7 @@ tbool_t poly_is_eq(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
 /* Satisfiability of a linear constraint */
 /* ====================================================================== */
 
-tbool_t poly_sat_lincons(ap_manager_t* man, const poly_t* po, const ap_lincons0_t* lincons)
+tbool_t poly_sat_lincons(ap_manager_t* man, poly_t* po, ap_lincons0_t* lincons)
 {
   bool sat;
   size_t dim;
@@ -250,7 +250,7 @@ tbool_t poly_sat_lincons(ap_manager_t* man, const poly_t* po, const ap_lincons0_
 		     lincons,
 		     po->intdim, po->realdim, false);
   sat = do_generators_sat_constraint(pk,po->F,
-				     (const numint_t*)pk->poly_numintp,
+				     pk->poly_numintp,
 				     lincons->constyp==AP_CONS_SUP);
   man->result.flag_exact = man->result.flag_best = 
     sat ? 
@@ -283,12 +283,13 @@ tests if:
 - dim >= bound if sgn<0
 */
 
-bool do_generators_sat_bound(pk_internal_t* pk, const matrix_t* F, 
-			     ap_dim_t dim, const ap_scalar_t* scalar,
+bool do_generators_sat_bound(pk_internal_t* pk, matrix_t* F, 
+			     ap_dim_t dim, ap_scalar_t* scalar,
 			     int sgn)
 {
   size_t index;
-  int i, sgn2;
+  size_t i;
+  int sgn2;
 
   index  = pk->dec + dim;
   ap_mpq_set_scalar(pk->vector_mpqp[0],scalar,0);
@@ -322,8 +323,8 @@ bool do_generators_sat_bound(pk_internal_t* pk, const matrix_t* F,
   return true;
 }
 
-tbool_t poly_sat_interval(ap_manager_t* man, const poly_t* po,
-			  ap_dim_t dim, const ap_interval_t* interval)
+tbool_t poly_sat_interval(ap_manager_t* man, poly_t* po,
+			  ap_dim_t dim, ap_interval_t* interval)
 {
   bool sat;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_SAT_INTERVAL);
@@ -369,7 +370,7 @@ tbool_t poly_sat_interval(ap_manager_t* man, const poly_t* po,
 /* Is a dimension unconstrained ? */
 /* ====================================================================== */
 
-tbool_t poly_is_dimension_unconstrained(ap_manager_t* man, const poly_t* po,
+tbool_t poly_is_dimension_unconstrained(ap_manager_t* man, poly_t* po,
 					ap_dim_t dim)
 {
   size_t i,j;

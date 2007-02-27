@@ -143,7 +143,7 @@ tbool_t oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2)
 
 
 tbool_t oct_sat_interval(ap_manager_t* man, oct_t* a,
-			 ap_dim_t dim, const ap_interval_t* i)
+			 ap_dim_t dim, ap_interval_t* i)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SAT_INTERVAL,0);
   arg_assert(dim<a->dim,return tbool_top;);
@@ -201,7 +201,7 @@ tbool_t oct_is_dimension_unconstrained(ap_manager_t* man, oct_t* a,
    tbool_top    may saturate some, may not saturate some
 */
 tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a, 
-			const ap_lincons0_t* lincons)
+			ap_lincons0_t* lincons)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SAT_LINCONS,
 					     2*(a->dim+1));
@@ -318,7 +318,7 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
 
 /* not very precise for non unit constraints (interval arithmetics) */
 ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
-				 oct_t* a, const ap_linexpr0_t* expr)
+				 oct_t* a, ap_linexpr0_t* expr)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_BOUND_LINEXPR,
 					     2*(a->dim+5));

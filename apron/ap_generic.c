@@ -31,7 +31,7 @@
 void*
 ap_generic_of_lincons_array(ap_manager_t* man,
 			    size_t intdim, size_t realdim,
-			    const ap_lincons0_array_t* array)
+			    ap_lincons0_array_t* array)
 {
   void* (*top)(ap_manager_t*,...) = man->funptr[AP_FUNID_TOP];
   void* (*meet_lincons_array)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_LINCONS_ARRAY];
@@ -53,7 +53,7 @@ ap_generic_of_lincons_array(ap_manager_t* man,
 */
 void*
 ap_generic_meet_array(ap_manager_t* man,
-		      const void** tab,
+		      void** tab,
 		      size_t size)
 {
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
@@ -85,7 +85,7 @@ ap_generic_meet_array(ap_manager_t* man,
 */
 void*
 ap_generic_join_array(ap_manager_t* man,
-		      const void** tab,
+		      void** tab,
 		      size_t size)
 {
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
@@ -141,10 +141,10 @@ ap_generic_asssub_linexpr_array(bool assign,
 				ap_manager_t* man,
 				bool destructive,
 				void* abs,
-				const ap_dim_t* tdim,
-				const ap_linexpr0_t*const* texpr,
+				ap_dim_t* tdim,
+				ap_linexpr0_t** texpr,
 				size_t size,
-				const void* dest)
+				void* dest)
 {
   tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
@@ -285,10 +285,10 @@ void*
 ap_generic_assign_linexpr_array(ap_manager_t* man,
 				bool destructive,
 				void* abs,
-				const ap_dim_t* tdim,
-				const ap_linexpr0_t*const* texpr,
+				ap_dim_t* tdim,
+				ap_linexpr0_t** texpr,
 				size_t size,
-				const void* dest)
+				void* dest)
 {
   return ap_generic_asssub_linexpr_array(true,
 					 man, destructive,
@@ -316,10 +316,10 @@ void*
 ap_generic_substitute_linexpr_array(ap_manager_t* man,
 				    bool destructive,
 				    void* abs,
-				    const ap_dim_t* tdim,
-				    const ap_linexpr0_t*const* texpr,
+				    ap_dim_t* tdim,
+				    ap_linexpr0_t** texpr,
 				    size_t size,
-				    const void* dest)
+				    void* dest)
 {
   return ap_generic_asssub_linexpr_array(false,
 					 man, destructive,

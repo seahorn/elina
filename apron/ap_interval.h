@@ -34,9 +34,9 @@ void ap_interval_reinit(ap_interval_t* interval, ap_scalar_discr_t ap_scalar_dis
   /* Change the type of scalars */
 void ap_interval_free(ap_interval_t* interval);
   /* Free an interval */
-void ap_interval_fprint(FILE* stream, const ap_interval_t* a);
+void ap_interval_fprint(FILE* stream, ap_interval_t* a);
 static inline 
-void ap_interval_print(const ap_interval_t* a)
+void ap_interval_print(ap_interval_t* a)
 { ap_interval_fprint(stdout,a); }
   /* Printing */
 static inline
@@ -48,10 +48,10 @@ void ap_interval_swap(ap_interval_t* a, ap_interval_t* b)
 /* Assignements */
 /* ====================================================================== */
 
-void ap_interval_set(ap_interval_t* interval, const ap_interval_t* interval2);
+void ap_interval_set(ap_interval_t* interval, ap_interval_t* interval2);
   /* Assignement */
-void ap_interval_set_scalar(ap_interval_t* interval, const ap_scalar_t* inf, const ap_scalar_t* sup);
-void ap_interval_set_mpq(ap_interval_t* interval, const mpq_t inf, const mpq_t sup);
+void ap_interval_set_scalar(ap_interval_t* interval, ap_scalar_t* inf, ap_scalar_t* sup);
+void ap_interval_set_mpq(ap_interval_t* interval, mpq_t inf, mpq_t sup);
 void ap_interval_set_int(ap_interval_t* interval, int inf, int sup);
 void ap_interval_set_frac(ap_interval_t* interval, int numinf, unsigned int deninf, int numsup, unsigned int densup);
 void ap_interval_set_double(ap_interval_t* interval, double inf, double sup);
@@ -73,20 +73,20 @@ void ap_interval_set_bottom(ap_interval_t* interval);
 /* Combined allocation and assignements */
 /* ====================================================================== */
 
-ap_interval_t* ap_interval_alloc_set(const ap_interval_t* interval);
+ap_interval_t* ap_interval_alloc_set(ap_interval_t* interval);
   /* Assignement */
 
 /* ====================================================================== */
 /* Tests */
 /* ====================================================================== */
 
-bool ap_interval_is_top(const ap_interval_t* interval);
+bool ap_interval_is_top(ap_interval_t* interval);
   /* Is it the universe interval ? */
-bool ap_interval_is_bottom(const ap_interval_t* interval);
+bool ap_interval_is_bottom(ap_interval_t* interval);
   /* Is it an empty interval ? */
-bool ap_interval_is_leq(const ap_interval_t* i1, const ap_interval_t* i2);
+bool ap_interval_is_leq(ap_interval_t* i1, ap_interval_t* i2);
   /* Inclusion test */
-int ap_interval_cmp(const ap_interval_t* i1, const ap_interval_t* i2);
+int ap_interval_cmp(ap_interval_t* i1, ap_interval_t* i2);
   /* Comparison:
      0: equality
      -1: i1 included in i2
@@ -94,16 +94,16 @@ int ap_interval_cmp(const ap_interval_t* i1, const ap_interval_t* i2);
      -2: i1.inf less than i2.inf
      +2: i1.inf greater than i2.inf
   */
-bool ap_interval_equal(const ap_interval_t* i1, const ap_interval_t* i2);
+bool ap_interval_equal(ap_interval_t* i1, ap_interval_t* i2);
   /* Equality */
 
 /* ====================================================================== */
 /* Other operations */
 /* ====================================================================== */
 
-void ap_interval_neg(ap_interval_t* a, const ap_interval_t* b);
+void ap_interval_neg(ap_interval_t* a, ap_interval_t* b);
   /* Negation */
-long ap_interval_hash(const ap_interval_t* itv);
+long ap_interval_hash(ap_interval_t* itv);
   /* Hash code */
 
 /* ====================================================================== */

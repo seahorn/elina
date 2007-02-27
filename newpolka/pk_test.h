@@ -24,49 +24,49 @@ extern "C" {
    algorithm >= 0: strict behaviour, compute canonical form if necessary
    algorithm < 0: lazy behaviour, always cheap
 */
-tbool_t poly_is_bottom(ap_manager_t* man, const poly_t* po);
+tbool_t poly_is_bottom(ap_manager_t* man, poly_t* po);
 
 /* Universe test 
    algorithm >= 0: strict behaviour, compute canonical form if necessary
    algorithm < 0: lazy behaviour, always cheap
 */
-tbool_t poly_is_top(ap_manager_t* man, const poly_t* po);
+tbool_t poly_is_top(ap_manager_t* man, poly_t* po);
 
 /* Inclusion test: 
    Is always strict
    algorithm > 0: (nearly always) compute canonical forms
    algorithm <= 0: compute dual representations only if necessary
 */
-tbool_t poly_is_leq(ap_manager_t* man, const poly_t* pa, const poly_t* pb);
+tbool_t poly_is_leq(ap_manager_t* man, poly_t* pa, poly_t* pb);
 
 /* Equality test:
    Is always strict
    Use algorithm field of is_leq.
 */
 
-tbool_t poly_is_eq(ap_manager_t* man, const poly_t* pa, const poly_t* pb);
+tbool_t poly_is_eq(ap_manager_t* man, poly_t* pa, poly_t* pb);
 
 /* Satisfiability of a linear constraint
    Is always strict
    algorithm > 0: (nearly always) compute canonical form
    algorithm <= 0: compute dual representation only if necessary
 */
-tbool_t poly_sat_lincons(ap_manager_t* man, const poly_t* po, const ap_lincons0_t* lincons);
+tbool_t poly_sat_lincons(ap_manager_t* man, poly_t* po, ap_lincons0_t* lincons);
 
 /* Inclusion of a dimension in an interval 
    Is always strict
    algorithm > 0: (nearly always) compute canonical form
    algorithm <= 0: compute dual representation only if necessary
 */
-tbool_t poly_sat_interval(ap_manager_t* man, const poly_t* po,
-			  ap_dim_t dim, const ap_interval_t* interval);
+tbool_t poly_sat_interval(ap_manager_t* man, poly_t* po,
+			  ap_dim_t dim, ap_interval_t* interval);
 
 /* Is a dimension unconstrained ?
    Is always strict
    algorithm > 0: compute canonical form
    algorithm <= 0: compute dual representation only if necessary
 */
-tbool_t poly_is_dimension_unconstrained(ap_manager_t* man, const poly_t* po,
+tbool_t poly_is_dimension_unconstrained(ap_manager_t* man, poly_t* po,
 					ap_dim_t dim);
 
 /*
@@ -79,8 +79,8 @@ This enables to test the satisfiability of a strict constraint in non-strict
 mode for the library.
 */
 bool do_generators_sat_constraint(pk_internal_t* pk, 
-				  const matrix_t* F, 
-				  const numint_t* tab, bool is_strict);
+				  matrix_t* F, 
+				  numint_t* tab, bool is_strict);
 
 #ifdef __cplusplus
 }

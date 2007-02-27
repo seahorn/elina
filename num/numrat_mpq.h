@@ -37,7 +37,7 @@ static inline void numrat_canonicalize(numrat_t a)
 #define numrat_numref(a) mpq_numref(a)
 #define numrat_denref(a) mpq_denref(a)
 
-static inline void numrat_set_numint2(numrat_t a, const numint_t b, const numint_t c)
+static inline void numrat_set_numint2(numrat_t a, numint_t b, numint_t c)
 {
   numint_set(numrat_numref(a),b);
   numint_set(numrat_denref(a),c);
@@ -47,9 +47,9 @@ static inline void numrat_set_numint2(numrat_t a, const numint_t b, const numint
 /* ====================================================================== */
 /* Assignement */
 /* ====================================================================== */
-static inline void numrat_set(numrat_t a, const numrat_t b)
+static inline void numrat_set(numrat_t a, numrat_t b)
 { mpq_set(a,b); }
-static inline void numrat_set_array(numrat_t* a, const numrat_t* b, size_t size)
+static inline void numrat_set_array(numrat_t* a, numrat_t* b, size_t size)
 {
   size_t i;
   for (i=0; i<size; i++) mpq_set(a[i],b[i]);
@@ -68,7 +68,7 @@ static inline void numrat_init_array(numrat_t* a, size_t size)
   size_t i;
   for (i=0; i<size; i++) mpq_init(a[i]);
 }
-static inline void numrat_init_set(numrat_t a, const numrat_t b)
+static inline void numrat_init_set(numrat_t a, numrat_t b)
 { mpq_init(a); mpq_set(a,b); }
 static inline void numrat_init_set_int(numrat_t a, long int i)
 { mpq_init(a); mpq_set_si(a,i,1); }
@@ -85,44 +85,44 @@ static inline void numrat_clear_array(numrat_t* a, size_t size)
 /* Arithmetic Operations */
 /* ====================================================================== */
 
-static inline void numrat_neg(numrat_t a, const numrat_t b)
+static inline void numrat_neg(numrat_t a, numrat_t b)
 { mpq_neg(a,b); }
-static inline void numrat_abs(numrat_t a, const numrat_t b)
+static inline void numrat_abs(numrat_t a, numrat_t b)
 { mpq_abs(a,b); }
-static inline void numrat_add(numrat_t a, const numrat_t b, const numrat_t c)
+static inline void numrat_add(numrat_t a, numrat_t b, numrat_t c)
 { mpq_add(a,b,c); }
-static inline void numrat_add_uint(numrat_t a, const numrat_t b, unsigned long int c)
+static inline void numrat_add_uint(numrat_t a, numrat_t b, unsigned long int c)
 {
   numint_add_uint(numrat_numref(a),numrat_numref(b),c);
   numint_set(numrat_denref(a),numrat_denref(b));
   numrat_canonicalize(a);
 }
-static inline void numrat_sub(numrat_t a, const numrat_t b, const numrat_t c)
+static inline void numrat_sub(numrat_t a, numrat_t b, numrat_t c)
 { mpq_sub(a,b,c); }
-static inline void numrat_sub_uint(numrat_t a, const numrat_t b, unsigned long int c)
+static inline void numrat_sub_uint(numrat_t a, numrat_t b, unsigned long int c)
 {
   numint_sub_uint(numrat_numref(a),numrat_numref(b),c);
   numint_set(numrat_denref(a),numrat_denref(b));
   numrat_canonicalize(a);
 }
-static inline void numrat_mul(numrat_t a, const numrat_t b, const numrat_t c)
+static inline void numrat_mul(numrat_t a, numrat_t b, numrat_t c)
 { mpq_mul(a,b,c); }
-static inline void numrat_mul_2(numrat_t a, const numrat_t b)
+static inline void numrat_mul_2(numrat_t a, numrat_t b)
 { mpq_mul_2exp(a,b,1); }
-static inline void numrat_div(numrat_t a, const numrat_t b, const numrat_t c)
+static inline void numrat_div(numrat_t a, numrat_t b, numrat_t c)
 { mpq_div(a,b,c); }
-static inline void numrat_div_2(numrat_t a, const numrat_t b)
+static inline void numrat_div_2(numrat_t a, numrat_t b)
 { mpq_div_2exp(a,b,1); }
-static inline void numrat_min(numrat_t a, const numrat_t b, const numrat_t c)
+static inline void numrat_min(numrat_t a, numrat_t b, numrat_t c)
 { mpq_set(a, mpq_cmp(b,c)<=0 ? b : c); }
-static inline void numrat_max(numrat_t a, const numrat_t b, const numrat_t c)
+static inline void numrat_max(numrat_t a, numrat_t b, numrat_t c)
 { mpq_set(a, mpq_cmp(b,c)>=0 ? b : c); }
-static inline void numrat_floor(numrat_t a, const numrat_t b)
+static inline void numrat_floor(numrat_t a, numrat_t b)
 {
   numint_fdiv_q(numrat_numref(a),numrat_numref(b),numrat_denref(b));
   numint_set_int(numrat_denref(a),1);
 }
-static inline void numrat_ceil(numrat_t a, const numrat_t b)
+static inline void numrat_ceil(numrat_t a, numrat_t b)
 {
   numint_cdiv_q(numrat_numref(a),numrat_numref(b),numrat_denref(b));
   numint_set_int(numrat_denref(a),1);
@@ -132,24 +132,24 @@ static inline void numrat_ceil(numrat_t a, const numrat_t b)
 /* Arithmetic Tests */
 /* ====================================================================== */
 
-static inline int numrat_sgn(const numrat_t a)
+static inline int numrat_sgn(numrat_t a)
 { return mpq_sgn(a); }
-static inline int numrat_cmp(const numrat_t a, const numrat_t b)
+static inline int numrat_cmp(numrat_t a, numrat_t b)
 { return mpq_cmp(a,b); }
-static inline int numrat_cmp_int(const numrat_t a, long int b)
+static inline int numrat_cmp_int(numrat_t a, long int b)
 { return mpq_cmp_si(a,b,1); }
-static inline bool numrat_equal(const numrat_t a, const numrat_t b)
+static inline bool numrat_equal(numrat_t a, numrat_t b)
 { return mpq_equal(a,b); }
 
 /* ====================================================================== */
 /* Printing */
 /* ====================================================================== */
 
-static inline void numrat_print(const numrat_t a)
+static inline void numrat_print(numrat_t a)
 { mpq_out_str(stdout,10,a); }
-static inline void numrat_fprint(FILE* stream, const numrat_t a)
+static inline void numrat_fprint(FILE* stream, numrat_t a)
 { mpq_out_str(stream,10,a); }
-static inline int numrat_snprint(char* s, size_t size, const numrat_t a)
+static inline int numrat_snprint(char* s, size_t size, numrat_t a)
 {
   int res;
   if (mpz_sizeinbase(mpq_numref(a),10) +
@@ -172,7 +172,7 @@ static inline void numrat_set_int2(numrat_t a, long int i, unsigned long int j)
 { mpq_set_si(a,i,j); numrat_canonicalize(a); }
 
 /* mpz -> numrat */
-static inline bool numrat_set_mpz(numrat_t a, const mpz_t b)
+static inline bool numrat_set_mpz(numrat_t a, mpz_t b)
 { 
   mpz_set(mpq_numref(a),b); 
   mpz_set_ui(mpq_denref(a),1);
@@ -180,7 +180,7 @@ static inline bool numrat_set_mpz(numrat_t a, const mpz_t b)
 }
 
 /* mpq -> numrat */
-static inline bool numrat_set_mpq(numrat_t a, const mpq_t b)
+static inline bool numrat_set_mpq(numrat_t a, mpq_t b)
 { mpq_set(a,b); return true; }
 
 /* double -> numrat */
@@ -191,14 +191,14 @@ static inline bool numrat_set_double_tmp(numrat_t a, double k, mpq_t mpq)
 { return numrat_set_double(a,k); }
 
 /* numrat -> int */
-static inline bool int_set_numrat_tmp(long int* a, const numrat_t b, 
+static inline bool int_set_numrat_tmp(long int* a, numrat_t b, 
 				      mpz_t q, mpz_t r)
 { 
   mpz_cdiv_qr(q,r,numrat_numref(b),numrat_denref(b));
   *a = mpz_get_si(q);
   return (mpz_sgn(r)==0);
 }
-static inline bool int_set_numrat(long int* a, const numrat_t b)
+static inline bool int_set_numrat(long int* a, numrat_t b)
 { 
   mpz_t q,r;
   mpz_init(q); mpz_init(r);
@@ -207,13 +207,13 @@ static inline bool int_set_numrat(long int* a, const numrat_t b)
   return res;
 }
 /* numrat -> mpz */
-static inline bool mpz_set_numrat_tmp(mpz_t a, const numrat_t b, mpz_t mpz)
+static inline bool mpz_set_numrat_tmp(mpz_t a, numrat_t b, mpz_t mpz)
 {
   mpz_cdiv_qr(a, mpz, mpq_numref(b),mpq_denref(b));
   bool res = (mpz_sgn(mpz)==0);
   return res;
 }
-static inline bool mpz_set_numrat(mpz_t a, const numrat_t b)
+static inline bool mpz_set_numrat(mpz_t a, numrat_t b)
 {
   numint_t r;
   numint_init(r);
@@ -221,11 +221,11 @@ static inline bool mpz_set_numrat(mpz_t a, const numrat_t b)
   return res;
 }
 /* numrat -> mpq */
-static inline bool mpq_set_numrat(mpq_t a, const numrat_t b)
+static inline bool mpq_set_numrat(mpq_t a, numrat_t b)
 { mpq_set(a,b); return true; }
 /* numrat -> double */
 /* mpfr should have exactly a precision of 53 bits */
-static inline bool double_set_numrat_tmp(double* a, const numrat_t b, 
+static inline bool double_set_numrat_tmp(double* a, numrat_t b, 
 					 mpq_t mpq, // not used
 					 mpfr_t mpfr)
 {
@@ -233,7 +233,7 @@ static inline bool double_set_numrat_tmp(double* a, const numrat_t b,
   *a = mpfr_get_d(mpfr,+1); /* should be exact */
   return (res==0);
 }
-static inline bool double_set_numrat(double* a, const numrat_t b)
+static inline bool double_set_numrat(double* a, numrat_t b)
 {
   mpfr_t mpfr;
   mpfr_init2(mpfr,53);
@@ -242,20 +242,20 @@ static inline bool double_set_numrat(double* a, const numrat_t b)
   return res;
 }
 
-static inline bool mpz_fits_numrat(const mpz_t a)
+static inline bool mpz_fits_numrat(mpz_t a)
 { return true; }
-static inline bool mpq_fits_numrat(const mpq_t a)
+static inline bool mpq_fits_numrat(mpq_t a)
 { return true; }
 static inline bool double_fits_numrat(double k)
 { return true; }
 static inline bool double_fits_numrat_tmp(double k, mpq_t mpq)
 { return true; }
-static inline bool numrat_fits_int(const numrat_t a)
+static inline bool numrat_fits_int(numrat_t a)
 {
   double d = ceil(mpq_get_d(a));
   return (d+1.0)<=LONG_MAX && (d-1.0)>=-LONG_MAX;
 }
-static inline bool numrat_fits_double(const numrat_t a)
+static inline bool numrat_fits_double(numrat_t a)
 { 
   double k = mpq_get_d(a);
   return (fabs(k)+1.0) != (double)1.0/(double)0.0;
@@ -268,7 +268,7 @@ static inline bool numrat_fits_double(const numrat_t a)
 static inline unsigned char numrat_serialize_id(void)
 { return 0x1f; }
 
-static inline size_t numrat_serialize(void* dst, const numrat_t src)
+static inline size_t numrat_serialize(void* dst, numrat_t src)
 { 
   size_t count1 = 0;
   size_t count2 = 0;
@@ -294,7 +294,7 @@ static inline size_t numrat_deserialize(numrat_t dst, const void* src)
 }
 
 /* not the exact size of serialized data, but a sound overapproximation */
-static inline size_t numrat_serialized_size(const numrat_t a) 
+static inline size_t numrat_serialized_size(numrat_t a) 
 { 
   return 
     (mpz_sizeinbase(mpq_numref(a),2)+mpz_sizeinbase(mpq_denref(a),2))/8+

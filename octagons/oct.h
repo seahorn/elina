@@ -49,13 +49,13 @@ ap_manager_t* oct_manager_alloc(void);
 ap_abstract0_t* 
 ap_abstract0_oct_of_generator_array(ap_manager_t* man,
 				    size_t intdim, size_t realdim,
-				    const ap_generator0_array_t* array);
+				    ap_generator0_array_t* array);
   
 ap_abstract0_t* 
 ap_abstract0_oct_widening_thresholds(ap_manager_t* man,
-				     const ap_abstract0_t* a1,
-				     const ap_abstract0_t* a2,
-				     const ap_scalar_t** arr,
+				     ap_abstract0_t* a1,
+				     ap_abstract0_t* a2,
+				     ap_scalar_t** arr,
 				     size_t nb );
   /* Widening with threshold.
      array is assumed to contain nb thresholds, sorted in increasing order. */
@@ -63,8 +63,8 @@ ap_abstract0_oct_widening_thresholds(ap_manager_t* man,
 
 ap_abstract0_t* 
 ap_abstract0_oct_narrowing( ap_manager_t* man,
-			    const ap_abstract0_t* a1,
-			    const ap_abstract0_t* a2 );
+			    ap_abstract0_t* a1,
+			    ap_abstract0_t* a2 );
   /* Standard narrowing: refine only +oo constraint */
 
 
@@ -83,16 +83,16 @@ static const int oct_pre_widening = 99;
 
 ap_abstract0_t* 
 ap_abstract0_oct_add_epsilon(ap_manager_t* man, 
-			     const ap_abstract0_t* a, 
-			     const ap_scalar_t* epsilon);
+			     ap_abstract0_t* a, 
+			     ap_scalar_t* epsilon);
   /* Enlarge each bound by epsilon times the maximum finite bound in 
      the octagon */
 
 ap_abstract0_t* 
 ap_abstract0_oct_add_epsilon_bin(ap_manager_t* man, 
-				 const ap_abstract0_t* a1, 
-				 const ap_abstract0_t* a2, 
-				 const ap_scalar_t* epsilon);
+				 ap_abstract0_t* a1, 
+				 ap_abstract0_t* a2, 
+				 ap_scalar_t* epsilon);
   /* Enlarge each bound from a1 by epsilon times the maximum finite bound in 
      a2. Only those bounds in a1 that are not stable in a2 are enlared. */
 

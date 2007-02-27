@@ -20,7 +20,6 @@ import "lincons0.idl";
 import "generator0.idl";
 import "manager.idl";
 
-
 typedef [abstract,
 	 c2ml(camlidl_apron_abstract0_ptr_c2ml),
 	 ml2c(camlidl_apron_abstract0_ptr_ml2c)]
@@ -105,7 +104,7 @@ quote(MLI,"\n(** Abstract an hypercube.\n\n[of_box man intdim realdim array] abs
 ap_abstract0_ptr ap_abstract0_of_box(ap_manager_ptr man,
 			       int intdim, int realdim,
 			       struct ap_interval_array_t array)
-     quote(call,"_res = ap_abstract0_of_box(man,intdim,realdim,(const ap_interval_t**)array.p);")
+     quote(call,"_res = ap_abstract0_of_box(man,intdim,realdim,(ap_interval_t**)array.p);")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Abstract a convex polyhedron.\n\n[of_lincons_array man intdim realdim array] abstracts the convex polyhedron defined by the array of constraints with an abstract value having the specified number of integer and real dimensions. *)")
@@ -269,16 +268,16 @@ quote(MLMLI,"(* ============================================================ *)"
 
 quote(MLI,"(** Assignement of a single dimension by a linear expression *)")
 ap_abstract0_ptr ap_abstract0_assign_linexpr(ap_manager_ptr man, ap_abstract0_ptr a,
-				       ap_dim_t v1, ap_linexpr0_ptr v2,
-				       ap_abstract0_ptr* dest)
-     quote(call,"_res = ap_abstract0_assign_linexpr(man,false,a,v1,v2,dest);")
+					     ap_dim_t v1, ap_linexpr0_ptr v2,
+					     ap_abstract0_ptr* dest)
+     quote(call,"_res = ap_abstract0_assign_linexpr(man,false,a,v1,v2, dest==NULL ? NULL : *dest);")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"(** Substitution of a single dimension by a linear expression *)")
 ap_abstract0_ptr ap_abstract0_substitute_linexpr(ap_manager_ptr man, ap_abstract0_ptr a,
-					   ap_dim_t v1, ap_linexpr0_ptr v2,
-					   ap_abstract0_ptr* dest)
-     quote(call,"_res = ap_abstract0_substitute_linexpr(man,false,a,v1,v2,dest);")
+						 ap_dim_t v1, ap_linexpr0_ptr v2,
+						 ap_abstract0_ptr* dest)
+     quote(call,"_res = ap_abstract0_substitute_linexpr(man,false,a,v1,v2,dest==NULL ? NULL : *dest);")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"(** Parallel assignement of an array of dimensions by an array of same size of linear expressions *)")
@@ -289,7 +288,7 @@ ap_abstract0_ptr ap_abstract0_assign_linexpr_array(ap_manager_ptr man, ap_abstra
 					     ap_abstract0_ptr* dest)
      quote(call,"\n\
 if (v3!=v4) caml_failwith(\"Abstract0.assign_linexpr_array: arrays of different size\");\n\
-_res = ap_abstract0_assign_linexpr_array(man,false,a,v1,v2,v3,dest);\n\
+_res = ap_abstract0_assign_linexpr_array(man,false,a,v1,v2,v3,dest==NULL ? NULL : *dest);\n\
 ")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
@@ -301,7 +300,7 @@ ap_abstract0_ptr ap_abstract0_substitute_linexpr_array(ap_manager_ptr man, ap_ab
 						 ap_abstract0_ptr* dest)
      quote(call,"\n\
 if (v3!=v4) caml_failwith(\"Abstract0.substitute_linexpr_array: arrays of different size\");\n\
-_res = ap_abstract0_substitute_linexpr_array(man,false,a,v1,v2,v3,dest);\n\
+_res = ap_abstract0_substitute_linexpr_array(man,false,a,v1,v2,v3,dest==NULL ? NULL : *dest);\n\
 ")
       quote(dealloc,"I0_CHECK_EXC(man)");
 
@@ -313,7 +312,7 @@ void ap_abstract0_assign_linexpr_with(ap_manager_ptr man, ap_abstract0_ptr a,
 				   ap_dim_t v1, ap_linexpr0_ptr v2,
 				   ap_abstract0_ptr* dest)
      quote(call,"{\n\
-  ap_abstract0_t* res = ap_abstract0_assign_linexpr(man,true,a,v1,v2,dest);\n\
+  ap_abstract0_t* res = ap_abstract0_assign_linexpr(man,true,a,v1,v2,dest==NULL ? NULL : *dest);\n\
   *((ap_abstract0_ptr *) Data_custom_val(_v_a)) = res;\n\
 }")
      quote(dealloc,"I0_CHECK_EXC(man)");
@@ -322,7 +321,7 @@ void ap_abstract0_substitute_linexpr_with(ap_manager_ptr man, ap_abstract0_ptr a
 				       ap_dim_t v1, ap_linexpr0_ptr v2,
 				       ap_abstract0_ptr* dest)
      quote(call,"{\n\
-  ap_abstract0_t* res = ap_abstract0_substitute_linexpr(man,true,a,v1,v2,dest);\n\
+  ap_abstract0_t* res = ap_abstract0_substitute_linexpr(man,true,a,v1,v2,dest==NULL ? NULL : *dest);\n\
   *((ap_abstract0_ptr *) Data_custom_val(_v_a)) = res;\n\
 }")
      quote(dealloc,"I0_CHECK_EXC(man)");
@@ -335,7 +334,7 @@ void ap_abstract0_assign_linexpr_array_with(ap_manager_ptr man, ap_abstract0_ptr
      quote(call,"\n\
 if (v3!=v4) caml_failwith(\"Abstract0.assign_linexpr_array_with: arrays of different size\");\n\
 {\n\
-  ap_abstract0_t* res = ap_abstract0_assign_linexpr_array(man,true,a,v1,v2,v3,dest);\n\
+  ap_abstract0_t* res = ap_abstract0_assign_linexpr_array(man,true,a,v1,v2,v3,dest==NULL ? NULL : *dest);\n\
   *((ap_abstract0_ptr *) Data_custom_val(_v_a)) = res;\n\
 }")
      quote(dealloc,"I0_CHECK_EXC(man)");
@@ -348,7 +347,7 @@ void ap_abstract0_substitute_linexpr_array_with(ap_manager_ptr man, ap_abstract0
      quote(call,"\n\
 if (v3!=v4) caml_failwith(\"Abstract0.substitute_linexpr_array_with: arrays of different size\");\n\
 {\n\
-  ap_abstract0_t* res = ap_abstract0_substitute_linexpr_array(man,true,a,v1,v2,v3,dest);\n\
+  ap_abstract0_t* res = ap_abstract0_substitute_linexpr_array(man,true,a,v1,v2,v3,dest==NULL ? NULL : *dest);\n\
   *((ap_abstract0_ptr *) Data_custom_val(_v_a)) = res;\n\
 }")
      quote(dealloc,"I0_CHECK_EXC(man)");

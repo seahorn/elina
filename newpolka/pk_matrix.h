@@ -43,9 +43,9 @@ typedef struct matrix_t {
 /* Normal functions */
 
 /* information about private part */
-static inline size_t matrix_get_maxrows(const matrix_t* mat)
+static inline size_t matrix_get_maxrows(matrix_t* mat)
 { return mat->_maxrows; }
-static inline bool matrix_is_sorted(const matrix_t* mat)
+static inline bool matrix_is_sorted(matrix_t* mat)
 { return mat->_sorted; }
 
 /* Basic Operations */
@@ -55,9 +55,9 @@ void      matrix_realloc_lazy(matrix_t* mat, size_t nbrows);
 void      matrix_minimize(matrix_t* mat);
 void      matrix_free(matrix_t* mat);
 void      matrix_clear(matrix_t* mat);
-void      matrix_print(const matrix_t* mat);
-void      matrix_fprint(FILE* stream, const matrix_t* mat);
-matrix_t* matrix_copy(const matrix_t* mat);
+void      matrix_print(matrix_t* mat);
+void      matrix_fprint(FILE* stream, matrix_t* mat);
+matrix_t* matrix_copy(matrix_t* mat);
 
 /* Operations on rows */
 void matrix_normalize_row(pk_internal_t* pk,
@@ -81,24 +81,24 @@ void matrix_sort_rows(pk_internal_t* pk,
 void matrix_sort_rows_with_sat(pk_internal_t* pk,
 			       matrix_t* mat, satmat_t* sat);
 
-matrix_t* matrix_append(const matrix_t* ma, const matrix_t* mb);
-void matrix_append_with(matrix_t* ma, const matrix_t* mb);
-void matrix_revappend_with(matrix_t* ma, const matrix_t* mb);
+matrix_t* matrix_append(matrix_t* ma, matrix_t* mb);
+void matrix_append_with(matrix_t* ma, matrix_t* mb);
+void matrix_revappend_with(matrix_t* ma, matrix_t* mb);
 
 matrix_t* matrix_merge_sort(pk_internal_t* pk,
-			    const matrix_t* ma, const matrix_t* mb);
+			    matrix_t* ma, matrix_t* mb);
 void matrix_merge_sort_with(pk_internal_t* pk,
-			    matrix_t* mat, const matrix_t* cmat);
+			    matrix_t* mat, matrix_t* cmat);
 
 
 /* Predicates that can be useful for users */
 static inline 
 bool matrix_is_row_dummy_constraint(pk_internal_t* pk,
-				    const matrix_t* mat,
+				    matrix_t* mat,
 				    size_t l)
 {
   return vector_is_dummy_constraint(pk,
-				    (const numint_t*)mat->p[l],mat->nbcolumns);
+				    mat->p[l],mat->nbcolumns);
 }
 
 

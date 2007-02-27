@@ -42,14 +42,14 @@ pk_internal_t* pkeq_manager_get_internal(ap_manager_t*);
 /* I.1 Memory */
 /* ============================================================ */
 
-poly_t* equality_copy(ap_manager_t* man, const poly_t* a);
+poly_t* equality_copy(ap_manager_t* man, poly_t* a);
   /* Return a copy of an abstract value, on
      which destructive update does not affect the initial value. */
 
 void equality_free(ap_manager_t* man, poly_t* a);
   /* Free all the memory used by the abstract value */
 
-size_t equality_size(ap_manager_t* man, const poly_t* a);
+size_t equality_size(ap_manager_t* man, poly_t* a);
   /* Return the abstract size of an abstract value (see ap_manager_t) */
 
 
@@ -57,12 +57,12 @@ size_t equality_size(ap_manager_t* man, const poly_t* a);
 /* I.2 Control of internal representation */
 /* ============================================================ */
 
-void equality_minimize(ap_manager_t* man, const poly_t* a);
+void equality_minimize(ap_manager_t* man, poly_t* a);
   /* Minimize the size of the representation of a.
      This may result in a later recomputation of internal information.
   */
 
-void equality_canonicalize(ap_manager_t* man, const poly_t* a);
+void equality_canonicalize(ap_manager_t* man, poly_t* a);
   /* Put the abstract value in canonical form. (not yet clear definition) */
 
 void equality_approximate(ap_manager_t* man, poly_t* a, int algorithm);
@@ -77,22 +77,22 @@ void equality_approximate(ap_manager_t* man, poly_t* a, int algorithm);
 /* I.3 Printing */
 /* ============================================================ */
 
-void equality_fprint(FILE* stream,
-		ap_manager_t* man,
-		const poly_t* a,
-		char** name_of_dim);
+  void equality_fprint(FILE* stream,
+		       ap_manager_t* man,
+		       poly_t* a,
+		       char** name_of_dim);
   /* Print the abstract value in a pretty way, using function
      name_of_dim to name dimensions */
 
 void equality_fprintdiff(FILE* stream,
-		     ap_manager_t* man,
-		     const poly_t* a1, const poly_t* a2,
-		     char** name_of_dim);
+			 ap_manager_t* man,
+			 poly_t* a1, poly_t* a2,
+			 char** name_of_dim);
   /* Print the difference between a1 (old value) and a2 (new value),
      using function name_of_dim to name dimensions.
      The meaning of difference is library dependent. */
 
-void equality_fdump(FILE* stream, ap_manager_t* man, const poly_t* a);
+void equality_fdump(FILE* stream, ap_manager_t* man, poly_t* a);
   /* Dump the internal representation of an abstract value,
      for debugging purposes */
 
@@ -101,7 +101,7 @@ void equality_fdump(FILE* stream, ap_manager_t* man, const poly_t* a);
 /* I.4 Serialization */
 /* ============================================================ */
 
-ap_membuf_t equality_serialize_raw(ap_manager_t* man, const poly_t* a);
+ap_membuf_t equality_serialize_raw(ap_manager_t* man, poly_t* a);
 /* Allocate a memory buffer (with malloc), output the abstract value in raw
    binary format to it and return a pointer on the memory buffer and the size
    of bytes written.  It is the user responsability to free the memory
@@ -130,14 +130,14 @@ poly_t* equality_top(ap_manager_t* man, size_t intdim, size_t realdim);
 
 
 poly_t* equality_of_box(ap_manager_t* man,
-		    size_t intdim, size_t realdim,
-		    const ap_interval_t** tinterval);
+			size_t intdim, size_t realdim,
+			ap_interval_t** tinterval);
   /* Abstract an hypercube defined by the array of intervals
      of size intdim+realdim */
 
 poly_t* equality_of_lincons_array(ap_manager_t* man,
-			      size_t intdim, size_t realdim,
-			      const ap_lincons0_array_t* array);
+				  size_t intdim, size_t realdim,
+				  ap_lincons0_array_t* array);
   /* Abstract a convex polyhedra defined by the array of linear constraints
      of size size */
 
@@ -146,7 +146,7 @@ poly_t* equality_of_lincons_array(ap_manager_t* man,
 /* II.2 Accessors */
 /* ============================================================ */
 
-ap_dimension_t equality_dimension(ap_manager_t* man, const poly_t* a);
+ap_dimension_t equality_dimension(ap_manager_t* man, poly_t* a);
 /* Return the total number of dimensions of the abstract values */
 
 /* ============================================================ */
@@ -158,24 +158,24 @@ ap_dimension_t equality_dimension(ap_manager_t* man, const poly_t* a);
    considered too expensive to be performed (according to the options).
    The flag exact and best should be cleared in such a case. */
 
-tbool_t equality_is_bottom(ap_manager_t* man, const poly_t* a);
-tbool_t equality_is_top(ap_manager_t* man, const poly_t* a);
+tbool_t equality_is_bottom(ap_manager_t* man, poly_t* a);
+tbool_t equality_is_top(ap_manager_t* man, poly_t* a);
 
-tbool_t equality_is_leq(ap_manager_t* man, const poly_t* a1, const poly_t* a2);
+tbool_t equality_is_leq(ap_manager_t* man, poly_t* a1, poly_t* a2);
   /* inclusion check */
 
-tbool_t equality_is_eq(ap_manager_t* man, const poly_t* a1, const poly_t* a2);
+tbool_t equality_is_eq(ap_manager_t* man, poly_t* a1, poly_t* a2);
   /* equality check */
 
-tbool_t equality_sat_lincons(ap_manager_t* man, const poly_t* a, const ap_lincons0_t* lincons);
+tbool_t equality_sat_lincons(ap_manager_t* man, poly_t* a, ap_lincons0_t* lincons);
   /* does the abstract value satisfy the linear constraint ? */
 
-tbool_t equality_sat_interval(ap_manager_t* man, const poly_t* a,
-			  ap_dim_t dim, const ap_interval_t* interval);
+tbool_t equality_sat_interval(ap_manager_t* man, poly_t* a,
+			      ap_dim_t dim, ap_interval_t* interval);
   /* is the dimension included in the interval in the abstract value ? */
 
-tbool_t equality_is_dimension_unconstrained(ap_manager_t* man, const poly_t* po,
-					ap_dim_t dim);
+tbool_t equality_is_dimension_unconstrained(ap_manager_t* man, poly_t* po,
+					    ap_dim_t dim);
   /* is the dimension unconstrained ? */
 
 /* ============================================================ */
@@ -183,25 +183,25 @@ tbool_t equality_is_dimension_unconstrained(ap_manager_t* man, const poly_t* po,
 /* ============================================================ */
 
 ap_interval_t* equality_bound_linexpr(ap_manager_t* man,
-			      const poly_t* a, const ap_linexpr0_t* expr);
+				      poly_t* a, ap_linexpr0_t* expr);
   /* Returns the interval taken by a linear expression
      over the abstract value */
 
 ap_interval_t* equality_bound_dimension(ap_manager_t* man,
-				const poly_t* a, ap_dim_t dim);
+					poly_t* a, ap_dim_t dim);
   /* Returns the interval taken by the dimension
      over the abstract value */
 
-ap_lincons0_array_t equality_to_lincons_array(ap_manager_t* man, const poly_t* a);
+ap_lincons0_array_t equality_to_lincons_array(ap_manager_t* man, poly_t* a);
   /* Converts an abstract value to a polyhedra
      (conjunction of linear constraints). */
 
-ap_interval_t** equality_to_box(ap_manager_t* man, const poly_t* a);
+ap_interval_t** equality_to_box(ap_manager_t* man, poly_t* a);
   /* Converts an abstract value to an interval/hypercube.
      The size of the resulting array is equality_dimension(man,a).  This
      function can be reimplemented by using equality_bound_linexpr */
 
-ap_generator0_array_t equality_to_generator_array(ap_manager_t* man, const poly_t* a);
+ap_generator0_array_t equality_to_generator_array(ap_manager_t* man, poly_t* a);
   /* Converts an abstract value to a system of generators. */
 
 
@@ -213,25 +213,25 @@ ap_generator0_array_t equality_to_generator_array(ap_manager_t* man, const poly_
 /* III.1 Meet and Join */
 /* ============================================================ */
 
-poly_t* equality_meet(ap_manager_t* man, bool destructive, poly_t* a1, const poly_t* a2);
-poly_t* equality_join(ap_manager_t* man, bool destructive, poly_t* a1, const poly_t* a2);
+poly_t* equality_meet(ap_manager_t* man, bool destructive, poly_t* a1, poly_t* a2);
+poly_t* equality_join(ap_manager_t* man, bool destructive, poly_t* a1, poly_t* a2);
   /* Meet and Join of 2 abstract values */
 
-poly_t* equality_meet_array(ap_manager_t* man, const poly_t** tab, size_t size);
-poly_t* equality_join_array(ap_manager_t* man, const poly_t** tab, size_t size);
+poly_t* equality_meet_array(ap_manager_t* man, poly_t** tab, size_t size);
+poly_t* equality_join_array(ap_manager_t* man, poly_t** tab, size_t size);
   /* Meet and Join of an array of abstract values.
      Raises an [[exc_invalid_argument]] exception if [[size==0]]
      (no way to define the dimensionality of the result in such a case */
 
 poly_t* equality_meet_lincons_array(ap_manager_t* man,
-				bool destructive, poly_t* a,
-				const ap_lincons0_array_t* array);
+				    bool destructive, poly_t* a,
+				    ap_lincons0_array_t* array);
   /* Meet of an abstract value with a set of constraints
      (generalize equality_of_lincons_array) */
 
 poly_t* equality_add_ray_array(ap_manager_t* man,
-			   bool destructive, poly_t* a,
-			   const ap_generator0_array_t* array);
+			       bool destructive, poly_t* a,
+			       ap_generator0_array_t* array);
   /* Generalized time elapse operator */
 
 /* ============================================================ */
@@ -239,28 +239,28 @@ poly_t* equality_add_ray_array(ap_manager_t* man,
 /* ============================================================ */
 
 poly_t* equality_assign_linexpr(ap_manager_t* man,
-			    bool destructive, poly_t* a,
-			    ap_dim_t dim, const ap_linexpr0_t* expr,
-			    const poly_t* dest);
-poly_t* equality_substitute_linexpr(ap_manager_t* man,
 				bool destructive, poly_t* a,
-				ap_dim_t dim, const ap_linexpr0_t* expr,
-				const poly_t* dest);
+				ap_dim_t dim, ap_linexpr0_t* expr,
+				poly_t* dest);
+poly_t* equality_substitute_linexpr(ap_manager_t* man,
+				    bool destructive, poly_t* a,
+				    ap_dim_t dim, ap_linexpr0_t* expr,
+				    poly_t* dest);
   /* Assignement and Substitution of a single dimension by resp.
      a linear expression and a interval linear expression */
 
 poly_t* equality_assign_linexpr_array(ap_manager_t* man,
-				  bool destructive, poly_t* a,
-				  const ap_dim_t* tdim,
-				  const ap_linexpr0_t** texpr,
-				  size_t size,
-				  const poly_t* dest);
-poly_t* equality_substitute_linexpr_array(ap_manager_t* man,
 				      bool destructive, poly_t* a,
-				      const ap_dim_t* tdim,
-				      const ap_linexpr0_t** texpr,
+				      ap_dim_t* tdim,
+				      ap_linexpr0_t** texpr,
 				      size_t size,
-				      const poly_t* dest);
+				      poly_t* dest);
+poly_t* equality_substitute_linexpr_array(ap_manager_t* man,
+					  bool destructive, poly_t* a,
+					  ap_dim_t* tdim,
+					  ap_linexpr0_t** texpr,
+					  size_t size,
+					  poly_t* dest);
   /* Parallel Assignement and Substitution of several dimensions by
      linear expressons. */
 
@@ -269,26 +269,26 @@ poly_t* equality_substitute_linexpr_array(ap_manager_t* man,
 /* ============================================================ */
 
 poly_t* equality_forget_array(ap_manager_t* man,
-			  bool destructive, poly_t* a,
-			  const ap_dim_t* tdim, size_t size,
-			  bool project);
+			      bool destructive, poly_t* a,
+			      ap_dim_t* tdim, size_t size,
+			      bool project);
 
 /* ============================================================ */
 /* III.4 Change and permutation of dimensions */
 /* ============================================================ */
 
 poly_t* equality_add_dimensions(ap_manager_t* man,
-			    bool destructive, poly_t* a,
-			    const ap_dimchange_t* dimchange,
-			    bool project);
+				bool destructive, poly_t* a,
+				ap_dimchange_t* dimchange,
+				bool project);
 
 poly_t* equality_remove_dimensions(ap_manager_t* man,
-			    bool destructive, poly_t* a,
-			    const ap_dimchange_t* dimchange);
+				   bool destructive, poly_t* a,
+				   ap_dimchange_t* dimchange);
 poly_t* equality_permute_dimensions(ap_manager_t* man,
 				     bool destructive,
 				     poly_t* a,
-				     const ap_dimperm_t* permutation);
+				     ap_dimperm_t* permutation);
 
 /* ============================================================ */
 /* III.5 Expansion and folding of dimensions */
@@ -310,9 +310,9 @@ poly_t* equality_expand(ap_manager_t* man,
   */
 
 poly_t* equality_fold(ap_manager_t* man,
-		  bool destructive, poly_t* a,
-		  const ap_dim_t* tdim,
-		  size_t size);
+		      bool destructive, poly_t* a,
+		      ap_dim_t* tdim,
+		      size_t size);
   /* Fold the dimensions in the array tdim of size n>=1 and put the result
      in the first dimension in the array. The other dimensions of the array
      are then removed (using equality_permute_remove_dimensions). */
@@ -323,7 +323,7 @@ poly_t* equality_fold(ap_manager_t* man,
 
 /* Widening */
 poly_t* equality_widening(ap_manager_t* man,
-		      const poly_t* a1, const poly_t* a2);
+			  poly_t* a1, poly_t* a2);
 
 /* ============================================================ */
 /* III.7 Closure operation */

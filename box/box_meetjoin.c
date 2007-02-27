@@ -16,7 +16,7 @@
 /* Meet and Join */
 /* ============================================================ */
 
-box_t* box_meet(ap_manager_t* man, bool destructive, box_t* a1, const box_t* a2)
+box_t* box_meet(ap_manager_t* man, bool destructive, box_t* a1, box_t* a2)
 {
   size_t i;
   bool exc;
@@ -45,7 +45,7 @@ box_t* box_meet(ap_manager_t* man, bool destructive, box_t* a1, const box_t* a2)
   return res;
 }
 
-box_t* box_join(ap_manager_t* man, bool destructive, box_t* a1, const box_t* a2)
+box_t* box_join(ap_manager_t* man, bool destructive, box_t* a1, box_t* a2)
 {
   size_t i;
   size_t nbdims;
@@ -77,7 +77,7 @@ box_t* box_join(ap_manager_t* man, bool destructive, box_t* a1, const box_t* a2)
   return res;
 }
 
-box_t* box_meet_array(ap_manager_t* man, const box_t*const* tab, size_t size)
+box_t* box_meet_array(ap_manager_t* man, box_t** tab, size_t size)
 {
   size_t i;
   box_t* res;
@@ -90,7 +90,7 @@ box_t* box_meet_array(ap_manager_t* man, const box_t*const* tab, size_t size)
   man->result.flag_exact = tbool_true;
   return res;
 }
-box_t* box_join_array(ap_manager_t* man, const box_t*const * tab, size_t size)
+box_t* box_join_array(ap_manager_t* man, box_t** tab, size_t size)
 {
   size_t i;
   box_t* res;
@@ -111,9 +111,10 @@ box_t* box_join_array(ap_manager_t* man, const box_t*const * tab, size_t size)
 /* Generalized time elapse operator */
 void box_add_ray(box_internal_t* intern,
 		 box_t* a,
-		 const ap_generator0_t* gen)
+		 ap_generator0_t* gen)
 {
-  int i,sgn;
+  size_t i;
+  int sgn;
   ap_coeff_t* coeff;
   ap_dim_t dim;
   ap_linexpr0_t* expr;
@@ -141,9 +142,9 @@ void box_add_ray(box_internal_t* intern,
 box_t* box_add_ray_array(ap_manager_t* man,
 			 bool destructive,
 			 box_t* a,
-			 const ap_generator0_array_t* array)
+			 ap_generator0_array_t* array)
 {
-  int i;
+  size_t i;
   box_t* res;
   box_internal_t* intern = (box_internal_t*)man->internal;
 
@@ -171,7 +172,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 {
   size_t nbcoeffs,nbdims;
   ap_dim_t dim;
-  int i;
+  size_t i;
   itv_ptr pitv;
   itv_linexpr_t* expr;
   bool *peq;
@@ -204,7 +205,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
     /* 2. evaluate e' */
     itv_eval_itv_linexpr(intern->itv,
 			 intern->meet_lincons_internal_itv3,
-			 (const itv_t*)a->p,
+			 (itv_t*)a->p,
 			 expr);
     change = false;
     if (!itv_is_top(intern->meet_lincons_internal_itv3)){
@@ -357,7 +358,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 /* Meet of an abstract value with an array of constraint */
 void box_meet_lincons_array_internal(box_internal_t* intern,
 				     box_t* a,
-				     const ap_lincons0_array_t* array,
+				     ap_lincons0_array_t* array,
 				     size_t kmax)
 {
   size_t i,k;
@@ -387,12 +388,13 @@ void box_meet_lincons_array_internal(box_internal_t* intern,
     }
     if (!change || a->p==NULL) break;
   }
+  itv_lincons_clear(&cons);
 }
 
 box_t* box_meet_lincons_array(ap_manager_t* man,
 			      bool destructive,
 			      box_t* a,
-			      const ap_lincons0_array_t* array)
+			      ap_lincons0_array_t* array)
 {
   box_t* res;
   size_t kmax;

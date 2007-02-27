@@ -75,7 +75,7 @@ void _matrix_fill_constraint_top(pk_internal_t* pk, matrix_t* C, size_t start)
 
 void poly_set_top(pk_internal_t* pk, poly_t* po)
 {
-  int i;
+  size_t i;
   size_t dim;
 
   if (po->C) matrix_free(po->C);
@@ -206,7 +206,7 @@ bool vector_set_dim_bound(pk_internal_t* pk,
 
 int _matrix_fill_constraint_box(pk_internal_t* pk,
 				matrix_t* C, size_t start,
-				const ap_interval_t** box,
+				ap_interval_t** box,
 				size_t intdim, size_t realdim,
 				bool integer)
 {
@@ -218,7 +218,7 @@ int _matrix_fill_constraint_box(pk_internal_t* pk,
   k = start;
   mpq_init(mpq);
   for (i=0; i<intdim+realdim; i++){
-    const ap_interval_t* itv;
+    ap_interval_t* itv;
 
     itv = box[i];
     if (ap_scalar_equal(itv->inf,itv->sup)){
@@ -264,7 +264,7 @@ int _matrix_fill_constraint_box(pk_internal_t* pk,
 
 poly_t* poly_of_box(ap_manager_t* man,
 		    size_t intdim, size_t realdim,
-		    const ap_interval_t** array)
+		    ap_interval_t** array)
 {
   int k;
   size_t dim;
@@ -313,7 +313,7 @@ poly_t* poly_of_box(ap_manager_t* man,
 
 bool vector_set_linexpr_bound(pk_internal_t* pk,
 			      numint_t* vec,
-			      const numint_t* vec2,
+			      numint_t* vec2,
 			      mpq_t mpq,
 			      size_t intdim, size_t realdim,
 			      int sgn,
@@ -327,7 +327,7 @@ bool vector_set_linexpr_bound(pk_internal_t* pk,
 
   size = pk->dec+intdim+realdim;
 
-  if (vec!=(numint_t*)vec2){
+  if (vec!=vec2){
     vector_copy(vec,vec2,size);
   }
   numint_init(cst);
@@ -361,9 +361,9 @@ Abstract a convex polyhedra defined by the array of linear constraints.
 
 poly_t* poly_of_lincons_array(ap_manager_t* man,
 			      size_t intdim, size_t realdim,
-			      const ap_lincons0_array_t* cons)
+			      ap_lincons0_array_t* cons)
 {
-  int i;
+  size_t i;
   size_t row, dim;
   matrix_t* C;
   poly_t* po;
@@ -406,7 +406,7 @@ poly_t* poly_of_lincons_array(ap_manager_t* man,
 /* ********************************************************************** */
 
 /* Return the dimensions of the polyhedra */
-ap_dimension_t poly_dimension(ap_manager_t* man, const  poly_t* po){
+ap_dimension_t poly_dimension(ap_manager_t* man, poly_t* po){
   ap_dimension_t res;
   res.intdim = po->intdim;
   res.realdim = po->realdim;

@@ -55,8 +55,8 @@ void ap_scalar_reinit(ap_scalar_t* scalar, ap_scalar_discr_t d);
   /* Change the type of an already allocated scalar
      (mainly for internal use */
 static inline 
-void ap_scalar_print(const ap_scalar_t* a);
-void ap_scalar_fprint(FILE* stream, const ap_scalar_t* a);
+void ap_scalar_print(ap_scalar_t* a);
+void ap_scalar_fprint(FILE* stream, ap_scalar_t* a);
   /* Printing */
 
 static inline
@@ -67,9 +67,9 @@ void ap_scalar_swap(ap_scalar_t* a, ap_scalar_t* b);
 /* Assignements */
 /* ====================================================================== */
 
-void ap_scalar_set(ap_scalar_t* scalar, const ap_scalar_t* scalar2);
+void ap_scalar_set(ap_scalar_t* scalar, ap_scalar_t* scalar2);
   /* Assignement */
-void ap_scalar_set_mpq(ap_scalar_t* scalar, const mpq_t mpq);
+void ap_scalar_set_mpq(ap_scalar_t* scalar, mpq_t mpq);
 void ap_scalar_set_int(ap_scalar_t* scalar, long int i);
 void ap_scalar_set_frac(ap_scalar_t* scalar, long int i, unsigned long int j);
   /* Change the type of scalar to MPQ and initialize it resp. with
@@ -87,8 +87,8 @@ void ap_scalar_set_infty(ap_scalar_t* scalar, int sgn);
 /* Combined allocation and assignement */
 /* ====================================================================== */
 
-ap_scalar_t* ap_scalar_alloc_set(const ap_scalar_t* scalar2);
-ap_scalar_t* ap_scalar_alloc_set_mpq(const mpq_t mpq);
+ap_scalar_t* ap_scalar_alloc_set(ap_scalar_t* scalar2);
+ap_scalar_t* ap_scalar_alloc_set_mpq(mpq_t mpq);
   /* Change the type of scalar to MPQ and initialize it withmpq */
 ap_scalar_t* ap_scalar_alloc_set_double(double k);
   /* Change the type of scalar to DOUBLE and initialize it with k. */
@@ -100,11 +100,11 @@ ap_scalar_t* ap_scalar_alloc_set_double(double k);
 /* For the two next functions, the returned value is zero if conversion is
    exact, positive if the result is greater, negative if it is lower. */
 
-int ap_mpq_set_scalar(mpq_t mpq, const ap_scalar_t* scalar, mp_rnd_t round);
+int ap_mpq_set_scalar(mpq_t mpq, ap_scalar_t* scalar, mp_rnd_t round);
   /* Assign mpq with the value of scalar,
      possibly converting from DOUBLE type.
      Currently, round is not needed, as the conversion is exact */
-int ap_double_set_scalar(double* k, const ap_scalar_t* scalar, mp_rnd_t round);
+int ap_double_set_scalar(double* k, ap_scalar_t* scalar, mp_rnd_t round);
   /* Return the value of scalar in DOUBLE type,
      possibly converting from MPQ type. */
 
@@ -112,31 +112,31 @@ int ap_double_set_scalar(double* k, const ap_scalar_t* scalar, mp_rnd_t round);
 /* Tests */
 /* ====================================================================== */
 
-int ap_scalar_infty(const ap_scalar_t* scalar);
+int ap_scalar_infty(ap_scalar_t* scalar);
   /* -1:-infty, 0:finite; 1:+infty */
-int ap_scalar_cmp(const ap_scalar_t* a, const ap_scalar_t* b);
-int ap_scalar_cmp_int(const ap_scalar_t* a, int b);
+int ap_scalar_cmp(ap_scalar_t* a, ap_scalar_t* b);
+int ap_scalar_cmp_int(ap_scalar_t* a, int b);
   /* Exact comparison between two scalars (resp. a scalar and an integer)
      -1: a is less than b
      0: a is equal to b
      1: a is greater than b
   */
-bool ap_scalar_equal(const ap_scalar_t* a, const ap_scalar_t* b);
-bool ap_scalar_equal_int(const ap_scalar_t* a, int b);
+bool ap_scalar_equal(ap_scalar_t* a, ap_scalar_t* b);
+bool ap_scalar_equal_int(ap_scalar_t* a, int b);
   /* Exact Equality test */
-int ap_scalar_sgn(const ap_scalar_t* a);
+int ap_scalar_sgn(ap_scalar_t* a);
   /* -1: negative, 0: null, +1: positive  */
 
 /* ====================================================================== */
 /* Other operations */
 /* ====================================================================== */
 
-void ap_scalar_neg(ap_scalar_t* a, const ap_scalar_t* b);
+void ap_scalar_neg(ap_scalar_t* a, ap_scalar_t* b);
   /* Negation */
-void ap_scalar_inv(ap_scalar_t* a, const ap_scalar_t* b);
+void ap_scalar_inv(ap_scalar_t* a, ap_scalar_t* b);
   /* Inversion. Not exact for floating-point type */
 
-long ap_scalar_hash(const ap_scalar_t* a);
+long ap_scalar_hash(ap_scalar_t* a);
   /* Return an hash code (for instance for OCaml interface) */
 
 /* ********************************************************************** */
@@ -168,7 +168,7 @@ void ap_scalar_clear(ap_scalar_t* scalar)
     break;
   }
 }
-static inline void ap_scalar_print(const ap_scalar_t* a)
+static inline void ap_scalar_print(ap_scalar_t* a)
 { ap_scalar_fprint(stdout,a); }
 static inline
 void ap_scalar_swap(ap_scalar_t* a, ap_scalar_t* b){ ap_scalar_t t = *a; *a = *b; *b = t; }

@@ -24,7 +24,7 @@
 
 bool cherni_checksatmat(pk_internal_t* pk,
 			bool con_to_ray,
-			const matrix_t* C, const matrix_t* F, const satmat_t* satC)
+			matrix_t* C, matrix_t* F, satmat_t* satC)
 {
   int s1,s2;
   size_t i;
@@ -34,8 +34,8 @@ bool cherni_checksatmat(pk_internal_t* pk,
     for (j = bitindex_init(0); j.index  < C->nbrows; bitindex_inc(&j)){
       vector_product(pk,
 		     pk->cherni_prod,
-		     (const numint_t*)F->p[i],
-		     (const numint_t*)C->p[j.index],F->nbcolumns);
+		     F->p[i],
+		     C->p[j.index],F->nbcolumns);
       s1 = numint_sgn(pk->cherni_prod);
       s2 = satmat_get(satC,i,j);
       if (s1<0 || (s1!=0 && s2==0) || (s1==0 && s2!=0)){
@@ -55,9 +55,9 @@ bool cherni_checksatmat(pk_internal_t* pk,
 
 bool cherni_checksat(pk_internal_t* pk,
 		       bool con_to_ray,
-		       const matrix_t* C, size_t nbequations,
-		       const matrix_t* F, size_t nblines,
-		       const satmat_t* satC)
+		       matrix_t* C, size_t nbequations,
+		       matrix_t* F, size_t nblines,
+		       satmat_t* satC)
 {
   size_t i,k,nb,rank;
   bitindex_t j;
@@ -198,8 +198,8 @@ size_t cherni_conversion(pk_internal_t* pk,
     index_non_zero = nbrows;
     for (i=0; i<nbrows; i++){
       vector_product(pk,ray->p[i][0],
-		     (const numint_t*)ray->p[i],
-		     (const numint_t*)con->p[k.index],nbcols);
+		     ray->p[i],
+		     con->p[k.index],nbcols);
       if (index_non_zero == nbrows && numint_sgn(ray->p[i][0])!=0){
 	index_non_zero = i;
       }
@@ -454,9 +454,9 @@ void cherni_backsubstitute(pk_internal_t* pk, matrix_t* con, size_t rank)
   size_t i,j;
   int k;
 
-  for (k=rank-1; k>=0; k--) {
+  for (k=(int)rank-1; k>=0; k--) {
     j = pk->cherni_intp[k];
-    for (i=0; i<k; i++) {
+    for (i=0; i<(size_t)k; i++) {
       if (numint_sgn(con->p[i][j]))
 	matrix_combine_rows(pk,con,i,(size_t)k,i,j);
     }
@@ -490,13 +490,13 @@ int cherni_simplify(pk_internal_t* pk,
   size_t i,j;
   long int nb,nbj;
   size_t nbeq,rank;
-  int w;
+  size_t w;
   bitstring_t m;
 
   bool redundant, is_equality;
 
   const size_t nbcols = con->nbcolumns;
-  const bitindex_t nbrays = bitindex_init(ray->nbrows);
+  bitindex_t nbrays = bitindex_init(ray->nbrows);
   size_t nbcons = con->nbrows;
 
   con->_sorted = false;
@@ -560,7 +560,7 @@ int cherni_simplify(pk_internal_t* pk,
   i = nbeq;
   while (i < nbcons){
     int_set_numint(&nb, con->p[i][0]);
-    if (nb < nbcols-nbeq-2){ /* redundant constraint */
+    if (nb < (long int)(nbcols-nbeq-2)){ /* redundant constraint */
       nbcons--;
       matrix_exch_rows(con, i,nbcons);
       satmat_exch_rows(satf,i,nbcons);
@@ -662,7 +662,7 @@ void cherni_minimize(pk_internal_t* pk,
 		     bool con_to_ray,
 		     poly_t* po)
 {
-  int i;
+  size_t i;
   bool special;
   matrix_t* C;
   matrix_t* F;
@@ -824,14 +824,14 @@ void cherni_add_and_minimize(pk_internal_t* pk,
 
 
 void cherni_buildsatline(pk_internal_t* pk,
-			 const matrix_t* con, const numint_t* tab,
+			 matrix_t* con, numint_t* tab,
 			 bitstring_t* satline)
 {
   bitindex_t jx = bitindex_init(0);
   while (jx.index<con->nbrows){
     vector_product(pk,pk->cherni_prod,
-		   (const numint_t*)con->p[jx.index],
-		   (const numint_t*)tab, con->nbcolumns);
+		   con->p[jx.index],
+		   tab, con->nbcolumns);
     if (numint_sgn(pk->cherni_prod)) bitstring_set(satline,jx);
     bitindex_inc(&jx);
   }

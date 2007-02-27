@@ -59,8 +59,8 @@ matrix_t* matrix_assign_variable(pk_internal_t* pk,
   for (i=0; i<mat->nbrows; i++){
     /* product for var column */
     vector_product(pk,pk->matrix_prod,
-		   (const numint_t*)mat->p[i],
-		   (const numint_t*)tab,mat->nbcolumns);
+		   mat->p[i],
+		   tab,mat->nbcolumns);
     /* columns != var */
     if (!destructive){	
       /* Functional */
@@ -192,7 +192,7 @@ matrix_t* matrix_substitute_variable(pk_internal_t* pk,
 /* insertion sort for sorting the array tdim */
 void pk_asssub_isort(ap_dim_t* tdim, numint_t** tvec, size_t size)
 {
-  int i,j;
+  size_t i,j;
 
   for (i=1; i<size; i++){
     ap_dim_t dim = tdim[i];
@@ -218,7 +218,7 @@ void pk_asssub_isort(ap_dim_t* tdim, numint_t** tvec, size_t size)
 
 matrix_t* matrix_assign_variables(pk_internal_t* pk,
 				  matrix_t* mat,
-				  const ap_dim_t* tdim,
+				  ap_dim_t* tdim,
 				  numint_t** tvec,
 				  size_t size)
 {
@@ -249,8 +249,8 @@ matrix_t* matrix_assign_variables(pk_internal_t* pk,
 	/* We are on an assigned column */
 	for (i=0; i<mat->nbrows; i++){ /* For each row */
 	  vector_product(pk,pk->matrix_prod,
-			 (const numint_t*)mat->p[i],
-			 (const numint_t*)tvec[eindex],mat->nbcolumns);
+			 mat->p[i],
+			 tvec[eindex],mat->nbcolumns);
 	  numint_mul(pk->matrix_prod,pk->matrix_prod,vden[eindex]);
 	  /* Put the result */
 	  numint_init_set(nmat->p[i][j],pk->matrix_prod);
@@ -280,8 +280,8 @@ matrix_t* matrix_assign_variables(pk_internal_t* pk,
 	/* We are on a assigned column */
 	for (i=0; i<mat->nbrows; i++){ /* For each row */
 	  vector_product(pk,pk->matrix_prod,
-			 (const numint_t*)mat->p[i],
-			 (const numint_t*)tvec[eindex],mat->nbcolumns);
+			 mat->p[i],
+			 tvec[eindex],mat->nbcolumns);
 	  numint_init_set(nmat->p[i][j],pk->matrix_prod);
 	}
 	eindex++;
@@ -308,7 +308,7 @@ matrix_t* matrix_assign_variables(pk_internal_t* pk,
 
 matrix_t* matrix_substitute_variables(pk_internal_t* pk,
 				      matrix_t* mat,
-				      const ap_dim_t* tdim,
+				      ap_dim_t* tdim,
 				      numint_t** tvec,
 				      size_t size)
 {
@@ -403,10 +403,10 @@ matrix_t* matrix_substitute_variables(pk_internal_t* pk,
 void _poly_invert_vector(pk_internal_t* pk,
 			 numint_t* ntab,
 			 ap_dim_t dim,
-			 const numint_t* tab,
+			 numint_t* tab,
 			 size_t size)
 {
-  int i;
+  size_t i;
   size_t var = pk->dec+dim;
   int sgn = numint_sgn(tab[var]);
 
@@ -437,8 +437,8 @@ void _poly_invert_vector(pk_internal_t* pk,
 matrix_t*
 _matrix_relation_of_tdimexpr(pk_internal_t* pk,
 			     size_t intdim, size_t realdim,
-			     const ap_dim_t* tdim, const ap_linexpr0_t** texpr,
-			     const ap_dimchange_t* dimchange)
+			     ap_dim_t* tdim, ap_linexpr0_t** texpr,
+			     ap_dimchange_t* dimchange)
 {
   size_t size;
   matrix_t* matrel;
@@ -466,7 +466,7 @@ _matrix_relation_of_tdimexpr(pk_internal_t* pk,
       vector_set_linexpr(pk,matrel->p[row],
 			 texpr[i],nnbdims,0);
       vector_add_dimensions(pk,matrel->p[row],
-			    (const numint_t*)matrel->p[row],nbcols,
+			    matrel->p[row],nbcols,
 			    dimchange);
       numint_neg(matrel->p[row][col], matrel->p[row][0]);
       numint_set(matrel->p[row][0],0);
@@ -479,7 +479,7 @@ _matrix_relation_of_tdimexpr(pk_internal_t* pk,
       for (k=1; k<nbcols; k++)
 	numint_neg(matrel->p[row][k],matrel->p[row][k]);
       vector_add_dimensions(pk,matrel->p[row],
-			    (const numint_t*)matrel->p[row],nbcols,
+			    matrel->p[row],nbcols,
 			    dimchange);
       numint_set(matrel->p[row][col], matrel->p[row][0]);
       numint_set_int(matrel->p[row][0],1);
@@ -489,7 +489,7 @@ _matrix_relation_of_tdimexpr(pk_internal_t* pk,
       vector_set_linexpr(pk,matrel->p[row],
 			 texpr[i],nnbdims,+1);
       vector_add_dimensions(pk,matrel->p[row],
-			    (const numint_t*)matrel->p[row],nbcols,
+			    matrel->p[row],nbcols,
 			    dimchange);
       numint_neg(matrel->p[row][col], matrel->p[row][0]);
       numint_set_int(matrel->p[row][0],1);
@@ -518,7 +518,7 @@ poly_t* poly_asssub_linear_linexpr(bool assign,
 				   ap_manager_t* man,
 				   bool destructive,
 				   poly_t* pa,
-				   ap_dim_t dim, const ap_linexpr0_t* linexpr)
+				   ap_dim_t dim, ap_linexpr0_t* linexpr)
 {
   int sgn;
   poly_t* po;
@@ -526,7 +526,7 @@ poly_t* poly_asssub_linear_linexpr(bool assign,
   
   po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
 
-  if (!assign) poly_dual((poly_t*)pa);
+  if (!assign) poly_dual(pa);
 
   /* Convert linear expression */
   vector_set_linexpr(pk,pk->poly_numintp,
@@ -562,7 +562,7 @@ poly_t* poly_asssub_linear_linexpr(bool assign,
     /* Invert the expression in pk->poly_numintp2 */
     _poly_invert_vector(pk,
 			pk->poly_numintp2,
-			dim, (const numint_t*)pk->poly_numintp,
+			dim, pk->poly_numintp,
 			pa->C->nbcolumns);
     /* Perform susbtitution on constraints */
     po->C =
@@ -582,7 +582,7 @@ poly_t* poly_asssub_linear_linexpr(bool assign,
   po->status = 0;
  _poly_asssub_linear_linexpr_exit:
   if (!assign){
-    poly_dual((poly_t*)pa);
+    poly_dual(pa);
     if (!destructive) poly_dual(po);
   }
   assert(poly_check(pk,po));
@@ -598,7 +598,7 @@ poly_t* poly_asssub_linexpr(bool assign,
 			    ap_manager_t* man,
 			    bool destructive,
 			    poly_t* pa,
-			    ap_dim_t dim, const ap_linexpr0_t* linexpr)
+			    ap_dim_t dim, ap_linexpr0_t* linexpr)
 {
   poly_t* po;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -631,7 +631,7 @@ poly_t* poly_asssub_linexpr(bool assign,
   case AP_COEFF_INTERVAL:
     {
       ap_dim_t tdim[1];
-      const ap_linexpr0_t* texpr[1];
+      ap_linexpr0_t* texpr[1];
       size_t intdimsup, realdimsup;
       
       tdim[0] = dim;
@@ -683,10 +683,10 @@ poly_t* poly_asssub_linear_linexpr_array(bool assign,
 					 ap_manager_t* man,
 					 bool destructive,
 					 poly_t* pa,
-					 const ap_dim_t* tdim, const ap_linexpr0_t** texpr, 
+					 ap_dim_t* tdim, ap_linexpr0_t** texpr, 
 					 size_t size)
 {
-  int i;
+  size_t i;
   ap_dim_t* tdim2;
   numint_t** tvec;
   size_t nbcols;
@@ -696,7 +696,7 @@ poly_t* poly_asssub_linear_linexpr_array(bool assign,
 
   po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
 
-  if (!assign) poly_dual((poly_t*)pa);
+  if (!assign) poly_dual(pa);
 
   /* Obtain the needed matrix */
   poly_obtain_F_dual(man,pa,"of the argument",assign);
@@ -745,7 +745,7 @@ poly_t* poly_asssub_linear_linexpr_array(bool assign,
   po->status = 0;
  _poly_asssub_linear_linexpr_array_exit:
   if (!assign){
-    poly_dual((poly_t*)pa);
+    poly_dual(pa);
     if (!destructive) poly_dual(po);
   }
   assert(poly_check(pk,po));
@@ -763,13 +763,13 @@ poly_asssub_quasilinear_linexpr_array(bool assign,
 				      ap_manager_t* man,
 				      bool destructive,
 				      poly_t* pa,
-				      const ap_dim_t* tdim, const ap_linexpr0_t** texpr,
+				      ap_dim_t* tdim, ap_linexpr0_t** texpr,
 				      size_t intdimsup,
 				      size_t realdimsup)
 {
   bool res;
   size_t size;
-  int i;
+  size_t i;
   matrix_t* matrel;
   ap_dimperm_t permutation;
   poly_t* po;
@@ -863,11 +863,11 @@ poly_t* poly_asssub_linexpr_array(bool assign,
 				  ap_manager_t* man,
 				  bool destructive,
 				  poly_t* pa,
-				  const ap_dim_t* tdim,
-				  const ap_linexpr0_t** texpr,
+				  ap_dim_t* tdim,
+				  ap_linexpr0_t** texpr,
 				  size_t size)
 {
-  int i;
+  size_t i;
   size_t intdimsup,realdimsup;
   bool linear;
   poly_t* po;
@@ -943,8 +943,8 @@ poly_t* poly_asssub_linexpr_array(bool assign,
 
 poly_t* poly_assign_linexpr(ap_manager_t* man,
 			    bool destructive, poly_t* pa, 
-			    ap_dim_t dim, const ap_linexpr0_t* linexpr,
-			    const poly_t* pb)
+			    ap_dim_t dim, ap_linexpr0_t* linexpr,
+			    poly_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_ASSIGN_LINEXPR);
   poly_t* po;
@@ -960,9 +960,9 @@ poly_t* poly_assign_linexpr(ap_manager_t* man,
 
 poly_t* poly_assign_linexpr_array(ap_manager_t* man,
 				  bool destructive, poly_t* pa,
-				  const ap_dim_t* tdim, const ap_linexpr0_t** texpr,
+				  ap_dim_t* tdim, ap_linexpr0_t** texpr,
 				  size_t size,
-				  const poly_t* pb)
+				  poly_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_ASSIGN_LINEXPR_ARRAY);
   poly_t* po;
@@ -977,8 +977,8 @@ poly_t* poly_assign_linexpr_array(ap_manager_t* man,
 
 poly_t* poly_substitute_linexpr(ap_manager_t* man,
 				bool destructive, poly_t* pa, 
-				ap_dim_t dim, const ap_linexpr0_t* linexpr,
-				const poly_t* pb)
+				ap_dim_t dim, ap_linexpr0_t* linexpr,
+				poly_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_SUBSTITUTE_LINEXPR);
   poly_t* po;
@@ -994,9 +994,9 @@ poly_t* poly_substitute_linexpr(ap_manager_t* man,
 
 poly_t* poly_substitute_linexpr_array(ap_manager_t* man,
 				      bool destructive, poly_t* pa,
-				      const ap_dim_t* tdim, const ap_linexpr0_t** texpr,
+				      ap_dim_t* tdim, ap_linexpr0_t** texpr,
 				      size_t size,
-				      const poly_t* pb)
+				      poly_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY);
   poly_t* po;

@@ -117,7 +117,7 @@ static
 void camlidl_apron_abstract0_serialize(value v, unsigned long * w32, unsigned long * w64)
 {
   ap_abstract0_ptr* p = (ap_abstract0_ptr *) Data_custom_val(v);
-  const ap_abstract0_t* a = *p;
+  ap_abstract0_t* a = *p;
   ap_membuf_t buf = ap_abstract0_serialize_raw(a->man,a);
   serialize_int_8(buf.size);
   serialize_block_1(buf.ptr,buf.size);

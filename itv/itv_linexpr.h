@@ -67,29 +67,29 @@ static inline void itv_lincons_clear(itv_lincons_t* cons);
 
 static inline bool itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
 					       itv_linexpr_t* expr, 
-					       const ap_linexpr0_t* linexpr0);
+					       ap_linexpr0_t* linexpr0);
   /* Convert a ap_linexpr0_t into a itv_linexpr_t
 
      Return true if the conversion is exact */
 
 static inline bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
 					       itv_lincons_t* cons, 
-					       const ap_lincons0_t* lincons0);
+					       ap_lincons0_t* lincons0);
   /* Convert a ap_lincons0_t into a itv_lincons_t 
 
      Return true if the conversion is exact */
 
 static inline void itv_eval_itv_linexpr(itv_internal_t* intern,
 					itv_t itv,
-					const itv_t* p,
-					const itv_linexpr_t* expr);
+					itv_t* p,
+					itv_linexpr_t* expr);
   /* Evaluate the interval linear expression, using the array p[]
      associating intervals to dimensions */
 
 static inline bool itv_eval_ap_linexpr0(itv_internal_t* intern,
 					itv_t itv,
-					const itv_t* p,
-					const ap_linexpr0_t* expr);
+					itv_t* p,
+					ap_linexpr0_t* expr);
   /* Evaluate the interval linear expression, using the array p[]
      associating intervals to dimensions.
 
@@ -126,37 +126,37 @@ void itv_lincons_clear(itv_lincons_t* cons)
 }
 
 bool ITVFUN(linexpr_set_ap_linexpr0)(itv_internal_t* intern,
-				     itv_linexpr_t* expr, const ap_linexpr0_t* linexpr0);
+				     itv_linexpr_t* expr, ap_linexpr0_t* linexpr0);
 static inline bool itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
 					       itv_linexpr_t* expr, 
-					       const ap_linexpr0_t* linexpr0)
+					       ap_linexpr0_t* linexpr0)
 { return ITVFUN(linexpr_set_ap_linexpr0)(intern,expr,linexpr0); }
 
 bool ITVFUN(lincons_set_ap_lincons0)(itv_internal_t* intern,
-				     itv_lincons_t* cons, const ap_lincons0_t* lincons0);
+				     itv_lincons_t* cons, ap_lincons0_t* lincons0);
 static inline bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
 					       itv_lincons_t* cons, 
-					       const ap_lincons0_t* lincons0)
+					       ap_lincons0_t* lincons0)
 { return ITVFUN(lincons_set_ap_lincons0)(intern,cons,lincons0); }
 
 void ITVFUN(eval_itv_linexpr)(itv_internal_t* intern,
 			      itv_t itv,
-			      const itv_t* p,
-			      const itv_linexpr_t* expr);
+			      itv_t* p,
+			      itv_linexpr_t* expr);
 static inline void itv_eval_itv_linexpr(itv_internal_t* intern,
 					itv_t itv,
-					const itv_t* p,
-					const itv_linexpr_t* expr)
+					itv_t* p,
+					itv_linexpr_t* expr)
 { ITVFUN(eval_itv_linexpr)(intern,itv,p,expr); }
 
 bool ITVFUN(eval_ap_linexpr0)(itv_internal_t* intern,
 			      itv_t itv,
-			      const itv_t* p,
-			      const ap_linexpr0_t* expr);
+			      itv_t* p,
+			      ap_linexpr0_t* expr);
 static inline bool itv_eval_ap_linexpr0(itv_internal_t* intern,
 					itv_t itv,
-					const itv_t* p,
-					const ap_linexpr0_t* expr)
+					itv_t* p,
+					ap_linexpr0_t* expr)
 { return ITVFUN(eval_ap_linexpr0)(intern,itv,p,expr); }
 
 #ifdef __cplusplus

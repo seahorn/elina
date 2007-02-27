@@ -16,7 +16,7 @@
 ap_linexpr0_t* ap_linexpr0_alloc(ap_linexpr_discr_t lin_discr, size_t size)
 {
   ap_linexpr0_t* e;
-  int i;
+  size_t i;
 
   e = (ap_linexpr0_t*)malloc(sizeof(ap_linexpr0_t));
   ap_coeff_init(&e->cst,AP_COEFF_SCALAR);
@@ -105,7 +105,7 @@ void ap_linexpr0_minimize(ap_linexpr0_t* e)
 	  linterm[j] = e->p.linterm[i];
 	  j++;
 	}
-	else 
+	else
 	  ap_coeff_clear(p);
       }
       free(e->p.linterm);
@@ -115,13 +115,13 @@ void ap_linexpr0_minimize(ap_linexpr0_t* e)
   }
 }
 
-ap_linexpr0_t* ap_linexpr0_copy(const ap_linexpr0_t* a)
+ap_linexpr0_t* ap_linexpr0_copy(ap_linexpr0_t* a)
 {
   ap_linexpr0_t* e;
-  int i;
+  size_t i;
 
   e = (ap_linexpr0_t*)malloc(sizeof(ap_linexpr0_t));
-  ap_coeff_init_set(&e->cst,&((ap_linexpr0_t*)a)->cst);
+  ap_coeff_init_set(&e->cst,&a->cst);
   e->discr = a->discr;
   e->size = a->size;
   switch (a->discr){
@@ -145,7 +145,7 @@ ap_linexpr0_t* ap_linexpr0_copy(const ap_linexpr0_t* a)
 static
 void ap_linexpr0_clear(ap_linexpr0_t* e)
 {
-  int i;
+  size_t i;
 
   if(e!=NULL){
     ap_coeff_clear(&e->cst);
@@ -172,7 +172,7 @@ void ap_linexpr0_free(ap_linexpr0_t* e)
   free(e);
 }
 
-void ap_linexpr0_fprint(FILE* stream, const ap_linexpr0_t* a, char** name_of_dim)
+void ap_linexpr0_fprint(FILE* stream, ap_linexpr0_t* a, char** name_of_dim)
 {
   size_t i;
   ap_scalar_t* pscalar = 0;
@@ -246,7 +246,7 @@ void ap_linexpr0_fprint(FILE* stream, const ap_linexpr0_t* a, char** name_of_dim
 /* ====================================================================== */
 
 /* Does the linear expression involve only real variables ? */
-bool ap_linexpr0_is_real(const ap_linexpr0_t* a, size_t intdim)
+bool ap_linexpr0_is_real(ap_linexpr0_t* a, size_t intdim)
 {
   ap_coeff_t* coeff;
   ap_dim_t dim;
@@ -259,7 +259,7 @@ bool ap_linexpr0_is_real(const ap_linexpr0_t* a, size_t intdim)
 }
 
 /* Does the linear expression involve only integer variables ? */
-bool ap_linexpr0_is_integer(const ap_linexpr0_t* a, size_t intdim)
+bool ap_linexpr0_is_integer(ap_linexpr0_t* a, size_t intdim)
 {
   size_t i;
   ap_coeff_t* coeff;
@@ -285,7 +285,7 @@ bool ap_linexpr0_is_integer(const ap_linexpr0_t* a, size_t intdim)
 }
 
 /* Return true iff all involved coefficients are scalars */
-bool ap_linexpr0_is_linear(const ap_linexpr0_t* expr)
+bool ap_linexpr0_is_linear(ap_linexpr0_t* expr)
 {
   size_t i;
   ap_dim_t dim;
@@ -302,7 +302,7 @@ bool ap_linexpr0_is_linear(const ap_linexpr0_t* expr)
   return res;
 }
 /* Return true iff all involved coefficients but the constant are scalars */
-bool ap_linexpr0_is_quasilinear(const ap_linexpr0_t* expr)
+bool ap_linexpr0_is_quasilinear(ap_linexpr0_t* expr)
 {
   size_t i;
   ap_dim_t dim;
@@ -381,7 +381,7 @@ ap_coeff_t* ap_linexpr0_coeffref(ap_linexpr0_t* expr, ap_dim_t dim)
 
 /* If dense representation, coefficients should be already present, otherwise
    undefined behaviour */
-bool ap_linexpr0_get_coeff(ap_coeff_t* coeff, const ap_linexpr0_t* expr, ap_dim_t dim)
+bool ap_linexpr0_get_coeff(ap_coeff_t* coeff, ap_linexpr0_t* expr, ap_dim_t dim)
 {
   size_t index;
   switch(expr->discr){
@@ -410,158 +410,6 @@ bool ap_linexpr0_get_coeff(ap_coeff_t* coeff, const ap_linexpr0_t* expr, ap_dim_
   }
 }
 
-/*
-ap_coeff_t* ap_linexpr0_set_format_get_pcoeff(char* str,
-					va_list* ap,
-					void* expr,
-					bool* b)
-{
-  ap_dim_t dim;
-  ap_coeff_t* pcoeff;
-
-  switch (*str){
-  case '%':
-    dim = va_arg(*ap,ap_dim_t);
-    pcoeff = ap_linexpr0_coeffref((ap_linexpr0_t*)expr,dim);
-    *b = (pcoeff==NULL);
-    break;
-  case '@':
-    pcoeff = ap_linexpr0_cstref((ap_linexpr0_t*)expr);
-    *b = false;
-    break;
-  default:
-    fprintf(stderr,
-	    "ap_linexpr0_set_format_generic/ap_linexpr0_set_format_get_pcoeff: bad format string \"%s\"",str);
-    abort();
-  }
-  return pcoeff;
-}
-
-bool ap_linexpr0_set_format_generic(ap_coeff_t* (*get_pcoeff)(char*,va_list*,void*,bool*),
-				 void* expr, char* fmt, va_list* ap)
-{
-  bool b;
-  char* p;
-  ap_coeff_t* coeff;
-  ap_coeff_t* pcoeff;
-  ap_scalar_t *scalar,*scalar1,*scalar2;
-  ap_interval_t* interval;
-  int num,num1,num2,den,den1,den2;
-  double k,k1,k2;
-  MP_RAT *mpq,*mpq1,*mpq2;
-
-  p = fmt;
-  while (*p){
-    pcoeff = get_pcoeff(p,ap,expr,&b);
-    if (b){
-      return true;
-    }
-    else if (pcoeff==NULL){
-    ap_linexpr0_set_format_generic_error:
-      fprintf(stderr,
-	      "ap_linexpr0_set_format_generic: bad format string or bad dimension/variable\"%s\"",fmt);
-      abort();
-    }
-    p++;
-    switch (*p){
-    case '%': 
-    case '@': 
-      coeff = va_arg(*ap,ap_coeff_t*);
-      ap_coeff_set(pcoeff,coeff);
-      break;
-    case 's': 
-      p++;
-      switch (*p){
-      case '%':
-      case '@': 
-	scalar = va_arg(*ap,ap_scalar_t*);
-	ap_coeff_set_scalar(pcoeff,scalar);
-	break;
-      case 'q':
-	p++;
-	mpq = va_arg(*ap,MP_RAT*);
-	ap_coeff_set_scalar_mpq(pcoeff,mpq);
-	break;
-      case 'i':
-	p++;
-	num = va_arg(*ap,int);
-	ap_coeff_set_scalar_int(pcoeff,num);
-	break;
-      case 'f':
-	p++;
-	num = va_arg(*ap,int);
-	den = va_arg(*ap,int);
-	ap_coeff_set_scalar_frac(pcoeff,num,den);
-	break;
-      case 'd':
-	p++;
-	k = va_arg(*ap,double);
-	ap_coeff_set_scalar_double(pcoeff,k);
-	break;
-      default:
-	goto ap_linexpr0_set_format_generic_error;
-      }
-      break;
-    case 'i':
-      p++;
-      switch (*p){
-      case '%':
-      case '@': 
-	interval = va_arg(*ap,ap_interval_t*);
-	ap_coeff_set_interval(pcoeff,interval);
-	break;
-      case 's':
-	p++;
-	scalar1 = va_arg(*ap,ap_scalar_t*);
-	scalar2 = va_arg(*ap,ap_scalar_t*);
-	ap_coeff_set_interval_scalar(pcoeff,scalar1,scalar2);
-	break;
-      case 'q':
-	p++;
-	mpq1 = va_arg(*ap,MP_RAT*);
-	mpq2 = va_arg(*ap,MP_RAT*);
-	ap_coeff_set_interval_mpq(pcoeff,mpq1,mpq2);
-	break;
-      case 'i':
-	p++;
-	num1 = va_arg(*ap,int);
-	num2 = va_arg(*ap,int);
-	ap_coeff_set_interval_int(pcoeff,num1,num2);
-	break;
-      case 'f':
-	p++;
-	num1 = va_arg(*ap,int);
-	den1 = va_arg(*ap,int);
-	num2 = va_arg(*ap,int);
-	den2 = va_arg(*ap,int);
-	ap_coeff_set_interval_frac(pcoeff,num1,den1,num2,den2);
-	break;
-      case 'd':
-	p++;
-	k1 = va_arg(*ap,double);
-	k2 = va_arg(*ap,double);
-	ap_coeff_set_interval_double(pcoeff,k1,k2);
-	break;
-      default:
-	goto ap_linexpr0_set_format_generic_error;
-      }
-    }
-  }
-  return false;
-}
-bool ap_linexpr0_set_format(ap_linexpr0_t* expr, char* fmt, ...)
-{
-  va_list ap;
-  bool b;
-
-  va_start(ap,fmt);
-  b = ap_linexpr0_set_format_generic(ap_linexpr0_set_format_get_pcoeff,
-				  expr, fmt, &ap);
-  va_end(ap);
-  return b;
-}
-*/
-
 bool ap_linexpr0_set_list_generic(ap_coeff_t* (*get_pcoeff)(void* expr, bool cst, va_list* va),
 				  void* expr, va_list* va)
 {
@@ -574,7 +422,7 @@ bool ap_linexpr0_set_list_generic(ap_coeff_t* (*get_pcoeff)(void* expr, bool cst
   double k,k1,k2;
   MP_RAT *mpq,*mpq1,*mpq2;
   ap_coefftag_t tag;
-  
+
   while (true){
     tag = va_arg(*va,ap_coefftag_t);
     if (tag==AP_END)
@@ -677,10 +525,10 @@ ap_coeff_t* ap_linexpr0_set_list_get_pcoeff(void* expr, bool cst, va_list* va)
 {
   ap_coeff_t* pcoeff;
   if (cst){
-    pcoeff = ap_linexpr0_cstref((ap_linexpr0_t*)expr);
+    pcoeff = ap_linexpr0_cstref(expr);
   } else {
     ap_dim_t dim = va_arg(*va,ap_dim_t);
-    pcoeff = ap_linexpr0_coeffref((ap_linexpr0_t*)expr,dim);
+    pcoeff = ap_linexpr0_coeffref(expr,dim);
   }
   return pcoeff;
 }
@@ -704,28 +552,28 @@ bool ap_linexpr0_set_list(ap_linexpr0_t* expr, ...)
 
 static int ap_linterm_cmp(const void* a, const void* b)
 {
-  ap_linterm_t* aa = (ap_linterm_t*)a;
-  ap_linterm_t* bb = (ap_linterm_t*)b;
+  const ap_linterm_t* aa = (const ap_linterm_t*)a;
+  const ap_linterm_t* bb = (const ap_linterm_t*)b;
   return
     (aa->dim > bb->dim) ? 1 :
     ( (aa->dim < bb->dim) ? -1 : 0 );
 }
 
 ap_linexpr0_t*
-ap_linexpr0_add_dimensions(const ap_linexpr0_t* expr,
-			const ap_dimchange_t* dimchange)
+ap_linexpr0_add_dimensions(ap_linexpr0_t* expr,
+			   ap_dimchange_t* dimchange)
 {
   ap_linexpr0_t* nexpr;
 
   if (expr==NULL) return NULL;
-  nexpr = ap_linexpr0_copy(expr);   
+  nexpr = ap_linexpr0_copy(expr);
   ap_linexpr0_add_dimensions_with(nexpr,dimchange);
   return nexpr;
 }
 
 void
 ap_linexpr0_add_dimensions_with(ap_linexpr0_t* expr,
-			     const ap_dimchange_t* dimchange)
+				ap_dimchange_t* dimchange)
 {
   if (expr==NULL) return;
   switch(expr->discr){
@@ -736,9 +584,9 @@ ap_linexpr0_add_dimensions_with(ap_linexpr0_t* expr,
       k=0;
       for (i=0; i<expr->size; i++){
 	ap_dim_t* pdim = &expr->p.linterm[i].dim;
-	if (*pdim==AP_DIM_MAX) 
+	if (*pdim==AP_DIM_MAX)
 	  break;
-	while (k<dimsup && *pdim>=dimchange->dim[k]){	
+	while (k<dimsup && *pdim>=dimchange->dim[k]){
 	  k++;
 	}
 	*pdim += k;
@@ -749,16 +597,16 @@ ap_linexpr0_add_dimensions_with(ap_linexpr0_t* expr,
     {
       int i,k;
       size_t dimsup;
-      
+
       dimsup = dimchange->intdim+dimchange->realdim;
       ap_linexpr0_realloc(expr,
-		       expr->size+dimsup);
+			  expr->size+dimsup);
       k = dimsup;
       for (i=expr->size; i>=0; i--){
-	if (i<expr->size){
+	if (i<(int)expr->size){
 	  ap_coeff_set(&expr->p.coeff[i+k],&expr->p.coeff[i]);
 	}
-	while (k>=1 && dimchange->dim[k-1]==i){
+	while (k>=1 && dimchange->dim[k-1]==(ap_dim_t)i){
 	  k--;
 	  ap_coeff_set_scalar_double(&expr->p.coeff[i+k],0.0);
 	}
@@ -771,8 +619,8 @@ ap_linexpr0_add_dimensions_with(ap_linexpr0_t* expr,
 }
 
 ap_linexpr0_t*
-ap_linexpr0_permute_dimensions(const ap_linexpr0_t* expr,
-			       const ap_dimperm_t* perm)
+ap_linexpr0_permute_dimensions(ap_linexpr0_t* expr,
+			       ap_dimperm_t* perm)
 {
   if (expr==NULL) return NULL;
   ap_linexpr0_t* nexpr = ap_linexpr0_copy(expr);
@@ -795,7 +643,7 @@ ap_linexpr0_permute_dimensions(const ap_linexpr0_t* expr,
 }
 void
 ap_linexpr0_permute_dimensions_with(ap_linexpr0_t* expr,
-				    const ap_dimperm_t* perm)
+				    ap_dimperm_t* perm)
 {
   if (expr==NULL) return;
   switch(expr->discr){
@@ -808,7 +656,8 @@ ap_linexpr0_permute_dimensions_with(ap_linexpr0_t* expr,
       }
       qsort(expr->p.linterm,
 	    expr->size,
-	    sizeof(ap_linterm_t),ap_linterm_cmp);
+	    sizeof(ap_linterm_t),
+	    &ap_linterm_cmp);
     }
     break;
   case AP_LINEXPR_DENSE:
@@ -827,19 +676,19 @@ ap_linexpr0_permute_dimensions_with(ap_linexpr0_t* expr,
 /* V. Hashing, comparison */
 /* ====================================================================== */
 
-long ap_linexpr0_hash(const ap_linexpr0_t* expr)
+long ap_linexpr0_hash(ap_linexpr0_t* expr)
 {
   if (expr->size==0){
     return ap_coeff_hash(&expr->cst);
   }
   else {
-    const ap_coeff_t* pcoeff;
+    ap_coeff_t* pcoeff;
     size_t i,dec;
     long res,res1;
     res = expr->size << 8;
     dec = 0;
     for (i=0; i<expr->size; i += (expr->size+7)/8){
-      pcoeff = ap_linexpr0_coeffref((ap_linexpr0_t*)expr,i);
+      pcoeff = ap_linexpr0_coeffref(expr,i);
       res1 = (pcoeff==NULL) ? 0 : ap_coeff_hash(pcoeff);
       res += res1<<dec;
       dec++;
@@ -848,7 +697,7 @@ long ap_linexpr0_hash(const ap_linexpr0_t* expr)
   }
 }
 bool ap_linexpr0_equal(ap_linexpr0_t* expr1,
-		    ap_linexpr0_t* expr2)
+		       ap_linexpr0_t* expr2)
 {
   bool res;
   size_t i1,i2;
@@ -902,7 +751,7 @@ bool ap_linexpr0_equal(ap_linexpr0_t* expr1,
 }
 
 int ap_linexpr0_compare(ap_linexpr0_t* expr1,
-		     ap_linexpr0_t* expr2)
+			ap_linexpr0_t* expr2)
 {
   bool res;
   size_t i1,i2;
@@ -961,4 +810,3 @@ int ap_linexpr0_compare(ap_linexpr0_t* expr1,
   ap_coeff_free(coeffzero);
   return res;
 }
-

@@ -1,7 +1,11 @@
-# $Id$
 
+include Makefile.config
 
+ifdef HAS_OCAML
 all: c ml
+else
+all: c
+endif
 
 c:
 	(cd apron; make all)
@@ -18,15 +22,26 @@ ml:
 	(cd box; make ml)
 	(cd octagons; make mlQg mlFd)
 
+rebuild:
+ifdef HAS_OCAML
+	(cd mlgmpidl; make rebuild)
+	(cd mlapronidl; make rebuild)
+	(cd newpolka; make rebuild)
+	(cd box; make rebuild)
+	(cd octagons; make rebuild)
+endif
+
 install:
 	(cd apron; make install)
-	(cd mlgmpidl; make install)
-	(cd mlapronidl; make install)
 	(cd num; make install)
 	(cd itv; make install)
 	(cd newpolka; make install)
 	(cd box; make install)
 	(cd octagons; make install)
+ifdef HAS_OCAML
+	(cd mlgmpidl; make install)
+	(cd mlapronidl; make install)
+endif
 
 clean:
 	(cd apron; make clean)
@@ -38,7 +53,7 @@ clean:
 	(cd newpolka; make clean)
 	(cd octagons; make clean)
 	(cd examples; make clean)
-	rm -fr online
+	rm -fr online tmp
 
 mostlyclean: clean
 	(cd apron; make mostlyclean)
@@ -46,6 +61,7 @@ mostlyclean: clean
 	(cd mlapronidl; make mostlyclean)
 	(cd itv; make mostlyclean)
 	(cd box; make mostlyclean)
+	(cd octagons; make mostlyclean)
 	(cd newpolka; make mostlyclean)
 
 
@@ -60,17 +76,19 @@ distclean:
 	(cd octagons; make distclean)
 	(cd examples; make distclean)
 
-doc: 
+doc:
 	(hyperlatex index.tex)
 	(cd apron; make html apron.pdf)
+ifdef HAS_OCAML
 	(cd mlgmpidl; make html mlgmpidl.pdf)
 	(cd mlapronidl; make html mlapronidl.pdf)
+endif
 
 # make distribution, update to reflect current version
 
-PKGNAME  = apron-0.9.4
+PKGNAME  = apron-0.9.5
 PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model Changes
-PKGDIRS  = apron mlapronidl num itv mlgmpidl octagons box newpolka examples
+PKGDIRS  = apron num itv octagons box newpolka mlgmpidl mlapronidl examples
 
 dist:
 	$(MAKE) all

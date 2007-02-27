@@ -24,8 +24,8 @@ numint_t* vector_alloc(size_t size);
 void     vector_realloc(numint_t** q, size_t size, size_t nsize);
 void     vector_free(numint_t* q, size_t size);
 void     vector_clear(numint_t* q, size_t size);
-void     vector_copy(numint_t* q1, const numint_t* q2, size_t size);
-void     vector_print(const numint_t* q, size_t size);
+void     vector_copy(numint_t* q1, numint_t* q2, size_t size);
+void     vector_print(numint_t* q, size_t size);
 
 /* Normalization */
 bool vector_normalize(pk_internal_t* pk,
@@ -41,32 +41,32 @@ bool vector_normalize_constraint_int(pk_internal_t* pk,
 
 /* Comparison */
 int vector_compare(pk_internal_t* pk,
-		   const numint_t* q1, const numint_t* q2, size_t size);
+		   numint_t* q1, numint_t* q2, size_t size);
 int vector_compare_constraint(pk_internal_t* pk,
-			      const numint_t* q1, const numint_t* q2, size_t size);
+			      numint_t* q1, numint_t* q2, size_t size);
 
 /* Combination and Algebraic Operations */
 void vector_combine(pk_internal_t* pk,
-		    const numint_t* q1, const numint_t* q2,
+		    numint_t* q1, numint_t* q2,
 		    numint_t* q3, size_t k, size_t size);
 void vector_product(pk_internal_t* pk,
 		    numint_t prod,
-		    const numint_t* q1, const numint_t* const q2, size_t size);
+		    numint_t* q1, numint_t* q2, size_t size);
 void vector_product_strict(pk_internal_t* pk,
 			   numint_t prod,
-			   const numint_t* r1, const numint_t* r2, size_t size);
+			   numint_t* r1, numint_t* r2, size_t size);
 
 /* Predicates that can be useful for users */
 bool vector_is_null(pk_internal_t* pk,
-		    const numint_t* q, size_t size);
+		    numint_t* q, size_t size);
 bool vector_is_null_strict(pk_internal_t* pk,
-			   const numint_t* q, size_t size);
+			   numint_t* q, size_t size);
 bool vector_is_positivity_constraint(pk_internal_t* pk,
-				     const numint_t* q, size_t size);
+				     numint_t* q, size_t size);
 bool vector_is_dummy_constraint(pk_internal_t* pk,
-				  const numint_t* q, size_t size);
+				  numint_t* q, size_t size);
 bool vector_is_dummy_or_strict_generator(pk_internal_t* pk,
-					 const numint_t* q, size_t size);
+					 numint_t* q, size_t size);
 bool vector_is_integer(pk_internal_t* pk,
 		       numint_t* vec,
 		       size_t intdim, size_t realdim);

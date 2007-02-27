@@ -126,7 +126,7 @@ oct_t* oct_top(ap_manager_t* man, size_t intdim, size_t realdim)
 }
 
 oct_t* oct_of_box(ap_manager_t* man, size_t intdim, size_t realdim,
-		  const ap_interval_t ** t)
+		  ap_interval_t ** t)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_OF_BOX,0);
   oct_t* r = oct_alloc_internal(pr,intdim+realdim,intdim);
@@ -154,7 +154,7 @@ oct_t* oct_of_box(ap_manager_t* man, size_t intdim, size_t realdim,
 
 oct_t* oct_of_lincons_array(ap_manager_t* man,
 			    size_t intdim, size_t realdim,
-			    const ap_lincons0_array_t* ar)
+			    ap_lincons0_array_t* ar)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_OF_LINCONS_ARRAY,
 					     2*(intdim+realdim+6));
@@ -183,7 +183,7 @@ oct_t* oct_of_lincons_array(ap_manager_t* man,
 
 oct_t* oct_of_generator_array(ap_manager_t* man,
                               size_t intdim, size_t realdim,
-                              const ap_generator0_array_t* ar)
+                              ap_generator0_array_t* ar)
 {
   size_t dim = intdim+realdim;
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_ADD_RAY_ARRAY,
@@ -215,7 +215,7 @@ oct_t* oct_of_generator_array(ap_manager_t* man,
 ap_abstract0_t* 
 ap_abstract0_oct_of_generator_array(ap_manager_t* man,
 				    size_t intdim, size_t realdim,
-				    const ap_generator0_array_t* array)
+				    ap_generator0_array_t* array)
 {
   return abstract0_of_oct(man,oct_of_generator_array(man,intdim,realdim,array));
 }

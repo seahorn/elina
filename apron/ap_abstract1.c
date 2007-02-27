@@ -26,7 +26,7 @@ static inline ap_abstract1_t ap_abstract1_cons(ap_abstract0_t* a0, ap_environmen
 
 /* Special constructor:
    Build a new abstract value level 1 from the old one and a new value level 0,
-   depending on destructive. The environment is supposed unchanged. 
+   depending on destructive. The environment is supposed unchanged.
 */
 static
 ap_abstract1_t ap_abstract1_consres(bool destructive, ap_abstract1_t* a, ap_abstract0_t* value)
@@ -47,13 +47,13 @@ ap_abstract1_t ap_abstract1_consres(bool destructive, ap_abstract1_t* a, ap_abst
 }
 /* Special constructor 2:
 
-   Build a new abstract value level 1 from the old one, a new
-   value level 0 and a new environment, depending on
-   destructive. The environment is supposed unchanged.
+Build a new abstract value level 1 from the old one, a new
+value level 0 and a new environment, depending on
+destructive. The environment is supposed unchanged.
 */
 static
-ap_abstract1_t ap_abstract1_consres2(bool destructive, ap_abstract1_t* a, 
-				     ap_abstract0_t* value, 
+ap_abstract1_t ap_abstract1_consres2(bool destructive, ap_abstract1_t* a,
+				     ap_abstract0_t* value,
 				     ap_environment_t* env)
 {
   ap_abstract1_t res;
@@ -67,8 +67,8 @@ ap_abstract1_t ap_abstract1_consres2(bool destructive, ap_abstract1_t* a,
     }
   }
   else {
-      res.abstract0 = value;
-      res.env = env;
+    res.abstract0 = value;
+    res.env = env;
   }
   return res;
 }
@@ -93,7 +93,7 @@ Linear expression not defined on a (sub)environment of the abstract value\
 
 bool ap_abstract1_check_env2(ap_funid_t funid,
 			     ap_manager_t* man,
-			     const ap_abstract1_t* a1, const ap_abstract1_t* a2)
+			     ap_abstract1_t* a1, ap_abstract1_t* a2)
 {
   if (ap_environment_is_eq(a1->env,a2->env))
     return true;
@@ -106,7 +106,7 @@ bool ap_abstract1_check_env2(ap_funid_t funid,
   }
 }
 bool ap_abstract1_check_env_array(ap_funid_t funid,ap_manager_t* man,
-				  const ap_abstract1_t* tab, size_t size)
+				  ap_abstract1_t* tab, size_t size)
 {
   bool res;
   if (size==0){
@@ -139,7 +139,7 @@ the same environement as the 0th abstract value\
 }
 /* Array of abstract values */
 bool ap_abstract1_checkman_array(ap_funid_t funid,
-				 ap_manager_t* man, const ap_abstract1_t* tab, size_t size)
+				 ap_manager_t* man, ap_abstract1_t* tab, size_t size)
 {
   size_t i;
   for (i=0;i<size;i++){
@@ -159,7 +159,7 @@ The %luth abstract value of the array is of type %s and not of the type %s expec
   return true;
 }
 
-void ap_box1_fprint(FILE* stream, const ap_box1_t* box)
+void ap_box1_fprint(FILE* stream, ap_box1_t* box)
 {
   size_t i;
   fprintf(stream,"Box1: (%lu,%lu)\n",
@@ -196,7 +196,7 @@ void ap_box1_clear(ap_box1_t* box)
 
 /* Return a copy of an abstract value, on
    which destructive update does not affect the initial value. */
-ap_abstract1_t ap_abstract1_copy(ap_manager_t* man, const ap_abstract1_t* a){
+ap_abstract1_t ap_abstract1_copy(ap_manager_t* man, ap_abstract1_t* a){
   return ap_abstract1_cons(ap_abstract0_copy(man,a->abstract0),a->env);
 }
 
@@ -210,7 +210,7 @@ void ap_abstract1_clear(ap_manager_t* man, ap_abstract1_t* a)
 }
 
 /* Return the abstract size of an abstract value (see ap_manager_t) */
-size_t ap_abstract1_size(ap_manager_t* man, const ap_abstract1_t* a){
+size_t ap_abstract1_size(ap_manager_t* man, ap_abstract1_t* a){
   return ap_abstract0_size(man,a->abstract0);
 }
 
@@ -222,12 +222,12 @@ size_t ap_abstract1_size(ap_manager_t* man, const ap_abstract1_t* a){
 /* Minimize the size of the representation of a.
    This may result in a later recomputation of internal information.
 */
-void ap_abstract1_minimize(ap_manager_t* man, const ap_abstract1_t* a){
+void ap_abstract1_minimize(ap_manager_t* man, ap_abstract1_t* a){
   ap_abstract0_minimize(man,a->abstract0);
 }
 
 /* Put the abstract value in canonical form. (not yet clear definition) */
-void ap_abstract1_canonicalize(ap_manager_t* man, const ap_abstract1_t* a){
+void ap_abstract1_canonicalize(ap_manager_t* man, ap_abstract1_t* a){
   ap_abstract0_canonicalize(man,a->abstract0);
 }
 
@@ -248,7 +248,7 @@ void ap_abstract1_approximate(ap_manager_t* man, ap_abstract1_t* a, int algorith
 /* Print the abstract value */
 void ap_abstract1_fprint(FILE* stream,
 			 ap_manager_t* man,
-			 const ap_abstract1_t* a)
+			 ap_abstract1_t* a)
 {
   ap_environment_name_of_dim_t* name_of_dim;
 
@@ -261,13 +261,13 @@ void ap_abstract1_fprint(FILE* stream,
    function name_of_dim to name dimensions.  The meaning of difference is
    library dependent. */
 void ap_abstract1_fprintdiff(FILE* stream,
-			  ap_manager_t* man,
-			  const ap_abstract1_t* a1, const ap_abstract1_t* a2)
+			     ap_manager_t* man,
+			     ap_abstract1_t* a1, ap_abstract1_t* a2)
 {
   ap_environment_name_of_dim_t* name_of_dim;
   if (!ap_environment_is_eq(a1->env,a2->env)){
     ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,AP_FUNID_FPRINTDIFF,
-			    "the 2 abstract values are not defined on the same environement");
+			       "the 2 abstract values are not defined on the same environement");
     fprintf(stream,"unknown diff\n");
   }
   name_of_dim = ap_environment_name_of_dim_alloc(a1->env);
@@ -277,7 +277,7 @@ void ap_abstract1_fprintdiff(FILE* stream,
 
 /* Dump the internal representation of an abstract value,
    for debugging purposes */
-void ap_abstract1_fdump(FILE* stream, ap_manager_t* man, const ap_abstract1_t* a)
+void ap_abstract1_fdump(FILE* stream, ap_manager_t* man, ap_abstract1_t* a)
 {
   fprintf(stream, "abstract value of level 1:\n");
   ap_environment_fdump(stream,a->env);
@@ -296,7 +296,7 @@ void ap_abstract1_fdump(FILE* stream, ap_manager_t* man, const ap_abstract1_t* a
    of bytes written.  It is the user responsability to free the memory
    afterwards (with free). */
 
-ap_membuf_t ap_abstract1_serialize_raw(ap_manager_t* man, const ap_abstract1_t* a){
+ap_membuf_t ap_abstract1_serialize_raw(ap_manager_t* man, ap_abstract1_t* a){
   ap_membuf_t membuf;
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_SERIALIZE_RAW,"");
   membuf.ptr = NULL;
@@ -339,10 +339,10 @@ ap_abstract1_t ap_abstract1_top(ap_manager_t* man, ap_environment_t* env)
    is no constrained in the resulting abstract value.
 */
 ap_abstract1_t ap_abstract1_of_box(ap_manager_t* man,
-			     ap_environment_t* env,
-			     ap_var_t* tvar,
-			     ap_interval_t** tinterval,
-			     size_t size)
+				   ap_environment_t* env,
+				   ap_var_t* tvar,
+				   ap_interval_t** tinterval,
+				   size_t size)
 {
   ap_abstract1_t a;
   size_t i;
@@ -360,7 +360,7 @@ ap_abstract1_t ap_abstract1_of_box(ap_manager_t* man,
     }
     ap_interval_set(itv[dim],tinterval[i]);
   }
-  a = ap_abstract1_cons(ap_abstract0_of_box(man,env->intdim,env->realdim,(const ap_interval_t**)itv),env);
+  a = ap_abstract1_cons(ap_abstract0_of_box(man,env->intdim,env->realdim,(ap_interval_t**)itv),env);
   ap_interval_array_free(itv,env->intdim+env->realdim);
   return a;
 }
@@ -369,7 +369,7 @@ ap_abstract1_t ap_abstract1_of_box(ap_manager_t* man,
    of size size */
 ap_abstract1_t ap_abstract1_of_lincons_array(ap_manager_t* man,
 					     ap_environment_t* env,
-					     const ap_lincons1_array_t* array)
+					     ap_lincons1_array_t* array)
 {
   ap_abstract0_t* value;
   ap_abstract1_t a;
@@ -378,7 +378,7 @@ ap_abstract1_t ap_abstract1_of_lincons_array(ap_manager_t* man,
 
   if (env==NULL)
     env = array->env;
-  
+
   if (ap_environment_is_eq(env,array->env)){
     dimchange = NULL;
     array0 = array->lincons0_array;
@@ -409,11 +409,11 @@ ap_abstract1_t ap_abstract1_of_lincons_array(ap_manager_t* man,
 /* II.2 Accessors */
 /* ============================================================ */
 
-const ap_environment_t* ap_abstract1_environment(ap_manager_t* man, const ap_abstract1_t* a){
+ap_environment_t* ap_abstract1_environment(ap_manager_t* man, ap_abstract1_t* a){
   return a->env;
 }
 
-const ap_abstract0_t* ap_abstract1_abstract0(ap_manager_t* man, const ap_abstract1_t* a){
+ap_abstract0_t* ap_abstract1_abstract0(ap_manager_t* man, ap_abstract1_t* a){
   return a->abstract0;
 }
 
@@ -426,15 +426,15 @@ const ap_abstract0_t* ap_abstract1_abstract0(ap_manager_t* man, const ap_abstrac
    considered too expensive to be performed (according to the options).
    The flag exact and best should be cleared in such a case. */
 
-tbool_t ap_abstract1_is_bottom(ap_manager_t* man, const ap_abstract1_t* a){
+tbool_t ap_abstract1_is_bottom(ap_manager_t* man, ap_abstract1_t* a){
   return ap_abstract0_is_bottom(man,a->abstract0);
 }
-tbool_t ap_abstract1_is_top(ap_manager_t* man, const ap_abstract1_t* a){
+tbool_t ap_abstract1_is_top(ap_manager_t* man, ap_abstract1_t* a){
   return ap_abstract0_is_top(man,a->abstract0);
 }
 
 /* inclusion check */
-tbool_t ap_abstract1_is_leq(ap_manager_t* man, const ap_abstract1_t* a1, const ap_abstract1_t* a2)
+tbool_t ap_abstract1_is_leq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2)
 {
   if (ap_abstract1_check_env2(AP_FUNID_IS_LEQ,man,a1,a2))
     return ap_abstract0_is_leq(man,a1->abstract0,a2->abstract0);
@@ -442,7 +442,7 @@ tbool_t ap_abstract1_is_leq(ap_manager_t* man, const ap_abstract1_t* a1, const a
     return tbool_top;
 }
 /* equality check */
-tbool_t ap_abstract1_is_eq(ap_manager_t* man, const ap_abstract1_t* a1, const ap_abstract1_t* a2)
+tbool_t ap_abstract1_is_eq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2)
 {
   if (ap_abstract1_check_env2(AP_FUNID_IS_EQ,man,a1,a2))
     return ap_abstract0_is_eq(man,a1->abstract0,a2->abstract0);
@@ -450,7 +450,7 @@ tbool_t ap_abstract1_is_eq(ap_manager_t* man, const ap_abstract1_t* a1, const ap
     return tbool_top;
 }
 /* does the abstract value satisfy the linear constraint ? */
-tbool_t ap_abstract1_sat_lincons(ap_manager_t* man, const ap_abstract1_t* a, const ap_lincons1_t* cons)
+tbool_t ap_abstract1_sat_lincons(ap_manager_t* man, ap_abstract1_t* a, ap_lincons1_t* cons)
 {
   tbool_t res;
 
@@ -464,7 +464,7 @@ tbool_t ap_abstract1_sat_lincons(ap_manager_t* man, const ap_abstract1_t* a, con
     dimchange = ap_environment_dimchange(cons->env,a->env);
     if (dimchange==NULL){
       ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,AP_FUNID_SAT_LINCONS,
-			      "the environment of the constraint is not a subset of the environment of the abstract value");
+				 "the environment of the constraint is not a subset of the environment of the abstract value");
       res = tbool_top;
       return res;
     }
@@ -477,8 +477,8 @@ tbool_t ap_abstract1_sat_lincons(ap_manager_t* man, const ap_abstract1_t* a, con
 }
 
 /* Is the dimension included in the interval in the abstract value ? */
-tbool_t ap_abstract1_sat_interval(ap_manager_t* man, const ap_abstract1_t* a,
-			       ap_var_t var, const ap_interval_t* interval)
+tbool_t ap_abstract1_sat_interval(ap_manager_t* man, ap_abstract1_t* a,
+				  ap_var_t var, ap_interval_t* interval)
 {
   ap_dim_t dim;
   tbool_t res;
@@ -493,8 +493,8 @@ tbool_t ap_abstract1_sat_interval(ap_manager_t* man, const ap_abstract1_t* a,
 }
 
 /* Is the dimension included in the interval in the abstract value ? */
-tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_t* man, const ap_abstract1_t* a,
-					     ap_var_t var)
+tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_t* man, ap_abstract1_t* a,
+					       ap_var_t var)
 {
   ap_dim_t dim;
   tbool_t res;
@@ -515,7 +515,7 @@ tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_t* man, const ap_abstr
 /* Returns the interval taken by a linear expression
    over the abstract value */
 ap_interval_t* ap_abstract1_bound_linexpr(ap_manager_t* man,
-				    const ap_abstract1_t* a, const ap_linexpr1_t* expr)
+					  ap_abstract1_t* a, ap_linexpr1_t* expr)
 {
   ap_interval_t* res;
 
@@ -529,7 +529,7 @@ ap_interval_t* ap_abstract1_bound_linexpr(ap_manager_t* man,
     dimchange = ap_environment_dimchange(expr->env,a->env);
     if (dimchange==NULL){
       ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,AP_FUNID_BOUND_LINEXPR,
-			      "the environment of the linear expression is not a subset of the environment of the abstract value");
+				 "the environment of the linear expression is not a subset of the environment of the abstract value");
       res = ap_interval_alloc();
       ap_interval_reinit(res,man->option.scalar_discr);
       ap_interval_set_top(res);
@@ -546,7 +546,7 @@ ap_interval_t* ap_abstract1_bound_linexpr(ap_manager_t* man,
 /* Returns the interval taken by the variable over the abstract
    value */
 ap_interval_t* ap_abstract1_bound_variable(ap_manager_t* man,
-				      const ap_abstract1_t* a, ap_var_t var)
+					   ap_abstract1_t* a, ap_var_t var)
 {
   ap_dim_t dim;
   ap_interval_t* res;
@@ -564,7 +564,7 @@ ap_interval_t* ap_abstract1_bound_variable(ap_manager_t* man,
 
 /* Converts an abstract value to a polyhedra (conjunction of
    linear constraints). */
-ap_lincons1_array_t ap_abstract1_to_lincons_array(ap_manager_t* man, const ap_abstract1_t* a)
+ap_lincons1_array_t ap_abstract1_to_lincons_array(ap_manager_t* man, ap_abstract1_t* a)
 {
   ap_lincons1_array_t array;
 
@@ -576,8 +576,8 @@ ap_lincons1_array_t ap_abstract1_to_lincons_array(ap_manager_t* man, const ap_ab
 /* Converts an abstract value to an interval/hypercube.  The size
    of the resulting array is ap_abstract1_dimension(man,a).  This
    function can be reimplemented by using ap_abstract1_bound_linexpr
-   */
-ap_box1_t ap_abstract1_to_box(ap_manager_t* man, const ap_abstract1_t* a)
+*/
+ap_box1_t ap_abstract1_to_box(ap_manager_t* man, ap_abstract1_t* a)
 {
   ap_box1_t box;
 
@@ -587,7 +587,7 @@ ap_box1_t ap_abstract1_to_box(ap_manager_t* man, const ap_abstract1_t* a)
 }
 
 /* Converts an abstract value to a system of generators. */
-ap_generator1_array_t ap_abstract1_to_generator_array(ap_manager_t* man, const ap_abstract1_t* a)
+ap_generator1_array_t ap_abstract1_to_generator_array(ap_manager_t* man, ap_abstract1_t* a)
 {
   ap_generator1_array_t array;
 
@@ -604,7 +604,7 @@ ap_generator1_array_t ap_abstract1_to_generator_array(ap_manager_t* man, const a
 /* III.1 Meet and Join */
 /* ============================================================ */
 
-ap_abstract1_t ap_abstract1_meetjoin(ap_funid_t funid, ap_manager_t* man, bool destructive, ap_abstract1_t* a1, const ap_abstract1_t* a2)
+ap_abstract1_t ap_abstract1_meetjoin(ap_funid_t funid, ap_manager_t* man, bool destructive, ap_abstract1_t* a1, ap_abstract1_t* a2)
 {
   ap_abstract1_t res;
   if (ap_abstract1_check_env2(funid,man,a1,a2)){
@@ -617,19 +617,19 @@ ap_abstract1_t ap_abstract1_meetjoin(ap_funid_t funid, ap_manager_t* man, bool d
   }
   return res;
 }
-ap_abstract1_t ap_abstract1_meet(ap_manager_t* man, bool destructive, ap_abstract1_t* a1, const ap_abstract1_t* a2){
+ap_abstract1_t ap_abstract1_meet(ap_manager_t* man, bool destructive, ap_abstract1_t* a1, ap_abstract1_t* a2){
   return ap_abstract1_meetjoin(AP_FUNID_MEET,man,destructive,a1,a2);
 }
-ap_abstract1_t ap_abstract1_join(ap_manager_t* man, bool destructive, ap_abstract1_t* a1, const ap_abstract1_t* a2){
+ap_abstract1_t ap_abstract1_join(ap_manager_t* man, bool destructive, ap_abstract1_t* a1, ap_abstract1_t* a2){
   return ap_abstract1_meetjoin(AP_FUNID_JOIN,man,destructive,a1,a2);
 }
-ap_abstract1_t ap_abstract1_meetjoin_array(ap_funid_t funid, ap_manager_t* man, const ap_abstract1_t* tab, size_t size)
+ap_abstract1_t ap_abstract1_meetjoin_array(ap_funid_t funid, ap_manager_t* man, ap_abstract1_t* tab, size_t size)
 {
   ap_abstract1_t res;
   if (ap_abstract1_checkman_array(funid,man,tab,size) &&
       ap_abstract1_check_env_array(funid,man,tab,size)){
     size_t i;
-     ap_abstract0_t* res0;
+    ap_abstract0_t* res0;
     void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
     void** ntab = malloc(size*sizeof(void*));
     for (i=0;i<size;i++) ntab[i] = tab[i].abstract0->value;
@@ -645,16 +645,16 @@ ap_abstract1_t ap_abstract1_meetjoin_array(ap_funid_t funid, ap_manager_t* man, 
   }
   return res;
 }
-ap_abstract1_t ap_abstract1_meet_array(ap_manager_t* man, const ap_abstract1_t* tab, size_t size){
+ap_abstract1_t ap_abstract1_meet_array(ap_manager_t* man, ap_abstract1_t* tab, size_t size){
   return ap_abstract1_meetjoin_array(AP_FUNID_MEET_ARRAY,man,tab,size);
 }
-ap_abstract1_t ap_abstract1_join_array(ap_manager_t* man, const ap_abstract1_t* tab, size_t size){
+ap_abstract1_t ap_abstract1_join_array(ap_manager_t* man, ap_abstract1_t* tab, size_t size){
   return ap_abstract1_meetjoin_array(AP_FUNID_JOIN_ARRAY,man,tab,size);
 }
 
 ap_abstract1_t ap_abstract1_meet_lincons_array(ap_manager_t* man,
-					 bool destructive,
-					 ap_abstract1_t* a, const ap_lincons1_array_t* array)
+					       bool destructive,
+					       ap_abstract1_t* a, ap_lincons1_array_t* array)
 {
   ap_abstract1_t res;
   ap_lincons0_array_t array0;
@@ -668,9 +668,9 @@ ap_abstract1_t ap_abstract1_meet_lincons_array(ap_manager_t* man,
     dimchange = ap_environment_dimchange(array->env,a->env);
     if (dimchange==NULL){
       ap_manager_raise_exception(man,
-			      AP_EXC_INVALID_ARGUMENT,
-			      AP_FUNID_MEET_LINCONS_ARRAY,
-			      "environment of array of constraints is not a subset of the environment of the abstract value");
+				 AP_EXC_INVALID_ARGUMENT,
+				 AP_FUNID_MEET_LINCONS_ARRAY,
+				 "environment of array of constraints is not a subset of the environment of the abstract value");
       res = destructive ? *a : ap_abstract1_copy(man,a);
       return res;
     }
@@ -686,8 +686,8 @@ ap_abstract1_t ap_abstract1_meet_lincons_array(ap_manager_t* man,
 }
 
 ap_abstract1_t ap_abstract1_add_ray_array(ap_manager_t* man,
-				    bool destructive,
-				    ap_abstract1_t* a, const ap_generator1_array_t* array)
+					  bool destructive,
+					  ap_abstract1_t* a, ap_generator1_array_t* array)
 {
   ap_abstract1_t res;
   ap_generator0_array_t array0;
@@ -701,9 +701,9 @@ ap_abstract1_t ap_abstract1_add_ray_array(ap_manager_t* man,
     dimchange = ap_environment_dimchange(array->env,a->env);
     if (dimchange==NULL){
       ap_manager_raise_exception(man,
-			      AP_EXC_INVALID_ARGUMENT,
-			      AP_FUNID_ADD_RAY_ARRAY,
-			      "environment of array of generators is not a subset of the environment of the abstract value");
+				 AP_EXC_INVALID_ARGUMENT,
+				 AP_FUNID_ADD_RAY_ARRAY,
+				 "environment of array of generators is not a subset of the environment of the abstract value");
       res = ap_abstract1_top(man,a->env);
       if (destructive) ap_abstract1_clear(man,a);
       return res;
@@ -724,9 +724,9 @@ ap_abstract1_t ap_abstract1_add_ray_array(ap_manager_t* man,
 /* ============================================================ */
 
 ap_abstract1_t ap_abstract1_asssub_linexpr(ap_funid_t funid, ap_manager_t* man,
-				     bool destructive, ap_abstract1_t* a,
-				     ap_var_t var, const ap_linexpr1_t* expr,
-				     const ap_abstract1_t* dest)
+					   bool destructive, ap_abstract1_t* a,
+					   ap_var_t var, ap_linexpr1_t* expr,
+					   ap_abstract1_t* dest)
 {
   ap_dim_t dim;
   ap_abstract1_t res;
@@ -767,26 +767,26 @@ ap_abstract1_t ap_abstract1_asssub_linexpr(ap_funid_t funid, ap_manager_t* man,
 }
 
 ap_abstract1_t ap_abstract1_assign_linexpr(ap_manager_t* man,
-				     bool destructive, ap_abstract1_t* a,
-				     ap_var_t var, const ap_linexpr1_t* expr,
-				     const ap_abstract1_t* dest){
+					   bool destructive, ap_abstract1_t* a,
+					   ap_var_t var, ap_linexpr1_t* expr,
+					   ap_abstract1_t* dest){
   return ap_abstract1_asssub_linexpr(AP_FUNID_ASSIGN_LINEXPR,man,destructive,a,var,expr,dest);
 }
 ap_abstract1_t ap_abstract1_substitute_linexpr(ap_manager_t* man,
-					 bool destructive, ap_abstract1_t* a,
-					 ap_var_t var, const ap_linexpr1_t* expr,
-					 const ap_abstract1_t* dest){
+					       bool destructive, ap_abstract1_t* a,
+					       ap_var_t var, ap_linexpr1_t* expr,
+					       ap_abstract1_t* dest){
   return ap_abstract1_asssub_linexpr(AP_FUNID_SUBSTITUTE_LINEXPR,man,destructive,a,var,expr,dest);
 }
 
 ap_abstract1_t ap_abstract1_asssub_linexpr_array(ap_funid_t funid,
-					   ap_manager_t* man,
-					   bool destructive, ap_abstract1_t* a,
-					   ap_var_t* tvar, const ap_linexpr1_t* texpr, size_t size,
-					   const ap_abstract1_t* dest)
+						 ap_manager_t* man,
+						 bool destructive, ap_abstract1_t* a,
+						 ap_var_t* tvar, ap_linexpr1_t* texpr, size_t size,
+						 ap_abstract1_t* dest)
 {
   ap_dim_t* tdim;
-  const ap_linexpr0_t** tlinexpr0;
+  ap_linexpr0_t** tlinexpr0;
   ap_abstract1_t res;
   ap_dimchange_t* dimchange;
   size_t i;
@@ -818,9 +818,9 @@ ap_abstract1_t ap_abstract1_asssub_linexpr_array(ap_funid_t funid,
       }
     }
     ap_abstract0_t* value = ap_abstract0_asssub_linexpr_array(funid,man,
-							destructive,a->abstract0,
-							tdim, tlinexpr0, size,
-							(dest!=NULL) ? dest->abstract0 : NULL);
+							      destructive,a->abstract0,
+							      tdim, tlinexpr0, size,
+							      (dest!=NULL) ? dest->abstract0 : NULL);
     res = ap_abstract1_consres(destructive, a, value);
   }
   else {
@@ -832,7 +832,7 @@ ap_abstract1_t ap_abstract1_asssub_linexpr_array(ap_funid_t funid,
     size_t j;
     for (j=0; j<i; j++){
       if (tlinexpr0[j]!=texpr[j].linexpr0)
-	ap_linexpr0_free((ap_linexpr0_t*)tlinexpr0[j]);
+	ap_linexpr0_free(tlinexpr0[j]);
     }
     free(tlinexpr0);
     free(tdim);
@@ -842,14 +842,14 @@ ap_abstract1_t ap_abstract1_asssub_linexpr_array(ap_funid_t funid,
 
 ap_abstract1_t ap_abstract1_assign_linexpr_array(ap_manager_t* man,
 						 bool destructive, ap_abstract1_t* a,
-						 ap_var_t* tvar, const ap_linexpr1_t* texpr, size_t size,
-						 const ap_abstract1_t* dest){
+						 ap_var_t* tvar, ap_linexpr1_t* texpr, size_t size,
+						 ap_abstract1_t* dest){
   return ap_abstract1_asssub_linexpr_array(AP_FUNID_ASSIGN_LINEXPR_ARRAY,man,destructive,a,tvar,texpr,size,dest);
 }
 ap_abstract1_t ap_abstract1_substitute_linexpr_array(ap_manager_t* man,
 						     bool destructive, ap_abstract1_t* a,
-						     ap_var_t* tvar,  const ap_linexpr1_t* texpr, size_t size,
-						     const ap_abstract1_t* dest){
+						     ap_var_t* tvar,  ap_linexpr1_t* texpr, size_t size,
+						     ap_abstract1_t* dest){
   return ap_abstract1_asssub_linexpr_array(AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,man,destructive,a,tvar,texpr,size,dest);
 }
 
@@ -858,9 +858,9 @@ ap_abstract1_t ap_abstract1_substitute_linexpr_array(ap_manager_t* man,
 /* ============================================================ */
 
 ap_abstract1_t ap_abstract1_forget_array(ap_manager_t* man,
-				   bool destructive, ap_abstract1_t* a,
-				   ap_var_t* tvar, size_t size,
-				   bool project)
+					 bool destructive, ap_abstract1_t* a,
+					 ap_var_t* tvar, size_t size,
+					 bool project)
 {
   ap_dim_t* tdim;
   size_t i;
@@ -906,8 +906,8 @@ ap_abstract1_t ap_abstract1_change_environment(ap_manager_t* man,
   env = ap_environment_lce(a->env,nenv,&dimchange1,&dimchange2);
   if (env==NULL){
     ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
-			    AP_FUNID_CHANGE_ENVIRONMENT,
-			    "the abstract value and the new environment are incompatible");
+			       AP_FUNID_CHANGE_ENVIRONMENT,
+			       "the abstract value and the new environment are incompatible");
     res = ap_abstract1_top(man,nenv);
     if (destructive) ap_abstract1_clear(man,a);
     return res;
@@ -925,7 +925,7 @@ ap_abstract1_t ap_abstract1_change_environment(ap_manager_t* man,
   }
   if (dimchange1)
     free(dimchange1);
-  res = ap_abstract1_consres2(destructive, a, 
+  res = ap_abstract1_consres2(destructive, a,
 			      value, ap_environment_copy(nenv));
   return res;
 }
@@ -1055,8 +1055,8 @@ ap_abstract1_t ap_abstract1_expand(ap_manager_t* man,
 }
 
 ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
-		    bool destructive, ap_abstract1_t* a,
-		    ap_var_t* tvar, size_t size)
+				 bool destructive, ap_abstract1_t* a,
+				 ap_var_t* tvar, size_t size)
 {
   ap_abstract1_t res;
   ap_dim_t* tdim;
@@ -1117,7 +1117,7 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
 
 /* Widening */
 ap_abstract1_t ap_abstract1_widening(ap_manager_t* man,
-			       const ap_abstract1_t* a1, const ap_abstract1_t* a2)
+				     ap_abstract1_t* a1, ap_abstract1_t* a2)
 {
   ap_abstract1_t res;
   if (ap_abstract1_check_env2(AP_FUNID_WIDENING,man,a1,a2)){
@@ -1131,8 +1131,8 @@ ap_abstract1_t ap_abstract1_widening(ap_manager_t* man,
 }
 /* Widening with threshold */
 ap_abstract1_t ap_abstract1_widening_threshold(ap_manager_t* man,
-					 const ap_abstract1_t* a1, const ap_abstract1_t* a2,
-					 const ap_lincons1_array_t* array)
+					       ap_abstract1_t* a1, ap_abstract1_t* a2,
+					       ap_lincons1_array_t* array)
 {
   ap_abstract1_t res;
   ap_lincons0_array_t array0;

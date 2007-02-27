@@ -11,7 +11,7 @@
 /* I. Generators */
 /* ********************************************************************** */
 
-void ap_generator0_fprint(FILE* stream, const ap_generator0_t* gen, char** name_of_dim)
+void ap_generator0_fprint(FILE* stream, ap_generator0_t* gen, char** name_of_dim)
 {
   char* str = NULL;
 
@@ -42,7 +42,7 @@ void ap_generator0_fprint(FILE* stream, const ap_generator0_t* gen, char** name_
 
 ap_generator0_array_t ap_generator0_array_make(size_t size)
 {
-  int i;
+  size_t i;
   ap_generator0_array_t array;
 
   array.size = size;
@@ -55,7 +55,7 @@ ap_generator0_array_t ap_generator0_array_make(size_t size)
 
 void ap_generator0_array_clear(ap_generator0_array_t* array)
 {
-  int i;
+  size_t i;
 
   if (array->p!=NULL){
     for (i=0; i<array->size; i++)
@@ -66,8 +66,8 @@ void ap_generator0_array_clear(ap_generator0_array_t* array)
   array->size=0;
 }
 void ap_generator0_array_fprint(FILE* stream,
-			 const ap_generator0_array_t* array,
-			 char** name_of_dim)
+				ap_generator0_array_t* array,
+				char** name_of_dim)
 {
   size_t i;
 
@@ -89,7 +89,7 @@ void ap_generator0_array_fprint(FILE* stream,
 /* ====================================================================== */
 
 void ap_generator0_array_add_dimensions_with(ap_generator0_array_t* array,
-					     const ap_dimchange_t* dimchange)
+					     ap_dimchange_t* dimchange)
 {
   size_t i;
   for(i=0; i<array->size; i++){
@@ -97,8 +97,8 @@ void ap_generator0_array_add_dimensions_with(ap_generator0_array_t* array,
     if (expr) ap_linexpr0_add_dimensions_with(expr,dimchange);
   }
 }
-ap_generator0_array_t ap_generator0_array_add_dimensions(const ap_generator0_array_t* array,
-						   const ap_dimchange_t* dimchange)
+ap_generator0_array_t ap_generator0_array_add_dimensions(ap_generator0_array_t* array,
+							 ap_dimchange_t* dimchange)
 {
   size_t i;
   ap_generator0_array_t narray;
@@ -111,7 +111,7 @@ ap_generator0_array_t ap_generator0_array_add_dimensions(const ap_generator0_arr
 }
 
 void ap_generator0_array_permute_dimensions_with(ap_generator0_array_t* array,
-					      const ap_dimperm_t* perm)
+						 ap_dimperm_t* perm)
 {
   size_t i;
   for(i=0; i<array->size; i++){
@@ -119,8 +119,8 @@ void ap_generator0_array_permute_dimensions_with(ap_generator0_array_t* array,
     if (expr) ap_linexpr0_permute_dimensions_with(expr,perm);
   }
 }
-ap_generator0_array_t ap_generator0_array_permute_dimensions(const ap_generator0_array_t* array,
-						       const ap_dimperm_t* perm)
+ap_generator0_array_t ap_generator0_array_permute_dimensions(ap_generator0_array_t* array,
+							     ap_dimperm_t* perm)
 {
   size_t i;
   ap_generator0_array_t narray;

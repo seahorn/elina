@@ -76,7 +76,7 @@ matrix_t* matrix_expand(pk_internal_t* pk,
     if (numint_sgn(p[i][col])){
       for (j=offset;j < offset+dimsup; j++){
 	vector_copy(p[row],
-		    (const numint_t*)p[i],
+		    p[i],
 		    nbcols+dimsup);
 	numint_set(p[row][pk->dec+j],p[row][col]);
 	numint_set_int(p[row][col],0);
@@ -196,7 +196,7 @@ poly_t* poly_expand(ap_manager_t* man,
 matrix_t* matrix_fold(pk_internal_t* pk,
 		      bool destructive,
 		      matrix_t* F,
-		      const ap_dim_t* tdim, size_t size)
+		      ap_dim_t* tdim, size_t size)
 {
   matrix_t* nF;
   size_t i,j,row,col;
@@ -220,7 +220,7 @@ matrix_t* matrix_fold(pk_internal_t* pk,
   }
   row = 0;
   for(i=0; i<nbrows; i++){
-    vector_remove_dimensions(pk,nF->p[row],(const numint_t*)F->p[i],nbcols,
+    vector_remove_dimensions(pk,nF->p[row],F->p[i],nbcols,
 			     dimchange);
     vector_normalize(pk,nF->p[row],nbcols-dimsup);
     row++;
@@ -228,7 +228,7 @@ matrix_t* matrix_fold(pk_internal_t* pk,
       if (numint_cmp(F->p[i][col],
 		     F->p[i][pk->dec+tdim[j+1]])!=0){
 	vector_remove_dimensions(pk,
-				 nF->p[row],(const numint_t*)F->p[i],nbcols,
+				 nF->p[row],F->p[i],nbcols,
 				 dimchange);
 	numint_set(nF->p[row][col],F->p[i][pk->dec+tdim[j+1]]);
 	vector_normalize(pk,nF->p[row],nbcols-dimsup);
@@ -249,7 +249,7 @@ matrix_t* matrix_fold(pk_internal_t* pk,
 
 poly_t* poly_fold(ap_manager_t* man,
 		  bool destructive, poly_t* pa,
-		  const ap_dim_t* tdim, size_t size)
+		  ap_dim_t* tdim, size_t size)
 {
   size_t intdimsup,realdimsup;
   poly_t* po;

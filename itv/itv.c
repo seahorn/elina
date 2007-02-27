@@ -82,7 +82,7 @@ bool ITVFUN(canonicalize)(itv_internal_t* intern,
 */
 
 void ITVFUN(mul_bound)(itv_internal_t* intern,
-		       itv_t a, const itv_t b, const bound_t c)
+		       itv_t a, itv_t b, bound_t c)
 {
   assert (c!=a->inf && c!=a->sup && c!=b->inf && c!=b->sup);
   if (bound_sgn(c)>=0){
@@ -106,7 +106,7 @@ void ITVFUN(mul_bound)(itv_internal_t* intern,
 }
 
 void ITVFUN(div_bound)(itv_internal_t* intern,
-		       itv_t a, const itv_t b, const bound_t c)
+		       itv_t a, itv_t b, bound_t c)
 {
   assert (c!=a->inf && c!=a->sup && c!=b->inf && c!=b->sup);
   if (bound_sgn(c)>0){
@@ -128,7 +128,7 @@ void ITVFUN(div_bound)(itv_internal_t* intern,
     }
   }
 }
-void ITVFUN(sub)(itv_t a, const itv_t b, const itv_t c)
+void ITVFUN(sub)(itv_t a, itv_t b, itv_t c)
 {
   if (a!=c){
     bound_add(a->inf,b->inf,c->sup);
@@ -138,7 +138,7 @@ void ITVFUN(sub)(itv_t a, const itv_t b, const itv_t c)
     itv_add(a,b,c);
   }
 }
-void ITVFUN(neg)(itv_t a, const itv_t b)
+void ITVFUN(neg)(itv_t a, itv_t b)
 {
   if (a!=b){
     bound_set(a->inf,b->sup);
@@ -156,8 +156,8 @@ void ITVFUN(neg)(itv_t a, const itv_t b)
 static
 void itv_mulpp(itv_internal_t* intern,
 	       itv_t a,
-	       const itv_t b,
-	       const itv_t c)
+	       itv_t b,
+	       itv_t c)
 {
   assert(bound_sgn(b->inf)<=0 && bound_sgn(c->inf)<=0);
   bound_mul(a->inf,b->inf,c->inf);
@@ -168,8 +168,8 @@ void itv_mulpp(itv_internal_t* intern,
 static
 void itv_mulnn(itv_internal_t* intern,
 	       itv_t a,
-	       const itv_t b,
-	       const itv_t c)
+	       itv_t b,
+	       itv_t c)
 {
   assert(bound_sgn(b->sup)<=0 && bound_sgn(c->sup)<=0);
   bound_mul(a->inf,b->inf,c->inf);
@@ -181,8 +181,8 @@ void itv_mulnn(itv_internal_t* intern,
 static
 void itv_mulpn(itv_internal_t* intern,
 	       itv_t a,
-	       const itv_t b,
-	       const itv_t c)
+	       itv_t b,
+	       itv_t c)
 {
   assert(bound_sgn(b->inf)<=0 && bound_sgn(c->sup)<=0);
   if (a!=b && a!=c){
@@ -200,8 +200,8 @@ void itv_mulpn(itv_internal_t* intern,
 static
 void itv_mulp(itv_internal_t* intern,
 	      itv_t a,
-	      const itv_t b,
-	      const itv_t c)
+	      itv_t b,
+	      itv_t c)
 {
   assert(bound_sgn(c->inf)<=0);
 
@@ -223,8 +223,8 @@ void itv_mulp(itv_internal_t* intern,
 static
 void itv_muln(itv_internal_t* intern,
 	      itv_t a,
-	      const itv_t b,
-	      const itv_t c)
+	      itv_t b,
+	      itv_t c)
 {
   assert(bound_sgn(c->sup)<=0);
 
@@ -244,7 +244,7 @@ void itv_muln(itv_internal_t* intern,
   }
 }
 
-void ITVFUN(mul)(itv_internal_t* intern, itv_t a, const itv_t b, const itv_t c)
+void ITVFUN(mul)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c)
 {
   if (bound_sgn(c->inf)<=0){
     /* c is positive, */
@@ -280,7 +280,7 @@ void ITVFUN(mul)(itv_internal_t* intern, itv_t a, const itv_t b, const itv_t c)
 /* Printing */
 /* ********************************************************************** */
 
-void ITVFUN(fprint)(FILE* stream, const itv_t a)
+void ITVFUN(fprint)(FILE* stream, itv_t a)
 {
   num_t num;
 
@@ -298,7 +298,7 @@ void ITVFUN(fprint)(FILE* stream, const itv_t a)
   fprintf(stream,"]");
 }
 
-int ITVFUN(snprint)(char* s, size_t size, const itv_t a)
+int ITVFUN(snprint)(char* s, size_t size, itv_t a)
 {
   num_t num;
   int count = 0;
@@ -323,7 +323,7 @@ int ITVFUN(snprint)(char* s, size_t size, const itv_t a)
 /* ********************************************************************** */
 
 bool ITVFUN(set_ap_scalar)(itv_internal_t* intern,
-			   itv_t a, const ap_scalar_t* b)
+			   itv_t a, ap_scalar_t* b)
 {
   assert (ap_scalar_infty(b)==0);
   bool exact = bound_set_ap_scalar(a->sup,b);
@@ -338,7 +338,7 @@ bool ITVFUN(set_ap_scalar)(itv_internal_t* intern,
   }
 }
 bool ITVFUN(set_ap_interval)(itv_internal_t* intern,
-			     itv_t a, const ap_interval_t* b)
+			     itv_t a, ap_interval_t* b)
 {
   ap_scalar_neg(intern->ap_conversion_scalar, b->inf);
   bool b1 = bound_set_ap_scalar(a->inf,intern->ap_conversion_scalar);
@@ -346,7 +346,7 @@ bool ITVFUN(set_ap_interval)(itv_internal_t* intern,
   return b1 && b2;
 }
 bool ITVFUN(set_ap_coeff)(itv_internal_t* intern,
-			  itv_t itv, const ap_coeff_t* coeff)
+			  itv_t itv, ap_coeff_t* coeff)
 {
   switch(coeff->discr){
   case AP_COEFF_SCALAR:
@@ -361,7 +361,7 @@ bool ITVFUN(set_ap_coeff)(itv_internal_t* intern,
 }
 
 bool ITVAPFUN(ap_interval_set_itv)(itv_internal_t* intern,
-				   ap_interval_t* a, const itv_t b)
+				   ap_interval_t* a, itv_t b)
 {
   bool b1 = ap_scalar_set_bound(a->inf,b->inf);
   ap_scalar_neg(a->inf,a->inf);
@@ -369,7 +369,7 @@ bool ITVAPFUN(ap_interval_set_itv)(itv_internal_t* intern,
   return b1 && b2;
 }
 bool ITVAPFUN(ap_coeff_set_itv)(itv_internal_t* intern,
-				ap_coeff_t* a, const itv_t b)
+				ap_coeff_t* a, itv_t b)
 {
   bool exact;
 

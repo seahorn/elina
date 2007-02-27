@@ -45,9 +45,9 @@ void ap_coeff_reinit(ap_coeff_t* coeff, ap_coeff_discr_t ap_coeff_discr, ap_scal
   /* Changing the type of scalar(s) and the type of the coefficient */
 void ap_coeff_free(ap_coeff_t* a);
   /* Free a coefficient */
-void ap_coeff_fprint(FILE* stream, const ap_coeff_t* a);
+void ap_coeff_fprint(FILE* stream, ap_coeff_t* a);
 static inline 
-void ap_coeff_print(const ap_coeff_t* a)
+void ap_coeff_print(ap_coeff_t* a)
 { ap_coeff_fprint(stdout,a); }
   /* Printing */
 
@@ -62,10 +62,10 @@ void ap_coeff_swap(ap_coeff_t* a, ap_coeff_t* b)
 /* Assignements */
 /* ====================================================================== */
 
-void ap_coeff_set(ap_coeff_t* a, const ap_coeff_t* b);
+void ap_coeff_set(ap_coeff_t* a, ap_coeff_t* b);
   /* Assignement */
-void ap_coeff_set_scalar(ap_coeff_t* coeff, const ap_scalar_t* scalar);
-void ap_coeff_set_scalar_mpq(ap_coeff_t* coeff, const mpq_t mpq);
+void ap_coeff_set_scalar(ap_coeff_t* coeff, ap_scalar_t* scalar);
+void ap_coeff_set_scalar_mpq(ap_coeff_t* coeff, mpq_t mpq);
 void ap_coeff_set_scalar_int(ap_coeff_t* coeff, int num);
 void ap_coeff_set_scalar_frac(ap_coeff_t* coeff, int num, unsigned int den);
 void ap_coeff_set_scalar_double(ap_coeff_t* coeff, double num);
@@ -76,9 +76,9 @@ void ap_coeff_set_scalar_double(ap_coeff_t* coeff, double num);
      - a rational, converted to type MPQ
      - a double, converted to type DOUBLE
   */
-void ap_coeff_set_interval(ap_coeff_t* coeff, const ap_interval_t* itv);
-void ap_coeff_set_interval_scalar(ap_coeff_t* coeff, const ap_scalar_t* inf, const ap_scalar_t* sup);
-void ap_coeff_set_interval_mpq(ap_coeff_t* coeff, const mpq_t inf, const mpq_t sup);
+void ap_coeff_set_interval(ap_coeff_t* coeff, ap_interval_t* itv);
+void ap_coeff_set_interval_scalar(ap_coeff_t* coeff, ap_scalar_t* inf, ap_scalar_t* sup);
+void ap_coeff_set_interval_mpq(ap_coeff_t* coeff, mpq_t inf, mpq_t sup);
 void ap_coeff_set_interval_int(ap_coeff_t* coeff, int inf, int sup);
 void ap_coeff_set_interval_frac(ap_coeff_t* coeff,
                                   int numinf, unsigned int deninf,
@@ -95,40 +95,40 @@ void ap_coeff_set_interval_double(ap_coeff_t* coeff, double inf, double sup);
 /* ====================================================================== */
 /* Combined allocation and assignement */
 /* ====================================================================== */
-ap_coeff_t* ap_coeff_alloc_set(const ap_coeff_t* coeff);
-ap_coeff_t* ap_coeff_alloc_set_scalar(const ap_scalar_t* scalar);
-ap_coeff_t* ap_coeff_alloc_set_interval(const ap_interval_t* interval);
+ap_coeff_t* ap_coeff_alloc_set(ap_coeff_t* coeff);
+ap_coeff_t* ap_coeff_alloc_set_scalar(ap_scalar_t* scalar);
+ap_coeff_t* ap_coeff_alloc_set_interval(ap_interval_t* interval);
 
 /* ====================================================================== */
 /* Tests */
 /* ====================================================================== */
 
-int ap_coeff_cmp(const ap_coeff_t* coeff1, const ap_coeff_t* coeff2);
+int ap_coeff_cmp(ap_coeff_t* coeff1, ap_coeff_t* coeff2);
   /* Non Total Comparison:
      - If the 2 coefficients are both scalars, corresp. to ap_scalar_cmp
      - If the 2 coefficients are both intervals, corresp. to ap_interval_cmp
      - otherwise, -3 if the first is a scalar, 3 otherwise
   */
-bool ap_coeff_equal(const ap_coeff_t* coeff1, const ap_coeff_t* coeff2);
+bool ap_coeff_equal(ap_coeff_t* coeff1, ap_coeff_t* coeff2);
   /* Equality */
 
-bool ap_coeff_zero(const ap_coeff_t* coeff);
+bool ap_coeff_zero(ap_coeff_t* coeff);
   /* Return true iff coeff is a zero scalar or an interval with zero bounds */
 
 /* ====================================================================== */
 /* Other operations */
 /* ====================================================================== */
-void ap_coeff_neg(ap_coeff_t* a, const ap_coeff_t* b);
+void ap_coeff_neg(ap_coeff_t* a, ap_coeff_t* b);
   /* Negation */
 
-long ap_coeff_hash(const ap_coeff_t* coeff);
+long ap_coeff_hash(ap_coeff_t* coeff);
   /* Hash code */
 
 /* ====================================================================== */
 /* FOR INTERNAL USE ONLY */
 /* ====================================================================== */
 void ap_coeff_init(ap_coeff_t* coeff, ap_coeff_discr_t ap_coeff_discr);
-void ap_coeff_init_set(ap_coeff_t* coeff, const ap_coeff_t* coeff2);
+void ap_coeff_init_set(ap_coeff_t* coeff, ap_coeff_t* coeff2);
 void ap_coeff_clear(ap_coeff_t* coeff);
 
 #ifdef __cplusplus

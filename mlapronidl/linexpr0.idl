@@ -24,7 +24,7 @@ struct ap_linexpr0_ptr* ap_linexpr0_ptr;
 quote(MLI,"(** Create a linear expression. Its representation is sparse if [None] is provided, dense of size [size] if [Some size] is provided. *)")
 ap_linexpr0_ptr ap_linexpr0_make([unique]int* size)
      quote(call,"\n\
-  if (size<0) caml_failwith(\"Linexpr0.make: negative optional size\");\n\
+  if (size && *size<0) caml_failwith(\"Linexpr0.make: negative optional size\");\n\
   if (size){\n\
     _res = ap_linexpr0_alloc(AP_LINEXPR_DENSE, *size);\n\
   } else {\n\
@@ -53,13 +53,13 @@ quote(MLI,"(** Get the constant *)")
      quote(call,"_res = &a->cst;");
 
 quote(MLI,"(** Get the coefficient corresponding to the dimension *)")
-struct ap_coeff_t ap_linexpr0_get_coeff(ap_linexpr0_ptr a, ap_dim_t dim)
+struct ap_coeff_t ap_linexpr0_get_coeff(ap_linexpr0_ptr a, int dim)
      quote(call, "\n\
 {\n\
   bool b;\n\
   ap_coeff_init(&_res,AP_COEFF_SCALAR);\n\
   if (dim<0) goto ap_linexpr0_get_coeff_exit;\n\
-  b = ap_linexpr0_get_coeff(&_res,a,dim);\n\
+  b = ap_linexpr0_get_coeff(&_res,a,(ap_dim_t)dim);\n   \
   if (b){\n\
    ap_linexpr0_get_coeff_exit:\n\
     ap_coeff_clear(&_res);\n\
@@ -84,12 +84,12 @@ void ap_linexpr0_set_cst(ap_linexpr0_ptr a, [ref]struct ap_coeff_t* coeff)
      quote(call,"ap_linexpr0_set_cst(a,coeff);");
 
 quote(MLI,"(** Set the coefficient corresponding to the dimension *)")
-void ap_linexpr0_set_coeff(ap_linexpr0_ptr a, ap_dim_t dim, [ref]struct ap_coeff_t* coeff)
+void ap_linexpr0_set_coeff(ap_linexpr0_ptr a, int dim, [ref]struct ap_coeff_t* coeff)
      quote(call, "\n\
 {\n\
   bool b;\n\
   if (dim<0) goto ap_linexpr0_set_coeff_exit;\n\
-  b = ap_linexpr0_set_coeff(a,dim,coeff);\n\
+  b = ap_linexpr0_set_coeff(a,(ap_dim_t)dim,coeff);\n \
   if (b){\n\
    ap_linexpr0_set_coeff_exit:\n\
     caml_failwith(\"Linexpr0.set_coeff: out of bound dimension\");\n\

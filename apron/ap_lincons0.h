@@ -68,7 +68,7 @@ ap_lincons0_t ap_lincons0_make_unsat(void);
   /* Create the constraint -1>=0 */
 
 static inline
-ap_lincons0_t ap_lincons0_copy(const ap_lincons0_t* cons);
+ap_lincons0_t ap_lincons0_copy(ap_lincons0_t* cons);
   /* Duplication */
 
 static inline
@@ -76,14 +76,14 @@ void ap_lincons0_clear(ap_lincons0_t* cons);
   /* Free the linear expression of the constraint and set pointer to NULL */
 
 void ap_lincons0_fprint(FILE* stream,
-			const ap_lincons0_t* cons, char** name_of_dim);
+			ap_lincons0_t* cons, char** name_of_dim);
   /* Printing a linear constraint */
 
 /* ====================================================================== */
 /* I.2 Tests */
 /* ====================================================================== */
 
-bool ap_lincons0_is_unsat(const ap_lincons0_t* cons);
+bool ap_lincons0_is_unsat(ap_lincons0_t* cons);
   /* True if the constraint is b>=0 or [a,b]>=0 with b negative */
 
 
@@ -93,17 +93,17 @@ bool ap_lincons0_is_unsat(const ap_lincons0_t* cons);
 
 static inline
 void ap_lincons0_add_dimensions_with(ap_lincons0_t* cons,
-				     const ap_dimchange_t* dimchange);
+				     ap_dimchange_t* dimchange);
 static inline
-ap_lincons0_t ap_lincons0_add_dimensions(const ap_lincons0_t* cons,
-					 const ap_dimchange_t* dimchange);
+ap_lincons0_t ap_lincons0_add_dimensions(ap_lincons0_t* cons,
+					 ap_dimchange_t* dimchange);
 
 static inline
 void ap_lincons0_permute_dimensions_with(ap_lincons0_t* cons,
-					 const ap_dimperm_t* perm);
+					 ap_dimperm_t* perm);
 static inline
-ap_lincons0_t ap_lincons0_permute_dimensions(const ap_lincons0_t* cons,
-					     const ap_dimperm_t* perm);
+ap_lincons0_t ap_lincons0_permute_dimensions(ap_lincons0_t* cons,
+					     ap_dimperm_t* perm);
 
 /* ********************************************************************** */
 /* II. Array of linear constraints */
@@ -117,7 +117,7 @@ void ap_lincons0_array_clear(ap_lincons0_array_t* array);
   /* Clear the constraints of the array, and then the array itself */
 
 void ap_lincons0_array_fprint(FILE* stream,
-			      const ap_lincons0_array_t* ap_lincons0_array,
+			      ap_lincons0_array_t* ap_lincons0_array,
 			      char** name_of_dim);
   /* Printing */
 
@@ -125,14 +125,14 @@ void ap_lincons0_array_fprint(FILE* stream,
 /* II.1 Change of dimensions and permutations */
 /* ====================================================================== */
 void ap_lincons0_array_add_dimensions_with(ap_lincons0_array_t* array,
-					   const ap_dimchange_t* dimchange);
-ap_lincons0_array_t ap_lincons0_array_add_dimensions(const ap_lincons0_array_t* array,
-						     const ap_dimchange_t* dimchange);
+					   ap_dimchange_t* dimchange);
+ap_lincons0_array_t ap_lincons0_array_add_dimensions(ap_lincons0_array_t* array,
+						     ap_dimchange_t* dimchange);
 
 void ap_lincons0_array_permute_dimensions_with(ap_lincons0_array_t* array,
-					       const ap_dimperm_t* perm);
-ap_lincons0_array_t ap_lincons0_array_permute_dimensions(const ap_lincons0_array_t* array,
-							 const ap_dimperm_t* perm);
+					       ap_dimperm_t* perm);
+ap_lincons0_array_t ap_lincons0_array_permute_dimensions(ap_lincons0_array_t* array,
+							 ap_dimperm_t* perm);
 
 /* ********************************************************************** */
 /* III. Inline functions definitions */
@@ -146,7 +146,7 @@ static inline ap_lincons0_t ap_lincons0_make(ap_constyp_t constyp, ap_linexpr0_t
   cons.scalar = scalar;
   return cons;
 }
-static inline ap_lincons0_t ap_lincons0_copy(const ap_lincons0_t* cons)
+static inline ap_lincons0_t ap_lincons0_copy(ap_lincons0_t* cons)
 {
   return ap_lincons0_make(cons->constyp, 
 			  ap_linexpr0_copy(cons->linexpr0),
@@ -166,11 +166,11 @@ static inline void ap_lincons0_clear(ap_lincons0_t* lincons)
 
 static inline
 void ap_lincons0_add_dimensions_with(ap_lincons0_t* cons,
-				  const ap_dimchange_t* dimchange)
+				     ap_dimchange_t* dimchange)
 { ap_linexpr0_add_dimensions_with(cons->linexpr0,dimchange); }
 static inline
-ap_lincons0_t ap_lincons0_add_dimensions(const ap_lincons0_t* cons,
-				   const ap_dimchange_t* dimchange)
+ap_lincons0_t ap_lincons0_add_dimensions(ap_lincons0_t* cons,
+					 ap_dimchange_t* dimchange)
 {
   return ap_lincons0_make(cons->constyp,
 			  ap_linexpr0_add_dimensions(cons->linexpr0,dimchange),
@@ -178,11 +178,11 @@ ap_lincons0_t ap_lincons0_add_dimensions(const ap_lincons0_t* cons,
 }
 static inline
 void ap_lincons0_permute_dimensions_with(ap_lincons0_t* cons,
-					 const ap_dimperm_t* perm)
+					 ap_dimperm_t* perm)
 { ap_linexpr0_permute_dimensions_with(cons->linexpr0,perm); }
 static inline
-ap_lincons0_t ap_lincons0_permute_dimensions(const ap_lincons0_t* cons,
-					     const ap_dimperm_t* perm)
+ap_lincons0_t ap_lincons0_permute_dimensions(ap_lincons0_t* cons,
+					     ap_dimperm_t* perm)
 {
   return ap_lincons0_make(cons->constyp,
 			  ap_linexpr0_permute_dimensions(cons->linexpr0,perm),

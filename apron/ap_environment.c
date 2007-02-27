@@ -50,7 +50,7 @@ typedef struct env_t {
     - It should not contain identical strings.
     - It is lexicographically sorted.
     - The memory allocated for the strings are attached to the structure
-      (they are freed when the structure is no longer in use)
+    (they are freed when the structure is no longer in use)
   */
   size_t size; /* Size of the array */
 } env_t;
@@ -104,7 +104,7 @@ static env_t env_cons(ap_var_t* var_of_dim, size_t size)
 }
 
 /* Return true iff invariant not satisfied */
-static bool env_check(const env_t* env)
+static bool env_check(env_t* env)
 {
   int i;
   /* Check that there is no doublons */
@@ -121,7 +121,7 @@ static bool env_check(const env_t* env)
 /* ========================================================================= */
 
 /* Return true iff the 2 environements share some variables */
-static bool env_is_inter_empty(const env_t* env1 ,const env_t* env2)
+static bool env_is_inter_empty(env_t* env1 ,env_t* env2)
 {
   size_t i1,i2;
   i1 = i2 = 0;
@@ -135,8 +135,8 @@ static bool env_is_inter_empty(const env_t* env1 ,const env_t* env2)
 }
 
 /* Return true iff env1 is a subset of env2 */
-static bool env_is_leq(const env_t* env1,
-		const env_t* env2)
+static bool env_is_leq(env_t* env1,
+		       env_t* env2)
 {
   size_t i,j;
   int sgn = 0;
@@ -166,16 +166,16 @@ static bool env_is_leq(const env_t* env1,
    environement.
 
    - The new names are duplicated, so it is the responsability of the user to
-     free the new names he provides.
+   free the new names he provides.
 
    - If a new name is already present in the initial environement, the result
-     does not satisfy the datatype invariant.
+   does not satisfy the datatype invariant.
 
    - If perm!=NULL, fill already allocated and initialized perm with the
-     applied permutation to move the new names from the end to their sorted
-     location.
+   applied permutation to move the new names from the end to their sorted
+   location.
 */
-static env_t env_add(const env_t* env, ap_var_t* var_of_dim, size_t size, ap_dim_t* perm)
+static env_t env_add(env_t* env, ap_var_t* var_of_dim, size_t size, ap_dim_t* perm)
 {
   env_t nenv;
   size_t i;
@@ -194,9 +194,9 @@ static env_t env_add(const env_t* env, ap_var_t* var_of_dim, size_t size, ap_dim
 
 /* Remove from an environement an array of names.
 
-   - If a name to be removed was not present, return { NULL, UINT_MAX }.
+- If a name to be removed was not present, return { NULL, UINT_MAX }.
 */
-static env_t env_remove(const env_t* env, ap_var_t* var_of_dim, size_t size)
+static env_t env_remove(env_t* env, ap_var_t* var_of_dim, size_t size)
 {
   env_t nenv;
   size_t i,j;
@@ -226,7 +226,7 @@ static env_t env_remove(const env_t* env, ap_var_t* var_of_dim, size_t size)
     while (j<size){
       int sgn = ap_var_operations->compare(env->var_of_dim[nenv.size+j],var_of_dim2[j]);
       if (sgn==0)
-	  j++;
+	j++;
       else {
 	env_clear(&nenv);
 	nenv.size = UINT_MAX;
@@ -239,7 +239,7 @@ static env_t env_remove(const env_t* env, ap_var_t* var_of_dim, size_t size)
 }
 
 /* Least common environment of the two environments */
-static env_t env_lce(const env_t* e1, const env_t* e2)
+static env_t env_lce(env_t* e1, env_t* e2)
 {
   env_t e;
   size_t i,i1,i2;
@@ -279,13 +279,13 @@ static env_t env_lce(const env_t* e1, const env_t* e2)
   - env1 is supposed to be subenvironment of env
 
   - The function computes in the already allocated dimchange1 the conversion
-    permutation from env1 to env, using offsetwriter and offsetread to shift the
-    dimensions.
+  permutation from env1 to env, using offsetwriter and offsetread to shift the
+  dimensions.
 
   - return true iff wrong arguments
 */
 
-static bool env_lce_dimchange(const env_t* e1, const env_t* e,
+static bool env_lce_dimchange(env_t* e1, env_t* e,
 			      ap_dimchange_t* dimchange1,
 			      size_t offsetwrite, size_t offsetread)
 {
@@ -310,15 +310,15 @@ static bool env_lce_dimchange(const env_t* e1, const env_t* e,
   while (i<e->size){
     dimchange1->dim[offsetwrite+k1] = offsetread+i1;
     i++;
-    k1++; 
+    k1++;
   }
   return false;
 }
 
 /* Least common environment of an array of environments */
-static env_t env_lce_array(const env_t** tenv,
-		    size_t* tindex,
-		    size_t size)
+static env_t env_lce_array(env_t** tenv,
+			   size_t* tindex,
+			   size_t size)
 {
   int sgn;
   size_t i,index,maxvars;
@@ -382,7 +382,7 @@ typedef struct denv_t {
 } denv_t;
 
 
-static denv_t denv_of_environment(const ap_environment_t* env)
+static denv_t denv_of_environment(ap_environment_t* env)
 {
   denv_t res;
   res.envint = env_cons(env->var_of_dim,env->intdim);
@@ -398,7 +398,7 @@ static ap_environment_t* environment_of_denv(denv_t* denv)
   ap_environment_t* res;
   res = malloc(sizeof(ap_environment_t));
   res->var_of_dim = malloc((denv->envint.size + denv->envreal.size)*
-			     sizeof(ap_var_t));
+			   sizeof(ap_var_t));
   memcpy(&res->var_of_dim[0],
 	 denv->envint.var_of_dim,denv->envint.size*sizeof(ap_var_t));
   memcpy(&res->var_of_dim[denv->envint.size],
@@ -414,7 +414,7 @@ static ap_environment_t* environment_of_denv(denv_t* denv)
 /* ========================================================================= */
 /* Access */
 /* ========================================================================= */
-ap_dim_t ap_environment_dim_of_var(const ap_environment_t* env, ap_var_t name){
+ap_dim_t ap_environment_dim_of_var(ap_environment_t* env, ap_var_t name){
   ap_var_t* res;
   res = bsearch(&name,env->var_of_dim,env->intdim,sizeof(ap_var_t),var_cmp);
   if (res!=NULL){
@@ -436,9 +436,9 @@ ap_dim_t ap_environment_dim_of_var(const ap_environment_t* env, ap_var_t name){
 /* ========================================================================= */
 
 
-bool ap_environment_check(const ap_environment_t* env)
+bool ap_environment_check(ap_environment_t* env)
 {
-  const denv_t denv = denv_of_environment(env);
+  denv_t denv = denv_of_environment(env);
 
   /* Check that there is no doublons */
   if (env_check(&denv.envint)) return true;
@@ -448,11 +448,11 @@ bool ap_environment_check(const ap_environment_t* env)
   return false;
 }
 
-bool ap_environment_check_compatibility(const ap_environment_t* env1,
-				     const ap_environment_t* env2)
+bool ap_environment_check_compatibility(ap_environment_t* env1,
+					ap_environment_t* env2)
 {
-  const denv_t denv1 = denv_of_environment(env1);
-  const denv_t denv2 = denv_of_environment(env2);
+  denv_t denv1 = denv_of_environment(env1);
+  denv_t denv2 = denv_of_environment(env2);
   /* Check that integer of one and real variables of other are disjoint */
   return !(env_is_inter_empty(&denv1.envint,&denv2.envreal) &&
 	   env_is_inter_empty(&denv2.envint,&denv1.envreal) );
@@ -462,14 +462,14 @@ bool ap_environment_check_compatibility(const ap_environment_t* env1,
 /* Memory management */
 /* ========================================================================= */
 
-ap_environment_t* ap_environment_add(const ap_environment_t* env,
-			       ap_var_t* name_of_intdim, size_t intdim,
-			       ap_var_t* name_of_realdim, size_t realdim)
+ap_environment_t* ap_environment_add(ap_environment_t* env,
+				     ap_var_t* name_of_intdim, size_t intdim,
+				     ap_var_t* name_of_realdim, size_t realdim)
 {
   ap_environment_t* res;
   denv_t denv2;
 
-  const denv_t denv1 = denv_of_environment(env);
+  denv_t denv1 = denv_of_environment(env);
 
   denv2.envint = env_add(&denv1.envint, name_of_intdim, intdim, NULL);
   denv2.envreal = env_add(&denv1.envreal, name_of_realdim, realdim, NULL);
@@ -482,15 +482,15 @@ ap_environment_t* ap_environment_add(const ap_environment_t* env,
   return res;
 }
 
-ap_environment_t* ap_environment_add_perm(const ap_environment_t* env,
-				    ap_var_t* name_of_intdim, size_t intdim,
-				    ap_var_t* name_of_realdim, size_t realdim,
-				    ap_dimperm_t* perm)
+ap_environment_t* ap_environment_add_perm(ap_environment_t* env,
+					  ap_var_t* name_of_intdim, size_t intdim,
+					  ap_var_t* name_of_realdim, size_t realdim,
+					  ap_dimperm_t* perm)
 {
   ap_environment_t* res;
   size_t i,nsize;
   denv_t denv2;
-  const denv_t denv1 = denv_of_environment(env);
+  denv_t denv1 = denv_of_environment(env);
 
   nsize = env->intdim+intdim+env->realdim+realdim;
   ap_dimperm_init(perm,nsize);
@@ -511,14 +511,14 @@ ap_environment_t* ap_environment_add_perm(const ap_environment_t* env,
   return res;
 }
 
-ap_environment_t* ap_environment_remove(const ap_environment_t* env,
-				  ap_var_t* name_of_intdim, size_t intdim,
-				  ap_var_t* name_of_realdim, size_t realdim)
+ap_environment_t* ap_environment_remove(ap_environment_t* env,
+					ap_var_t* name_of_intdim, size_t intdim,
+					ap_var_t* name_of_realdim, size_t realdim)
 {
   ap_environment_t* res;
   denv_t denv2;
 
-  const denv_t denv1 = denv_of_environment(env);
+  denv_t denv1 = denv_of_environment(env);
 
   denv2.envint = env_remove(&denv1.envint, name_of_intdim, intdim);
   denv2.envreal = env_remove(&denv1.envreal, name_of_realdim, realdim);
@@ -531,12 +531,12 @@ ap_environment_t* ap_environment_remove(const ap_environment_t* env,
   return res;
 }
 ap_environment_t* ap_environment_alloc(ap_var_t* name_of_intdim, size_t intdim,
-			       ap_var_t* name_of_realdim, size_t realdim)
+				       ap_var_t* name_of_realdim, size_t realdim)
 {
-  const ap_environment_t env = { NULL, 0,0,0 };
+  ap_environment_t env = { NULL, 0,0,0 };
   return ap_environment_add(&env,
-			 name_of_intdim, intdim,
-			 name_of_realdim, realdim);
+			    name_of_intdim, intdim,
+			    name_of_realdim, realdim);
 }
 ap_environment_t* ap_environment_alloc_empty()
 {
@@ -596,8 +596,8 @@ void ap_environment_name_of_dim_free(ap_environment_name_of_dim_t* p)
 /* Tests */
 /* ========================================================================= */
 
-bool ap_environment_is_eq(const ap_environment_t* env1,
-		       const ap_environment_t* env2)
+bool ap_environment_is_eq(ap_environment_t* env1,
+			  ap_environment_t* env2)
 {
   bool res = (env1==env2);
   if (!res){
@@ -617,8 +617,8 @@ bool ap_environment_is_eq(const ap_environment_t* env1,
   return res;
 }
 
-bool ap_environment_is_leq(const ap_environment_t* env1,
-		           const ap_environment_t* env2)
+bool ap_environment_is_leq(ap_environment_t* env1,
+			   ap_environment_t* env2)
 {
   bool res = (env1==env2);
   if (!res){
@@ -626,18 +626,18 @@ bool ap_environment_is_leq(const ap_environment_t* env1,
       (env1->intdim<=env2->intdim) &&
       (env1->realdim<=env2->realdim);
     if (res){
-      const denv_t denv1 = denv_of_environment(env1);
-      const denv_t denv2 = denv_of_environment(env2);
+      denv_t denv1 = denv_of_environment(env1);
+      denv_t denv2 = denv_of_environment(env2);
       res =
 	env_is_leq(&denv1.envint,&denv2.envint) &&
 	env_is_leq(&denv1.envreal,&denv2.envreal);
-      }
+    }
   }
   return res;
 }
 
-int ap_environment_compare(const ap_environment_t* env1,
-		           const ap_environment_t* env2)
+int ap_environment_compare(ap_environment_t* env1,
+			   ap_environment_t* env2)
 {
   ap_dimchange_t* dimchange1=NULL;
   ap_dimchange_t* dimchange2=NULL;
@@ -660,17 +660,17 @@ int ap_environment_compare(const ap_environment_t* env1,
 /* Compute least common environment of 2 environments */
 /* ========================================================================= */
 
-ap_dimchange_t* ap_environment_dimchange(const ap_environment_t* env1,
-				   const ap_environment_t* env)
+ap_dimchange_t* ap_environment_dimchange(ap_environment_t* env1,
+					 ap_environment_t* env)
 {
   bool b;
   ap_dimchange_t* dimchange;
 
-  const denv_t denv1 = denv_of_environment(env1);
-  const denv_t denv = denv_of_environment(env);
+  denv_t denv1 = denv_of_environment(env1);
+  denv_t denv = denv_of_environment(env);
 
   dimchange = ap_dimchange_alloc(env->intdim - env1->intdim,
-			      env->realdim - env1->realdim);
+				 env->realdim - env1->realdim);
   b = env_lce_dimchange(&denv1.envint,&denv.envint,
 			dimchange, 0, 0);
   if (!b)
@@ -686,17 +686,17 @@ ap_dimchange_t* ap_environment_dimchange(const ap_environment_t* env1,
 /*
   Least common environment to two environment.
 
-   - If environments are not compatible, return NULL
+  - If environments are not compatible, return NULL
 
-   - Compute also in dimchange1 and dimchange2 the conversion transformations.
+  - Compute also in dimchange1 and dimchange2 the conversion transformations.
 
-   - If no dimensions to add to env1, this implies that env is
-     actually env1. In this case, *dimchange1==NULL.
- */
-ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
-			       const ap_environment_t* env2,
-			       ap_dimchange_t** dimchange1,
-			       ap_dimchange_t** dimchange2)
+  - If no dimensions to add to env1, this implies that env is
+  actually env1. In this case, *dimchange1==NULL.
+*/
+ap_environment_t* ap_environment_lce(ap_environment_t* env1,
+				     ap_environment_t* env2,
+				     ap_dimchange_t** dimchange1,
+				     ap_dimchange_t** dimchange2)
 {
   size_t size;
   denv_t denv;
@@ -705,17 +705,17 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
   if (ap_environment_check_compatibility(env1,env2))
     return NULL;
 
-  const denv_t denv1 = denv_of_environment(env1);
-  const denv_t denv2 = denv_of_environment(env2);
+  denv_t denv1 = denv_of_environment(env1);
+  denv_t denv2 = denv_of_environment(env2);
 
   denv.envint = env_lce(&denv1.envint, &denv2.envint);
   denv.envreal = env_lce(&denv1.envreal, &denv2.envreal);
   size = denv.envint.size+denv.envreal.size;
 
-  eq1 = 
+  eq1 =
     denv.envint.size==denv1.envint.size &&
     denv.envreal.size==denv1.envreal.size;
-  eq2 = 
+  eq2 =
     denv.envint.size==denv2.envint.size &&
     denv.envreal.size==denv2.envreal.size;
   if (eq1 && eq2){
@@ -724,43 +724,43 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
     *dimchange2 = NULL;
     env_clear(&denv.envint);
     env_clear(&denv.envreal);
-    return ap_environment_copy((ap_environment_t*)env1);
+    return ap_environment_copy(env1);
   }
   else if (eq1){
     /* env=env1 */
     *dimchange1 = NULL;
     *dimchange2 = ap_dimchange_alloc(denv.envint.size-denv2.envint.size,
-				  denv.envreal.size-denv2.envreal.size);
+				     denv.envreal.size-denv2.envreal.size);
     env_lce_dimchange(&denv2.envint,&denv.envint,
 		      *dimchange2, 0,0);
     env_lce_dimchange(&denv2.envreal,&denv.envreal,
 		      *dimchange2, (*dimchange2)->intdim, denv2.envint.size);
     env_clear(&denv.envint);
     env_clear(&denv.envreal);
-    return ap_environment_copy((ap_environment_t*)env1);
+    return ap_environment_copy(env1);
   }
   else if (eq2){
     /* env=env2 */
     *dimchange2 = NULL;
     *dimchange1 = ap_dimchange_alloc(denv.envint.size-denv1.envint.size,
-				  denv.envreal.size-denv1.envreal.size);
+				     denv.envreal.size-denv1.envreal.size);
     env_lce_dimchange(&denv1.envint,&denv.envint,
 		      *dimchange1, 0, 0);
     env_lce_dimchange(&denv1.envreal,&denv.envreal,
 		      *dimchange1, (*dimchange1)->intdim, denv1.envint.size);
     env_clear(&denv.envint);
     env_clear(&denv.envreal);
-    return ap_environment_copy((ap_environment_t*)env2);
+    return ap_environment_copy(env2);
   }
   else {
     *dimchange1 = ap_dimchange_alloc(denv.envint.size-denv1.envint.size,
-				  denv.envreal.size-denv1.envreal.size);
+				     denv.envreal.size-denv1.envreal.size);
     env_lce_dimchange(&denv1.envint,&denv.envint,
 		      *dimchange1, 0, 0);
     env_lce_dimchange(&denv1.envreal,&denv.envreal,
 		      *dimchange1, (*dimchange1)->intdim, denv1.envint.size);
     *dimchange2 = ap_dimchange_alloc(denv.envint.size-denv2.envint.size,
-				  denv.envreal.size-denv2.envreal.size);
+				     denv.envreal.size-denv2.envreal.size);
     env_lce_dimchange(&denv2.envint,&denv.envint,
 		      *dimchange2, 0,0);
     env_lce_dimchange(&denv2.envreal,&denv.envreal,
@@ -779,17 +779,17 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
   - Assume the size of the array is at least one.
 
   - If all input environments are the same, *ptdimchange==NULL.
-    Otherwise, compute in *ptdimchange the conversion permutations.
+  Otherwise, compute in *ptdimchange the conversion permutations.
 
   - Dimensions to add before applying the permutation (according to the
-    conventions of the function ap_abstract0_add_permute_dimensions) are implictly
-    given by env->intdim-env[i]->intdim and env->realdim - env[i]->realdim.
+  conventions of the function ap_abstract0_add_permute_dimensions) are implictly
+  given by env->intdim-env[i]->intdim and env->realdim - env[i]->realdim.
 
   - If no dimensions to add to env[i], this implies that env is actually
-    env[i]. In this case, (*ptdimchange)[i]==NULL. Otherwise, the function allocates
-    the array (*ptdimchange)[0] with malloc.
+  env[i]. In this case, (*ptdimchange)[i]==NULL. Otherwise, the function allocates
+  the array (*ptdimchange)[0] with malloc.
 
- */
+*/
 static int env_cmp(const void* a, const void* b)
 {
   ap_environment_t* pa = *((ap_environment_t**)a);
@@ -797,13 +797,13 @@ static int env_cmp(const void* a, const void* b)
   return (pa>pb ? 1 : (pa==pb ? 0 : -1));
 }
 
-ap_environment_t* ap_environment_lce_array(const ap_environment_t** tenv,
-				     size_t size,
-				     ap_dimchange_t*** ptdimchange)
+ap_environment_t* ap_environment_lce_array(ap_environment_t** tenv,
+					   size_t size,
+					   ap_dimchange_t*** ptdimchange)
 {
   size_t i, intrealdim;
   denv_t* tdenv;
-  const env_t** te;
+  env_t** te;
   size_t* tindex;
   denv_t denv;
   int j;
@@ -824,12 +824,12 @@ ap_environment_t* ap_environment_lce_array(const ap_environment_t** tenv,
   if (size==1){
     *ptdimchange = malloc(sizeof(ap_dim_t*));
     (*ptdimchange)[0] = NULL;
-    return (ap_environment_t*)tenv[0];
+    return tenv[0];
   }
   if (size==2){
     if (ap_environment_is_eq(tenv[0],tenv[1])){
       *ptdimchange = NULL;
-      return (ap_environment_t*)tenv[0];
+      return tenv[0];
     }
     else {
       *ptdimchange = malloc(2*sizeof(ap_dimchange_t*));
@@ -872,7 +872,7 @@ ap_environment_t* ap_environment_lce_array(const ap_environment_t** tenv,
     else {
       change = true;
       (*ptdimchange)[i] = ap_dimchange_alloc(denv.envint.size-tdenv[i].envint.size,
-					  denv.envreal.size-tdenv[i].envreal.size);
+					     denv.envreal.size-tdenv[i].envreal.size);
       env_lce_dimchange(&tdenv[i].envint,&denv.envint,
 			(*ptdimchange)[i],0,0);
       env_lce_dimchange(&tdenv[i].envreal,&denv.envreal,
@@ -886,7 +886,7 @@ ap_environment_t* ap_environment_lce_array(const ap_environment_t** tenv,
       free(*ptdimchange);
       *ptdimchange=NULL;
     }
-    return ap_environment_copy((ap_environment_t*)tenv[j]);
+    return ap_environment_copy(tenv[j]);
   }
   else {
     ap_environment_t* env = environment_of_denv(&denv);
@@ -908,8 +908,8 @@ ap_environment_t* ap_environment_lce_array(const ap_environment_t** tenv,
 /* ========================================================================= */
 
 ap_environment_t* ap_environment_rename(ap_environment_t* env,
-				  ap_var_t* tvar1, ap_var_t* tvar2, size_t size,
-				  ap_dimperm_t* perm)
+					ap_var_t* tvar1, ap_var_t* tvar2, size_t size,
+					ap_dimperm_t* perm)
 {
   size_t i,j,nbdims;
   ap_environment_t* res;

@@ -22,7 +22,7 @@ box_t* box_alloc(size_t intdim, size_t realdim)
 
 void box_init(box_t* a)
 {
-  int i;
+  size_t i;
   size_t nbdims = a->intdim + a->realdim;
   if (nbdims>0){
     assert(a->p==NULL);
@@ -43,7 +43,7 @@ void box_set_bottom(box_t* a)
 
 void box_set_top(box_t* a)
 {
-  int i;
+  size_t i;
   size_t nbdims;
   
   nbdims = a->intdim + a->realdim;
@@ -57,9 +57,9 @@ void box_set_top(box_t* a)
   }
 }
 
-void box_set(box_t* a, const box_t* b)
+void box_set(box_t* a, box_t* b)
 {
-  int i;
+  size_t i;
   size_t nbdims;
   
   if (b->p==NULL)
@@ -80,9 +80,9 @@ void box_set(box_t* a, const box_t* b)
 
 /* Return a copy of an abstract value, on
    which destructive update does not affect the initial value. */
-box_t* box_copy(ap_manager_t* man, const box_t* a)
+box_t* box_copy(ap_manager_t* man, box_t* a)
 {
-  int i;
+  size_t i;
   size_t nbdims = a->intdim+a->realdim;
 
   box_t* b = box_alloc(a->intdim,a->realdim);
@@ -108,7 +108,7 @@ void box_free(ap_manager_t* man, box_t* a)
 }
 
 /* Return the abstract size of an abstract value (see ap_manager_t) */
-size_t box_size(ap_manager_t* man, const box_t* a)
+size_t box_size(ap_manager_t* man, box_t* a)
 {
   return 2*(a->intdim+a->realdim);
 }
@@ -120,7 +120,7 @@ size_t box_size(ap_manager_t* man, const box_t* a)
 /* Minimize the size of the representation of a.
    This may result in a later recomputation of internal information.
 */
-void box_minimize(ap_manager_t* man, const box_t* a)
+void box_minimize(ap_manager_t* man, box_t* a)
 {
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
@@ -128,7 +128,7 @@ void box_minimize(ap_manager_t* man, const box_t* a)
 }
 
 /* Put the abstract value in canonical form. (not yet clear definition) */
-void box_canonicalize(ap_manager_t* man, const box_t* a)
+void box_canonicalize(ap_manager_t* man, box_t* a)
 {
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
@@ -156,7 +156,7 @@ void box_approximate(ap_manager_t* man, box_t* a, int algorithm)
    name_of_dim to name dimensions */
 void box_fprint(FILE* stream,
 	       ap_manager_t* man,
-	       const box_t* a,
+	       box_t* a,
 	       char** name_of_dim)
 {
   size_t i;
@@ -185,7 +185,7 @@ void box_fprint(FILE* stream,
    for debugging purposes */
 void box_fdump(FILE* stream,
 	      ap_manager_t* man,
-	      const box_t* a)
+	      box_t* a)
 {
   size_t i;
   size_t nbdims = a->intdim + a->realdim;
@@ -210,7 +210,7 @@ void box_fdump(FILE* stream,
    The meaning of difference is library dependent. */
 void box_fprintdiff(FILE* stream,
 		   ap_manager_t* man,
-		   const box_t* a, const box_t* b,
+		   box_t* a, box_t* b,
 		   char** name_of_dim)
 {
   size_t i;
@@ -287,7 +287,7 @@ void box_fprintdiff(FILE* stream,
    binary format to it and return a pointer on the memory buffer and the size
    of bytes written.  It is the user responsability to free the memory
    afterwards (with free). */
-ap_membuf_t box_serialize_raw(ap_manager_t* man, const box_t* a)
+ap_membuf_t box_serialize_raw(ap_manager_t* man, box_t* a)
 {
   ap_membuf_t buf;
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_SERIALIZE_RAW,"");

@@ -86,26 +86,26 @@ void ap_linexpr0_minimize(ap_linexpr0_t* e);
 void ap_linexpr0_free(ap_linexpr0_t* linexpr);
   /* Free the linear expression */
 
-ap_linexpr0_t* ap_linexpr0_copy(const ap_linexpr0_t* a);
+ap_linexpr0_t* ap_linexpr0_copy(ap_linexpr0_t* a);
   /* Duplication */
 
-void ap_linexpr0_fprint(FILE* stream, const ap_linexpr0_t* a, char** name_of_dim);
+void ap_linexpr0_fprint(FILE* stream, ap_linexpr0_t* a, char** name_of_dim);
   /* Printing a linear expression */
 
 /* ====================================================================== */
 /* II. Tests */
 /* ====================================================================== */
 
-bool ap_linexpr0_is_integer(const ap_linexpr0_t* a, size_t intdim);
+bool ap_linexpr0_is_integer(ap_linexpr0_t* a, size_t intdim);
   /* Does the expression depends only on integer variables ? assuming
      that the first intdim dimensions are integer */
-bool ap_linexpr0_is_real(const ap_linexpr0_t* a, size_t intdim);
+bool ap_linexpr0_is_real(ap_linexpr0_t* a, size_t intdim);
   /* Does the expression depends only on real variables ? assuming
      that the first intdim dimensions are integer */
 
-bool ap_linexpr0_is_linear(const ap_linexpr0_t* a);
+bool ap_linexpr0_is_linear(ap_linexpr0_t* a);
   /* Return true iff all involved coefficients are scalars */
-bool ap_linexpr0_is_quasilinear(const ap_linexpr0_t* a);
+bool ap_linexpr0_is_quasilinear(ap_linexpr0_t* a);
   /* Return true iff all involved coefficients but the constant are scalars */
 
 
@@ -114,7 +114,7 @@ bool ap_linexpr0_is_quasilinear(const ap_linexpr0_t* a);
 /* ====================================================================== */
 
 static inline
-size_t ap_linexpr0_size(const ap_linexpr0_t* expr);
+size_t ap_linexpr0_size(ap_linexpr0_t* expr);
   /* Get the size of the linear expression */
 
 static inline
@@ -132,21 +132,21 @@ ap_coeff_t* ap_linexpr0_coeffref(ap_linexpr0_t* expr, ap_dim_t dim);
  */
 
 static inline
-void ap_linexpr0_get_cst(ap_coeff_t* coeff, const ap_linexpr0_t* expr);
+void ap_linexpr0_get_cst(ap_coeff_t* coeff, ap_linexpr0_t* expr);
   /* Get the constant and assign it to coeff */
 
-bool ap_linexpr0_get_coeff(ap_coeff_t* coeff, const ap_linexpr0_t* expr, ap_dim_t dim);
+bool ap_linexpr0_get_coeff(ap_coeff_t* coeff, ap_linexpr0_t* expr, ap_dim_t dim);
   /* Get coefficient of dimension dim in the expression and assign it to coeff
      Return true in case ap_linexpr0_coeffref returns NULL */
 
 /* Set the constant of the linear expression */
-static inline void ap_linexpr0_set_cst(ap_linexpr0_t* expr, const ap_coeff_t* cst);
-static inline void ap_linexpr0_set_cst_scalar(ap_linexpr0_t* expr, const ap_scalar_t* scalar);
+static inline void ap_linexpr0_set_cst(ap_linexpr0_t* expr, ap_coeff_t* cst);
+static inline void ap_linexpr0_set_cst_scalar(ap_linexpr0_t* expr, ap_scalar_t* scalar);
 static inline void ap_linexpr0_set_cst_scalar_int(ap_linexpr0_t* expr, int num);
 static inline void ap_linexpr0_set_cst_scalar_frac(ap_linexpr0_t* expr, int num, unsigned int den);
 static inline void ap_linexpr0_set_cst_scalar_double(ap_linexpr0_t* expr, double num);
-static inline void ap_linexpr0_set_cst_interval(ap_linexpr0_t* expr, const ap_interval_t* itv);
-static inline void ap_linexpr0_set_cst_interval_scalar(ap_linexpr0_t* expr, const ap_scalar_t* inf, const ap_scalar_t* sup);
+static inline void ap_linexpr0_set_cst_interval(ap_linexpr0_t* expr, ap_interval_t* itv);
+static inline void ap_linexpr0_set_cst_interval_scalar(ap_linexpr0_t* expr, ap_scalar_t* inf, ap_scalar_t* sup);
 static inline void ap_linexpr0_set_cst_interval_int(ap_linexpr0_t* expr, int inf, int sup);
 static inline void ap_linexpr0_set_cst_interval_frac(ap_linexpr0_t* expr,
 							 int numinf, unsigned int deninf,
@@ -155,13 +155,13 @@ static inline void ap_linexpr0_set_cst_interval_double(ap_linexpr0_t* expr, doub
 
 /* Set the coefficient of dimension dim in the expression.
    Return true in case ap_linexpr0_coeffref returns NULL */
-static inline bool ap_linexpr0_set_coeff(ap_linexpr0_t* expr, ap_dim_t dim, const ap_coeff_t* coeff);
-static inline bool ap_linexpr0_set_coeff_scalar(ap_linexpr0_t* expr, ap_dim_t dim, const ap_scalar_t* scalar);
+static inline bool ap_linexpr0_set_coeff(ap_linexpr0_t* expr, ap_dim_t dim, ap_coeff_t* coeff);
+static inline bool ap_linexpr0_set_coeff_scalar(ap_linexpr0_t* expr, ap_dim_t dim, ap_scalar_t* scalar);
 static inline bool ap_linexpr0_set_coeff_scalar_int(ap_linexpr0_t* expr, ap_dim_t dim, int num);
 static inline bool ap_linexpr0_set_coeff_scalar_frac(ap_linexpr0_t* expr, ap_dim_t dim, int num, unsigned int den);
 static inline bool ap_linexpr0_set_coeff_scalar_double(ap_linexpr0_t* expr, ap_dim_t dim, double num);
-static inline bool ap_linexpr0_set_coeffinterval(ap_linexpr0_t* expr, ap_dim_t dim, const ap_interval_t* itv);
-static inline bool ap_linexpr0_set_coeff_interval_scalar(ap_linexpr0_t* expr, ap_dim_t dim, const ap_scalar_t* inf, const ap_scalar_t* sup);
+static inline bool ap_linexpr0_set_coeffinterval(ap_linexpr0_t* expr, ap_dim_t dim, ap_interval_t* itv);
+static inline bool ap_linexpr0_set_coeff_interval_scalar(ap_linexpr0_t* expr, ap_dim_t dim, ap_scalar_t* inf, ap_scalar_t* sup);
 static inline bool ap_linexpr0_set_coeff_interval_int(ap_linexpr0_t* expr, ap_dim_t dim, int inf, int sup);
 static inline bool ap_linexpr0_set_coeff_interval_frac(ap_linexpr0_t* expr, ap_dim_t dim,
 							   int numinf, unsigned int deninf,
@@ -241,18 +241,18 @@ bool ap_linexpr0_set_list(ap_linexpr0_t* expr, ...);
 /* These two functions add dimensions to the expressions, following the
    semantics of dimchange (see the type definition of dimchange).  */
 void ap_linexpr0_add_dimensions_with(ap_linexpr0_t* expr,
-				  const ap_dimchange_t* dimchange);
-ap_linexpr0_t* ap_linexpr0_add_dimensions(const ap_linexpr0_t* expr,
-				    const ap_dimchange_t* dimchange);
+				  ap_dimchange_t* dimchange);
+ap_linexpr0_t* ap_linexpr0_add_dimensions(ap_linexpr0_t* expr,
+				    ap_dimchange_t* dimchange);
 
 /* These two functions apply the given permutation to the dimensions. If dense
    representation, the size of the permutation should be expr->size. If sparse
    representation, the dimensions present in the expression should just be less
    than the size of the permutation. */
 void ap_linexpr0_permute_dimensions_with(ap_linexpr0_t* expr,
-					 const ap_dimperm_t* perm);
-ap_linexpr0_t* ap_linexpr0_permute_dimensions(const ap_linexpr0_t* expr,
-					      const ap_dimperm_t* perm);
+					 ap_dimperm_t* perm);
+ap_linexpr0_t* ap_linexpr0_permute_dimensions(ap_linexpr0_t* expr,
+					      ap_dimperm_t* perm);
 
 /* ====================================================================== */
 /* V. Hashing, comparison */
@@ -260,7 +260,7 @@ ap_linexpr0_t* ap_linexpr0_permute_dimensions(const ap_linexpr0_t* expr,
 
 /* Induces reduction of the coefficients */
 
-long ap_linexpr0_hash(const ap_linexpr0_t* expr);
+long ap_linexpr0_hash(ap_linexpr0_t* expr);
 bool ap_linexpr0_equal(ap_linexpr0_t* expr1,
 		    ap_linexpr0_t* expr2);
 
@@ -273,7 +273,7 @@ int ap_linexpr0_compare(ap_linexpr0_t* expr1,
 /* ====================================================================== */
 
 static inline
-size_t ap_linexpr0_size(const ap_linexpr0_t* expr)
+size_t ap_linexpr0_size(ap_linexpr0_t* expr)
   { return expr->size; }
 
 static inline
@@ -281,15 +281,15 @@ ap_coeff_t* ap_linexpr0_cstref(ap_linexpr0_t* expr)
   { return &expr->cst; }
 
 static inline
-void ap_linexpr0_get_cst(ap_coeff_t* coeff, const ap_linexpr0_t* expr)
+void ap_linexpr0_get_cst(ap_coeff_t* coeff, ap_linexpr0_t* expr)
   { ap_coeff_set(coeff,&expr->cst); }
 
 static inline
-void ap_linexpr0_set_cst(ap_linexpr0_t* expr, const ap_coeff_t* cst)
+void ap_linexpr0_set_cst(ap_linexpr0_t* expr, ap_coeff_t* cst)
   { ap_coeff_set(&expr->cst,cst); }
 
 static inline
-void ap_linexpr0_set_cst_scalar(ap_linexpr0_t* expr, const ap_scalar_t* scalar)
+void ap_linexpr0_set_cst_scalar(ap_linexpr0_t* expr, ap_scalar_t* scalar)
   { ap_coeff_set_scalar(&expr->cst, scalar); }
 
 static inline
@@ -305,7 +305,7 @@ void ap_linexpr0_set_cst_scalar_double(ap_linexpr0_t* expr, double num)
   { ap_coeff_set_scalar_double(&expr->cst, num); }
 
 static inline
-void ap_linexpr0_set_cst_interval(ap_linexpr0_t* expr, const ap_interval_t* itv)
+void ap_linexpr0_set_cst_interval(ap_linexpr0_t* expr, ap_interval_t* itv)
   { ap_coeff_set_interval(&expr->cst, itv); }
 
 static inline
@@ -313,7 +313,7 @@ void ap_linexpr0_set_cst_interval_int(ap_linexpr0_t* expr, int inf, int sup)
   { ap_coeff_set_interval_int(&expr->cst, inf,sup); }
 
 static inline
-void ap_linexpr0_set_cst_interval_scalar(ap_linexpr0_t* expr, const ap_scalar_t* inf, const ap_scalar_t* sup)
+void ap_linexpr0_set_cst_interval_scalar(ap_linexpr0_t* expr, ap_scalar_t* inf, ap_scalar_t* sup)
   { ap_coeff_set_interval_scalar(&expr->cst, inf,sup); }
 
 static inline
@@ -327,11 +327,11 @@ void ap_linexpr0_set_cst_interval_double(ap_linexpr0_t* expr, double inf, double
   { ap_coeff_set_interval_double(&expr->cst, inf,sup); }
 
 static inline
-bool ap_linexpr0_set_coeff(ap_linexpr0_t* expr, ap_dim_t dim, const ap_coeff_t* coeff)
+bool ap_linexpr0_set_coeff(ap_linexpr0_t* expr, ap_dim_t dim, ap_coeff_t* coeff)
   { ap_coeff_t* ecoeff = ap_linexpr0_coeffref(expr,dim); if (ecoeff){ap_coeff_set(ecoeff,coeff); return false;} else return true; }
 
 static inline
-bool ap_linexpr0_set_coeff_scalar(ap_linexpr0_t* expr, ap_dim_t dim, const ap_scalar_t* scalar)
+bool ap_linexpr0_set_coeff_scalar(ap_linexpr0_t* expr, ap_dim_t dim, ap_scalar_t* scalar)
   { ap_coeff_t* ecoeff = ap_linexpr0_coeffref(expr,dim); if (ecoeff){ ap_coeff_set_scalar(ecoeff,scalar); return false; } else return true; }
 
 static inline
@@ -347,7 +347,7 @@ bool ap_linexpr0_set_coeff_scalar_double(ap_linexpr0_t* expr, ap_dim_t dim, doub
   { ap_coeff_t* ecoeff = ap_linexpr0_coeffref(expr,dim); if (ecoeff){ ap_coeff_set_scalar_double(ecoeff,num); return false; } else return true; }
 
 static inline
-bool ap_linexpr0_set_coeffinterval(ap_linexpr0_t* expr, ap_dim_t dim, const ap_interval_t* itv)
+bool ap_linexpr0_set_coeffinterval(ap_linexpr0_t* expr, ap_dim_t dim, ap_interval_t* itv)
   { ap_coeff_t* ecoeff = ap_linexpr0_coeffref(expr,dim); if (ecoeff){ ap_coeff_set_interval(ecoeff,itv); return false; } else return true; }
 
 static inline
@@ -355,7 +355,7 @@ bool ap_linexpr0_set_coeff_interval_int(ap_linexpr0_t* expr, ap_dim_t dim, int i
   { ap_coeff_t* ecoeff = ap_linexpr0_coeffref(expr,dim); if (ecoeff){ ap_coeff_set_interval_int(ecoeff,inf,sup); return false; } else return true; }
 
 static inline
-bool ap_linexpr0_set_coeff_interval_scalar(ap_linexpr0_t* expr, ap_dim_t dim, const ap_scalar_t* inf, const ap_scalar_t* sup)
+bool ap_linexpr0_set_coeff_interval_scalar(ap_linexpr0_t* expr, ap_dim_t dim, ap_scalar_t* inf, ap_scalar_t* sup)
   { ap_coeff_t* ecoeff = ap_linexpr0_coeffref(expr,dim); if (ecoeff){ ap_coeff_set_interval_scalar(ecoeff,inf,sup); return false; } else return true; }
 
 static inline

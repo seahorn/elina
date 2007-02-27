@@ -21,12 +21,12 @@ extern "C" {
 void _poly_projectforget_array(bool project,
 			       bool lazy,
 			       ap_manager_t* man,	
-			       poly_t* po, const poly_t* pa, 
-			       const ap_dim_t* tdim, size_t size);
+			       poly_t* po, poly_t* pa, 
+			       ap_dim_t* tdim, size_t size);
 
 poly_t* poly_forget_array(ap_manager_t* man, 
 			  bool destructive, poly_t* pa, 
-			  const ap_dim_t* tdim, size_t size,
+			  ap_dim_t* tdim, size_t size,
 			  bool project);
 
 #ifdef __cplusplus

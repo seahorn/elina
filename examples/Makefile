@@ -35,10 +35,9 @@ box.cma polka.cma \
 -cclib "-lpolka_caml -lpolkag_debug -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lgmp -lmpfr -lbigarray -lcamlidl"
 
 OCAMLOPTLDFLAGS = \
--ccopt "$(LCFLAGS)" \
-bigarray.cmxa gmp.cmxa apron.cmxa \
-box.cmxa -cclib "-lboxmpq_debug -litvmpq_debug -lapron_debug" \
-polka.cmxa -cclib "-lpolkag_debug"
+-noautolink -ccopt "$(LCFLAGS) -g" \
+bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa \
+-cclib "-lpolka_caml -lpolkag_debug -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lgmp -lmpfr -lbigarray -lcamlidl"
 
 all: C ml
 

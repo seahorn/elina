@@ -184,11 +184,11 @@ bool hmat_check_closed(bound_t* m, size_t dim);
 /* see oct_transfer.c */
   
 bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
-		      const ap_lincons0_array_t* ar, bool* exact,
+		      ap_lincons0_array_t* ar, bool* exact,
 		      bool* respect_closure);
 
 void hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
-			 const ap_generator0_array_t* ar);
+			 ap_generator0_array_t* ar);
 
 
 /* ============================================================ */
@@ -197,11 +197,11 @@ void hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
 
 /* see oct_reize.c */
 
-void hmat_addrem_dimensions(bound_t* dst, const bound_t* src,
-			    const ap_dim_t* pos, size_t nb_pos,
+void hmat_addrem_dimensions(bound_t* dst, bound_t* src,
+			    ap_dim_t* pos, size_t nb_pos,
 			    size_t mult, size_t dim, bool add);
 
-void hmat_permute(bound_t* dst, const bound_t* src,
+void hmat_permute(bound_t* dst, bound_t* src,
 		  size_t dst_dim, size_t src_dim,
 		  ap_dim_t* permutation);
 
@@ -214,10 +214,10 @@ void hmat_permute(bound_t* dst, const bound_t* src,
    result (as long as the fits function returns true).
  */
 
-static inline void bound_bmin(bound_t dst, const bound_t arg)
+static inline void bound_bmin(bound_t dst, bound_t arg)
 { bound_min(dst,dst,arg); }
 
-static inline void bound_badd(bound_t dst, const bound_t arg)
+static inline void bound_badd(bound_t dst, bound_t arg)
 { bound_add(dst,dst,arg); }
 
 
@@ -334,7 +334,7 @@ static inline void bound_badd(bound_t dst, const bound_t arg)
    pr->conv is set if the conversion is not exact
  */
 static inline void bound_of_scalar(oct_internal_t* pr,
-				   bound_t r, const ap_scalar_t* t,
+				   bound_t r, ap_scalar_t* t,
 				   bool neg, bool mul2)
 {
   switch (t->discr) {
@@ -376,7 +376,7 @@ static inline void bound_of_scalar(oct_internal_t* pr,
 */
 static inline void bounds_of_interval(oct_internal_t* pr,
 				      bound_t minf, bound_t sup,
-				      const ap_interval_t* i,
+				      ap_interval_t* i,
 				      bool mul2)
 {
   arg_assert(ap_scalar_cmp(i->inf,i->sup)<=0,return;);
@@ -387,7 +387,7 @@ static inline void bounds_of_interval(oct_internal_t* pr,
 /* as above, for a coeff_t */
 static inline void bounds_of_coeff(oct_internal_t* pr,
 				   bound_t minf, bound_t sup,
-				   const ap_coeff_t c,
+				   ap_coeff_t c,
 				   bool mul2)
 {
   switch (c.discr) {
@@ -406,7 +406,7 @@ static inline void bounds_of_coeff(oct_internal_t* pr,
 }
 
 void bounds_of_generator(oct_internal_t* pr, bound_t* dst, 
-			 const ap_linexpr0_t* e, size_t dim);
+			 ap_linexpr0_t* e, size_t dim);
 
 /* ============================================================ */
 /* III.3 Conversions to user types */
@@ -417,7 +417,7 @@ void bounds_of_generator(oct_internal_t* pr, bound_t* dst,
 */
 static inline void scalar_of_upper_bound(oct_internal_t* pr,
 					 ap_scalar_t* r,
-					 const bound_t b,
+					 bound_t b,
 					 bool div2)
 {
   if (bound_infty(b)) ap_scalar_set_infty(r,1);
@@ -442,7 +442,7 @@ static inline void scalar_of_upper_bound(oct_internal_t* pr,
 */
 static inline void scalar_of_lower_bound(oct_internal_t* pr,
 					 ap_scalar_t* r,
-					 const bound_t b,
+					 bound_t b,
 					 bool div2)
 {
   if (bound_infty(b)) ap_scalar_set_infty(r,-1);
@@ -471,7 +471,7 @@ static inline void scalar_of_lower_bound(oct_internal_t* pr,
 */
 static inline void interval_of_bounds(oct_internal_t* pr,
 				      ap_interval_t* i,
-				      const bound_t minf, const bound_t sup,
+				      bound_t minf, bound_t sup,
 				      bool div2)
 {
   scalar_of_upper_bound(pr,i->sup, sup,div2);
@@ -487,8 +487,8 @@ static inline void interval_of_bounds(oct_internal_t* pr,
    where 0 * oo = oo * 0 = 0
  */
 static inline void bounds_mul(bound_t r_inf, bound_t r_sup,
-			      const bound_t a_inf, const bound_t a_sup,
-			      const bound_t b_inf, const bound_t b_sup,
+			      bound_t a_inf, bound_t a_sup,
+			      bound_t b_inf, bound_t b_sup,
 			      bound_t tmp[8])
 {
   /* TODO: optimize for the numerical types that do not need special
@@ -541,7 +541,7 @@ static inline void bounds_mul(bound_t r_inf, bound_t r_sup,
 /* constraint at line i, column j, with upper bound m */
 static inline ap_lincons0_t lincons_of_bound(oct_internal_t* pr,
 					     size_t i, size_t j, 
-					     const bound_t m)
+					     bound_t m)
 {
   ap_linexpr0_t* e;
   if (i==j) {
@@ -591,7 +591,7 @@ typedef struct {
 
 /* convert expression to bounds, look for unit unary or binary form */
 uexpr uexpr_of_linexpr(oct_internal_t* pr, bound_t* dst,
-		       const ap_linexpr0_t* e, size_t dim);
+		       ap_linexpr0_t* e, size_t dim);
 
 
 /* ********************************************************************** */

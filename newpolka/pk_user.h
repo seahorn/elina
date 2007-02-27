@@ -25,18 +25,18 @@ extern "C" {
 
 void vector_set_linexpr(pk_internal_t* pk,
 			numint_t* vec,
-			const ap_linexpr0_t* linexpr,
+			ap_linexpr0_t* linexpr,
 			size_t dim,
 			int mode);
 void vector_set_lincons(pk_internal_t* pk,
 			numint_t* vec,
-			const ap_lincons0_t* lincons,
+			ap_lincons0_t* lincons,
 			size_t intdim, size_t realdim,
 			bool integer);
 
 void vector_set_generator(pk_internal_t* pk,
 			  numint_t* vec,
-			  const ap_generator0_t* generator,
+			  ap_generator0_t* generator,
 			  size_t intdim, size_t realdim);
 
 ap_lincons0_t lincons_of_vector(pk_internal_t* pk,
@@ -47,8 +47,8 @@ ap_generator0_t generator_of_vector(pk_internal_t* pk,
 				size_t size);
 
 /* Conversion t and from user-datatypes */
-matrix_t* matrix_of_lincons_array(pk_internal_t* pk, const ap_lincons0_array_t* array, size_t intdim, size_t realdim, bool integer);
-matrix_t* matrix_of_generator_array(pk_internal_t* pk, const ap_generator0_array_t* array, size_t intdim, size_t realdim);
+matrix_t* matrix_of_lincons_array(pk_internal_t* pk, ap_lincons0_array_t* array, size_t intdim, size_t realdim, bool integer);
+matrix_t* matrix_of_generator_array(pk_internal_t* pk, ap_generator0_array_t* array, size_t intdim, size_t realdim);
 
 #ifdef __cplusplus
 }

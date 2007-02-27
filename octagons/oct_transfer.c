@@ -22,7 +22,7 @@
 /* ============================================================ */
 
 uexpr uexpr_of_linexpr(oct_internal_t* pr, bound_t* dst, 
-		       const ap_linexpr0_t* e, size_t dim)
+		       ap_linexpr0_t* e, size_t dim)
 {
   
 #define CLASS_COEF(idx,coef)						\
@@ -73,7 +73,7 @@ uexpr uexpr_of_linexpr(oct_internal_t* pr, bound_t* dst,
 }
 
 void bounds_of_generator(oct_internal_t* pr, bound_t* dst, 
-			 const ap_linexpr0_t* e, size_t dim)
+			 ap_linexpr0_t* e, size_t dim)
 {
   size_t i;
   switch (e->discr) {
@@ -111,7 +111,7 @@ void bounds_of_generator(oct_internal_t* pr, bound_t* dst,
    return true if empty
  */
 bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
-		      const ap_lincons0_array_t* ar, bool* exact,
+		      ap_lincons0_array_t* ar, bool* exact,
 		      bool* respect_closure)
 {
   size_t i, j, k, ui, uj;
@@ -398,7 +398,7 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 }
 
 void hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
-			 const ap_generator0_array_t* ar)
+			 ap_generator0_array_t* ar)
 {
   uexpr u;
   size_t i,j,k;
@@ -452,7 +452,7 @@ void hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
 
 oct_t* oct_meet_lincons_array(ap_manager_t* man,
 			      bool destructive, oct_t* a,
-			      const ap_lincons0_array_t* array)
+			      ap_lincons0_array_t* array)
 {
   oct_internal_t* pr = 
     oct_init_from_manager(man,AP_FUNID_MEET_LINCONS_ARRAY,2*(a->dim+8));
@@ -487,7 +487,7 @@ oct_t* oct_meet_lincons_array(ap_manager_t* man,
 
 oct_t* oct_add_ray_array(ap_manager_t* man,
 			 bool destructive, oct_t* a,
-			 const ap_generator0_array_t* array)
+			 ap_generator0_array_t* array)
 {
   oct_internal_t* pr = 
     oct_init_from_manager(man,AP_FUNID_ADD_RAY_ARRAY,2*(a->dim+1));
@@ -706,7 +706,7 @@ static void hmat_assign(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
 
 /* internal helper function: apply substitution, retrun true if empty */
 static bool hmat_subst(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim, 
-		       size_t d, const bound_t* dst, bool* respect_closure)
+		       size_t d, bound_t* dst, bool* respect_closure)
 {
   size_t i,k;
   if (u.type==ZERO ) {
@@ -831,7 +831,7 @@ static void hmat_subst_var(bound_t* m, size_t dim, size_t d, size_t k)
 
 oct_t* oct_assign_linexpr(ap_manager_t* man,
 			  bool destructive, oct_t* a,
-			  ap_dim_t d, const ap_linexpr0_t* expr,
+			  ap_dim_t d, ap_linexpr0_t* expr,
 			  oct_t* dest)
 {
   oct_internal_t* pr = 
@@ -879,7 +879,7 @@ oct_t* oct_assign_linexpr(ap_manager_t* man,
 
 oct_t* oct_substitute_linexpr(ap_manager_t* man,
 			      bool destructive, oct_t* a,
-			      ap_dim_t d, const ap_linexpr0_t* expr,
+			      ap_dim_t d, ap_linexpr0_t* expr,
 			      oct_t* dest)
 {
   oct_internal_t* pr = 
@@ -904,7 +904,7 @@ oct_t* oct_substitute_linexpr(ap_manager_t* man,
   respect_closure = (m==a->closed) && (pr->funopt->algorithm>=0) && (!dest);
 
   /* go */
-  if (hmat_subst(pr,u,m,a->dim,d,(const bound_t*)m2,&respect_closure)) {
+  if (hmat_subst(pr,u,m,a->dim,d,(bound_t*)m2,&respect_closure)) {
     /* empty */
     if (!destructive) hmat_free(pr,m,a->dim);
     return oct_set_mat(pr,a,NULL,NULL,destructive);
@@ -928,8 +928,8 @@ oct_t* oct_substitute_linexpr(ap_manager_t* man,
 
 oct_t* oct_assign_linexpr_array(ap_manager_t* man,
 				bool destructive, oct_t* a,
-				const ap_dim_t* tdim,
-				const ap_linexpr0_t** texpr,
+				ap_dim_t* tdim,
+				ap_linexpr0_t** texpr,
 				size_t size,
 				oct_t* dest)
 {
@@ -960,7 +960,7 @@ oct_t* oct_assign_linexpr_array(ap_manager_t* man,
 
   /* add temporary dimensions to hold destination variables */
   mm = hmat_alloc_top(pr,a->dim+size);
-  bound_set_array(mm,(const bound_t*)m,matsize(a->dim));
+  bound_set_array(mm,m,matsize(a->dim));
 
   /* coefs in expr for temporary dimensions are set to 0 */
   for (i=0;i<2*size;i++)
@@ -988,7 +988,7 @@ oct_t* oct_assign_linexpr_array(ap_manager_t* man,
     d[a->dim+i] = tdim[i];
     d[tdim[i]] = a->dim;
   }
-  hmat_permute(m,(const bound_t*)mm,a->dim,a->dim+size,d);
+  hmat_permute(m,mm,a->dim,a->dim+size,d);
   hmat_free(pr,mm,a->dim+size);
 
   /* intersect with dest */
@@ -1008,8 +1008,8 @@ oct_t* oct_assign_linexpr_array(ap_manager_t* man,
 
 oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
 				    bool destructive, oct_t* a,
-				    const ap_dim_t* tdim,
-				    const ap_linexpr0_t** texpr,
+				    ap_dim_t* tdim,
+				    ap_linexpr0_t** texpr,
 				    size_t size,
 				    oct_t* dest)
 {
@@ -1042,7 +1042,7 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
 
   /* add temporary dimensions to hold destination variables */
   mm = hmat_alloc_top(pr,a->dim+size);
-  bound_set_array(mm,(const bound_t*)m,matsize(a->dim));
+  bound_set_array(mm,m,matsize(a->dim));
 
   /* susbstitute org with temp variables */
   for (i=0;i<size;i++) {
@@ -1068,7 +1068,7 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
   for (i=0;i<size;i++) {
     uexpr u = uexpr_of_linexpr(pr,pr->tmp,texpr[i],a->dim);
     if (u.type==BINARY || u.type==OTHER) inexact = 1;
-    if (hmat_subst(pr,u,mm,a->dim+size,a->dim+i,(const bound_t*)m2,
+    if (hmat_subst(pr,u,mm,a->dim+size,a->dim+i,m2,
 		   &respect_closure)) {
       /* empty */
       hmat_free(pr,mm,a->dim+size);
@@ -1088,7 +1088,7 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
 
   /* remove temp */
   if (!destructive) m = hmat_copy(pr,mm,a->dim);
-  else bound_set_array(m,(const bound_t*)mm,matsize(a->dim));
+  else bound_set_array(m,mm,matsize(a->dim));
   hmat_free(pr,mm,a->dim+size);
 
   /* intersect with dest */

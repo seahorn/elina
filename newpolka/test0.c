@@ -270,7 +270,7 @@ void poly1(ap_manager_t* man, char** name_of_dim, poly_t** ppo1, poly_t** ppo2)
   }
   ap_linexpr0_free(expr);
   /* 3. of box */
-  poly2 = poly_of_box(man,0,6,(const ap_interval_t**)titv);
+  poly2 = poly_of_box(man,0,6,(ap_interval_t**)titv);
   poly_fprint(stdout,man,poly2,name_of_dim);
   poly_canonicalize(man,poly2);
   poly_fprint(stdout,man,poly2,name_of_dim);  
@@ -1118,8 +1118,8 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
     PRINT((printf("\n")));
   }
       
-  p1 = (poly_t*)tpoly[0];
-  p2 = (poly_t*)tpoly[1];
+  p1 = tpoly[0];
+  p2 = tpoly[1];
   
   /* minimize */
   PRINT((printf("minimize\n")));
@@ -1241,7 +1241,7 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   for (i=0;i<intdim+realdim; i++){
     assert(poly_sat_interval(man,p1,i,box[i])==tbool_true);
   }
-  p3 = poly_of_box(man,intdim,realdim,(const ap_interval_t**)box);
+  p3 = poly_of_box(man,intdim,realdim,(ap_interval_t**)box);
   if (poly_is_leq(man,p1,p3)!=tbool_true &&
       poly_is_bottom(man,p1)==tbool_false){
     if (intdim==0) assert(false);

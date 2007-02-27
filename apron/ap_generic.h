@@ -37,7 +37,7 @@ extern "C" {
 void*
 ap_generic_of_lincons_array(ap_manager_t* man,
 			    size_t intdim, size_t realdim,
-			    const ap_lincons0_array_t* array);
+			    ap_lincons0_array_t* array);
   /* This function implements a generic of_lincons_array operation using top and
      meet_lincons_array operations.
   */
@@ -48,13 +48,13 @@ ap_generic_of_lincons_array(ap_manager_t* man,
 
 void*
 ap_generic_meet_array(ap_manager_t* man,
-		      const void** tab, size_t size);
+		      void** tab, size_t size);
   /* This function implements a generic meet_array operation using copy and meet
      operations. */
 
 void*
 ap_generic_join_array(ap_manager_t* man,
-		      const void** tab, size_t size);
+		      void** tab, size_t size);
   /* This function implements a generic join_array operation using copy and meet
      operations. */
 
@@ -62,10 +62,10 @@ void*
 ap_generic_assign_linexpr_array(ap_manager_t* man,
 				bool destructive,
 				void* abs,
-				const ap_dim_t* tdim,
-				const ap_linexpr0_t*const* texpr,
+				ap_dim_t* tdim,
+				ap_linexpr0_t** texpr,
 				size_t size,
-				const void* dest);
+				void* dest);
   /*
      This function implements generic parallel assignement operation by
      1. introducing primed dimensions
@@ -83,10 +83,10 @@ void*
 ap_generic_substitute_linexpr_array(ap_manager_t* man,
 				    bool destructive,
 				    void* abs,
-				    const ap_dim_t* tdim,
-				    const ap_linexpr0_t*const* texpr,
+				    ap_dim_t* tdim,
+				    ap_linexpr0_t** texpr,
 				    size_t size,
-				    const void* dest);
+				    void* dest);
   /*
      This function implements generic parallel substitution operation by
      1. introducing primed dimensions
@@ -103,7 +103,7 @@ ap_generic_substitute_linexpr_array(ap_manager_t* man,
 
 ap_linexpr0_t*
 ap_generic_quasilinear_of_intervallinear(ap_manager_t* man,
-					 const void* a,
+					 void* a,
 					 ap_linexpr0_t* expr);
   /* Evaluate a interval linear expression on the abstract
      value such as to transform it into a quasilinear expression.

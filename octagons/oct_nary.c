@@ -192,7 +192,7 @@ oct_t* oct_widening(ap_manager_t* man, oct_t* a1, oct_t* a2)
 
 oct_t* oct_widening_thresholds(ap_manager_t* man,
 			       oct_t* a1, oct_t* a2,
-			       const ap_scalar_t** array,
+			       ap_scalar_t** array,
 			       size_t nb)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,nb+1);
@@ -268,8 +268,8 @@ oct_t* oct_narrowing(ap_manager_t* man, oct_t* a1, oct_t* a2)
 }
 
 ap_abstract0_t* ap_abstract0_oct_narrowing( ap_manager_t* man,
-					const ap_abstract0_t* a1,
-					const ap_abstract0_t* a2 )
+					    ap_abstract0_t* a1,
+					    ap_abstract0_t* a2 )
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
   oct_t* a = (oct_t*) (a1->value);
@@ -282,9 +282,9 @@ ap_abstract0_t* ap_abstract0_oct_narrowing( ap_manager_t* man,
 
 ap_abstract0_t* 
 ap_abstract0_oct_widening_thresholds(ap_manager_t* man,
-				     const ap_abstract0_t* a1, 
-				     const ap_abstract0_t* a2,
-				     const ap_scalar_t** array,
+				     ap_abstract0_t* a1, 
+				     ap_abstract0_t* a2,
+				     ap_scalar_t** array,
 				     size_t nb)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
@@ -302,7 +302,7 @@ ap_abstract0_oct_widening_thresholds(ap_manager_t* man,
 /* Perturbation */
 /* ============================================================ */
 
-oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, const ap_scalar_t* epsilon)
+oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, ap_scalar_t* epsilon)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,2);
   oct_t* r = oct_alloc_internal(pr,a->dim,a->intdim);
@@ -334,8 +334,8 @@ oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, const ap_scalar_t* epsilon)
 
 ap_abstract0_t* 
 ap_abstract0_oct_add_epsilon(ap_manager_t* man, 
-			     const ap_abstract0_t* a1, 
-			     const ap_scalar_t* epsilon)
+			     ap_abstract0_t* a1, 
+			     ap_scalar_t* epsilon)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
   oct_t* a = (oct_t*) (a1->value);
@@ -346,7 +346,7 @@ ap_abstract0_oct_add_epsilon(ap_manager_t* man,
 
 
 oct_t* oct_add_epsilon_bin(ap_manager_t* man, oct_t* a1, oct_t* a2, 
-			   const ap_scalar_t* epsilon)
+			   ap_scalar_t* epsilon)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,2);
   oct_t* r;
@@ -387,9 +387,9 @@ oct_t* oct_add_epsilon_bin(ap_manager_t* man, oct_t* a1, oct_t* a2,
 
 ap_abstract0_t* 
 ap_abstract0_oct_add_epsilon_bin(ap_manager_t* man, 
-				 const ap_abstract0_t* a1, 
-				 const ap_abstract0_t* a2, 
-				 const ap_scalar_t* epsilon)
+				 ap_abstract0_t* a1, 
+				 ap_abstract0_t* a2, 
+				 ap_scalar_t* epsilon)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_WIDENING,0);
   oct_t* a = (oct_t*) (a1->value);

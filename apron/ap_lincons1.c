@@ -30,10 +30,10 @@ void ap_lincons1_clear(ap_lincons1_t* cons)
   }
 }
 
-void ap_lincons1_fprint(FILE* stream, const ap_lincons1_t* cons)
-{  
+void ap_lincons1_fprint(FILE* stream, ap_lincons1_t* cons)
+{
   ap_environment_name_of_dim_t* name_of_dim;
-  
+
   name_of_dim = ap_environment_name_of_dim_alloc(cons->env);
   ap_lincons0_fprint(stream, &cons->lincons0, name_of_dim->p);
   ap_environment_name_of_dim_free(name_of_dim);
@@ -52,59 +52,20 @@ ap_coeff_t* ap_lincons1_coeffref(ap_lincons1_t* cons, ap_var_t var)
   ap_dim_t dim = ap_environment_dim_of_var(cons->env,var);
   return ap_linexpr0_coeffref(cons->lincons0.linexpr0,dim);
 }
-bool ap_lincons1_get_coeff(ap_coeff_t* coeff, const ap_lincons1_t* cons, ap_var_t var)
+bool ap_lincons1_get_coeff(ap_coeff_t* coeff, ap_lincons1_t* cons, ap_var_t var)
 {
   ap_dim_t dim = ap_environment_dim_of_var(cons->env,var);
   return ap_linexpr0_get_coeff(coeff,cons->lincons0.linexpr0,dim);
 }
 
-/*
-ap_coeff_t* ap_lincons1_set_format_get_pcoeff(char* str,
-					va_list* va,
-					void* cons,
-					bool* b)
-{
-  ap_var_t var;
-  ap_coeff_t* pcoeff;
-
-  switch (*str){
-  case '%':
-    var = va_arg(*va,ap_var_t);
-    pcoeff = ap_lincons1_coeffref((ap_lincons1_t*)cons,var);
-    *b = (pcoeff==NULL);
-    break;
-  case '@':
-    pcoeff = ap_lincons1_cstref((ap_lincons1_t*)cons);
-    *b = false;
-    break;
-  default:
-    fprintf(stderr,
-	    "ap_linexpr0_set_format_generic/ap_lincons1_set_format_get_pcoeff: bad format string \"%s\"",str);
-    abort();
-  }
-  return pcoeff;
-}
-
-bool ap_lincons1_set_format(ap_lincons1_t* cons, char* fmt, ...)
-{
-  va_list ap;
-  bool b;
-
-  va_start(ap,fmt);
-  b = ap_linexpr0_set_format_generic(ap_lincons1_set_format_get_pcoeff,
-				  cons, fmt, &ap);
-  va_end(ap);
-  return b;
-}
-*/
 ap_coeff_t* ap_lincons1_set_list_get_pcoeff(void* cons, bool cst, va_list* va)
 {
   ap_coeff_t* pcoeff;
   if (cst){
-    pcoeff = ap_lincons1_cstref((ap_lincons1_t*)cons);
+    pcoeff = ap_lincons1_cstref(cons);
   } else {
     ap_var_t var = va_arg(*va,ap_var_t);
-    pcoeff = ap_lincons1_coeffref((ap_lincons1_t*)cons,var);
+    pcoeff = ap_lincons1_coeffref(cons,var);
   }
   return pcoeff;
 }
@@ -125,7 +86,7 @@ bool ap_lincons1_set_list(ap_lincons1_t* cons, ...)
 /* ====================================================================== */
 
 bool ap_lincons1_extend_environment(ap_lincons1_t* ncons,
-				    const ap_lincons1_t* cons,
+				    ap_lincons1_t* cons,
 				    ap_environment_t* nenv)
 {
   ap_dimchange_t* dimchange = ap_environment_dimchange(cons->env,nenv);
@@ -136,7 +97,7 @@ bool ap_lincons1_extend_environment(ap_lincons1_t* ncons,
   return false;
 }
 bool ap_lincons1_extend_environment_with(ap_lincons1_t* cons,
-				      ap_environment_t* nenv)
+					 ap_environment_t* nenv)
 {
   ap_environment_t* env;
   ap_dimchange_t* dimchange = ap_environment_dimchange(cons->env,nenv);
@@ -171,10 +132,10 @@ void ap_lincons1_array_clear(ap_lincons1_array_t* array)
   array->env = NULL;
 }
 void ap_lincons1_array_fprint(FILE* stream,
-			      const ap_lincons1_array_t* array)
+			      ap_lincons1_array_t* array)
 {
   ap_environment_name_of_dim_t* name_of_dim;
-  
+
   name_of_dim = ap_environment_name_of_dim_alloc(array->env);
   ap_lincons0_array_fprint(stream,&array->lincons0_array,name_of_dim->p);
   ap_environment_name_of_dim_free(name_of_dim);
@@ -184,7 +145,7 @@ void ap_lincons1_array_fprint(FILE* stream,
 /* II.3 Access */
 /* ====================================================================== */
 
-ap_lincons1_t ap_lincons1_array_get(const ap_lincons1_array_t* array,
+ap_lincons1_t ap_lincons1_array_get(ap_lincons1_array_t* array,
 				    size_t index)
 {
   ap_lincons1_t cons;
@@ -194,7 +155,7 @@ ap_lincons1_t ap_lincons1_array_get(const ap_lincons1_array_t* array,
 }
 
 bool ap_lincons1_array_set(ap_lincons1_array_t* array,
-			size_t index, const ap_lincons1_t* cons)
+			   size_t index, ap_lincons1_t* cons)
 {
   if (index>=array->lincons0_array.size || !ap_environment_is_eq(cons->env,array->env))
     return true;
@@ -210,7 +171,7 @@ bool ap_lincons1_array_set(ap_lincons1_array_t* array,
 
 bool
 ap_lincons1_array_extend_environment_with(ap_lincons1_array_t* array,
-				       ap_environment_t* nenv)
+					  ap_environment_t* nenv)
 {
   ap_environment_t* env;
   ap_dimchange_t* dimchange = ap_environment_dimchange(array->env,nenv);
@@ -224,7 +185,7 @@ ap_lincons1_array_extend_environment_with(ap_lincons1_array_t* array,
 }
 bool
 ap_lincons1_array_extend_environment(ap_lincons1_array_t* narray,
-				     const ap_lincons1_array_t* array,
+				     ap_lincons1_array_t* array,
 				     ap_environment_t* nenv)
 {
   ap_dimchange_t* dimchange = ap_environment_dimchange(array->env,nenv);

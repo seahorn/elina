@@ -53,13 +53,13 @@ ap_generator1_t ap_generator1_make(ap_gentyp_t gentyp, ap_linexpr1_t* expr);
      The expression is not duplicated. */
 
 static inline
-ap_generator1_t ap_generator1_copy(const ap_generator1_t* gen);
+ap_generator1_t ap_generator1_copy(ap_generator1_t* gen);
   /* Duplication */
 
 void ap_generator1_clear(ap_generator1_t* gen);
   /* Clear the generator and set pointers to NULL */
 
-void ap_generator1_fprint(FILE* stream, const ap_generator1_t* gen);
+void ap_generator1_fprint(FILE* stream, ap_generator1_t* gen);
   /* Printing */
 
 /* ====================================================================== */
@@ -71,7 +71,7 @@ void ap_generator1_fprint(FILE* stream, const ap_generator1_t* gen);
 /* ====================================================================== */
 
 static inline
-ap_environment_t* ap_generator1_envref(const ap_generator1_t* gen);
+ap_environment_t* ap_generator1_envref(ap_generator1_t* gen);
   /* Get a reference to the environment. Do not free it. */
 
 static inline
@@ -79,25 +79,25 @@ ap_gentyp_t* ap_generator1_gentypref(ap_generator1_t* gen);
   /* Get a reference to the type of generator */
 
 static inline
-ap_linexpr1_t ap_generator1_linexpr1ref(const ap_generator1_t* gen);
+ap_linexpr1_t ap_generator1_linexpr1ref(ap_generator1_t* gen);
   /* Get a reference to the underlying expression of the generator.
      Do not free it: nothing is duplicated.
      Modifying the argument or the result is equivalent, except for
      change of dimensions/envionment. */
 
 /* Get the constant and assign it to coeff */
-static inline void ap_generator1_get_cst(ap_coeff_t* coeff, const ap_generator1_t* gen);
+static inline void ap_generator1_get_cst(ap_coeff_t* coeff, ap_generator1_t* gen);
 
 /* Get coefficient of variable var in the generator and assign it to coeff.
    Return true if var is unkown in the environment */
-bool ap_generator1_get_coeff(ap_coeff_t* coeff, const ap_generator1_t* gen, ap_var_t var);
+bool ap_generator1_get_coeff(ap_coeff_t* coeff, ap_generator1_t* gen, ap_var_t var);
 
 /* Set the constant of the linear generator */
-static inline void ap_generator1_set_cst(ap_generator1_t* gen, const ap_coeff_t* cst);
+static inline void ap_generator1_set_cst(ap_generator1_t* gen, ap_coeff_t* cst);
 
 /* Set the coefficient of variable var in the generator.
    Return true if var is unknown in the environment */
-static inline bool ap_generator1_set_coeff(ap_generator1_t* gen, ap_var_t var, const ap_coeff_t* coeff);
+static inline bool ap_generator1_set_coeff(ap_generator1_t* gen, ap_var_t var, ap_coeff_t* coeff);
 
 /*
 bool ap_generator1_set_format(ap_generator1_t* cons, char* fmt, ...);
@@ -129,10 +129,10 @@ ap_generator0_t* ap_generator1_generator0ref(ap_generator1_t* gen);
 /* ====================================================================== */
 
 bool ap_generator1_extend_environment(ap_generator1_t* ngen,
-				 const ap_generator1_t* gen,
-				 ap_environment_t* nenv);
-bool ap_generator1_extend_environment_with(ap_generator1_t* gen,
+				      ap_generator1_t* gen,
 				      ap_environment_t* nenv);
+bool ap_generator1_extend_environment_with(ap_generator1_t* gen,
+					   ap_environment_t* nenv);
 
 /* ********************************************************************** */
 /* II. Array of linear generators */
@@ -149,7 +149,7 @@ ap_generator1_array_t ap_generator1_array_make(ap_environment_t* env, size_t siz
 void ap_generator1_array_clear(ap_generator1_array_t* array);
   /* Clear the generators of the array, and then the array itself */
 void ap_generator1_array_fprint(FILE* stream,
-			   const ap_generator1_array_t* ap_generator1_array);
+			   ap_generator1_array_t* ap_generator1_array);
   /* Printing */
 
 /* ====================================================================== */
@@ -157,16 +157,16 @@ void ap_generator1_array_fprint(FILE* stream,
 /* ====================================================================== */
 
 static inline
-size_t ap_generator1_array_size(const ap_generator1_array_t* array);
+size_t ap_generator1_array_size(ap_generator1_array_t* array);
 
 static inline
-ap_environment_t* ap_generator1_array_envref(const ap_generator1_array_t* array);
+ap_environment_t* ap_generator1_array_envref(ap_generator1_array_t* array);
 
 static inline
 void ap_generator1_array_clear_index(ap_generator1_array_t* array, size_t index);
   /* Clear the generator at index index. */
 
-ap_generator1_t ap_generator1_array_get(const ap_generator1_array_t* array,
+ap_generator1_t ap_generator1_array_get(ap_generator1_array_t* array,
 			      size_t index);
   /* Return the linear generator of the given index
      Nothing is duplicated, and the result should never be cleared.
@@ -174,7 +174,7 @@ ap_generator1_t ap_generator1_array_get(const ap_generator1_array_t* array,
      change of environments */
 
 bool ap_generator1_array_set(ap_generator1_array_t* array,
-			      size_t index, const ap_generator1_t* gen);
+			      size_t index, ap_generator1_t* gen);
   /* Fill the index of the array with the generator.
      Assumes array->env==gen->env.
      Nothing is duplicated.
@@ -192,8 +192,8 @@ ap_generator1_array_extend_environment_with(ap_generator1_array_t* array,
 					    ap_environment_t* env);
 bool
 ap_generator1_array_extend_environment(ap_generator1_array_t* narray,
-				  const ap_generator1_array_t* array,
-				  ap_environment_t* env);
+				       ap_generator1_array_t* array,
+				       ap_environment_t* env);
 
 /* ********************************************************************** */
 /* III. Inline functions definitions */
@@ -208,7 +208,7 @@ ap_generator1_t ap_generator1_make(ap_gentyp_t gentyp, ap_linexpr1_t* expr)
   return gen;
 }
 static inline
-ap_generator1_t ap_generator1_copy(const ap_generator1_t* gen){
+ap_generator1_t ap_generator1_copy(ap_generator1_t* gen){
   ap_generator1_t ngen;
   ngen.generator0 = ap_generator0_copy(&gen->generator0);
   ngen.env = ap_environment_copy(gen->env);
@@ -216,7 +216,7 @@ ap_generator1_t ap_generator1_copy(const ap_generator1_t* gen){
 }
 
 static inline
-ap_environment_t* ap_generator1_envref(const ap_generator1_t* gen){
+ap_environment_t* ap_generator1_envref(ap_generator1_t* gen){
   return gen->env;
 }
 
@@ -225,7 +225,7 @@ ap_gentyp_t* ap_generator1_gentypref(ap_generator1_t* gen){
   return &gen->generator0.gentyp;
 }
 static inline
-ap_linexpr1_t ap_generator1_linexpr1ref(const ap_generator1_t* gen){
+ap_linexpr1_t ap_generator1_linexpr1ref(ap_generator1_t* gen){
   ap_linexpr1_t expr;
   expr.linexpr0 = gen->generator0.linexpr0;
   expr.env = gen->env;
@@ -239,22 +239,22 @@ static inline
 ap_coeff_t* ap_generator1_cstref(ap_generator1_t* gen){
   return &gen->generator0.linexpr0->cst;
 }
-static inline void ap_generator1_get_cst(ap_coeff_t* coeff, const ap_generator1_t* gen){
+static inline void ap_generator1_get_cst(ap_coeff_t* coeff, ap_generator1_t* gen){
   ap_linexpr0_get_cst(coeff,gen->generator0.linexpr0);
 }
-static inline void ap_generator1_set_cst(ap_generator1_t* gen, const ap_coeff_t* cst){
+static inline void ap_generator1_set_cst(ap_generator1_t* gen, ap_coeff_t* cst){
   ap_linexpr0_set_cst(gen->generator0.linexpr0,cst);
 }
-static inline bool ap_generator1_set_coeff(ap_generator1_t* gen, ap_var_t var, const ap_coeff_t* coeff)
+static inline bool ap_generator1_set_coeff(ap_generator1_t* gen, ap_var_t var, ap_coeff_t* coeff)
   { ap_coeff_t* ecoeff = ap_generator1_coeffref(gen,var); if (ecoeff){ap_coeff_set(ecoeff,coeff); return false;} else return true; }
 
 static inline
-size_t ap_generator1_array_size(const ap_generator1_array_t* array){
+size_t ap_generator1_array_size(ap_generator1_array_t* array){
   return array->generator0_array.size;
 }
 
 static inline
-ap_environment_t* ap_generator1_array_envref(const ap_generator1_array_t* array){
+ap_environment_t* ap_generator1_array_envref(ap_generator1_array_t* array){
   return array->env;
 }
 

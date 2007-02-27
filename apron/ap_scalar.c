@@ -48,7 +48,7 @@ void ap_scalar_free(ap_scalar_t* scalar)
   free(scalar);
 }
 
-void ap_scalar_fprint(FILE* stream, const ap_scalar_t* a)
+void ap_scalar_fprint(FILE* stream, ap_scalar_t* a)
 {
   int flag;
 
@@ -72,7 +72,7 @@ void ap_scalar_fprint(FILE* stream, const ap_scalar_t* a)
 /* Combined allocation and assignements */
 /* ====================================================================== */
 
-ap_scalar_t* ap_scalar_alloc_set(const ap_scalar_t* b)
+ap_scalar_t* ap_scalar_alloc_set(ap_scalar_t* b)
 {
   ap_scalar_t* a = malloc(sizeof(ap_scalar_t));
   a->discr = b->discr;
@@ -88,7 +88,7 @@ ap_scalar_t* ap_scalar_alloc_set(const ap_scalar_t* b)
   }
   return a;
 }
-ap_scalar_t* ap_scalar_alloc_set_mpq(const mpq_t mpq)
+ap_scalar_t* ap_scalar_alloc_set_mpq(mpq_t mpq)
 {
   ap_scalar_t* a = malloc(sizeof(ap_scalar_t));
   a->discr = AP_SCALAR_MPQ;
@@ -109,7 +109,7 @@ ap_scalar_t* ap_scalar_alloc_set_double(double k)
 /* Assignements */
 /* ====================================================================== */
 
-void ap_scalar_set(ap_scalar_t* a, const ap_scalar_t* b)
+void ap_scalar_set(ap_scalar_t* a, ap_scalar_t* b)
 {
   ap_scalar_reinit(a,b->discr);
   switch(b->discr){
@@ -121,7 +121,7 @@ void ap_scalar_set(ap_scalar_t* a, const ap_scalar_t* b)
     break;
   }
 }
-void ap_scalar_set_mpq(ap_scalar_t* scalar, const mpq_t mpq)
+void ap_scalar_set_mpq(ap_scalar_t* scalar, mpq_t mpq)
   { ap_scalar_reinit(scalar,AP_SCALAR_MPQ); mpq_set(scalar->val.mpq,mpq); }
 void ap_scalar_set_int(ap_scalar_t* scalar, long int i)
   { ap_scalar_reinit(scalar,AP_SCALAR_MPQ); mpq_set_si(scalar->val.mpq,i,1); }
@@ -147,7 +147,7 @@ void ap_scalar_set_infty(ap_scalar_t* scalar, int sgn)
 /* Conversions */
 /* ====================================================================== */
 
-int ap_mpq_set_scalar(mpq_t mpq, const ap_scalar_t* scalar, mp_rnd_t round)
+int ap_mpq_set_scalar(mpq_t mpq, ap_scalar_t* scalar, mp_rnd_t round)
 {
   switch(scalar->discr){
   case AP_SCALAR_MPQ:
@@ -163,7 +163,7 @@ int ap_mpq_set_scalar(mpq_t mpq, const ap_scalar_t* scalar, mp_rnd_t round)
   }
 }
 
-int ap_double_set_scalar(double* k, const ap_scalar_t* scalar, mp_rnd_t round)
+int ap_double_set_scalar(double* k, ap_scalar_t* scalar, mp_rnd_t round)
 {
   switch(scalar->discr){
   case AP_SCALAR_MPQ:
@@ -188,7 +188,7 @@ int ap_double_set_scalar(double* k, const ap_scalar_t* scalar, mp_rnd_t round)
 /* Tests */
 /* ====================================================================== */
 
-int ap_scalar_infty(const ap_scalar_t* scalar)
+int ap_scalar_infty(ap_scalar_t* scalar)
 {
   switch(scalar->discr){
   case AP_SCALAR_MPQ:
@@ -209,7 +209,7 @@ int ap_scalar_infty(const ap_scalar_t* scalar)
   }
 }
 
-int ap_scalar_cmp(const ap_scalar_t* a, const ap_scalar_t* b)
+int ap_scalar_cmp(ap_scalar_t* a, ap_scalar_t* b)
 {
   int s1 = ap_scalar_infty(a);
   int s2 = ap_scalar_infty(b);
@@ -255,7 +255,7 @@ int ap_scalar_cmp(const ap_scalar_t* a, const ap_scalar_t* b)
     }
   }
 }
-int ap_scalar_cmp_int(const ap_scalar_t* a, int b)
+int ap_scalar_cmp_int(ap_scalar_t* a, int b)
 {
   int s1 = ap_scalar_infty(a);
   
@@ -274,7 +274,7 @@ int ap_scalar_cmp_int(const ap_scalar_t* a, int b)
     }
   }
 }
-bool ap_scalar_equal(const ap_scalar_t* a, const ap_scalar_t* b)
+bool ap_scalar_equal(ap_scalar_t* a, ap_scalar_t* b)
 {
   int s1 = ap_scalar_infty(a);
   int s2 = ap_scalar_infty(b);
@@ -313,7 +313,7 @@ bool ap_scalar_equal(const ap_scalar_t* a, const ap_scalar_t* b)
     }
   }
 }
-bool ap_scalar_equal_int(const ap_scalar_t* a, int b)
+bool ap_scalar_equal_int(ap_scalar_t* a, int b)
 {
   int s1 = ap_scalar_infty(a);
   
@@ -331,7 +331,7 @@ bool ap_scalar_equal_int(const ap_scalar_t* a, int b)
   }
 }
 
-int ap_scalar_sgn(const ap_scalar_t* a)
+int ap_scalar_sgn(ap_scalar_t* a)
 {
   int res;
   res = ap_scalar_infty(a);
@@ -357,7 +357,7 @@ int ap_scalar_sgn(const ap_scalar_t* a)
 /* Other operations */
 /* ====================================================================== */
 
-void ap_scalar_neg(ap_scalar_t* a, const ap_scalar_t* b)
+void ap_scalar_neg(ap_scalar_t* a, ap_scalar_t* b)
 {
   ap_scalar_reinit(a,b->discr);
   switch(b->discr){
@@ -369,7 +369,7 @@ void ap_scalar_neg(ap_scalar_t* a, const ap_scalar_t* b)
     break;
   }
 }
-void ap_scalar_inv(ap_scalar_t* a, const ap_scalar_t* b)
+void ap_scalar_inv(ap_scalar_t* a, ap_scalar_t* b)
 {
   ap_scalar_reinit(a,b->discr);
   switch(b->discr){
@@ -382,7 +382,7 @@ void ap_scalar_inv(ap_scalar_t* a, const ap_scalar_t* b)
   }
 }
 
-long ap_scalar_hash(const ap_scalar_t* a)
+long ap_scalar_hash(ap_scalar_t* a)
 {
   int infty = ap_scalar_infty(a);
   if (infty<0) return LONG_MIN;

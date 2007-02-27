@@ -13,40 +13,16 @@ PREFIX = $(APRON_INSTALL)
 #---------------------------------------
 # CAML part
 #---------------------------------------
-OCAMLC = $(CAML_PREFIX)/bin/ocamlc.opt
-OCAMLOPT = $(CAML_PREFIX)/bin/ocamlopt.opt
-OCAMLDEP = $(CAML_PREFIX)/bin/ocamldep
-OCAMLLEX = $(CAML_PREFIX)/bin/ocamllex.opt
-OCAMLYACC = $(CAML_PREFIX)/bin/ocamlyacc
-OCAMLDOC = $(CAML_PREFIX)/bin/ocamldoc.opt
 
 OCAMLINC = -I ../mlgmpidl
-OCAMLFLAGS = -g
-OCAMLOPTFLAGS = -for-pack Apron -inline 20
-
-CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
-M4 = m4
 
 #---------------------------------------
 # C part
 #---------------------------------------
-CC = gcc
 ICFLAGS = \
 -I../mlgmpidl -I../apron \
 -I$(GMP_PREFIX)/include \
--I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml \
--Wall -Wimplicit-function-declaration -std=c99
-# -Winline -Wconversion
-
-CFLAGS = $(ICFLAGS) $(OPTFLAGS) -DNDEBUG
-CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG
-CFLAGS_PROF = $(CFLAGS) -g -pg
-
-#---------------------------------------
-# Latex part
-#---------------------------------------
-LATEX=latex
-DVIPDF=dvipdf
+-I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
 
 #---------------------------------------
 # Files
@@ -71,6 +47,7 @@ MLOBJ = $(MLMODULES:%=%.cmo)
 MLOBJx = $(MLMODULES:%=%.cmx)
 MLLIB_TOINSTALL = $(IDLMODULES:%=%.idl) $(MLMODULES:%=%.mli) apron.cmi apron.cma
 MLLIB_TOINSTALLx = apron.cmx apron.cmxa apron.a
+
 CCMODULES = apron_caml $(IDLMODULES:%=%_caml)
 CCSRC = apron_caml.h $(CCMODULES:%=%.c)
 CCLIB_TOINSTALL = libapron_caml.a libapron_caml_debug.a
@@ -123,9 +100,11 @@ install: $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(CCINC_TOINS
 #---------------------------------------
 
 libapron_caml.a: $(CCMODULES:%=%.o)
-	ar rcs $@ $^
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 libapron_caml_debug.a: $(CCMODULES:%=%_debug.o)
-	ar rcs $@ $^
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 #---------------------------------------
 # ML rules
@@ -137,20 +116,16 @@ apron.cma: apron.cmo libapron_caml.a
 	-cclib "-lapron_caml" -cclib "-lapron"
 
 apron.cmxa: apron.cmx libapron_caml.a
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ apron.cmx \
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -for-pack Apron -a -o $@ apron.cmx \
 	-ccopt "-L$(APRON_PREFIX)/lib -L$(MLAPRONIDL_PREFIX)/lib" \
 	-cclib "-lapron_caml" -cclib "-lapron"
+	$(RANLIB) apron.a
 
 apron.cmo apron.cmi: $(MLOBJ) $(MLINT)
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -pack -o $@ $(MLOBJ)
 
 apron.cmx apron.o: $(MLOBJx)
 	$(OCAMLOPT) -pack -o $@ $(MLOBJx)
-
-mpz.idl: ../mlgmpidl/mpz.idl
-	cp $^ $@
-mpq.idl: ../mlgmpidl/mpq.idl
-	cp $^ $@
 
 apron_lexer.ml: apron_lexer.mll
 	$(OCAMLLEX) $^
@@ -174,8 +149,6 @@ mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli)
 	latex mlapronidl
 	latex mlapronidl
 
-
-
 html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc
 	mkdir -p html
 	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli
@@ -192,23 +165,30 @@ html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc
 #---------------------------------------
 
 %.o: %.c apron_caml.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -c $<
 %_debug.o: %.c apron_caml.h
-	$(CC) $(CFLAGS_DEBUG) -c -o $@ $<
-%_prof.o: %.c apron_caml.h
-	$(CC) $(CFLAGS_PROF) -c -o $@ $<
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -c -o $@ $<
 
 #---------------------------------------
 # IDL generic rules
 #---------------------------------------
 
-%.mli %_caml.c %.ml: %.idl sedscript_caml sedscript_c mpz.idl mpq.idl
+mpz.idl: ../mlgmpidl/mpz.idl
+	ln -s $^ $@
+mpq.idl: ../mlgmpidl/mpq.idl
+	ln -s $^ $@
+
+/* Generate for each %.idl: %i.ml, %i.mli, %_caml.c 
+rebuild: mpz.idl mpq.idl
 	mkdir -p tmp
-	cp $*.idl tmp/$*.idl
-	$(CAMLIDL) -no-include -prepro "$(M4) --prefix-builtins macros.m4" -I $(SRCDIR) tmp/$*.idl
-	sed -f sedscript_c tmp/$*_stubs.c >$*_caml.c
-	sed -f sedscript_caml tmp/$*.ml >$*.ml
-	sed -f sedscript_caml tmp/$*.mli >$*.mli
+	for i in $(IDLMODULES); do \
+		echo "module $$i"; \
+		cp $${i}.idl tmp/$${i}.idl; \
+		$(CAMLIDL) -no-include -prepro "$(M4) --prefix-builtins macros.m4" -I $(SRCDIR) tmp/$${i}.idl; \
+		$(SED) -f sedscript_c tmp/$${i}_stubs.c >$${i}_caml.c; \
+		$(SED) -f sedscript_caml tmp/$${i}.ml >$${i}.ml; \
+		$(SED) -f sedscript_caml tmp/$${i}.mli >$${i}.mli; \
+	done
 
 #---------------------------------------
 # ML generic rules
@@ -221,7 +201,7 @@ html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -c $<
 
 %.cmx: %.ml %.cmi
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -c $<
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -for-pack Apron -c $<
 
 #---------------------------------------
 # Dependencies

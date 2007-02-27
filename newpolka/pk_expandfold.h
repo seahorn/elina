@@ -20,7 +20,7 @@ poly_t* poly_expand(ap_manager_t* man,
 		    ap_dim_t dim, size_t dimsup);
 poly_t* poly_fold(ap_manager_t* man, 
 		  bool destructive, poly_t* pa, 
-		  const ap_dim_t* tdim, size_t size);
+		  ap_dim_t* tdim, size_t size);
 
 #ifdef __cplusplus
 }

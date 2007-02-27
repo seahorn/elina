@@ -28,16 +28,16 @@ extern "C" {
 /* ********************************************************************** */
 bool cherni_checksatmat(pk_internal_t* pk,
 			bool con_to_ray,
-			const matrix_t* C, const matrix_t* F,
-			const satmat_t* satC);
+			matrix_t* C, matrix_t* F,
+			satmat_t* satC);
 /* Recompute the saturation matrix of C and F and checks the equality with
    satC. */
 
 bool cherni_checksat(pk_internal_t* pk,
 		     bool con_to_ray,
-		     const matrix_t* C, size_t nbequations,
-		     const matrix_t* F, size_t nblines,
-		     const satmat_t* satC);
+		     matrix_t* C, size_t nbequations,
+		     matrix_t* F, size_t nblines,
+		     satmat_t* satC);
 /* Check the saturation numbers of constraints and rays. */
 
 /* ********************************************************************** */
@@ -106,7 +106,7 @@ void cherni_add_and_minimize(pk_internal_t* pk,
 			     size_t start);
 /* Misc */
 void cherni_buildsatline(pk_internal_t* pk,
-			 const matrix_t* con, const numint_t* tab,
+			 matrix_t* con, numint_t* tab,
 			 bitstring_t* satline);
 
 #ifdef __cplusplus

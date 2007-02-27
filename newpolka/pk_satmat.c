@@ -20,7 +20,7 @@
 /* Set all bits to zero. */
 void satmat_clear(satmat_t* sat)
 {
-  int i,j;
+  size_t i,j;
   for (i=0; i<sat->nbrows; i++)
     for (j=0; j<sat->nbcolumns; j++)
       sat->p[i][j] = 0;
@@ -29,7 +29,7 @@ void satmat_clear(satmat_t* sat)
 /* Standard allocation function, with initialization of the elements. */
 satmat_t* satmat_alloc(size_t nbrows, size_t nbcols)
 {
-  int i,j;
+  size_t i,j;
 
   satmat_t* sat = (satmat_t*)malloc(sizeof(satmat_t));
   sat->nbrows = sat->_maxrows = nbrows;
@@ -46,7 +46,7 @@ satmat_t* satmat_alloc(size_t nbrows, size_t nbcols)
 /* Deallocation function. */
 void satmat_free(satmat_t* sat)
 {
-  int i;
+  size_t i;
 
   for (i=0;i<sat->_maxrows;i++){
     bitstring_free(sat->p[i]);
@@ -58,7 +58,7 @@ void satmat_free(satmat_t* sat)
 /* Reallocation function, to scale up or to downsize a matrix */
 void satmat_realloc(satmat_t* sat, size_t nbrows)
 {
-  int i;
+  size_t i;
 
   if (nbrows > sat->_maxrows){
     sat->p = (bitstring_t**)realloc(sat->p, nbrows * sizeof(bitstring_t*));
@@ -79,7 +79,7 @@ void satmat_realloc(satmat_t* sat, size_t nbrows)
 /* Reallocation function, to scale up or to downsize a matrix */
 void satmat_realloc2(satmat_t* sat, size_t nbcols)
 {
-  int i;
+  size_t i;
 
   if (nbcols!=sat->nbcolumns){
     for (i=0; i<sat->_maxrows; i++){
@@ -91,9 +91,9 @@ void satmat_realloc2(satmat_t* sat, size_t nbcols)
 
 /* Create a copy of the matrix of size nbrows (and not
    _maxrows). Only ``used'' rows are copied. */
-satmat_t* satmat_copy(const satmat_t* sat)
+satmat_t* satmat_copy(satmat_t* sat)
 {
-  int i,j;
+  size_t i,j;
   satmat_t* nsat = satmat_alloc(sat->nbrows,sat->nbcolumns);
   for (i=0; i<sat->nbrows; i++){
     for (j=0; j<sat->nbcolumns; j++){
@@ -106,7 +106,7 @@ satmat_t* satmat_copy(const satmat_t* sat)
 /* Reallocation function, to scale up or to downsize a matrix */
 void satmat_extend_columns(satmat_t* sat, size_t nbcols)
 {
-  int i,j;
+  size_t i,j;
 
   if (nbcols != sat->nbcolumns){
     for (i=0; i<sat->_maxrows; i++){
@@ -121,9 +121,9 @@ void satmat_extend_columns(satmat_t* sat, size_t nbcols)
 
 /* Create a copy of the matrix of size nbrows (and not
    _maxrows) and extends columns. Only ``used'' rows are copied. */
-satmat_t* satmat_copy_extend_columns(const satmat_t* sat, size_t nbcols)
+satmat_t* satmat_copy_extend_columns(satmat_t* sat, size_t nbcols)
 {
-  int i,j;
+  size_t i,j;
   satmat_t* nsat;
 
   assert(nbcols>=sat->nbcolumns);
@@ -139,7 +139,7 @@ satmat_t* satmat_copy_extend_columns(const satmat_t* sat, size_t nbcols)
 }
 
 /* Raw printing function. */
-void satmat_fprint(FILE* stream, const satmat_t* sat)
+void satmat_fprint(FILE* stream, satmat_t* sat)
 {
   size_t i;
 
@@ -150,7 +150,7 @@ void satmat_fprint(FILE* stream, const satmat_t* sat)
     fprintf(stream,"\n");
   }
 }
-void satmat_print(const satmat_t* sat)
+void satmat_print(satmat_t* sat)
 {
   satmat_fprint(stdout,sat);
 }
@@ -162,7 +162,7 @@ void satmat_print(const satmat_t* sat)
 /* These function allow to read and to clear or set individual bits. i
    indicates the row and jx the column. */
 
-bitstring_t satmat_get(const satmat_t* sat, size_t i, bitindex_t jx){
+bitstring_t satmat_get(satmat_t* sat, size_t i, bitindex_t jx){
   return bitstring_get(sat->p[i],jx);
 }
 void satmat_set(satmat_t* sat, size_t i, bitindex_t jx){
@@ -182,7 +182,7 @@ nbcols indicates the number of bits to be transposed (the number of columns of
 the matrix is the size of the row of bitstring_t, not the number of bits really
 used). */
 
-satmat_t* satmat_transpose(const satmat_t* org, size_t nbcols)
+satmat_t* satmat_transpose(satmat_t* org, size_t nbcols)
 {
   bitindex_t i,j;
   satmat_t* dest = satmat_alloc(nbcols,bitindex_size(org->nbrows));
@@ -205,18 +205,17 @@ void satmat_exch_rows(satmat_t* sat, size_t l1, size_t l2)
 
 void satmat_move_rows(satmat_t* sat, size_t destrow, size_t orgrow, size_t size)
 {
-  int offset;
-  int i;
+  int i,offset;
 
   offset = destrow-orgrow;
   if (offset>0){
     assert(destrow+size<=sat->_maxrows);
-    for (i=destrow+size-1; i>=(int)destrow; i--){
+    for (i=(int)(destrow+size)-1; i>=(int)destrow; i--){
       satmat_exch_rows(sat,(size_t)i,(size_t)(i-offset));
     }
   } else {
     assert(orgrow+size<=sat->_maxrows);
-    for(i=destrow; i<destrow+size; i++){
+    for(i=(int)destrow; i<(int)(destrow+size); i++){
       satmat_exch_rows(sat,(size_t)i,(size_t)(i-offset));
     }
   }

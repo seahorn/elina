@@ -37,16 +37,16 @@ void satmat_realloc2(satmat_t* sat, size_t nbcols);
 void satmat_extend_columns(satmat_t* sat, size_t nbcols);
 void satmat_free(satmat_t* sat);
 void satmat_clear(satmat_t* sat);
-satmat_t* satmat_copy(const satmat_t* sat);
-satmat_t* satmat_copy_extend_columns(const satmat_t* sat, size_t nbcols);
-void satmat_print(const satmat_t* sat);
-void satmat_fprint(FILE* stream, const satmat_t* sat);
+satmat_t* satmat_copy(satmat_t* sat);
+satmat_t* satmat_copy_extend_columns(satmat_t* sat, size_t nbcols);
+void satmat_print(satmat_t* sat);
+void satmat_fprint(FILE* stream, satmat_t* sat);
 
-bitstring_t satmat_get(const satmat_t* sat, size_t i, bitindex_t jx);
+bitstring_t satmat_get(satmat_t* sat, size_t i, bitindex_t jx);
 void satmat_set(satmat_t* sat, size_t i, bitindex_t jx);
 void satmat_clr(satmat_t* sat, size_t i, bitindex_t jx);
 
-satmat_t* satmat_transpose(const satmat_t* org, size_t nbcols);
+satmat_t* satmat_transpose(satmat_t* org, size_t nbcols);
 
 void satmat_exch_rows(satmat_t* sat, size_t l1, size_t l2);
 void satmat_move_rows(satmat_t* sat, size_t destrow, size_t orgrow, size_t size);

@@ -55,7 +55,7 @@ void poly_clear(poly_t* po)
 }
 
 /* Assignement with GMP semantics */
-void poly_set(poly_t* pa, const poly_t* pb)
+void poly_set(poly_t* pa, poly_t* pb)
 {
   if (pa!=pb){
     poly_clear(pa);
@@ -73,7 +73,7 @@ void poly_set(poly_t* pa, const poly_t* pb)
 }
 
 /* Duplicate (recursively) a polyhedron. */
-poly_t* poly_copy(ap_manager_t* man, const poly_t* po)
+poly_t* poly_copy(ap_manager_t* man, poly_t* po)
 {
   poly_t* npo = poly_alloc(po->intdim,po->realdim);
   npo->C = po->C ? matrix_copy(po->C) : 0;
@@ -96,7 +96,7 @@ void poly_free(ap_manager_t* man, poly_t* po)
 
 /* Return the abstract size of a polyhedron, which is the number of
    coefficients of its current representation, possibly redundant. */
-size_t poly_size(ap_manager_t* man, const poly_t* po)
+size_t poly_size(ap_manager_t* man, poly_t* po)
 {
   size_t s1,s2;
 
@@ -120,11 +120,10 @@ Transmit exception
 */
 
 void poly_chernikova(ap_manager_t* man,
-		     const poly_t* poly,
+		     poly_t* po,
 		     char* msg)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
-  poly_t* po = (poly_t*)poly;
   if ((po->C && po->F) || (!po->C && !po->F)){
     return;
   }
@@ -169,14 +168,13 @@ void poly_chernikova(ap_manager_t* man,
    matrices exchanged. */
 
 void poly_chernikova_dual(ap_manager_t* man,
-			  const poly_t* poly,
+			  poly_t* po,
 			  char* msg,
 			  bool usual)
 {
-  if ( (!poly->C && !poly->F) || (poly->C && poly->F) )
+  if ( (!po->C && !po->F) || (po->C && po->F) )
     return;
   else {
-    poly_t* po = (poly_t*)poly;
     if (!usual) poly_dual(po);
     poly_chernikova(man,po,msg);
     if (!usual) poly_dual(po);
@@ -186,10 +184,9 @@ void poly_chernikova_dual(ap_manager_t* man,
    constraints. */
 
 void poly_chernikova2(ap_manager_t* man,
-		      const poly_t* poly,
+		      poly_t* po,
 		      char* msg)
 {
-  poly_t* po = (poly_t*)poly;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
   if ((po->C && po->F) || (!po->C && !po->F)){
     return;
@@ -219,11 +216,10 @@ void poly_chernikova2(ap_manager_t* man,
 /* Same as poly_chernikova2, but in addition normalize matrices by Gauss
    elimination and sorting */
 void poly_chernikova3(ap_manager_t* man,
-		      const poly_t* poly,
+		      poly_t* po,
 		      char* msg)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
-  poly_t* po = (poly_t*)poly;
   poly_chernikova2(man,po,msg);
   if (pk->exn)
     return;
@@ -260,10 +256,9 @@ void poly_chernikova3(ap_manager_t* man,
    the integer man->option->canonicalize.algorithm is positive,
    normalize equalities and lines, and also strict constraints */
 
-void poly_canonicalize(ap_manager_t* man, const poly_t* poly)
+void poly_canonicalize(ap_manager_t* man, poly_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_CANONICALIZE);
-  poly_t* po = (poly_t*)poly;
 
   if (poly_is_canonical(man,po))
     return;
@@ -283,10 +278,9 @@ void poly_canonicalize(ap_manager_t* man, const poly_t* poly)
 }
 
 /* Minimize the size of the representation of the polyhedron */
-void poly_minimize(ap_manager_t* man, const poly_t* poly)
+void poly_minimize(ap_manager_t* man, poly_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MINIMIZE);
-  poly_t* po = (poly_t*)poly;
 
   if (po->status != poly_status_minimal || po->C || po->F){
     poly_chernikova2(man,po,NULL);
@@ -323,7 +317,7 @@ void poly_minimize(ap_manager_t* man, const poly_t* poly)
 /* ====================================================================== */
 
 
-void poly_set_save_C(poly_t* po, const poly_t* pa)
+void poly_set_save_C(poly_t* po, poly_t* pa)
 {
   if (po != pa){
     po->F = pa->F ? matrix_copy(pa->F) : NULL;
@@ -339,7 +333,7 @@ void poly_set_save_C(poly_t* po, const poly_t* pa)
 /* ---------------------------------------------------------------------- */
 /* Normalize integer constraints.  Return true if there is some change. */
 /* ---------------------------------------------------------------------- */
-bool _poly_approximate_n1(ap_manager_t* man, poly_t* po, const poly_t* pa, int algorithm)
+bool _poly_approximate_n1(ap_manager_t* man, poly_t* po, poly_t* pa, int algorithm)
 {
   if (po->intdim>0){
     pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -409,7 +403,7 @@ bool matrix_approximate_constraint_1(pk_internal_t* pk, matrix_t* C)
   return change;
 }
 
-bool _poly_approximate_1(ap_manager_t* man, poly_t* po, const poly_t* pa)
+bool _poly_approximate_1(ap_manager_t* man, poly_t* po, poly_t* pa)
 {
   bool change;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -520,12 +514,12 @@ void poly_approximate_123(ap_manager_t* man, poly_t* po, int algorithm)
 	    for (sgn=-1; sgn<=1; sgn += 2){
 	      matrix_bound_linexpr(pk,
 				   coeff->val.scalar->val.mpq,
-				   (const numint_t*)pk->poly_numintp,
+				   pk->poly_numintp,
 				   po->F,
 				   sgn);
 	      if (!ap_scalar_infty(coeff->val.scalar)){
 		vector_set_linexpr_bound(pk, pa->C->p[nbrows], 
-					 (const numint_t*)pk->poly_numintp,
+					 pk->poly_numintp,
 					 coeff->val.scalar->val.mpq,
 					 po->intdim, po->realdim, sgn, false);
 		nbrows++;
@@ -595,7 +589,7 @@ bool matrix_approximate_constraint_10(pk_internal_t* pk, matrix_t* C, matrix_t* 
 	/* D. Compute new constant coefficient */
 	numint_set_int(C->p[i][0],1);
 	numint_set_int(C->p[i][polka_cst],0);
-	matrix_bound_linexpr(pk,mpq,(const numint_t*)C->p[i],F,-1);
+	matrix_bound_linexpr(pk,mpq,C->p[i],F,-1);
 	if (mpz_sgn(mpq_denref(mpq))==0){
 	  /* If no bound, we remove the constraint */
 	  C->nbrows--;
@@ -708,7 +702,7 @@ void poly_approximate(ap_manager_t* man, poly_t* po, int algorithm)
 /* ====================================================================== */
 
 /* Is the polyhedron in a minimal representation ? */
-tbool_t poly_is_minimal(ap_manager_t* man, const poly_t* po)
+tbool_t poly_is_minimal(ap_manager_t* man, poly_t* po)
 {
   if ( (!po->C && !po->F) ||
        (po->status & poly_status_minimal) )
@@ -721,7 +715,7 @@ tbool_t poly_is_minimal(ap_manager_t* man, const poly_t* po)
 
 /* Is the polyhedron in a canonical representation ?
    (depends on the algorithm option of canonicalize) */
-tbool_t poly_is_canonical(ap_manager_t* man, const poly_t* po)
+tbool_t poly_is_canonical(ap_manager_t* man, poly_t* po)
 {
   tbool_t res;
 
@@ -742,10 +736,8 @@ tbool_t poly_is_canonical(ap_manager_t* man, const poly_t* po)
   return res;
 }
 
-void poly_obtain_sorted_F(pk_internal_t* pk, const poly_t* poly)
+void poly_obtain_sorted_F(pk_internal_t* pk, poly_t* po)
 {
-  poly_t* po = (poly_t*)poly;
-
   assert (po->F);
 
   if (!matrix_is_sorted(po->F)){
@@ -764,10 +756,8 @@ void poly_obtain_sorted_F(pk_internal_t* pk, const poly_t* poly)
   }
 }
 
-void poly_obtain_sorted_C(pk_internal_t* pk, const poly_t* poly)
+void poly_obtain_sorted_C(pk_internal_t* pk, poly_t* po)
 {
-  poly_t* po = (poly_t*)poly;
-
   assert (po->C);
 
   if (!matrix_is_sorted(po->C)){
@@ -790,7 +780,7 @@ void poly_obtain_sorted_C(pk_internal_t* pk, const poly_t* poly)
 /* III Printing */
 /* ********************************************************************** */
 
-void poly_fprint(FILE* stream, ap_manager_t* man, const poly_t* po,
+void poly_fprint(FILE* stream, ap_manager_t* man, poly_t* po,
 		 char** name_of_dim)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_FPRINT);
@@ -817,7 +807,7 @@ void poly_fprint(FILE* stream, ap_manager_t* man, const poly_t* po,
 }
 
 void poly_fprintdiff(FILE* stream, ap_manager_t* man,
-		     const poly_t* po1, const poly_t* po2,
+		     poly_t* po1, poly_t* po2,
 		     char** name_of_dim)
 {
   pk_init_from_manager(man,AP_FUNID_FPRINTDIFF);
@@ -825,7 +815,7 @@ void poly_fprintdiff(FILE* stream, ap_manager_t* man,
 }
 
 /* Raw printing function. */
-void poly_fdump(FILE* stream, ap_manager_t* man, const poly_t* po)
+void poly_fdump(FILE* stream, ap_manager_t* man, poly_t* po)
 {
   pk_init_from_manager(man,AP_FUNID_FDUMP);
   if (!po->C && !po->F)
@@ -857,7 +847,7 @@ void poly_fdump(FILE* stream, ap_manager_t* man, const poly_t* po)
 /* IV. Serialization */
 /* ********************************************************************** */
 
-ap_membuf_t poly_serialize_raw(ap_manager_t* man, const poly_t* a)
+ap_membuf_t poly_serialize_raw(ap_manager_t* man, poly_t* a)
 {
   ap_membuf_t membuf;
   pk_init_from_manager(man,AP_FUNID_SERIALIZE_RAW);
@@ -877,9 +867,9 @@ poly_t* poly_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size)
 /* V. Checking */
 /* ********************************************************************** */
 
-static bool matrix_check1(pk_internal_t* pk, const matrix_t* mat)
+static bool matrix_check1(pk_internal_t* pk, matrix_t* mat)
 {
-  int i;
+  size_t i;
   bool res;
   res = false;
   for (i = 0; i<mat->nbrows; i++){
@@ -891,9 +881,9 @@ static bool matrix_check1(pk_internal_t* pk, const matrix_t* mat)
   return res;
 }
 
-static bool matrix_check2(pk_internal_t* pk, const matrix_t* mat)
+static bool matrix_check2(pk_internal_t* pk, matrix_t* mat)
 {
-  int i;
+  size_t i;
   bool res;
   numint_t gcd;
   numint_init(gcd);
@@ -910,9 +900,9 @@ static bool matrix_check2(pk_internal_t* pk, const matrix_t* mat)
   return res;
 }
 
-static bool matrix_check3(pk_internal_t* pk, const matrix_t* mat)
+static bool matrix_check3(pk_internal_t* pk, matrix_t* mat)
 {
-  int i;
+  size_t i;
   bool res;
 
   if (mat->_sorted==false) 
@@ -920,7 +910,7 @@ static bool matrix_check3(pk_internal_t* pk, const matrix_t* mat)
 
   res = true;
   for (i=0; i<mat->nbrows-1; i++){
-    if (vector_compare(pk,(const numint_t*)mat->p[i],(const numint_t*)mat->p[i+1],mat->nbcolumns)>0){
+    if (vector_compare(pk,mat->p[i],mat->p[i+1],mat->nbcolumns)>0){
       res = false;
       break;
     }
@@ -929,12 +919,10 @@ static bool matrix_check3(pk_internal_t* pk, const matrix_t* mat)
 }
 
 
-bool poly_check(pk_internal_t* pk, const poly_t* poly)
+bool poly_check(pk_internal_t* pk, poly_t* po)
 {
   bool res;
   size_t nbdim,nbcols;
-
-  poly_t* po = (poly_t*)poly;
   nbdim = po->intdim + po->realdim;
   if (po->nbline+po->nbeq>nbdim){
     fprintf(stderr,"poly_check: nbline+nbeq>intdim+realdim\n");
@@ -1037,10 +1025,9 @@ bool poly_check(pk_internal_t* pk, const poly_t* poly)
   return true;
 }
 
-bool poly_check_dual(pk_internal_t* pk, const poly_t* poly, bool usual)
+bool poly_check_dual(pk_internal_t* pk, poly_t* po, bool usual)
 {
   bool res;
-  poly_t* po = (poly_t*) poly;
   if (!usual) poly_dual(po);
   res = poly_check(pk,po);
   if (!usual) poly_dual(po);

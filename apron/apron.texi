@@ -2,7 +2,7 @@
 @c -*-texinfo-*-
 @c %**start of header
 @setfilename apron.info
-@settitle APRON 0.9.4
+@settitle APRON 0.9.5
 @c @setcontentsaftertitlepage
 @c include version.texi
 @iftex
@@ -69,7 +69,6 @@ numerical variables.
 @menu
 * Copying::
 * Introduction to APRON::
-* APRON Rationale::
 * Installing APRON::
 * APRON Basics::
 * Managers and Abstract Domains::
@@ -78,6 +77,8 @@ numerical variables.
 * Level 0 of the interface::
 * Functions for implementors::
 * Examples::
+* APRON Rationale::
+* Notes::
 * Appendices::
 @end menu
 
@@ -95,7 +96,7 @@ including all source code, libraries, binaries, and documentation.
 @include lgpl.texi
 
 @c *******************************************************************
-@node Introduction to APRON, APRON Rationale, Copying, Top
+@node Introduction to APRON, Installing APRON, Copying, Top
 @chapter Introduction to APRON
 @c *******************************************************************
 
@@ -141,11 +142,7 @@ shared between the underlying implementations.
 @end itemize
 
 @c *******************************************************************
-@include rationale.texi
-@c *******************************************************************
-
-@c *******************************************************************
-@node Installing APRON, APRON Basics, APRON Rationale, Top
+@node Installing APRON, APRON Basics, Introduction to APRON, Top
 @chapter Installing APRON
 @c *******************************************************************
 
@@ -514,6 +511,30 @@ intervals.
 * Coefficients::
 @end menu
 
+We sum up the involved types below (numbers denotes sizes in bytes
+on a typical 32 bits computer.
+@verbatim
+    ap_scalar_t     12       ap_interval_t  8
+|-----------------|        |--------------|
+| ap_scalar_discr |  4     | ap_scalar_t* | 4
+|-----------------|        |--------------|
+| double | mpq_t* |  8     | ap_scalar_t* | 4
+|-----------------|        |--------------|
+
+		ap_coeff_t             8
+     |-------------------------------|
+     |        ap_coeff_discr         | 4
+     |-------------------------------|
+     | ap_scalar_t* | ap_interval_t* | 4
+     |-------------------------------|
+@end verbatim
+
+These types are manipulated using pointers, with creator
+@code{X_t* X_alloc()} and destructors @code{void X_free(X_t*)}.
+
+
+
+
 @c ===================================================================
 @node Scalars, Intervals, Scalars & Intervals & Coefficients, Scalars & Intervals & Coefficients
 @section Scalars (@file{ap_scalar.h})
@@ -582,7 +603,7 @@ Initialize and clear a scalar \`a la GMP (internal use).
 Set the value of @var{rop} from @var{op}.
 @end deftypefun
 
-@deftypefun void ap_scalar_set_mpq (ap_scalar_t* @var{rop}, const mpq_t @var{mpq})
+@deftypefun void ap_scalar_set_mpq (ap_scalar_t* @var{rop}, mpq_t @var{mpq})
 @deftypefunx void ap_scalar_set_int (ap_scalar_t* @var{rop}, long int @var{i})
 
 @deftypefunx void ap_scalar_set_frac (ap_scalar_t* @var{rop}, long int @var{i}, unsigned long int @var{j})
@@ -600,7 +621,7 @@ Set the value of @var{rop} to @var{sgn}*infinity. Keep the type of the
 @end deftypefun
 
 @deftypefun ap_scalar_t* ap_scalar_alloc_set (ap_scalar_t* @var{op})
-@deftypefunx ap_scalar_t* ap_scalar_alloc_set_mpq (const mpq_t @var{mpq})
+@deftypefunx ap_scalar_t* ap_scalar_alloc_set_mpq (mpq_t @var{mpq})
 @deftypefunx ap_scalar_t* ap_scalar_alloc_set_double (double @var{k})
 Combined allocation and assignement.
 @end deftypefun
@@ -609,14 +630,14 @@ Combined allocation and assignement.
 @node Converting scalars, Comparing scalars, Assigning scalars, Scalars
 @subsection Converting scalars
 @c -------------------------------------------------------------------
-@deftypefun void ap_mpq_set_scalar (mpq_t @var{mpq}, const ap_scalar_t* @var{op}, int @var{round})
+@deftypefun void ap_mpq_set_scalar (mpq_t @var{mpq}, ap_scalar_t* @var{op}, int @var{round})
 Set @var{mpq} with the value of @var{op}, possibly converting from
 DOUBLE type.
 
 @var{round} currently unused.
 @end deftypefun
 
-@deftypefun double ap_scalar_get_double (const ap_scalar_t* @var{op}, int @var{round})
+@deftypefun double ap_scalar_get_double (ap_scalar_t* @var{op}, int @var{round})
 Return the value of @var{op} in DOUBLE type, possibly converting from
 MPQ type.
 
@@ -627,25 +648,25 @@ Conversion may be not exact. @var{round} currently unused.
 @node Comparing scalars, Other operations on scalars, Converting scalars, Scalars
 @subsection Comparing scalars
 @c -------------------------------------------------------------------
-@deftypefun int ap_scalar_infty (const ap_scalar_t* @var{op})
+@deftypefun int ap_scalar_infty (ap_scalar_t* @var{op})
 Return @code{-1} if @var{op} is set to +infty, @code{-1} if set to
 -infty, and @code{0} otherwise.
 @end deftypefun
 
-@deftypefun int ap_scalar_sgn (const ap_scalar_t* @var{op})
+@deftypefun int ap_scalar_sgn (ap_scalar_t* @var{op})
 Return the sign of @var{op} (@code{+1}, @code{0} or @code{-1}).
 @end deftypefun
 
-@deftypefun int ap_scalar_cmp (const ap_scalar_t* @var{op1}, const ap_scalar_t* @var{op2})
-@deftypefunx int ap_scalar_cmp_int (const ap_scalar_t* @var{op1}, int @var{op2})
+@deftypefun int ap_scalar_cmp (ap_scalar_t* @var{op1}, ap_scalar_t* @var{op2})
+@deftypefunx int ap_scalar_cmp_int (ap_scalar_t* @var{op1}, int @var{op2})
 Exact comparison between two scalars (resp. a scalar and an integer).
 
 Return @code{-1} if @var{op1} is less than @var{op2}, @code{0} if they
 are equal, and @code{+1} if @code{op1} is greater than @var{op2}.
 @end deftypefun
 
-@deftypefun bool ap_scalar_equal (const ap_scalar_t* @var{op1}, const ap_scalar_t* @var{op2});
-@deftypefunx bool ap_scalar_equal_int (const ap_scalar_t* @var{op1}, int @var{op2});
+@deftypefun bool ap_scalar_equal (ap_scalar_t* @var{op1}, ap_scalar_t* @var{op2});
+@deftypefunx bool ap_scalar_equal_int (ap_scalar_t* @var{op1}, int @var{op2});
 Equality test between two scalars (resp. a scalar and an integer).
 
 Return @code{true} if equality.
@@ -656,11 +677,11 @@ Return @code{true} if equality.
 @subsection Other operations on scalars
 @c -------------------------------------------------------------------
 
-@deftypefun void ap_scalar_neg (ap_scalar_t* @var{rop}, const ap_scalar_t* @var{op})
+@deftypefun void ap_scalar_neg (ap_scalar_t* @var{rop}, ap_scalar_t* @var{op})
 Negation.
 @end deftypefun
 
-@deftypefun void ap_scalar_inv (ap_scalar_t* @var{rop}, const ap_scalar_t* @var{op})
+@deftypefun void ap_scalar_inv (ap_scalar_t* @var{rop}, ap_scalar_t* @var{op})
 Inversion. Not exact for DOUBLE type.
 @end deftypefun
 
@@ -668,11 +689,11 @@ Inversion. Not exact for DOUBLE type.
 Exchange the values of @var{op1} and @var{op2}.
 @end deftypefun
 
-@deftypefun int ap_scalar_hash (const ap_scalar_t* @var{op})
+@deftypefun int ap_scalar_hash (ap_scalar_t* @var{op})
 Return an hash code (for instance for OCaml interface).
 @end deftypefun
 
-@deftypefun void ap_scalar_fprint (FILE* @var{stream}, const ap_scalar_t* @var{op})
+@deftypefun void ap_scalar_fprint (FILE* @var{stream}, ap_scalar_t* @var{op})
 Print @var{op} on the stream @var{stream}.
 @end deftypefun
 
@@ -757,25 +778,25 @@ Combined allocation and assignement.
 @node Comparing intervals, Other operations on intervals, Assigning intervals, Intervals
 @subsection Comparing intervals
 @c -------------------------------------------------------------------
-@deftypefun bool ap_interval_is_top (const ap_interval_t* @var{op})
-@deftypefunx bool ap_interval_is_bottom (const ap_interval_t* @var{op})
+@deftypefun bool ap_interval_is_top (ap_interval_t* @var{op})
+@deftypefunx bool ap_interval_is_bottom (ap_interval_t* @var{op})
 Return @code{true} if the interval is resp. the universe interval
 ([-oo,+oo]) or an empty interval.
 @end deftypefun
 
-@deftypefun bool ap_interval_is_leq (const ap_interval_t* @var{op1}, const ap_interval_t* @var{op2})
+@deftypefun bool ap_interval_is_leq (ap_interval_t* @var{op1}, ap_interval_t* @var{op2})
 Inclusion test.
 
 Return true if the interval @var{op1} is included in @var{op2}.
 @end deftypefun
 
-@deftypefun bool ap_interval_equal (const ap_interval_t* @var{op1}, const ap_interval_t* @var{op2})
+@deftypefun bool ap_interval_equal (ap_interval_t* @var{op1}, ap_interval_t* @var{op2})
 Equality test.
 
 Return true if the interval @var{op1} is included in @var{op2}.
 @end deftypefun
 
-@deftypefun int ap_interval_cmp (const ap_interval_t* @var{op1}, const ap_interval_t* @var{op2})
+@deftypefun int ap_interval_cmp (ap_interval_t* @var{op1}, ap_interval_t* @var{op2})
 Non-total comparison.
 @table @code
 @item 0 equality
@@ -791,7 +812,7 @@ Non-total comparison.
 @subsection Other operations on intervals
 @c -------------------------------------------------------------------
 
-@deftypefun void ap_interval_neg (ap_interval_t* @var{rop}, const ap_interval_t* @var{op})
+@deftypefun void ap_interval_neg (ap_interval_t* @var{rop}, ap_interval_t* @var{op})
 Negation.
 @end deftypefun
 
@@ -799,11 +820,11 @@ Negation.
 Exchange the values of @var{op1} and @var{op2}.
 @end deftypefun
 
-@deftypefun int ap_interval_hash (const ap_interval_t* @var{op})
+@deftypefun int ap_interval_hash (ap_interval_t* @var{op})
 Return an hash code (for instance for OCaml interface).
 @end deftypefun
 
-@deftypefun void ap_interval_fprint (FILE* @var{stream}, const ap_interval_t* @var{op})
+@deftypefun void ap_interval_fprint (FILE* @var{stream}, ap_interval_t* @var{op})
 Print @var{op} on the stream @var{stream}.
 @end deftypefun
 
@@ -876,7 +897,7 @@ If the coefficient is an interval [a;a], convert it to a scalar. */
 @end deftypefun
 
 @deftypefun void ap_coeff_init (ap_coeff_t* @var{rop}, ap_coeff_discr_t @var{discr})
-@deftypefunx void ap_coeff_init_set (ap_coeff_t* @var{rop}, const ap_coeff_t* @var{op})
+@deftypefunx void ap_coeff_init_set (ap_coeff_t* @var{rop}, ap_coeff_t* @var{op})
 @deftypefunx void ap_coeff_clear (ap_coeff_t* @var{rop})
 Initialize, initialize and assign, and clear a scalar \`a la GMP (internal use).
 @end deftypefun
@@ -890,7 +911,7 @@ Set the value of @var{rop} from @var{op}.
 @end deftypefun
 
 @deftypefun void ap_coeff_set_scalar (ap_coeff_t* @var{rop}, ap_scalar_t* @var{op})
-@deftypefunx void ap_coeff_set_scalar_mpq (ap_coeff_t* @var{rop}, const mpq_t @var{mpq})
+@deftypefunx void ap_coeff_set_scalar_mpq (ap_coeff_t* @var{rop}, mpq_t @var{mpq})
 @deftypefunx void ap_coeff_set_scalar_int (ap_coeff_t* @var{rop}, long int @var{i})
 @deftypefunx void ap_coeff_set_scalar_frac (ap_coeff_t* @var{rop}, long int @var{i}, unsigned long int @var{j})
 @deftypefunx void ap_coeff_set_scalar_double (ap_coeff_t* @var{rop}, double @var{k})
@@ -908,10 +929,10 @@ Set the type of @var{rop} to interval, and sets its value as the
 functions @code{ap_interval_set_XXX}.
 @end deftypefun
 
-@deftypefun ap_coeff_t* ap_coeff_alloc_set (const ap_coeff_t* @var{op})
+@deftypefun ap_coeff_t* ap_coeff_alloc_set (ap_coeff_t* @var{op})
 
-@deftypefunx ap_coeff_t* ap_coeff_alloc_set_scalar (const ap_scalar_t* @var{scalar})
-@deftypefunx ap_coeff_t* ap_coeff_alloc_set_interval (const ap_interval_t* @var{interval})
+@deftypefunx ap_coeff_t* ap_coeff_alloc_set_scalar (ap_scalar_t* @var{scalar})
+@deftypefunx ap_coeff_t* ap_coeff_alloc_set_interval (ap_interval_t* @var{interval})
 Combined allocation and assignement.
 @end deftypefun
 
@@ -920,7 +941,7 @@ Combined allocation and assignement.
 @subsection Comparing coefficients
 @c -------------------------------------------------------------------
 
-@deftypefun int ap_coeff_cmp (const ap_coeff_t* @var{op1}, const ap_coeff_t* @var{op2})
+@deftypefun int ap_coeff_cmp (ap_coeff_t* @var{op1}, ap_coeff_t* @var{op2})
 Non-total comparison.
 @itemize
 @item If @var{op1} and @var{op2} are scalars, corresponds to @code{ap_scalar_cmp}.
@@ -929,11 +950,11 @@ Non-total comparison.
 @end itemize
 @end deftypefun
 
-@deftypefun bool ap_coeff_equal (const ap_coeff_t* @var{op1}, const ap_coeff_t* @var{op2})
+@deftypefun bool ap_coeff_equal (ap_coeff_t* @var{op1}, ap_coeff_t* @var{op2})
 Equality test.
 @end deftypefun
 
-@deftypefun bool ap_coeff_zero (const ap_coeff_t* @var{op})
+@deftypefun bool ap_coeff_zero (ap_coeff_t* @var{op})
 Return true iff coeff is a zero scalar or an interval with zero
 bounds.
 @end deftypefun
@@ -944,7 +965,7 @@ bounds.
 @subsection Other operations on coefficients
 @c -------------------------------------------------------------------
 
-@deftypefun void ap_coeff_neg (ap_coeff_t* @var{rop}, const ap_coeff_t* @var{op})
+@deftypefun void ap_coeff_neg (ap_coeff_t* @var{rop}, ap_coeff_t* @var{op})
 Negation.
 @end deftypefun
 
@@ -952,11 +973,11 @@ Negation.
 Exchange the values of @var{op1} and @var{op2}.
 @end deftypefun
 
-@deftypefun int ap_coeff_hash (const ap_coeff_t* @var{op})
+@deftypefun int ap_coeff_hash (ap_coeff_t* @var{op})
 Return an hash code (for instance for OCaml interface).
 @end deftypefun
 
-@deftypefun void ap_coeff_fprint (FILE* @var{stream}, const ap_coeff_t* @var{op})
+@deftypefun void ap_coeff_fprint (FILE* @var{stream}, ap_coeff_t* @var{op})
 Print @var{op} on the stream @var{stream}.
 @end deftypefun
 
@@ -999,9 +1020,45 @@ abstract value. The environement of the result is the environement of
 the argument abstract value.
 @item
 For functions taking several abstract values, their environements
-should be the same. Otherwise, it is up to the user to move them to a
-common super-environement (see @ref{Environements} and @ref{Change of environements of abstract values of level 1}).
+should be the same. Otherwise, it is up to the user to move them
+to a common super-environement (see @ref{Environements} and
+@ref{Change of environements of abstract values of level 1}).
 @end itemize
+
+For information only (as these types are considered as abstract),
+we sum up the involved types below.
+@verbatim
+ ap_var_t             ap_var_t      ap_environment_t
+|-------|            |-------|   |----------------------|
+| void* | by default | char* |   | ap_var_t* var_of_dim |
+|-------|            |-------|   | size_t    intdim     |
+				 | size_t    realdim    |
+				 | size_t    count      |
+				 |----------------------|
+   ap_linexpr1_t
+|-------------------|
+| ap_linexpr0_t*    |
+| ap_environment_t* |
+|-------------------|
+
+   ap_lincons1_t         ap_lincons1_array_t
+|-------------------|  |----------------------|
+| ap_lincons0_t*    |  | ap_lincons0_array_t* |
+| ap_environment_t* |  | ap_environment_t*    |
+|-------------------|  |----------------------|
+
+   ap_generator1_t       ap_generator1_array_t
+|-------------------|  |------------------------|
+| ap_generator0_t*  |  | ap_generator0_array_t* |
+| ap_environment_t* |  | ap_environment_t*      |
+|-------------------|  |------------------------|
+
+   ap_abstract1_t
+|-------------------|
+| ap_abstract0_t*   |
+| ap_environment_t* |
+|-------------------|
+@end verbatim
 
 @c ===================================================================
 @node Variables and related operations, Environements, Level 1 of the interface, Level 1 of the interface
@@ -1120,28 +1177,28 @@ the user to free the variables he provides.
 If some variables are duplicated, return @code{NULL}.
 @end deftypefun
 
-@deftypefun ap_environment_t* ap_environment_add (const ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
-@deftypefunx ap_environment_t* ap_environment_remove (const ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
+@deftypefun ap_environment_t* ap_environment_add (ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
+@deftypefunx ap_environment_t* ap_environment_remove (ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
 Resp. add or remove new variables to an existing environement, with a
 functional semantics. Same conventions as for
 @code{ap_environment_alloc} function apply. If the result is non-sense,
 return @code{NULL}.
 @end deftypefun
 
-@deftypefun ap_dim_t ap_environment_dim_of_var (const ap_environment_t* @var{env}, ap_var_t @var{var})
+@deftypefun ap_dim_t ap_environment_dim_of_var (ap_environment_t* @var{env}, ap_var_t @var{var})
 Convert a variable in its corresponding dimension in the environement @var{env}. If @var{var} is unknown in @var{env}, return @code{AP_DIM_MAX}.
 @end deftypefun
-@deftypefun ap_dim_t ap_environment_var_of_dim (const ap_environment_t* @var{env}, ap_dim_t @var{dim})
+@deftypefun ap_dim_t ap_environment_var_of_dim (ap_environment_t* @var{env}, ap_dim_t @var{dim})
 Return the variable associated to the dimension @var{dim} in the environement @var{env}. There is no bound check here.
 @end deftypefun
 
 The remaining functions are much less useful for normal user.
 
-@deftypefun bool ap_environment_is_eq (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2})
-@deftypefunx bool ap_environment_is_leq (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2})
+@deftypefun bool ap_environment_is_eq (ap_environment_t* @var{env1}, ap_environment_t* @var{env2})
+@deftypefunx bool ap_environment_is_leq (ap_environment_t* @var{env1}, ap_environment_t* @var{env2})
 Resp. test the equality and the inclusion of two environements.
 @end deftypefun
-@deftypefun int ap_environment_compare (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2})
+@deftypefun int ap_environment_compare (ap_environment_t* @var{env1}, ap_environment_t* @var{env2})
 Return:
 @table @code
 @item -2
@@ -1159,13 +1216,13 @@ superset of both environements.
 @end table
 @end deftypefun
 
-@deftypefun ap_dimchange_t* ap_environment_dimchange (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env})
+@deftypefun ap_dimchange_t* ap_environment_dimchange (ap_environment_t* @var{env1}, ap_environment_t* @var{env})
 Compute the transformation for converting from an environment
 @var{env1} to a superenvironment @var{env}.  Return NULL if @var{env}
 is not a superenvironment.
 @end deftypefun
 
-@deftypefun ap_environment_t* ap_environment_lce (const ap_environment_t* @var{env1}, const ap_environment_t* @var{env2}, ap_dimchange_t** @var{dimchange1}, ap_dimchange_t** @var{dimchange2})
+@deftypefun ap_environment_t* ap_environment_lce (ap_environment_t* @var{env1}, ap_environment_t* @var{env2}, ap_dimchange_t** @var{dimchange1}, ap_dimchange_t** @var{dimchange2})
 Least common environement to two enviroenments.
 @itemize
 @item
@@ -1183,7 +1240,7 @@ actually @var{env1}. In this case,
 @end itemize
 @end deftypefun
 
-@deftypefun ap_environment_t* ap_environment_lce_array (const ap_environment_t** @var{tenv}, size_t @var{size}, ap_dimchange_t*** @var{ptdimchange})
+@deftypefun ap_environment_t* ap_environment_lce_array (ap_environment_t** @var{tenv}, size_t @var{size}, ap_dimchange_t*** @var{ptdimchange})
 Least common environement to an array of environements.
 @itemize
 @item
@@ -1260,7 +1317,7 @@ possible).  In case of sparse representation, also remove zero
 coefficients.
 @end deftypefun
 
-@deftypefun ap_linexpr1_t ap_linexpr1_copy (const ap_linexpr1_t* @var{expr})
+@deftypefun ap_linexpr1_t ap_linexpr1_copy (ap_linexpr1_t* @var{expr})
 Duplication.
 @end deftypefun
 
@@ -1268,7 +1325,7 @@ Duplication.
 Clear the linear expression.
 @end deftypefun
 
-@deftypefun void ap_linexpr1_fprint (FILE* @var{stream}, const ap_linexpr1_t* @var{expr})
+@deftypefun void ap_linexpr1_fprint (FILE* @var{stream}, ap_linexpr1_t* @var{expr})
 Print the linear expression on stream @var{stream}.
 @end deftypefun
 
@@ -1277,19 +1334,19 @@ Print the linear expression on stream @var{stream}.
 @subsection Tests on linear expressions of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun bool ap_linexpr1_is_integer (const ap_linexpr1_t* @var{expr})
+@deftypefun bool ap_linexpr1_is_integer (ap_linexpr1_t* @var{expr})
 Does the expression depends only on integer variables ?
 @end deftypefun
 
-@deftypefun bool ap_linexpr1_is_real (const ap_linexpr1_t* @var{expr})
+@deftypefun bool ap_linexpr1_is_real (ap_linexpr1_t* @var{expr})
 Does the expression depends only on real variables ?
 @end deftypefun
 
-@deftypefun bool ap_linexpr1_is_linear (const ap_linexpr1_t* @var{expr})
+@deftypefun bool ap_linexpr1_is_linear (ap_linexpr1_t* @var{expr})
 Return true iff all involved coefficients are scalars.
 @end deftypefun
 
-@deftypefun bool ap_linexpr1_is_quasilinear (const ap_linexpr1_t* @var{expr})
+@deftypefun bool ap_linexpr1_is_quasilinear (ap_linexpr1_t* @var{expr})
 Return true iff all involved coefficients but the constant are scalars.
 @end deftypefun
 
@@ -1298,10 +1355,10 @@ Return true iff all involved coefficients but the constant are scalars.
 @subsection Access to linear expressions of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_environment_t* ap_linexpr1_envref (const ap_linexpr1_t* @var{expr})
+@deftypefun ap_environment_t* ap_linexpr1_envref (ap_linexpr1_t* @var{expr})
 Get a reference to the underlying environment. Do not free it.
 @end deftypefun
-@deftypefun size_t ap_linexpr1_linexpr0ref (const ap_linexpr1_t* @var{expr})
+@deftypefun size_t ap_linexpr1_linexpr0ref (ap_linexpr1_t* @var{expr})
 Get a reference to the underlying linear expression of level 0. Do not
 free it.
 @end deftypefun
@@ -1326,11 +1383,11 @@ Return NULL if @var{var} is unknown in the environement of @var{e}.
 @c -------------------------------------------------------------------
 @subsubsection Getting values
 
-@deftypefun void ap_linexpr1_get_cst (ap_coefft* @var{coeff}, const ap_linexpr1_t* @var{e})
+@deftypefun void ap_linexpr1_get_cst (ap_coefft* @var{coeff}, ap_linexpr1_t* @var{e})
 Assign to @var{coeff} the constant coefficient of @var{e}.
 @end deftypefun
 
-@deftypefun bool ap_linexpr1_get_coeff (ap_coefft* @var{coeff}, const ap_linexpr1_t* @var{e}, ap_var_t @var{var})
+@deftypefun bool ap_linexpr1_get_coeff (ap_coefft* @var{coeff}, ap_linexpr1_t* @var{e}, ap_var_t @var{var})
 Assign to @var{coeff} the coefficient of variable @var{var} in the expression @var{e}.
 
 Return true in case @code{ap_linexpr1_coeffref(e,dim)} returns NULL.
@@ -1381,26 +1438,26 @@ ap_linexpr1_set_cst_interval_double(e, -2.4, 3.6);
 @c -------------------------------------------------------------------
 @subsubsection Assigning values
 
-@deftypefun void ap_linexpr1_set_cst (ap_linexpr1_t* @var{e}, const ap_coefft* @var{coeff})
-@deftypefunx void ap_linexpr1_set_cst_scalar (ap_linexpr1_t* @var{e}, const ap_scalar_t* @var{scalar})
+@deftypefun void ap_linexpr1_set_cst (ap_linexpr1_t* @var{e}, ap_coefft* @var{coeff})
+@deftypefunx void ap_linexpr1_set_cst_scalar (ap_linexpr1_t* @var{e}, ap_scalar_t* @var{scalar})
 @deftypefunx void ap_linexpr1_set_cst_scalar_int (ap_linexpr1_t* @var{e}, int @var{num})
 @deftypefunx void ap_linexpr1_set_cst_scalar_frac (ap_linexpr1_t* @var{e}, int @var{num}, unsigned int @var{den})
 @deftypefunx void ap_linexpr1_set_cst_scalar_double (ap_linexpr1_t* @var{e}, double @var{num})
-@deftypefunx void ap_linexpr1_set_cst_interval (ap_linexpr1_t* @var{e}, const ap_interval_t* @var{itv})
-@deftypefunx void ap_linexpr1_set_cst_interval_scalar (ap_linexpr1_t* @var{e}, const ap_scalar_t* @var{inf}, const ap_scalar_t* @var{sup})
+@deftypefunx void ap_linexpr1_set_cst_interval (ap_linexpr1_t* @var{e}, ap_interval_t* @var{itv})
+@deftypefunx void ap_linexpr1_set_cst_interval_scalar (ap_linexpr1_t* @var{e}, ap_scalar_t* @var{inf}, ap_scalar_t* @var{sup})
 @deftypefunx void ap_linexpr1_set_cst_interval_int (ap_linexpr1_t* @var{e}, int @var{inf}, int @var{sup})
 @deftypefunx void ap_linexpr1_set_cst_interval_frac (ap_linexpr1_t* @var{e}, int @var{numinf}, unsigned int @var{deninf}, int @var{numsup}, unsigned int @var{densup})
 @deftypefunx void ap_linexpr1_set_cst_interval_double (ap_linexpr1_t* @var{e}, double @var{inf}, double @var{sup})
 Set the constant coefficient of expression @var{e}.
 @end deftypefun
 
-@deftypefun bool ap_linexpr1_set_coeff (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_coefft* @var{coeff})
-@deftypefunx bool ap_linexpr1_set_coeff_scalar (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_scalar_t* @var{scalar})
+@deftypefun bool ap_linexpr1_set_coeff (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, ap_coefft* @var{coeff})
+@deftypefunx bool ap_linexpr1_set_coeff_scalar (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, ap_scalar_t* @var{scalar})
 @deftypefunx bool ap_linexpr1_set_coeff_scalar_int (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, int @var{num})
 @deftypefunx bool ap_linexpr1_set_coeff_scalar_frac (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, int @var{num}, unsigned int @var{den})
 @deftypefunx bool ap_linexpr1_set_coeff_scalar_double (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, double @var{num})
-@deftypefunx bool ap_linexpr1_set_coeff_interval (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_interval_t* @var{itv})
-@deftypefunx bool ap_linexpr1_set_coeff_interval_scalar (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, const ap_scalar_t* @var{inf}, const ap_scalar_t* @var{sup})
+@deftypefunx bool ap_linexpr1_set_coeff_interval (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, ap_interval_t* @var{itv})
+@deftypefunx bool ap_linexpr1_set_coeff_interval_scalar (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, ap_scalar_t* @var{inf}, ap_scalar_t* @var{sup})
 @deftypefunx bool ap_linexpr1_set_coeff_interval_int (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, int @var{inf}, int @var{sup})
 @deftypefunx bool ap_linexpr1_set_coeff_interval_frac (ap_linexpr1_t* @var{e}, ap_var_t @var{var},int @var{numinf}, unsigned int @var{deninf}, int @var{numsup}, unsigned int @var{densup})
 @deftypefunx void ap_linexpr1_set_coeff_interval_double (ap_linexpr1_t* @var{e}, ap_var_t @var{var}, double @var{inf}, double @var{sup})
@@ -1414,7 +1471,7 @@ Return @code{true} in case @code{ap_linexpr1_coeffref(e,var)} returns NULL.
 @subsection Change of dimensions and permutations of linear expressions of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun bool ap_linexpr1_extend_environment (ap_linexpr1_t* @var{nexpr}, const ap_linexpr1_t* @var{expr}, ap_environment_t* @var{nenv})
+@deftypefun bool ap_linexpr1_extend_environment (ap_linexpr1_t* @var{nexpr}, ap_linexpr1_t* @var{expr}, ap_environment_t* @var{nenv})
 @deftypefunx bool ap_linexpr1_extend_environment_with (ap_linexpr1_t* @var{expr}, ap_environment_t* @var{nenv})
 Change the current environment of the expression @var{expr} with a
 super-environment @var{nenv}.  Return @code{true} if @var{nenv} is not
@@ -1492,7 +1549,7 @@ managed via the constraint.
 Create the constraint @code{-1>=0}.
 @end deftypefun
 
-@deftypefun ap_lincons1_t ap_lincons1_copy (const ap_lincons1_t* @var{cons})
+@deftypefun ap_lincons1_t ap_lincons1_copy (ap_lincons1_t* @var{cons})
 Duplication
 @end deftypefun
 
@@ -1500,7 +1557,7 @@ Duplication
 Clear the constraint and set pointers to NULL.
 @end deftypefun
 
-@deftypefun void ap_lincons1_fprint (FILE* @var{stream}, const ap_lincons1_t* @var{cons});
+@deftypefun void ap_lincons1_fprint (FILE* @var{stream}, ap_lincons1_t* @var{cons});
 Print the linear constraint on stream @var{stream}.
 @end deftypefun
 
@@ -1509,7 +1566,7 @@ Print the linear constraint on stream @var{stream}.
 @subsection Tests on linear constraints of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun bool ap_lincons1_is_unsat (const ap_lincons1_t* @var{cons})
+@deftypefun bool ap_lincons1_is_unsat (ap_lincons1_t* @var{cons})
 Return @code{true} if the constraint is not satisfiable (@code{b>=0}
 or @code{[a,b]>=0} with b negative).
 @end deftypefun
@@ -1519,7 +1576,7 @@ or @code{[a,b]>=0} with b negative).
 @subsection Access to linear constraints of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_environment_t* ap_lincons1_envref (const ap_lincons1_t* @var{cons})
+@deftypefun ap_environment_t* ap_lincons1_envref (ap_lincons1_t* @var{cons})
 Get a reference to the environment. Do not free it.
 @end deftypefun
 
@@ -1528,16 +1585,16 @@ Get a reference to the type of constraint. You may use the reference
 to modify the constraint type.
 @end deftypefun
 
-@deftypefun ap_linexpr1_t ap_lincons1_linexpr1ref (const ap_lincons1_t* @var{cons})
+@deftypefun ap_linexpr1_t ap_lincons1_linexpr1ref (ap_lincons1_t* @var{cons})
 Get a reference to the underlying expression of the constraint.  Do
 not free it: nothing is duplicated.  Modifying the argument or the
 result is equivalent, except for change of dimensions/environement.
 @end deftypefun
 
-@deftypefun void ap_lincons1_get_cst (ap_coeff_t* @var{coeff}, const ap_lincons1_t* @var{cons})
-@deftypefunx void ap_lincons1_set_cst (ap_lincons1_t* @var{cons}, const ap_coeff_t* cst)
-@deftypefunx bool ap_lincons1_get_coeff (ap_coeff_t* @var{coeff}, const ap_lincons1_t* cons, ap_var_t @var{var})
-@deftypefunx bool ap_lincons1_set_coeff (ap_lincons1_t* @var{cons}, ap_var_t @var{var}, const ap_coeff_t* @var{coeff})
+@deftypefun void ap_lincons1_get_cst (ap_coeff_t* @var{coeff}, ap_lincons1_t* @var{cons})
+@deftypefunx void ap_lincons1_set_cst (ap_lincons1_t* @var{cons}, ap_coeff_t* cst)
+@deftypefunx bool ap_lincons1_get_coeff (ap_coeff_t* @var{coeff}, ap_lincons1_t* cons, ap_var_t @var{var})
+@deftypefunx bool ap_lincons1_set_coeff (ap_lincons1_t* @var{cons}, ap_var_t @var{var}, ap_coeff_t* @var{coeff})
 @deftypefunx bool ap_lincons1_set_list (ap_lincons1_t* @var{cons}, ...)
 @deftypefunx ap_coeff_t* ap_lincons1_cstref (ap_lincons1_t* @var{cons})
 @deftypefunx ap_coeff_t* ap_lincons1_coeffref (ap_lincons1_t* @var{cons}, ap_var_t @var{var})
@@ -1557,7 +1614,7 @@ change of dimensions/envionment.
 @subsection Change of dimensions and permutations of linear constraints of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun bool ap_lincons1_extend_environment (ap_lincons1_t* @var{ncons}, const ap_lincons1_t* @var{cons}, ap_environment_t* @var{nenv})
+@deftypefun bool ap_lincons1_extend_environment (ap_lincons1_t* @var{ncons}, ap_lincons1_t* @var{cons}, ap_environment_t* @var{nenv})
 @deftypefunx bool ap_lincons1_extend_environment_with (ap_lincons1_t* @var{cons}, ap_environment_t* @var{nenv})
 Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
 @end deftypefun
@@ -1579,25 +1636,25 @@ expressions.
 Clear the constraints of the array, and then the array itself.
 @end deftypefun
 
-@deftypefun void ap_lincons1_array_fprint (FILE* @var{stream}, const ap_lincons1_array_t* @var{array})
+@deftypefun void ap_lincons1_array_fprint (FILE* @var{stream}, ap_lincons1_array_t* @var{array})
 Print the array on the stream.
 @end deftypefun
 
-@deftypefun size_t ap_lincons1_array_size (const ap_lincons1_array_t* @var{array})
+@deftypefun size_t ap_lincons1_array_size (ap_lincons1_array_t* @var{array})
 Return the size of the array.
 @end deftypefun
 
-@deftypefun ap_environment_t* ap_lincons1_array_envref (const ap_lincons1_array_t* @var{array})
+@deftypefun ap_environment_t* ap_lincons1_array_envref (ap_lincons1_array_t* @var{array})
 Get a reference to the environment. Do not free it.
 @end deftypefun
 
-@deftypefun ap_lincons1_t ap_lincons1_array_get (const ap_lincons1_array_t* @var{array}, size_t @var{index})
+@deftypefun ap_lincons1_t ap_lincons1_array_get (ap_lincons1_array_t* @var{array}, size_t @var{index})
 Return the linear constraint of the given index Nothing is duplicated,
 and the result should never be cleared.  Modifying the argument or the
 result is equivalent, except for change of environments
 @end deftypefun
 
-@deftypefun bool ap_lincons1_array_set (ap_lincons1_array_t* @var{array}, size_t @var{index}, const ap_lincons1_t* @var{cons})
+@deftypefun bool ap_lincons1_array_set (ap_lincons1_array_t* @var{array}, size_t @var{index}, ap_lincons1_t* @var{cons})
 Fill the index of the array with the constraint.  Assumes
 @code{array->env==cons->env}.  Nothing is duplicated.  The argument should
 never be cleared. (its environment is dereferenced).  If a constraint
@@ -1610,7 +1667,7 @@ Clear the constraint at index index.
 @end deftypefun
 
 @deftypefun bool ap_lincons1_array_extend_environment_with (ap_lincons1_array_t* @var{array}, ap_environment_t* @var{nenv})
-@deftypefunx bool ap_lincons1_array_extend_environment (ap_lincons1_array_t* narray, const ap_lincons1_array_t* @var{array}, ap_environment_t* @var{nenv})
+@deftypefunx bool ap_lincons1_array_extend_environment (ap_lincons1_array_t* narray, ap_lincons1_array_t* @var{array}, ap_environment_t* @var{nenv})
 Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
 @end deftypefun
 
@@ -1676,7 +1733,7 @@ The expression is not duplicated, just pointed to, so it becomes
 managed via the generator.
 @end deftypefun
 
-@deftypefun ap_generator1_t ap_generator1_copy (const ap_generator1_t* @var{gen})
+@deftypefun ap_generator1_t ap_generator1_copy (ap_generator1_t* @var{gen})
 Duplication
 @end deftypefun
 
@@ -1684,7 +1741,7 @@ Duplication
 Clear the generator and set pointers to NULL.
 @end deftypefun
 
-@deftypefun void ap_generator1_fprint (FILE* @var{stream}, const ap_generator1_t* @var{gen});
+@deftypefun void ap_generator1_fprint (FILE* @var{stream}, ap_generator1_t* @var{gen});
 Print the linear generator on stream @var{stream}.
 @end deftypefun
 
@@ -1693,7 +1750,7 @@ Print the linear generator on stream @var{stream}.
 @subsection Access to generators of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_environment_t* ap_generator1_envref (const ap_generator1_t* @var{gen})
+@deftypefun ap_environment_t* ap_generator1_envref (ap_generator1_t* @var{gen})
 Get a reference to the environment. Do not free it.
 @end deftypefun
 
@@ -1702,16 +1759,16 @@ Get a reference to the type of generator. You may use the reference
 to modify the generator type.
 @end deftypefun
 
-@deftypefun ap_linexpr1_t ap_generator1_linexpr1ref (const ap_generator1_t* @var{gen})
+@deftypefun ap_linexpr1_t ap_generator1_linexpr1ref (ap_generator1_t* @var{gen})
 Get a reference to the underlying expression of the generator.  Do
 not free it: nothing is duplicated.  Modifying the argument or the
 result is equivalent, except for change of dimensions/environement.
 @end deftypefun
 
-@deftypefun void ap_generator1_get_cst (ap_coeff_t* @var{coeff}, const ap_generator1_t* @var{gen})
-@deftypefunx void ap_generator1_set_cst (ap_generator1_t* @var{gen}, const ap_coeff_t* cst)
-@deftypefunx bool ap_generator1_get_coeff (ap_coeff_t* @var{coeff}, const ap_generator1_t* gen, ap_var_t @var{var})
-@deftypefunx bool ap_generator1_set_coeff (ap_generator1_t* @var{gen}, ap_var_t @var{var}, const ap_coeff_t* @var{coeff})
+@deftypefun void ap_generator1_get_cst (ap_coeff_t* @var{coeff}, ap_generator1_t* @var{gen})
+@deftypefunx void ap_generator1_set_cst (ap_generator1_t* @var{gen}, ap_coeff_t* cst)
+@deftypefunx bool ap_generator1_get_coeff (ap_coeff_t* @var{coeff}, ap_generator1_t* gen, ap_var_t @var{var})
+@deftypefunx bool ap_generator1_set_coeff (ap_generator1_t* @var{gen}, ap_var_t @var{var}, ap_coeff_t* @var{coeff})
 @deftypefunx bool ap_generator1_set_list (ap_generator1_t* @var{gen}, ...)
 @deftypefunx ap_coeff_t* ap_generator1_cstref (ap_generator1_t* @var{gen})
 @deftypefunx ap_coeff_t* ap_generator1_coeffref (ap_generator1_t* @var{gen}, ap_var_t @var{var})
@@ -1731,7 +1788,7 @@ change of dimensions/envionment.
 @subsection Change of dimensions and permutations of generators of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun bool ap_generator1_extend_environment (ap_generator1_t* @var{ngen}, const ap_generator1_t* @var{gen}, ap_environment_t* @var{nenv})
+@deftypefun bool ap_generator1_extend_environment (ap_generator1_t* @var{ngen}, ap_generator1_t* @var{gen}, ap_environment_t* @var{nenv})
 @deftypefunx bool ap_generator1_extend_environment_with (ap_generator1_t* @var{gen}, ap_environment_t* @var{nenv})
 Identical to corresponding @code{ap_linexpr1_XXX} functions
 (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
@@ -1754,25 +1811,25 @@ expressions.
 Clear the generators of the array, and then the array itself.
 @end deftypefun
 
-@deftypefun void ap_generator1_array_fprint (FILE* @var{stream}, const ap_generator1_array_t* @var{array})
+@deftypefun void ap_generator1_array_fprint (FILE* @var{stream}, ap_generator1_array_t* @var{array})
 Print the array on the stream.
 @end deftypefun
 
-@deftypefun size_t ap_generator1_array_size (const ap_generator1_array_t* @var{array})
+@deftypefun size_t ap_generator1_array_size (ap_generator1_array_t* @var{array})
 Return the size of the array.
 @end deftypefun
 
-@deftypefun ap_environment_t* ap_generator1_array_envref (const ap_generator1_array_t* @var{array})
+@deftypefun ap_environment_t* ap_generator1_array_envref (ap_generator1_array_t* @var{array})
 Get a reference to the environment. Do not free it.
 @end deftypefun
 
-@deftypefun ap_generator1_t ap_generator1_array_get (const ap_generator1_array_t* @var{array}, size_t @var{index})
+@deftypefun ap_generator1_t ap_generator1_array_get (ap_generator1_array_t* @var{array}, size_t @var{index})
 Return the linear generator of the given index Nothing is duplicated,
 and the result should never be cleared.  Modifying the argument or the
 result is equivalent, except for change of environments
 @end deftypefun
 
-@deftypefun bool ap_generator1_array_set (ap_generator1_array_t* @var{array}, size_t @var{index}, const ap_generator1_t* @var{gen})
+@deftypefun bool ap_generator1_array_set (ap_generator1_array_t* @var{array}, size_t @var{index}, ap_generator1_t* @var{gen})
 Fill the index of the array with the generator.  Assumes
 @code{array->env==gen->env}.  Nothing is duplicated.  The argument should
 never be cleared. (its environment is dereferenced).  If a generator
@@ -1785,7 +1842,7 @@ Clear the generator at index index.
 @end deftypefun
 
 @deftypefun bool ap_generator1_array_extend_environment_with (ap_generator1_array_t* @var{array}, ap_environment_t* @var{nenv})
-@deftypefunx bool ap_generator1_array_extend_environment (ap_generator1_array_t* narray, const ap_generator1_array_t* @var{array}, ap_environment_t* @var{nenv})
+@deftypefunx bool ap_generator1_array_extend_environment (ap_generator1_array_t* narray, ap_generator1_array_t* @var{array}, ap_environment_t* @var{nenv})
 Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of dimensions and permutations of linear expressions of level 1}).
 @end deftypefun
 
@@ -1815,7 +1872,7 @@ typedef struct ap_box1_t @{
   ap_interval_t** p;
   ap_environment_t* env;
 @} ap_box1_t;
-void ap_box1_fprint(FILE* stream, const ap_box1_t* box);
+void ap_box1_fprint(FILE* stream, ap_box1_t* box);
 void ap_box1_clear(ap_box1_t* box);
 @end example
 @end deftp
@@ -1868,7 +1925,7 @@ Additional functions
 @subsection Allocating abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract1_t ap_abstract1_copy (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun ap_abstract1_t ap_abstract1_copy (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Return a copy of @var{a}, on which destructive update does not
 affect @var{a}.
 @end deftypefun
@@ -1877,7 +1934,7 @@ affect @var{a}.
 Free all the memory used by @var{a}.
 @end deftypefun
 
-@deftypefun size_t ap_abstract1_size (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun size_t ap_abstract1_size (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Return the abstract size of @var{a}.
 @end deftypefun
 
@@ -1886,12 +1943,12 @@ Return the abstract size of @var{a}.
 @subsection Control of internal representation of abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun void ap_abstract1_minimize (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun void ap_abstract1_minimize (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Minimize the size of the representation of @var{a}.  This may result in
 a later recomputation of internal information.
 @end deftypefun
 
-@deftypefun void ap_abstract1_canonicalize (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun void ap_abstract1_canonicalize (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Put @var{a} in canonical form. (not yet clear definition).
 @end deftypefun
 
@@ -1910,16 +1967,16 @@ type @code{ap_funopt_t} associated to
 @subsection Printing abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun void ap_abstract1_fprint (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun void ap_abstract1_fprint (FILE* @var{stream}, ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Print @var{a} in a pretty way on the stream.
 @end deftypefun
 
-@deftypefun void ap_abstract1_fprintdiff (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+@deftypefun void ap_abstract1_fprintdiff (FILE* @var{stream}, ap_manager_t* @var{man}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
 Print the difference between @var{a1} (old value) and @var{a2} (new
 value). The meaning of difference is library dependent.
 @end deftypefun
 
-@deftypefun void ap_abstract1_fdump (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun void ap_abstract1_fdump (FILE* @var{stream}, ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Dump the internal representation of @var{a} for debugging
 purposes.
 @end deftypefun
@@ -1928,7 +1985,7 @@ purposes.
 @node Serialization of abstract values of level 1, Constructors for abstract values of level 1, Printing abstract values of level 1, Abstract values and operations of level 1
 @subsection Serialization of abstract values of level 1
 @c -------------------------------------------------------------------
-@deftypefun ap_membuf_t ap_abstract1_serialize_raw (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun ap_membuf_t ap_abstract1_serialize_raw (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Allocate a memory buffer (with @code{malloc}), output @var{a}
 in raw binary format to it and return a pointer on the memory
 buffer and the number of bytes written.  It is the user
@@ -1960,7 +2017,7 @@ If no inclusion is specified for a variable in the environement, its
 value is no constrained in the resulting abstract value.
 @end deftypefun
 
-@deftypefun ap_abstract1_t ap_abstract1_of_lincons_array (ap_manager_t* @var{man}, ap_environment_t* @var{env}, const ap_lincons1_array_t* @var{array})
+@deftypefun ap_abstract1_t ap_abstract1_of_lincons_array (ap_manager_t* @var{man}, ap_environment_t* @var{env}, ap_lincons1_array_t* @var{array})
 Abstract a convex polyhedra defined by the array @var{array} of
 (interval) linear constraints. The environement of the array should be
 a subset of the environement @var{env}.
@@ -1971,16 +2028,16 @@ a subset of the environement @var{env}.
 @subsection Accessors for abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_dimension_t ap_abstract1_environement (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun ap_dimension_t ap_abstract1_environement (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Get a reference to the environement of @var{a}. Do not free it.
 @end deftypefun
 
-@deftypefun ap_manager_t* ap_abstract1_manager (const ap_abstract1_t* @var{a})
+@deftypefun ap_manager_t* ap_abstract1_manager (ap_abstract1_t* @var{a})
 Get a reference to the manager contained in @var{a}.
 Do not free it.
 @end deftypefun
 
-@deftypefun ap_dimension_t ap_abstract1_abstract0 (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun ap_dimension_t ap_abstract1_abstract0 (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Get a reference to the underlying abstract value of level 0 in
 @var{a}. Do not free it.
 @end deftypefun
@@ -1994,25 +2051,25 @@ If any of the following functions returns tbool_top, this means that
 an exception has occured, or that the exact computation was
 considered too expensive to be performed (according to the options).
 
-@deftypefun tbool_t ap_abstract1_is_bottom (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
-@deftypefunx tbool_t ap_abstract1_is_top (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun tbool_t ap_abstract1_is_bottom (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
+@deftypefunx tbool_t ap_abstract1_is_top (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Emtpiness and universality tests.
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract1_is_leq (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
-@deftypefunx tbool_t ap_abstract1_is_eq (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+@deftypefun tbool_t ap_abstract1_is_leq (ap_manager_t* @var{man}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
+@deftypefunx tbool_t ap_abstract1_is_eq (ap_manager_t* @var{man}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
 Inclusion and equality tests.
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract1_sat_interval (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var}, const ap_interval_t* @var{interval})
+@deftypefun tbool_t ap_abstract1_sat_interval (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_var_t @var{var}, ap_interval_t* @var{interval})
 Is the variable @var{var} included in the interval @var{interval} in the abstract value @var{a} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract1_sat_lincons (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, const ap_lincons1_t* @var{lincons})
+@deftypefun tbool_t ap_abstract1_sat_lincons (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_lincons1_t* @var{lincons})
 Does the abstract value @var{a} satisfy the (interval) linear constraint @var{lincons} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract1_is_variable_unconstrained (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var})
+@deftypefun tbool_t ap_abstract1_is_variable_unconstrained (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_var_t @var{var})
 Is the dimension @var{dim} unconstrained in the abstract value @var{a} ?
 If it is the case, we have @code{forget(man,a,dim) == a}.
 @end deftypefun
@@ -2022,12 +2079,12 @@ If it is the case, we have @code{forget(man,a,dim) == a}.
 @subsection Extraction of properties of abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_interval_t* ap_abstract1_bound_variable (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_var_t @var{var})
+@deftypefun ap_interval_t* ap_abstract1_bound_variable (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_var_t @var{var})
 Return the interval taken by the variable @var{var} over the abstract
 value @var{a}.
 @end deftypefun
 
-@deftypefun ap_interval_t* ap_abstract1_bound_linexpr (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, const ap_linexpr1_t* @var{expr})
+@deftypefun ap_interval_t* ap_abstract1_bound_linexpr (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})
 Return the interval taken by a linear expression @var{expr} over
 the abstract value @var{a}.
 
@@ -2035,11 +2092,11 @@ This function allows to solve a Linear Programming (LP) problem, but
 depending on the underlying domain the solution may be not optimal.
 @end deftypefun
 
-@deftypefun ap_box1_t ap_abstract1_to_box (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun ap_box1_t ap_abstract1_to_box (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Convert @var{a} to an interval/hypercube.
 @end deftypefun
 
-@deftypefun ap_lincons1_array_t ap_abstract1_to_lincons_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun ap_lincons1_array_t ap_abstract1_to_lincons_array (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Convert @var{a} to a convex polyhedra (conjunction of linear
 constraints).
 
@@ -2047,7 +2104,7 @@ The constraints are normally guaranteed to be really linear
 (without intervals).
 @end deftypefun
 
-@deftypefun ap_generator1_array_t ap_abstract1_to_generator_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a})
+@deftypefun ap_generator1_array_t ap_abstract1_to_generator_array (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Convert @var{a} to an array of generators.
 @end deftypefun
 
@@ -2056,16 +2113,16 @@ Convert @var{a} to an array of generators.
 @subsection Meet and Join of abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract1_t ap_abstract1_meet (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+@deftypefun ap_abstract1_t ap_abstract1_meet (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
 
-@deftypefunx ap_abstract1_t ap_abstract1_join (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+@deftypefunx ap_abstract1_t ap_abstract1_join (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
 Meet and Join of 2 abstract values
 @end deftypefun
 
 
-@deftypefun ap_abstract1_t ap_abstract1_meet_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{array}, size_t @var{size})
+@deftypefun ap_abstract1_t ap_abstract1_meet_array (ap_manager_t* @var{man}, ap_abstract1_t* @var{array}, size_t @var{size})
 
-@deftypefunx ap_abstract1_t ap_abstract1_join_array (ap_manager_t* @var{man}, const ap_abstract1_t* @var{array}, size_t @var{size})
+@deftypefunx ap_abstract1_t ap_abstract1_join_array (ap_manager_t* @var{man}, ap_abstract1_t* @var{array}, size_t @var{size})
 Meet and Join of the array @var{array} of abstract values of size
 @var{size}.
 
@@ -2074,12 +2131,12 @@ Raise an @code{AP_EXC_INVALID_ARGUMENT} exception if
 in such a case).
 @end deftypefun
 
-@deftypefun ap_abstract1_t ap_abstract1_meet_lincons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_lincons1_array_t* @var{array})
+@deftypefun ap_abstract1_t ap_abstract1_meet_lincons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_lincons1_array_t* @var{array})
 Meet of the abstract value @var{a} with the set of constraints
 @var{array}.
 @end deftypefun
 
-@deftypefun ap_abstract1_t ap_abstract1_add_ray_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_generator1_array_t* @var{array})
+@deftypefun ap_abstract1_t ap_abstract1_add_ray_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_generator1_array_t* @var{array})
 Generalized time elapse operator.
 
 @var{array} is supposed to contain only rays or lines, no vertices.
@@ -2090,8 +2147,8 @@ Generalized time elapse operator.
 @subsection Assignements and Substitutions of abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, const ap_linexpr1_t* @var{expr}, const ap_abstract1_t* @var{dest})
-@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, const ap_linexpr1_t* @var{expr}, const ap_abstract1_t* @var{dest})
+@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, ap_linexpr1_t* @var{expr}, ap_abstract1_t* @var{dest})
+@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, ap_linexpr1_t* @var{expr}, ap_abstract1_t* @var{dest})
 Assignement and Substitution of the dimension @var{dim} by the (interval)
 linear expression @var{expr} in abstract value @var{org}.
 
@@ -2102,8 +2159,8 @@ lattices like intervals or octagons.
 @end deftypefun
 
 
-@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, const ap_var_t* @var{tvar}, const ap_linexpr1_t* @var{texpr}, size_t @var{size}, const ap_abstract1_t* @var{dest})
-@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, const ap_var_t* @var{tvar}, const ap_linexpr1_t* @var{texpr}, size_t @var{size}, const ap_abstract1_t* @var{dest})
+@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t* @var{tvar}, ap_linexpr1_t* @var{texpr}, size_t @var{size}, ap_abstract1_t* @var{dest})
+@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t* @var{tvar}, ap_linexpr1_t* @var{texpr}, size_t @var{size}, ap_abstract1_t* @var{dest})
 Parallel Assignement and Substitution of several variables by
 linear expressions in abstract value @var{org}.
 
@@ -2118,7 +2175,7 @@ octagons.
 @subsection Existential quantification of abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract1_t ap_abstract1_forget_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_var_t* @var{tvar}, size_t @var{size}, bool @var{project})
+@deftypefun ap_abstract1_t ap_abstract1_forget_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_var_t* @var{tvar}, size_t @var{size}, bool @var{project})
 Forget (@code{project=false}) or Project (@code{project=true}) the
 array of variables @var{tvar} of size @var{size} in the abstract
 value @var{a}.
@@ -2171,7 +2228,7 @@ It results in @code{size+1} unrelated variables having same relations
 with other dimensions.
 @end deftypefun
 
-@deftypefun ap_abstract1_t ap_abstract1_fold (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, const ap_var_t* @var{tvar}, size_t @var{size})
+@deftypefun ap_abstract1_t ap_abstract1_fold (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_var_t* @var{tvar}, size_t @var{size})
 Fold the variables in the array @var{tvar} of size @var{size}>=1 and
 put the result in the first variable in the array. The other variables
 of the array are then forgot and removed from the environement.
@@ -2182,12 +2239,12 @@ of the array are then forgot and removed from the environement.
 @subsection Widening of abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract1_t ap_abstract1_widening (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2})
+@deftypefun ap_abstract1_t ap_abstract1_widening (ap_manager_t* @var{man}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
 Widening of @var{a1} with @var{a2}. @var{a1} is supposed to be
 included in @var{a2}.
 @end deftypefun
 
-@deftypefun ap_abstract1_t ap_abstract1_widening_threshold (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a1}, const ap_abstract1_t* @var{a2}, ap_lincons1_array_t* @var{array})
+@deftypefun ap_abstract1_t ap_abstract1_widening_threshold (ap_manager_t* @var{man}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2}, ap_lincons1_array_t* @var{array})
 Widening with threshold.
 
 Intersect the result of the standard widening with all the
@@ -2209,7 +2266,7 @@ Relax strict constraints into non strict constraints.
 @subsection Additional functions on abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_linexpr1_t ap_abstract1_quasilinear_of_intervallinear (ap_manager_t* @var{man}, const ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})
+@deftypefun ap_linexpr1_t ap_abstract1_quasilinear_of_intervallinear (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})
 Evaluate the interval linear expression @var{expr} on the abstract
 value @var{a} and approximate it by a quasilinear expression.
 
@@ -2236,6 +2293,46 @@ from existing ones.
 * Generators of level 0::
 * Abstract values and operations of level 0::
 @end menu
+
+For information only (as most of these types are considered as
+abstract) and for implementors, we sum up the involved types
+below.
+@verbatim
+    ap_dim_t         ap_dimension_t
+|--------------|   |----------------|
+| unsigned int |   | size_t intdim  |
+|--------------|   | size_t realdim |
+		   |----------------|
+
+  ap_dimchange_t      ap_dimperm_t
+|----------------|   |-----------|
+| ap_dim_t* dim  |   | ap_dim_t* |
+| size_t intdim  |   | size_t    |
+| size_t realdim |   |-----------|
+|----------------|
+
+	ap_linexpr0_t              ap_linterm_t
+|-----------------------------|   |------------|
+|      ap_coeff_t       cst   |   | ap_dim_t   |
+|      ap_linexpr_discr discr |   | ap_coeff_t |
+|      size_t           size  |   |------------|
+|-----------------------------|
+| ap_coeff_t* | ap_linterm_t* |
+|-----------------------------|
+
+   ap_lincons0_t         ap_generator0_t    
+|------------------|   |----------------|   
+| ap_linexpr0_t*   |   | ap_linexpr0_t* | 
+| ap_constyp_t     |   | ap_gentyp_t    |  
+| ap_scalar_t* mod |   |----------------|   
+|------------------|  
+
+ ap_abstract0_t
+|---------------|
+| void*         |
+| ap_manager_t* |
+|---------------|
+@end verbatim
 
 @c ===================================================================
 @node Dimensions and related operations, Linear expressions of level 0, Level 0 of the interface, Level 0 of the interface
@@ -2370,14 +2467,14 @@ Print the permutation.
 Fill the already allocated @var{perm} with the identity permutation.
 @end deftypefun
 
-@deftypefun void ap_dimperm_compose (ap_dimperm_t* @var{perm}, const ap_dimperm_t* @var{perm1}, const ap_dimperm_t* @var{perm2})
+@deftypefun void ap_dimperm_compose (ap_dimperm_t* @var{perm}, ap_dimperm_t* @var{perm1}, ap_dimperm_t* @var{perm2})
 Compose the 2 permutations @var{perm1} and @var{perm2} (in this order)
 and store the result the already allocated perm.
 The sizes of permutations are supposed to be equal.
 At exit, we have @code{perm.dim[i] = perm2.dim[perm1.dim[i]]}.
 @end deftypefun
 
-@deftypefun void ap_dimperm_invert (ap_dimperm_t* @var{nperm}, const ap_dimperm_t* @var{perm})
+@deftypefun void ap_dimperm_invert (ap_dimperm_t* @var{nperm}, ap_dimperm_t* @var{perm})
 Invert the permutation @var{perm} and store it in the already
 allocated @var{nperm}. The sizes of permutations are supposed to
 be equal.
@@ -2439,11 +2536,11 @@ coefficients.
 Deallocate the linear expression.
 @end deftypefun
 
-@deftypefun ap_linexpr0_t* ap_linexpr0_copy (const ap_linexpr0_t* @var{e})
+@deftypefun ap_linexpr0_t* ap_linexpr0_copy (ap_linexpr0_t* @var{e})
 Duplication.
 @end deftypefun
 
-@deftypefun void ap_linexpr0_fprint (FILE* @var{stream}, const ap_linexpr0_t* @var{e}, char** @var{name_of_dim});
+@deftypefun void ap_linexpr0_fprint (FILE* @var{stream}, ap_linexpr0_t* @var{e}, char** @var{name_of_dim});
 Print the linear expression on stream @var{stream}, using the array
 @var{name_of_dim} to convert dimensions to variable names. If
 @var{name_of_dim} is @code{NULL}, the dimensions are named
@@ -2455,21 +2552,21 @@ Print the linear expression on stream @var{stream}, using the array
 @subsection Tests on linear expressions of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun bool ap_linexpr0_is_integer (const ap_linexpr0_t* @var{e}, size_t @var{intdim})
+@deftypefun bool ap_linexpr0_is_integer (ap_linexpr0_t* @var{e}, size_t @var{intdim})
 Does the expression depends only on integer variables ? assuming that
 the first intdim dimensions are integer.
 @end deftypefun
 
-@deftypefun bool ap_linexpr0_is_real (const ap_linexpr0_t* @var{e}, size_t @var{intdim})
+@deftypefun bool ap_linexpr0_is_real (ap_linexpr0_t* @var{e}, size_t @var{intdim})
 Does the expression depends only on real variables ? assuming that
 the first intdim dimensions are integer .
 @end deftypefun
 
-@deftypefun bool ap_linexpr0_is_linear (const ap_linexpr0_t* @var{e})
+@deftypefun bool ap_linexpr0_is_linear (ap_linexpr0_t* @var{e})
 Return true iff all involved coefficients are scalars.
 @end deftypefun
 
-@deftypefun bool ap_linexpr0_is_quasilinear (const ap_linexpr0_t* @var{e})
+@deftypefun bool ap_linexpr0_is_quasilinear (ap_linexpr0_t* @var{e})
 Return true iff all involved coefficients but the constant are scalars.
 @end deftypefun
 
@@ -2478,7 +2575,7 @@ Return true iff all involved coefficients but the constant are scalars.
 @subsection Access to linear expressions of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun size_t ap_linexpr0_size (const ap_linexpr0_t* @var{e})
+@deftypefun size_t ap_linexpr0_size (ap_linexpr0_t* @var{e})
 Get the size of the linear expression
 @end deftypefun
 
@@ -2506,11 +2603,11 @@ Return NULL if:
 @c -------------------------------------------------------------------
 @subsubsection Getting values
 
-@deftypefun void ap_linexpr0_get_cst (ap_coefft* @var{coeff}, const ap_linexpr0_t* @var{e})
+@deftypefun void ap_linexpr0_get_cst (ap_coefft* @var{coeff}, ap_linexpr0_t* @var{e})
 Assign to @var{coeff} the constant coefficient of @var{e}.
 @end deftypefun
 
-@deftypefun bool ap_linexpr0_get_coeff (ap_coefft* coeff, const ap_linexpr0_t* @var{e}, ap_dim_t @var{dim})
+@deftypefun bool ap_linexpr0_get_coeff (ap_coefft* coeff, ap_linexpr0_t* @var{e}, ap_dim_t @var{dim})
 Assign to @var{coeff} the coefficient of dimension @var{dim} in the expression @var{e}.
 
 Return true in case @code{ap_linexpr0_coeffref(e,dim)} returns NULL.
@@ -2594,26 +2691,26 @@ ap_linexpr0_set_cst_interval_double(e, -2.4, 3.6);
 @c -------------------------------------------------------------------
 @subsubsection Assigning values
 
-@deftypefun void ap_linexpr0_set_cst (ap_linexpr0_t* @var{e}, const ap_coefft* @var{coeff})
-@deftypefunx void ap_linexpr0_set_cst_scalar (ap_linexpr0_t* @var{e}, const ap_scalar_t* @var{scalar})
+@deftypefun void ap_linexpr0_set_cst (ap_linexpr0_t* @var{e}, ap_coefft* @var{coeff})
+@deftypefunx void ap_linexpr0_set_cst_scalar (ap_linexpr0_t* @var{e}, ap_scalar_t* @var{scalar})
 @deftypefunx void ap_linexpr0_set_cst_scalar_int (ap_linexpr0_t* @var{e}, int @var{num})
 @deftypefunx void ap_linexpr0_set_cst_scalar_frac (ap_linexpr0_t* @var{e}, int @var{num}, unsigned int @var{den})
 @deftypefunx void ap_linexpr0_set_cst_scalar_double (ap_linexpr0_t* @var{e}, double @var{num})
-@deftypefunx void ap_linexpr0_set_cst_interval (ap_linexpr0_t* @var{e}, const ap_interval_t* @var{itv})
-@deftypefunx void ap_linexpr0_set_cst_interval_scalar (ap_linexpr0_t* @var{e}, const ap_scalar_t* @var{inf}, const ap_scalar_t* @var{sup})
+@deftypefunx void ap_linexpr0_set_cst_interval (ap_linexpr0_t* @var{e}, ap_interval_t* @var{itv})
+@deftypefunx void ap_linexpr0_set_cst_interval_scalar (ap_linexpr0_t* @var{e}, ap_scalar_t* @var{inf}, ap_scalar_t* @var{sup})
 @deftypefunx void ap_linexpr0_set_cst_interval_int (ap_linexpr0_t* @var{e}, int @var{inf}, int @var{sup})
 @deftypefunx void ap_linexpr0_set_cst_interval_frac (ap_linexpr0_t* @var{e}, int @var{numinf}, unsigned int @var{deninf}, int @var{numsup}, unsigned int @var{densup})
 @deftypefunx void ap_linexpr0_set_cst_interval_double (ap_linexpr0_t* @var{e}, double @var{inf}, double @var{sup})
 Set the constant coefficient of expression @var{e}.
 @end deftypefun
 
-@deftypefun bool ap_linexpr0_set_coeff (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, const ap_coefft* @var{coeff})
-@deftypefunx bool ap_linexpr0_set_coeff_scalar (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, const ap_scalar_t* @var{scalar})
+@deftypefun bool ap_linexpr0_set_coeff (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, ap_coefft* @var{coeff})
+@deftypefunx bool ap_linexpr0_set_coeff_scalar (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, ap_scalar_t* @var{scalar})
 @deftypefunx bool ap_linexpr0_set_coeff_scalar_int (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, int @var{num})
 @deftypefunx bool ap_linexpr0_set_coeff_scalar_frac (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, int @var{num}, unsigned int @var{den})
 @deftypefunx bool ap_linexpr0_set_coeff_scalar_double (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, double @var{num})
-@deftypefunx bool ap_linexpr0_set_coeff_interval (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, const ap_interval_t* @var{itv})
-@deftypefunx bool ap_linexpr0_set_coeff_interval_scalar (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, const ap_scalar_t* @var{inf}, const ap_scalar_t* @var{sup})
+@deftypefunx bool ap_linexpr0_set_coeff_interval (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, ap_interval_t* @var{itv})
+@deftypefunx bool ap_linexpr0_set_coeff_interval_scalar (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, ap_scalar_t* @var{inf}, ap_scalar_t* @var{sup})
 @deftypefunx bool ap_linexpr0_set_coeff_interval_int (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, int @var{inf}, int @var{sup})
 @deftypefunx bool ap_linexpr0_set_coeff_interval_frac (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, int @var{numinf}, unsigned int @var{deninf}, int @var{numsup}, unsigned int @var{densup})
 @deftypefunx void ap_linexpr0_set_coeff_interval_double (ap_linexpr0_t* @var{e}, ap_dim_t @var{dim}, double @var{inf}, double @var{sup})
@@ -2627,14 +2724,14 @@ Return @code{true} in case @code{ap_linexpr0_coeffref(e,dim)} returns NULL.
 @subsection Change of dimensions and permutations of linear expressions of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun void ap_linexpr0_add_dimensions_with (ap_linexpr0_t* @var{e}, const ap_dimchange_t* @var{dimchange})
-@deftypefunx ap_linexpr0_t* ap_linexpr0_add_dimensions (const ap_linexpr0_t* @var{e}, const ap_dimchange_t* @var{dimchange})
+@deftypefun void ap_linexpr0_add_dimensions_with (ap_linexpr0_t* @var{e}, ap_dimchange_t* @var{dimchange})
+@deftypefunx ap_linexpr0_t* ap_linexpr0_add_dimensions (ap_linexpr0_t* @var{e}, ap_dimchange_t* @var{dimchange})
 These two functions add dimensions to the expressions, following
 the semantics of dimchange (see the type definition of @code{ap_dimchange_t}).
 @end deftypefun
 
-@deftypefun void ap_linexpr0_permute_dimensions_with (ap_linexpr0_t* @var{e}, const ap_dimperm_t* @var{perm})
-@deftypefunx ap_linexpr0_t*  ap_linexpr0_permute_dimensions (const ap_linexpr0_t* @var{e}, const ap_dimperm_t* @var{perm})
+@deftypefun void ap_linexpr0_permute_dimensions_with (ap_linexpr0_t* @var{e}, ap_dimperm_t* @var{perm})
+@deftypefunx ap_linexpr0_t*  ap_linexpr0_permute_dimensions (ap_linexpr0_t* @var{e}, ap_dimperm_t* @var{perm})
 These two functions apply the given permutation to the dimensions
 of @var{e}. If dense representation, the size of the permutation
 should be @code{e->size}. If sparse representation, the
@@ -2650,15 +2747,15 @@ than the size of the permutation.
 All these functions induces a reduction of the coefficients of the
 linear expression.
 
-@deftypefun int ap_linexpr0_hash (const ap_linexpr0_t* @var{e})
+@deftypefun int ap_linexpr0_hash (ap_linexpr0_t* @var{e})
 Return a hash code.
 @end deftypefun
 
-@deftypefun bool ap_linexpr0_equal (const ap_linexpr0_t* @var{e1}, const ap_linexpr0_t* @var{e2})
+@deftypefun bool ap_linexpr0_equal (ap_linexpr0_t* @var{e1}, ap_linexpr0_t* @var{e2})
 Equality test.
 @end deftypefun
 
-@deftypefun int ap_linexpr0_compare (const ap_linexpr0_t* @var{e1}, const ap_linexpr0_t* @var{e2})
+@deftypefun int ap_linexpr0_compare (ap_linexpr0_t* @var{e1}, ap_linexpr0_t* @var{e2})
 Lexicographic ordering, terminating by constant coefficients.
 
 Use the (partial order) comparison function on coefficients
@@ -2743,7 +2840,7 @@ managed via the constraint.
 Create the constraint @code{-1>=0}.
 @end deftypefun
 
-@deftypefun ap_lincons0_t ap_lincons0_copy (const ap_lincons0_t* @var{cons})
+@deftypefun ap_lincons0_t ap_lincons0_copy (ap_lincons0_t* @var{cons})
 Duplication
 @end deftypefun
 
@@ -2751,7 +2848,7 @@ Duplication
 Clear the constraint.
 @end deftypefun
 
-@deftypefun void ap_lincons0_fprint (FILE* @var{stream}, const ap_lincons0_t* @var{cons}, char** @var{name_of_dim});
+@deftypefun void ap_lincons0_fprint (FILE* @var{stream}, ap_lincons0_t* @var{cons}, char** @var{name_of_dim});
 Print the linear constraint on stream @var{stream}, using the array
 @var{name_of_dim} to convert dimensions to variable names. If
 @var{name_of_dim} is @code{NULL}, the dimensions are named
@@ -2763,7 +2860,7 @@ Print the linear constraint on stream @var{stream}, using the array
 @subsection Tests on linear constraints of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun bool ap_lincons0_is_unsat (const ap_lincons0_t* @var{cons})
+@deftypefun bool ap_lincons0_is_unsat (ap_lincons0_t* @var{cons})
 Return @code{true} if the constraint is not satisfiable.
 @end deftypefun
 
@@ -2784,7 +2881,7 @@ expressions.
 Clear the constraints of the array, and then the array itself.
 @end deftypefun
 
-@deftypefun void ap_lincons0_array_fprint (FILE* @var{stream}, const ap_lincons0_array_t* @var{array}, char** @var{name_of_dim})
+@deftypefun void ap_lincons0_array_fprint (FILE* @var{stream}, ap_lincons0_array_t* @var{array}, char** @var{name_of_dim})
 Print the array on the stream.
 @end deftypefun
 
@@ -2793,22 +2890,22 @@ Print the array on the stream.
 @subsection Change of dimensions and permutations of linear constraints of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun void ap_lincons0_add_dimensions_with (ap_lincons0_t* @var{cons}, const ap_dimchange_t* @var{dimchange})
-@deftypefunx ap_lincons0_t ap_lincons0_add_dimensions (const ap_lincons0_t* @var{cons}, const ap_dimchange_t* @var{dimchange})
+@deftypefun void ap_lincons0_add_dimensions_with (ap_lincons0_t* @var{cons}, ap_dimchange_t* @var{dimchange})
+@deftypefunx ap_lincons0_t ap_lincons0_add_dimensions (ap_lincons0_t* @var{cons}, ap_dimchange_t* @var{dimchange})
 These two functions add dimensions to the constraint, following
 the semantics of dimchange (see the type definition of @code{ap_dimchange_t}).
 @end deftypefun
 
-@deftypefun void ap_lincons0_permute_dimensions_with (ap_lincons0_t* @var{cons}, const ap_dimperm_t* @var{perm})
-@deftypefunx ap_lincons0_t ap_lincons0_permute_dimensions (const ap_lincons0_t* @var{cons}, const ap_dimperm_t* @var{perm})
+@deftypefun void ap_lincons0_permute_dimensions_with (ap_lincons0_t* @var{cons}, ap_dimperm_t* @var{perm})
+@deftypefunx ap_lincons0_t ap_lincons0_permute_dimensions (ap_lincons0_t* @var{cons}, ap_dimperm_t* @var{perm})
 These two functions apply the given permutation to the dimensions
 of @var{cons}.
 @end deftypefun
 
-@deftypefun void ap_lincons0_array_add_dimensions_with (ap_lincons0_array_t* @var{cons}, const ap_dimchange_t* @var{dimchange})
-@deftypefunx ap_lincons0_array_t ap_lincons0_array_add_dimensions (const ap_lincons0_array_t* @var{cons}, const ap_dimchange_t* @var{dimchange})
-@deftypefunx void ap_lincons0_array_permute_dimensions_with (ap_lincons0_array_t* @var{cons}, const ap_dimperm_t* @var{perm})
-@deftypefunx ap_lincons0_array_t ap_lincons0_array_permute_dimensions (const ap_lincons0_array_t* @var{cons}, const ap_dimperm_t* @var{perm})
+@deftypefun void ap_lincons0_array_add_dimensions_with (ap_lincons0_array_t* @var{cons}, ap_dimchange_t* @var{dimchange})
+@deftypefunx ap_lincons0_array_t ap_lincons0_array_add_dimensions (ap_lincons0_array_t* @var{cons}, ap_dimchange_t* @var{dimchange})
+@deftypefunx void ap_lincons0_array_permute_dimensions_with (ap_lincons0_array_t* @var{cons}, ap_dimperm_t* @var{perm})
+@deftypefunx ap_lincons0_array_t ap_lincons0_array_permute_dimensions (ap_lincons0_array_t* @var{cons}, ap_dimperm_t* @var{perm})
 Extension to arrays of the corresponding functions on constraints.
 @end deftypefun
 
@@ -2994,7 +3091,7 @@ Additional functions
 @subsection Allocating abstract values of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract0_t* ap_abstract0_copy (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun ap_abstract0_t* ap_abstract0_copy (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Return a copy of @var{a}, on which destructive update does not
 affect @var{a}.
 @end deftypefun
@@ -3003,7 +3100,7 @@ affect @var{a}.
 Free all the memory used by @var{a}.
 @end deftypefun
 
-@deftypefun size_t ap_abstract0_size (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun size_t ap_abstract0_size (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Return the abstract size of @var{a}.
 @end deftypefun
 
@@ -3012,12 +3109,12 @@ Return the abstract size of @var{a}.
 @subsection Control of internal representation of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun void ap_abstract0_minimize (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun void ap_abstract0_minimize (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Minimize the size of the representation of @var{a}.  This may result in
 a later recomputation of internal information.
 @end deftypefun
 
-@deftypefun void ap_abstract0_canonicalize (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun void ap_abstract0_canonicalize (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Put @var{a} in canonical form. (not yet clear definition)
 @end deftypefun
 
@@ -3037,19 +3134,19 @@ type @code{ap_funopt_t} associated to
 @subsection Printing abstract values of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun void ap_abstract0_fprint (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, char** @var{name_of_dim})
+@deftypefun void ap_abstract0_fprint (FILE* @var{stream}, ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, char** @var{name_of_dim})
 Print @var{a} in a pretty way, using array @var{name_of_dim} to
 name dimensions.. If @var{name_of_dim} is @code{NULL}, use the
 default names @code{x0, x1, ...}.
 @end deftypefun
 
-@deftypefun void ap_abstract0_fprintdiff (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract0_t* @var{a1}, const ap_abstract0_t* @var{a2}, char** @var{name_of_dim})
+@deftypefun void ap_abstract0_fprintdiff (FILE* @var{stream}, ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2}, char** @var{name_of_dim})
 Print the difference between @var{a1} (old value) and @var{a2}
 (new value), using array @var{name_of_dim} to name dimensions.
 The meaning of difference is library dependent.
 @end deftypefun
 
-@deftypefun void ap_abstract0_fdump (FILE* @var{stream}, ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun void ap_abstract0_fdump (FILE* @var{stream}, ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Dump the internal representation of @var{a} for debugging
 purposes.
 @end deftypefun
@@ -3058,7 +3155,7 @@ purposes.
 @node Serialization of abstract values of level 0, Constructors for abstract values of level 0, Printing abstract values of level 0, Abstract values and operations of level 0
 @subsection Serialization of abstract values of level 0
 @c -------------------------------------------------------------------
-@deftypefun ap_membuf_t ap_abstract0_serialize_raw (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun ap_membuf_t ap_abstract0_serialize_raw (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Allocate a memory buffer (with @code{malloc}), output @var{a}
 in raw binary format to it and return a pointer on the memory
 buffer and the number of bytes written.  It is the user
@@ -3083,12 +3180,12 @@ with @var{intdim} integer dimensions and @var{realdim} real
 dimensions.
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_of_box (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, const ap_interval_t*const* @var{array})
+@deftypefun ap_abstract0_t* ap_abstract0_of_box (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, ap_interval_t** @var{array})
 Abstract an hypercube defined by the array of intervals
 @var{array} of size @var{intdim}+@var{realdim}.
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, const ap_lincons0_array_t* @var{array})
+@deftypefun ap_abstract0_t* ap_abstract0_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, ap_lincons0_array_t* @var{array})
 Abstract a convex polyhedra defined by the array @var{array} of
 (interval) linear constraints. The constraints in the array should
 have exactly the dimensions (@var{intdim},@var{realdim}).
@@ -3099,7 +3196,7 @@ have exactly the dimensions (@var{intdim},@var{realdim}).
 @subsection Accessors for abstract values of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun ap_dimension_t ap_abstract0_dimension (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun ap_dimension_t ap_abstract0_dimension (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Return the dimensionality of @var{a}.
 @end deftypefun
 
@@ -3112,25 +3209,25 @@ If any of the following functions returns tbool_top, this means that
 an exception has occured, or that the exact computation was
 considered too expensive to be performed (according to the options).
 
-@deftypefun tbool_t ap_abstract0_is_bottom (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
-@deftypefunx tbool_t ap_abstract0_is_top (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun tbool_t ap_abstract0_is_bottom (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
+@deftypefunx tbool_t ap_abstract0_is_top (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Emtpiness and universality tests.
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract0_is_leq (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a1}, const ap_abstract0_t* @var{a2})
-@deftypefunx tbool_t ap_abstract0_is_eq (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a1}, const ap_abstract0_t* @var{a2})
+@deftypefun tbool_t ap_abstract0_is_leq (ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2})
+@deftypefunx tbool_t ap_abstract0_is_eq (ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2})
 Inclusion and equality tests.
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract0_sat_interval (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, ap_dim_t @var{dim}, const ap_interval_t* @var{interval})
+@deftypefun tbool_t ap_abstract0_sat_interval (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_dim_t @var{dim}, ap_interval_t* @var{interval})
 Is the dimension @var{dim} included in the interval @var{interval} in the abstract value @var{a} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract0_sat_lincons (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, const ap_lincons0_t* @var{lincons})
+@deftypefun tbool_t ap_abstract0_sat_lincons (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_lincons0_t* @var{lincons})
 Does the abstract value @var{a} satisfy the (interval) linear constraint @var{lincons} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract0_is_dimension_unconstrained (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, ap_dim_t @var{dim})
+@deftypefun tbool_t ap_abstract0_is_dimension_unconstrained (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_dim_t @var{dim})
 Is the dimension @var{dim} unconstrained in the abstract value @var{a} ?
 If it is the case, we have @code{forget(man,a,dim) == a}.
 @end deftypefun
@@ -3140,12 +3237,12 @@ If it is the case, we have @code{forget(man,a,dim) == a}.
 @subsection Extraction of properties of abstract values of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun ap_interval_t* ap_abstract0_bound_dimension (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, ap_dim_t @var{dim})
+@deftypefun ap_interval_t* ap_abstract0_bound_dimension (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_dim_t @var{dim})
 Return the interval taken by the dimension @var{dim} over the
 abstract value@var{a}
 @end deftypefun
 
-@deftypefun ap_interval_t* ap_abstract0_bound_linexpr (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a}, const ap_linexpr0_t* @var{expr})
+@deftypefun ap_interval_t* ap_abstract0_bound_linexpr (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_linexpr0_t* @var{expr})
 Return the interval taken by a linear expression @var{expr} over
 the abstract value @var{a}.
 
@@ -3153,12 +3250,12 @@ This function allows to solve a Linear Programming (LP) problem, but
 depending on the underlying domain the solution may be not optimal.
 @end deftypefun
 
-@deftypefun ap_interval_t** ap_abstract0_to_box (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun ap_interval_t** ap_abstract0_to_box (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Convert @var{a} to an interval/hypercube.
 The size of the resulting array is ap_abstract0_dimension(man,a).
 @end deftypefun
 
-@deftypefun ap_lincons0_array_t ap_abstract0_to_lincons_array (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun ap_lincons0_array_t ap_abstract0_to_lincons_array (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Convert @var{a} to a convex polyhedra (conjunction of linear
 constraints).
 
@@ -3166,7 +3263,7 @@ The constraints are normally guaranteed to be really linear
 (without intervals)
 @end deftypefun
 
-@deftypefun ap_generator0_array_t ap_abstract0_to_generator_array (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a})
+@deftypefun ap_generator0_array_t ap_abstract0_to_generator_array (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Convert @var{a} to an array of generators.
 @end deftypefun
 
@@ -3175,16 +3272,16 @@ Convert @var{a} to an array of generators.
 @subsection Meet and Join of abstract values of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract0_t* ap_abstract0_meet (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a1}, const ap_abstract0_t* @var{a2})
+@deftypefun ap_abstract0_t* ap_abstract0_meet (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2})
 
-@deftypefunx ap_abstract0_t* ap_abstract0_join (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a1}, const ap_abstract0_t* @var{a2})
+@deftypefunx ap_abstract0_t* ap_abstract0_join (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2})
 Meet and Join of 2 abstract values
 @end deftypefun
 
 
-@deftypefun ap_abstract0_t* ap_abstract0_meet_array (ap_manager_t* @var{man}, const ap_abstract0_t*const* @var{array}, size_t @var{size})
+@deftypefun ap_abstract0_t* ap_abstract0_meet_array (ap_manager_t* @var{man}, ap_abstract0_t** @var{array}, size_t @var{size})
 
-@deftypefunx ap_abstract0_t* ap_abstract0_join_array (ap_manager_t* @var{man}, const ap_abstract0_t*const* @var{array}, size_t @var{size})
+@deftypefunx ap_abstract0_t* ap_abstract0_join_array (ap_manager_t* @var{man}, ap_abstract0_t** @var{array}, size_t @var{size})
 Meet and Join of the array @var{array} of abstract values of size
 @var{size}.
 
@@ -3194,7 +3291,7 @@ in such a case).
 @end deftypefun
 
 
-@deftypefun ap_abstract0_t* ap_abstract0_meet_lincons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, const ap_lincons0_array_t* @var{array})
+@deftypefun ap_abstract0_t* ap_abstract0_meet_lincons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_lincons0_array_t* @var{array})
 Meet of the abstract value @var{a} with the set of constraints
 @var{array}.
 
@@ -3202,7 +3299,7 @@ Meet of the abstract value @var{a} with the set of constraints
 @var{a}.
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_add_ray_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, const ap_generator0_array_t* @var{array})
+@deftypefun ap_abstract0_t* ap_abstract0_add_ray_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_generator0_array_t* @var{array})
 Generalized time elapse operator.
 
 @var{array} is supposed to contain only rays or lines, no vertices.
@@ -3216,8 +3313,8 @@ Generalized time elapse operator.
 @subsection Assignements and Substitutions of abstract values of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract0_t* ap_abstract0_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, const ap_linexpr0_t* @var{expr}, const ap_abstract0_t* @var{dest})
-@deftypefunx ap_abstract0_t* ap_abstract0_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, const ap_linexpr0_t* @var{expr}, const ap_abstract0_t* @var{dest})
+@deftypefun ap_abstract0_t* ap_abstract0_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, ap_linexpr0_t* @var{expr}, ap_abstract0_t* @var{dest})
+@deftypefunx ap_abstract0_t* ap_abstract0_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, ap_linexpr0_t* @var{expr}, ap_abstract0_t* @var{dest})
 Assignement and Substitution of the dimension @var{dim} by the (interval)
 linear expression @var{expr} in abstract value @var{org}.
 
@@ -3228,8 +3325,8 @@ lattices like intervals or octagons.
 @end deftypefun
 
 
-@deftypefun ap_abstract0_t* ap_abstract0_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, const ap_dim_t* @var{tdim}, const ap_linexpr0_t*const* @var{texpr}, size_t @var{size}, const ap_abstract0_t* @var{dest})
-@deftypefunx ap_abstract0_t* ap_abstract0_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, const ap_dim_t* @var{tdim}, const ap_linexpr0_t*const* @var{texpr}, size_t @var{size}, const ap_abstract0_t* @var{dest})
+@deftypefun ap_abstract0_t* ap_abstract0_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t* @var{tdim}, ap_linexpr0_t** @var{texpr}, size_t @var{size}, ap_abstract0_t* @var{dest})
+@deftypefunx ap_abstract0_t* ap_abstract0_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t* @var{tdim}, ap_linexpr0_t** @var{texpr}, size_t @var{size}, ap_abstract0_t* @var{dest})
 Parallel Assignement and Substitution of several dimensions by
 linear expressions in abstract value @var{org}.
 
@@ -3244,7 +3341,7 @@ octagons.
 @subsection Existential quantification of abstract values of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract0_t* ap_abstract0_forget_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, const ap_dim_t* @var{tdim}, size_t @var{size}, bool @var{project})
+@deftypefun ap_abstract0_t* ap_abstract0_forget_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_dim_t* @var{tdim}, size_t @var{size}, bool @var{project})
 Forget (@code{project=false}) or Project (@code{project=true}) the
 array of dimensions @var{tdim} of size @var{size} in the abstract
 value @var{a}.
@@ -3263,7 +3360,7 @@ unconstrained (@code{project==false}) or initialized to 0
 ((@code{project==true}).
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_permute_dimensions (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, const ap_dimperm_t* @var{perm})
+@deftypefun ap_abstract0_t* ap_abstract0_permute_dimensions (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_dimperm_t* @var{perm})
 Permute the dimensions of @var{a} according to the permutation @var{perm}.
 
 The size of the permutation is supposed to be large enough w.r.t. @var{a}.
@@ -3295,7 +3392,7 @@ dimensions.
 @end itemize
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_fold (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, const ap_dim_t* @var{tdim}, size_t @var{size})
+@deftypefun ap_abstract0_t* ap_abstract0_fold (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_dim_t* @var{tdim}, size_t @var{size})
 Fold the dimensions in the array @var{tdim} of size @var{size}>=1
 and put the result in the first dimension in the array. The other
 dimensions of the array are then removed.
@@ -3306,7 +3403,7 @@ dimensions of the array are then removed.
 @subsection Widening of abstract values of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract0_t* ap_abstract0_widening (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a1}, const ap_abstract0_t* @var{a2})
+@deftypefun ap_abstract0_t* ap_abstract0_widening (ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2})
 Widening of @var{a1} with @var{a2}. @var{a1} is supposed to be
 included in @var{a2}.
 @end deftypefun
@@ -3327,13 +3424,13 @@ Relax strict constraints into non strict constraints.
 
 These functions do not have corresponding functions into underlying libraries.
 
-@deftypefun ap_manager_t* ap_abstract0_manager (const ap_abstract0_t* @var{a})
+@deftypefun ap_manager_t* ap_abstract0_manager (ap_abstract0_t* @var{a})
 Return a reference to the manager contained in @var{a}.
 
 The reference should not be freed.
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_widening_threshold (ap_manager_t* @var{man}, const ap_abstract0_t* @var{a1}, const ap_abstract0_t* @var{a2}, ap_lincons0_array_t* @var{array})
+@deftypefun ap_abstract0_t* ap_abstract0_widening_threshold (ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2}, ap_lincons0_array_t* @var{array})
 Widening with threshold.
 
 Intersect the result of the standard widening with all the
@@ -3350,8 +3447,8 @@ The signatures of the functions described in this chapter are
 provided by the file @file{ap_generic.h}.
 
 @menu
-* Generic implementations::     
-* Useful functions::            
+* Generic implementations::
+* Useful functions::
 @end menu
 
 @c ===================================================================
@@ -3373,20 +3470,20 @@ They manipulated "unboxed" abstract values, which are native to
 the underlying library: they are not yet boxed with the manager in
 the type @code{ap_abstract0_t}.
 
-@deftypefun void* ap_generic_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, const ap_lincons0_array_t* @var{array})
+@deftypefun void* ap_generic_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, ap_lincons0_array_t* @var{array})
 Implements a generic @code{of_lincons_array} function using
 @code{top} and @code{meet_lincons_array} operations.
 @end deftypefun
 
-@deftypefun void* ap_generic_meet_array (ap_manager_t* @var{man}, const void** @var{tab}, size_t @var{size})
-@deftypefunx void* ap_generic_join_array (ap_manager_t* @var{man}, const void** @var{tab}, size_t @var{size})
+@deftypefun void* ap_generic_meet_array (ap_manager_t* @var{man}, void** @var{tab}, size_t @var{size})
+@deftypefunx void* ap_generic_join_array (ap_manager_t* @var{man}, void** @var{tab}, size_t @var{size})
 Implements a generic @code{meet_array} (resp. @code{join_array})
 operation using @code{copy} and @code{meet} (resp. @code{join})
 operations.
 @end deftypefun
 
-@deftypefun void* ap_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t*const* @var{texpr}, size_t @var{size}, const void* @var{dest})
-@deftypefunx void* ap_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, const ap_dim_t* @var{tdim}, const ap_linexpr0_t*const* @var{texpr}, size_t @var{size}, const void* @var{dest})
+@deftypefun void* ap_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, ap_dim_t* @var{tdim}, ap_linexpr0_t** @var{texpr}, size_t @var{size}, void* @var{dest})
+@deftypefunx void* ap_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, ap_dim_t* @var{tdim}, ap_linexpr0_t** @var{texpr}, size_t @var{size}, void* @var{dest})
 Implements generic parallel assignement (resp. substitution) function by
 @enumerate
 @item introducing primed dimensions for assigned dimensions;
@@ -3400,9 +3497,9 @@ intersect the current abstract value with the result;
 @item in the case of assignement, exchanging primed and unprimed dimensions;
 @item removing the introduced (primed) dimensions
 @end enumerate
-@noindent 
+@noindent
 It relies on: @code{is_bottom}, @code{ copy}, @code{ dimension},
-@code{ add_dimensions}, @code{permute_dimensions},
+@code{add_dimensions}, @code{permute_dimensions},
 @code{remove_dimensions}, @code{meet_lincons_array} and
 @code{meet} functions.
 @end deftypefun
@@ -3412,7 +3509,7 @@ It relies on: @code{is_bottom}, @code{ copy}, @code{ dimension},
 @section Useful functions
 @c ===================================================================
 
-@deftypefun ap_linexpr0_t* ap_abstract0_quasilinear_of_intervallinear (ap_manager_t* @var{man}, const void* @var{a}, ap_linexpr0_t* @var{expr})
+@deftypefun ap_linexpr0_t* ap_abstract0_quasilinear_of_intervallinear (ap_manager_t* @var{man}, void* @var{a}, ap_linexpr0_t* @var{expr})
 Evaluate the interval linear expression @var{expr} on the abstract
 value @var{a} and approximate it by a quasilinear expression.
 
@@ -3421,7 +3518,7 @@ This implies calls to @code{ap_abstract0_bound_dimension}.
 
 
 @c *******************************************************************
-@node Examples, Appendices, Functions for implementors, Top
+@node Examples, APRON Rationale, Functions for implementors, Top
 @chapter Examples
 @c *******************************************************************
 
@@ -3432,10 +3529,20 @@ distribution, or click on the links below:
 @uref{example1.c}
 
 @uref{mlexample1.ml}
+@uref{mlexample2.ml}
+@uref{mlexample3.ml}
 @end ifhtml
 
 @c *******************************************************************
-@node Appendices,  , Examples, Top
+@include rationale.texi
+@c *******************************************************************
+
+@c *******************************************************************
+@include implementor.texi
+@c *******************************************************************
+
+@c *******************************************************************
+@node Appendices,  , Notes, Top
 @appendix Appendices
 @c *******************************************************************
 

@@ -11,15 +11,8 @@ num:
 	manipulating "generic" numbers (used by intervals,
         newpolka and possibly octagons).
 
-mlgmpidl:
-	OCaml interface for the GMP library, used by mlapronidl.
-	Requires GMP version 4.0 or up.
-
 apron:
 	apron interface, C version
-
-mlapronidl:
-	apron interface, OCaml version (require apron)
 
 newpolka:
 	convex polyhedra library
@@ -35,6 +28,13 @@ ppl:
 	requires PPL 0.9 and GMPXX
 	not compiled-in by default
 
+mlgmpidl:
+	OCaml interface for the GMP library, used by mlapronidl.
+	Requires GMP version 4.0 or up.
+
+mlapronidl:
+	apron interface, OCaml version (require apron)
+
 Makefile.config.model:
 	common configuration file model (to be copied to Makefile.config)
 	(installation directories mainly)
@@ -42,17 +42,18 @@ Makefile.config.model:
 Makefile:
 	compiles as many things as it can
 
-	make all (C an OCaml version)
+	make all (C + OCaml version if HAS_OCAML)
 	make c (C version)
-	make ml (ml stuff)
+	make ml (OCaml stuff)
 	make doc (not useful for a normal user)
-	make clean (clean things, with the exception of noweb generated files)
+	make clean (clean things, with the exception of generated files)
 	make mostlyclean (clean all it can clean, implies clean)
+	make rebuild (build generated files, mainly for OCaml interface)
 	make distclean (clean the distribution directories)
 	make install (installs in directories specified in Makefile.config)
 
 Minimal Requirements:
-	C: GMP, 
+	c: GMP, MPFR
 	ml: OCaml, CamlIDL
-	Documentation: latex, makeinfo, texi2html
-
+	doc: latex, dvipdf, makeinfo, texi2html, texi2dvi
+	rebuild: GNU sed, GNU m4

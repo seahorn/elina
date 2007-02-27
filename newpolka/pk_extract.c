@@ -107,7 +107,7 @@ void matrix_bound_dimension(pk_internal_t* pk,
 
 void matrix_bound_linexpr(pk_internal_t* pk,
 			  mpq_t mpq,
-			  const numint_t* vec,
+			  numint_t* vec,
 			  matrix_t* F,
 			  int mode)
 {
@@ -121,7 +121,7 @@ void matrix_bound_linexpr(pk_internal_t* pk,
     if (!pk->strict || numint_sgn(F->p[i][polka_eps])==0 ){
       vector_product_strict(pk,
 			    pk->poly_prod,
-			    (const numint_t*)F->p[i],
+			    F->p[i],
 			    vec, F->nbcolumns);
       sgn = numint_sgn(pk->poly_prod);
       if (numint_sgn(F->p[i][0])==0){
@@ -164,8 +164,8 @@ void matrix_bound_linexpr(pk_internal_t* pk,
 /* ====================================================================== */
 
 ap_interval_t* poly_bound_linexpr(ap_manager_t* man,
-			       const poly_t* po,
-			       const ap_linexpr0_t* expr)
+			       poly_t* po,
+			       ap_linexpr0_t* expr)
 {
   ap_interval_t* interval;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOUND_LINEXPR);
@@ -194,7 +194,7 @@ ap_interval_t* poly_bound_linexpr(ap_manager_t* man,
   vector_set_linexpr(pk,pk->poly_numintp,expr,po->intdim+po->realdim,-1);
   matrix_bound_linexpr(pk,
 		       interval->inf->val.mpq,
-		       (const numint_t*)pk->poly_numintp,po->F,
+		       pk->poly_numintp,po->F,
 		       -1);
 
   if (expr->cst.discr == AP_COEFF_INTERVAL){
@@ -204,7 +204,7 @@ ap_interval_t* poly_bound_linexpr(ap_manager_t* man,
   }
   matrix_bound_linexpr(pk,
 		       interval->sup->val.mpq,
-		       (const numint_t*)pk->poly_numintp,po->F,
+		       pk->poly_numintp,po->F,
 		       +1);
 
   man->result.flag_exact = man->result.flag_best = 
@@ -220,7 +220,7 @@ ap_interval_t* poly_bound_linexpr(ap_manager_t* man,
 /* ====================================================================== */
 
 ap_interval_t* poly_bound_dimension(ap_manager_t* man,
-				       const poly_t* po,
+				       poly_t* po,
 				       ap_dim_t dim)
 {
   ap_interval_t* interval;
@@ -265,11 +265,11 @@ ap_interval_t* poly_bound_dimension(ap_manager_t* man,
 /* ====================================================================== */
 
 ap_lincons0_array_t poly_to_lincons_array(ap_manager_t* man,
-				      const poly_t* po)
+				      poly_t* po)
 {
   ap_lincons0_array_t array;
   matrix_t* C;
-  int i,k;
+  size_t i,k;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_TO_LINCONS_ARRAY);
 
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -291,7 +291,7 @@ ap_lincons0_array_t poly_to_lincons_array(ap_manager_t* man,
   array = ap_lincons0_array_make(C->nbrows);
   for (i=0,k=0; i<C->nbrows; i++){
     if (! vector_is_dummy_constraint(pk,
-				     (const numint_t*)C->p[i], C->nbcolumns)){
+				     C->p[i], C->nbcolumns)){
       array.p[k] = lincons_of_vector(pk, C->p[i], C->nbcolumns);
       k++;
     }
@@ -305,7 +305,7 @@ ap_lincons0_array_t poly_to_lincons_array(ap_manager_t* man,
 /* ====================================================================== */
 
 ap_interval_t** poly_to_box(ap_manager_t* man,
-			       const poly_t* po)
+			       poly_t* po)
 {
   ap_interval_t** interval;
   size_t i,dim;
@@ -343,11 +343,11 @@ ap_interval_t** poly_to_box(ap_manager_t* man,
    the polyhedron. */
 
 ap_generator0_array_t poly_to_generator_array(ap_manager_t* man,
-					   const poly_t* po)
+					   poly_t* po)
 {
   ap_generator0_array_t array;
   matrix_t* F;
-  int i,k;
+  size_t i,k;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_TO_GENERATOR_ARRAY);
 
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -368,7 +368,7 @@ ap_generator0_array_t poly_to_generator_array(ap_manager_t* man,
   array = ap_generator0_array_make(F->nbrows);
   for (i=0,k=0; i<F->nbrows; i++){
     if (! vector_is_dummy_or_strict_generator(pk,
-					      (const numint_t*)F->p[i], F->nbcolumns)){
+					      F->p[i], F->nbcolumns)){
       array.p[k] = generator_of_vector(pk, F->p[i], F->nbcolumns);
       k++;
     }

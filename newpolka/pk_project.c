@@ -26,12 +26,12 @@
 void _poly_projectforget_array(bool project,
 			       bool lazy,
 			       ap_manager_t* man,	
-			       poly_t* po, const poly_t* pa, 
-			       const ap_dim_t* tdim, size_t size)
+			       poly_t* po, poly_t* pa, 
+			       ap_dim_t* tdim, size_t size)
 {
   bool res;
   matrix_t* mat;
-  int i,j;
+  size_t i,j;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
   pk_internal_realloc_lazy(pk,pa->intdim+pa->realdim);
   
@@ -88,11 +88,11 @@ void _poly_projectforget_array(bool project,
       numint_set_int(mat->p[i][pk->dec+tdim[i]],1);
     }
     matrix_sort_rows(pk,mat);
-    poly_dual((poly_t*)pa);
+    poly_dual(pa);
     if (po!=pa) poly_dual(po);
     if (!lazy) poly_obtain_satC(pa);
     res = _poly_meet_matrix(false,lazy,man,po,pa,mat);
-    poly_dual((poly_t*)pa);
+    poly_dual(pa);
     if (po!=pa) poly_dual(po);
     matrix_free(mat);
   }
@@ -129,7 +129,7 @@ void _poly_projectforget_array(bool project,
 
 poly_t* poly_forget_array(ap_manager_t* man, 
 			  bool destructive, poly_t* pa, 
-			  const ap_dim_t* tdim, size_t size,
+			  ap_dim_t* tdim, size_t size,
 			  bool project)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_FORGET_ARRAY);

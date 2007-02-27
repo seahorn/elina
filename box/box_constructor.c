@@ -29,7 +29,7 @@ box_t* box_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
 /* Create a top (universe) value */
 box_t* box_top(ap_manager_t* man, size_t intdim, size_t realdim)
 {
-  int i;
+  size_t i;
   box_t* a = box_alloc(intdim,realdim);
   box_init(a);
   for(i=0;i<a->intdim+a->realdim; i++){
@@ -44,9 +44,9 @@ box_t* box_top(ap_manager_t* man, size_t intdim, size_t realdim)
    of size intdim+realdim */
 box_t* box_of_box(ap_manager_t* man,
 		  size_t intdim, size_t realdim,
-		  const ap_interval_t*const* tinterval)
+		  ap_interval_t** tinterval)
 {
-  int i;
+  size_t i;
   bool exc;
   box_internal_t* intern = box_init_from_manager(man,AP_FUNID_OF_BOX);
 
@@ -66,7 +66,7 @@ box_t* box_of_box(ap_manager_t* man,
 
 box_t* box_of_lincons_array(ap_manager_t* man,
 			    size_t intdim, size_t realdim,
-			    const ap_lincons0_array_t* array)
+			    ap_lincons0_array_t* array)
 {
   return (box_t*)ap_generic_of_lincons_array(man,intdim,realdim,array);
 }
@@ -75,7 +75,7 @@ box_t* box_of_lincons_array(ap_manager_t* man,
 /* 2. Accessors */
 /* ********************************************************************** */
 
-ap_dimension_t box_dimension(ap_manager_t* man, const box_t* a)
+ap_dimension_t box_dimension(ap_manager_t* man, box_t* a)
 { 
   ap_dimension_t res;
   res.intdim = a->intdim;
@@ -92,16 +92,16 @@ ap_dimension_t box_dimension(ap_manager_t* man, const box_t* a)
    considered too expensive to be performed (according to the options).
    The flag exact and best should be cleared in such a case. */
 
-tbool_t box_is_bottom(ap_manager_t* man, const box_t* a)
+tbool_t box_is_bottom(ap_manager_t* man, box_t* a)
 {
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
   return tbool_of_bool(a->p==NULL && a->intdim + a->realdim>0);
 }
 
-tbool_t box_is_top(ap_manager_t* man, const box_t* a)
+tbool_t box_is_top(ap_manager_t* man, box_t* a)
 {
-  int i;
+  size_t i;
   tbool_t res;
   size_t nbdims = a->intdim + a->realdim;
 
@@ -124,9 +124,9 @@ tbool_t box_is_top(ap_manager_t* man, const box_t* a)
 }
 
 /* inclusion check */
-tbool_t box_is_leq(ap_manager_t* man, const box_t* a, const box_t* b)
+tbool_t box_is_leq(ap_manager_t* man, box_t* a, box_t* b)
 {
-  int i;
+  size_t i;
   tbool_t res;
   size_t nbdims;
 
@@ -149,9 +149,9 @@ tbool_t box_is_leq(ap_manager_t* man, const box_t* a, const box_t* b)
 }
 
 /* equality check */
-tbool_t box_is_eq(ap_manager_t* man, const box_t* a, const box_t* b)
+tbool_t box_is_eq(ap_manager_t* man, box_t* a, box_t* b)
 {
-  int i;
+  size_t i;
   tbool_t res;
   size_t nbdims;
 
@@ -173,15 +173,15 @@ tbool_t box_is_eq(ap_manager_t* man, const box_t* a, const box_t* b)
   return res;
 }
 
-tbool_t box_is_dimension_unconstrained(ap_manager_t* man, const box_t* a, const ap_dim_t dim)
+tbool_t box_is_dimension_unconstrained(ap_manager_t* man, box_t* a, ap_dim_t dim)
 {
   return (itv_is_top(a->p[dim])) ? tbool_true : tbool_false;
 }
 
 /* is the dimension included in the interval in the abstract value ? */
 tbool_t box_sat_interval(ap_manager_t* man, 
-			 const box_t* a,
-			 ap_dim_t dim, const ap_interval_t* interval)
+			 box_t* a,
+			 ap_dim_t dim, ap_interval_t* interval)
 {
   box_internal_t* intern = box_init_from_manager(man,AP_FUNID_SAT_INTERVAL);
   man->result.flag_best = tbool_true;
@@ -195,7 +195,7 @@ tbool_t box_sat_interval(ap_manager_t* man,
 
 /* does the abstract value satisfy the linear constraint ? */
 tbool_t box_sat_lincons(ap_manager_t* man, 
-			const box_t* a, const ap_lincons0_t* cons)
+			box_t* a, ap_lincons0_t* cons)
 {
   tbool_t res;
   box_internal_t* intern = box_init_from_manager(man,AP_FUNID_SAT_LINCONS);
@@ -208,7 +208,7 @@ tbool_t box_sat_lincons(ap_manager_t* man,
   
   bool exact = itv_eval_ap_linexpr0(intern->itv,
 				    intern->sat_lincons_itv, 
-				    (const itv_t*)a->p, 
+				    (itv_t*)a->p, 
 				    cons->linexpr0);
 
   man->result.flag_exact = man->result.flag_best = 
@@ -288,7 +288,7 @@ tbool_t box_sat_lincons(ap_manager_t* man,
 /* ********************************************************************** */
 
 ap_interval_t* box_bound_dimension(ap_manager_t* man,
-				   const box_t* a, ap_dim_t dim)
+				   box_t* a, ap_dim_t dim)
 {
   bool exact;
   box_internal_t* intern = (box_internal_t*)man->internal;
@@ -309,7 +309,7 @@ ap_interval_t* box_bound_dimension(ap_manager_t* man,
 /* Returns the interval taken by a linear expression
    over the abstract value */
 ap_interval_t* box_bound_linexpr(ap_manager_t* man,
-				 const box_t* a, const ap_linexpr0_t* expr)
+				 box_t* a, ap_linexpr0_t* expr)
 {
   bool exact;
   ap_interval_t* interval = ap_interval_alloc();
@@ -322,7 +322,7 @@ ap_interval_t* box_bound_linexpr(ap_manager_t* man,
   else {
     exact = itv_eval_ap_linexpr0(intern->itv,
 				 intern->bound_linexpr_itv,
-				 (const itv_t*)a->p,
+				 (itv_t*)a->p,
 				 expr);
     ap_interval_set_itv(intern->itv, interval,intern->bound_linexpr_itv);
   }
@@ -334,9 +334,9 @@ ap_interval_t* box_bound_linexpr(ap_manager_t* man,
 /* Converts an abstract value to a polyhedra
    (conjunction of linear constraints).
    The size of the returned array is stored in size. */
-ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, const box_t* a)
+ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, box_t* a)
 {
-  int i;
+  size_t i;
   ap_lincons0_array_t array;
   box_internal_t* intern = (box_internal_t*)man->internal;
 
@@ -359,7 +359,8 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, const box_t* a)
     size = 0;
     for (i=0;i<nbdims;i++){
       if (!bound_infty(a->p[i]->inf)) size++;
-      if (!bound_infty(a->p[i]->sup)) size++;
+      bool point = itv_is_point(intern->itv,a->p[i]);
+      if (!point && !bound_infty(a->p[i]->sup)) size++;
     }
     array = ap_lincons0_array_make(size);
     size = 0;
@@ -397,7 +398,7 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, const box_t* a)
   return array;
 }
 
-ap_generator0_array_t box_to_generator_array(ap_manager_t* man, const box_t* a)
+ap_generator0_array_t box_to_generator_array(ap_manager_t* man, box_t* a)
 {
   size_t i,j,size;
   size_t nbcoeffs,nblines,nbrays,nbvertices,l,r,v;
@@ -515,9 +516,9 @@ ap_generator0_array_t box_to_generator_array(ap_manager_t* man, const box_t* a)
 /* Converts an abstract value to an interval/hypercube.
    The size of the resulting array is box_dimension(man,a).  This
    function can be reimplemented by using box_bound_linexpr */
-ap_interval_t** box_to_box(ap_manager_t* man, const box_t* a)
+ap_interval_t** box_to_box(ap_manager_t* man, box_t* a)
 {
-  int i;
+  size_t i;
   ap_interval_t** interval;
   size_t nbdims;
   box_internal_t* intern = (box_internal_t*)man->internal;

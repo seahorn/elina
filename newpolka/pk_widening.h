@@ -20,10 +20,10 @@
 extern "C" {
 #endif
 
-poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb);
+poly_t* poly_widening(ap_manager_t* man, poly_t* pa, poly_t* pb);
 poly_t* poly_widening_threshold(ap_manager_t* man, 
-				const poly_t* pa, const poly_t* pb, 
-				const ap_lincons0_array_t* array);
+				poly_t* pa, poly_t* pb, 
+				ap_lincons0_array_t* array);
 
 #ifdef __cplusplus
 }

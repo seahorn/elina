@@ -29,7 +29,7 @@
 
 /* Return the abstract size of a set of equalities, which is the number of
    equalities times the dimension */
-size_t equality_size(ap_manager_t* man, const poly_t* po)
+size_t equality_size(ap_manager_t* man, poly_t* po)
 {
   size_t s;
 
@@ -96,7 +96,7 @@ void equality_reduce(ap_manager_t* man, poly_t* po)
     }
   }
 }
-void equality_canonicalize(ap_manager_t* man, const poly_t* po)
+void equality_canonicalize(ap_manager_t* man, poly_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_CANONICALIZE);
   pk->funopt->algorithm = 1;
@@ -112,7 +112,7 @@ void equality_approximate(ap_manager_t* man, poly_t* po, int algorithm)
 /* I.4 Serialization */
 /* ============================================================ */
 
-ap_membuf_t equality_serialize_raw(ap_manager_t* man, const poly_t* a)
+ap_membuf_t equality_serialize_raw(ap_manager_t* man, poly_t* a)
 {
   ap_membuf_t membuf;
   pk_init_from_manager(man,AP_FUNID_SERIALIZE_RAW);
@@ -140,9 +140,9 @@ poly_t* equality_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size)
    intdim+realdim.  */
 poly_t* equality_of_box(ap_manager_t* man,
 			size_t intdim, size_t realdim,
-			const ap_interval_t** array)
+			ap_interval_t** array)
 {
-  int i;
+  size_t i;
   size_t row,dim;
   poly_t* po;
   mpq_t mpq;
@@ -164,7 +164,7 @@ poly_t* equality_of_box(ap_manager_t* man,
   mpq_init(mpq);
   exc = false;
   for (i=0; i<dim; i++){
-    const ap_interval_t* itv = array[i];
+    ap_interval_t* itv = array[i];
     if (ap_scalar_equal(itv->inf,itv->sup)){
       assert(ap_scalar_infty(itv->inf)==0);
       ap_mpq_set_scalar(mpq,itv->inf,0);
@@ -200,9 +200,9 @@ Abstract a convex polyhedra defined by the array of linear constraints.
 
 poly_t* equality_of_lincons_array(ap_manager_t* man,
 				  size_t intdim, size_t realdim,
-				  const ap_lincons0_array_t* cons)
+				  ap_lincons0_array_t* cons)
 {
-  int i;
+  size_t i;
   size_t row, dim;
   matrix_t* C;
   poly_t* po;
@@ -248,11 +248,11 @@ poly_t* equality_of_lincons_array(ap_manager_t* man,
 /* II.3 Tests */
 /* ============================================================ */
 
-tbool_t equality_is_eq(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
+tbool_t equality_is_eq(ap_manager_t* man, poly_t* pa, poly_t* pb)
 {
   pk_init_from_manager(man,AP_FUNID_IS_EQ);
-  equality_canonicalize(man,(poly_t*)pa);
-  equality_canonicalize(man,(poly_t*)pb);
+  equality_canonicalize(man,pa);
+  equality_canonicalize(man,pb);
 
   man->result.flag_exact = man->result.flag_best = tbool_true;
 
@@ -262,10 +262,10 @@ tbool_t equality_is_eq(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
 	return tbool_false;
       }
       else {
-	int i,j;
+	size_t i,j;
 
-	const matrix_t* mata = pa->C;
-	const matrix_t* matb = pb->C;
+	matrix_t* mata = pa->C;
+	matrix_t* matb = pb->C;
 	tbool_t res = tbool_true;
 	for (i=0; i<mata->nbrows; i++){
 	  for (j=0; j<matb->nbcolumns; j++){
@@ -296,7 +296,7 @@ tbool_t equality_is_eq(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
 /* III.1 Meet and Join */
 /* ============================================================ */
 
-poly_t* equality_meet(ap_manager_t* man, bool destructive, poly_t* polya, const poly_t* polyb)
+poly_t* equality_meet(ap_manager_t* man, bool destructive, poly_t* polya, poly_t* polyb)
 {
   poly_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET);
@@ -305,7 +305,7 @@ poly_t* equality_meet(ap_manager_t* man, bool destructive, poly_t* polya, const 
   return po;
 }
 
-poly_t* equality_meet_array(ap_manager_t* man, const poly_t** po, size_t size)
+poly_t* equality_meet_array(ap_manager_t* man, poly_t** po, size_t size)
 {
   poly_t* poly;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET);
@@ -314,7 +314,7 @@ poly_t* equality_meet_array(ap_manager_t* man, const poly_t** po, size_t size)
   return poly;
 }
 
-poly_t* equality_meet_lincons_array(ap_manager_t* man, bool destructive, poly_t* pa, const ap_lincons0_array_t* array)
+poly_t* equality_meet_lincons_array(ap_manager_t* man, bool destructive, poly_t* pa, ap_lincons0_array_t* array)
 {
   poly_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET_LINCONS_ARRAY);
@@ -325,7 +325,7 @@ poly_t* equality_meet_lincons_array(ap_manager_t* man, bool destructive, poly_t*
   return po;
 }
 
-poly_t* equality_join(ap_manager_t* man, bool destructive, poly_t* polya, const poly_t* polyb)
+poly_t* equality_join(ap_manager_t* man, bool destructive, poly_t* polya, poly_t* polyb)
 {
   poly_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_JOIN);
@@ -335,7 +335,7 @@ poly_t* equality_join(ap_manager_t* man, bool destructive, poly_t* polya, const 
   return po;
 }
 
-poly_t* equality_join_array(ap_manager_t* man, const poly_t** po, size_t size)
+poly_t* equality_join_array(ap_manager_t* man, poly_t** po, size_t size)
 {
   poly_t* poly;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_JOIN);
@@ -345,7 +345,7 @@ poly_t* equality_join_array(ap_manager_t* man, const poly_t** po, size_t size)
   return poly;
 }
 
-poly_t* equality_add_ray_array(ap_manager_t* man, bool destructive, poly_t* pa, const ap_generator0_array_t* array)
+poly_t* equality_add_ray_array(ap_manager_t* man, bool destructive, poly_t* pa, ap_generator0_array_t* array)
 {
   poly_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_ADD_RAY_ARRAY);
@@ -365,7 +365,7 @@ poly_t* equality_asssub_linexpr(bool assign,
 				ap_manager_t* man,
 				bool destructive,
 				poly_t* pa,
-				ap_dim_t dim, const ap_linexpr0_t* linexpr)
+				ap_dim_t dim, ap_linexpr0_t* linexpr)
 {
   poly_t* po;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -414,8 +414,8 @@ poly_t* equality_asssub_linexpr(bool assign,
 
 poly_t* equality_assign_linexpr(ap_manager_t* man,
 			    bool destructive, poly_t* pa, 
-			    ap_dim_t dim, const ap_linexpr0_t* linexpr,
-			    const poly_t* pb)
+			    ap_dim_t dim, ap_linexpr0_t* linexpr,
+			    poly_t* pb)
 {
   pk_init_from_manager(man,AP_FUNID_ASSIGN_LINEXPR);
   poly_t* po;
@@ -429,8 +429,8 @@ poly_t* equality_assign_linexpr(ap_manager_t* man,
 
 poly_t* equality_substitute_linexpr(ap_manager_t* man,
 				    bool destructive, poly_t* pa, 
-				    ap_dim_t dim, const ap_linexpr0_t* linexpr,
-				    const poly_t* pb)
+				    ap_dim_t dim, ap_linexpr0_t* linexpr,
+				    poly_t* pb)
 {
   pk_init_from_manager(man,AP_FUNID_SUBSTITUTE_LINEXPR);
   poly_t* po;
@@ -448,14 +448,14 @@ poly_t* equality_asssub_linexpr_array(bool assign,
 				      ap_manager_t* man,
 				      bool destructive,
 				      poly_t* pa,
-				      const ap_dim_t* tdim,
-				      const ap_linexpr0_t** texpr,
+				      ap_dim_t* tdim,
+				      ap_linexpr0_t** texpr,
 				      size_t size)
 {
-  int i;
+  size_t i;
   poly_t* po;
   ap_dim_t* tdimp;
-  const ap_linexpr0_t** texprp;
+  ap_linexpr0_t** texprp;
   size_t sizep;
   ap_dim_t* tdimforget;
   size_t sizeforget;
@@ -527,9 +527,9 @@ poly_t* equality_asssub_linexpr_array(bool assign,
 
 poly_t* equality_assign_linexpr_array(ap_manager_t* man,
 				      bool destructive, poly_t* pa,
-				      const ap_dim_t* tdim, const ap_linexpr0_t** texpr,
+				      ap_dim_t* tdim, ap_linexpr0_t** texpr,
 				      size_t size,
-				      const poly_t* pb)
+				      poly_t* pb)
 {
   pk_init_from_manager(man,AP_FUNID_ASSIGN_LINEXPR_ARRAY);
   poly_t* po;
@@ -543,9 +543,9 @@ poly_t* equality_assign_linexpr_array(ap_manager_t* man,
 
 poly_t* equality_substitute_linexpr_array(ap_manager_t* man,
 					  bool destructive, poly_t* pa,
-					  const ap_dim_t* tdim, const ap_linexpr0_t** texpr,
+					  ap_dim_t* tdim, ap_linexpr0_t** texpr,
 					  size_t size,
-					  const poly_t* pb)
+					  poly_t* pb)
 {
   pk_init_from_manager(man,AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY);
   poly_t* po;
@@ -563,7 +563,7 @@ poly_t* equality_substitute_linexpr_array(ap_manager_t* man,
 
 poly_t* equality_forget_array(ap_manager_t* man,
 			      bool destructive, poly_t* a,
-			      const ap_dim_t* tdim, size_t size,
+			      ap_dim_t* tdim, size_t size,
 			      bool project)
 {
   poly_t* po;
@@ -581,7 +581,7 @@ poly_t* equality_forget_array(ap_manager_t* man,
 
 poly_t* equality_remove_dimensions(ap_manager_t* man,
 			    bool destructive, poly_t* a,
-			    const ap_dimchange_t* dimchange)
+			    ap_dimchange_t* dimchange)
 {
   poly_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_REMOVE_DIMENSIONS);
@@ -608,7 +608,7 @@ poly_t* equality_expand(ap_manager_t* man,
 }
 poly_t* equality_fold(ap_manager_t* man,
 		      bool destructive, poly_t* a,
-		      const ap_dim_t* tdim, size_t size)
+		      ap_dim_t* tdim, size_t size)
 {
   poly_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_FOLD);
@@ -623,7 +623,7 @@ poly_t* equality_fold(ap_manager_t* man,
 /* ============================================================ */
 
 poly_t* equality_widening(ap_manager_t* man,
-			  const poly_t* a1, const poly_t* a2)
+			  poly_t* a1, poly_t* a2)
 {
   return poly_copy(man,a2);
 }

@@ -1,25 +1,9 @@
-% -*- mode: Noweb; noweb-code-mode: c-mode -*-
-
-% This file is part of the APRON Library, released under LGPL license.
-% Please read the COPYING file packaged in the distribution 
-
-%**********************************************************************
-\chapter{Dimension: dimensions et opérations reliées, fichier [[ap_dimension.h]]}
-\label{chap:dim}
-%**********************************************************************
-
-Ce fichier définit les types de bases pour manipuler les dimensions.
-
-
-<<*>>=
 /* ********************************************************************** */
 /* ap_dimension.h: dimensions and related operations */
 /* ********************************************************************** */
 
 /* This file is part of the APRON Library, released under LGPL license.  Please
    read the COPYING file packaged in the distribution */
-
-/* GENERATED FROM environment.nw: DO NOT MODIFY ! */
 
 #ifndef _AP_DIMENSION_H_
 #define _AP_DIMENSION_H_
@@ -31,13 +15,6 @@ Ce fichier définit les types de bases pour manipuler les dimensions.
 extern "C" {
 #endif
 
-@
-
-%======================================================================
-\section{Datatypes}
-%======================================================================
-
-<<*>>=
 
 /* ====================================================================== */
 /* Datatypes */
@@ -99,15 +76,9 @@ typedef struct ap_dimperm_t {
   ap_dim_t* dim;    /* Array assumed to be of size size */
   size_t size;
 } ap_dimperm_t;
-  /* Such an object represent the permutation 
-     i -> dimperm.p[i] for 0<=i<dimperm.size */
-@ 
+/* Such an object represent the permutation 
+   i -> dimperm.p[i] for 0<=i<dimperm.size */
 
-%======================================================================
-\section{Functions}
-%======================================================================
-
-<<*>>=
 /* ====================================================================== */
 /* Functions */
 /* ====================================================================== */
@@ -117,13 +88,9 @@ void ap_dimchange_init(ap_dimchange_t* dimchange, size_t intdim, size_t realdim)
 ap_dimchange_t* ap_dimchange_alloc(size_t intdim, size_t realdim);
   /* Allocate and initialize a dimchange structure */
 
-static inline
-void ap_dimchange_clear(ap_dimchange_t* dimchange)
-{ if (dimchange->dim) free(dimchange->dim); dimchange->intdim = dimchange->realdim = 0; dimchange->dim = NULL; }
+static inline void ap_dimchange_clear(ap_dimchange_t* dimchange);
   /* Clear a dimchange structure (deallocate internal arrau) */
-static inline
-void ap_dimchange_free(ap_dimchange_t* dimchange)
-{ ap_dimchange_clear(dimchange); free(dimchange); }
+static inline void ap_dimchange_free(ap_dimchange_t* dimchange);
   /* Deallocate and clear a dimchange structure */
 
 void ap_dimchange_fprint(FILE* stream, ap_dimchange_t* dimchange);
@@ -131,21 +98,14 @@ void ap_dimchange_fprint(FILE* stream, ap_dimchange_t* dimchange);
 void ap_dimchange_add_invert(ap_dimchange_t* dimchange);
   /* Assuming that dimchange is a transformation for add_dimensions, 
      invert it to obtain the inverse transformation using remove_dimensions */
-@ 
-
-<<*>>=
 void ap_dimperm_init(ap_dimperm_t* dimperm, size_t size);
   /* Initialize a dimperm structure (allocate internal array) */ 
 ap_dimperm_t* ap_dimperm_alloc(size_t size);
   /* Allocate and initialize a dimperm structure */
-
-static inline
-void ap_dimperm_clear(ap_dimperm_t* dimperm)
-{ if (dimperm->dim) free(dimperm->dim); dimperm->size = 0; dimperm->dim = NULL; }
+  
+static inline void ap_dimperm_clear(ap_dimperm_t* dimperm);
   /* Clear a dimperm structure (deallocate internal arrau) */
-static inline
-void ap_dimperm_free(ap_dimperm_t* dimperm)
-{ ap_dimperm_clear(dimperm); free(dimperm); }
+static inline void ap_dimperm_free(ap_dimperm_t* dimperm);
   /* Deallocate and clear a dimchange structure */
 
 void ap_dimperm_fprint(FILE* stream, ap_dimperm_t* perm);
@@ -159,22 +119,49 @@ void ap_dimperm_fprint(FILE* stream, ap_dimperm_t* perm);
 void ap_dimperm_set_id(ap_dimperm_t* perm);
   /* Generate the identity permutation */
 
-void ap_dimperm_compose(ap_dimperm_t* perm, const ap_dimperm_t* perm1, const ap_dimperm_t* perm2);
+void ap_dimperm_compose(ap_dimperm_t* perm, 
+			ap_dimperm_t* perm1, ap_dimperm_t* perm2);
   /* Compose the 2 permutations perm1 and perm2 (in this order) 
      and store the result the already allocated perm.
      The sizes of permutations are supposed to be equal.
      At exit, we have perm.dim[i] = perm2.dim[perm1.dim[i]]
   */
-void ap_dimperm_invert(ap_dimperm_t* nperm, const ap_dimperm_t* perm);
+void ap_dimperm_invert(ap_dimperm_t* nperm, ap_dimperm_t* perm);
   /* Invert the permutation perm and store it in the already allocated nperm. 
      The sizes of permutations are supposed to be equal.
   */
-@ 
 
-<<*>>=
+/* ====================================================================== */
+/* Inline Functions Definitions */
+/* ====================================================================== */
+static inline void ap_dimchange_clear(ap_dimchange_t* dimchange)
+{ 
+  if (dimchange->dim) free(dimchange->dim); 
+  dimchange->intdim = dimchange->realdim = 0; 
+  dimchange->dim = NULL; 
+}
+static inline void ap_dimchange_free(ap_dimchange_t* dimchange)
+{ 
+  ap_dimchange_clear(dimchange); 
+  free(dimchange); 
+}
+
+static inline
+void ap_dimperm_clear(ap_dimperm_t* dimperm)
+{ 
+  if (dimperm->dim) free(dimperm->dim); 
+  dimperm->size = 0; 
+  dimperm->dim = NULL; 
+}
+static inline
+void ap_dimperm_free(ap_dimperm_t* dimperm)
+{ 
+  ap_dimperm_clear(dimperm); 
+  free(dimperm); 
+}
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-@

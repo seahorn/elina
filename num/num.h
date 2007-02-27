@@ -54,8 +54,8 @@
 /* ====================================================================== */
 /* Assignement */
 /* ====================================================================== */
-static inline void num_set(num_t a, const num_t b);
-static inline void num_set_array(num_t* a, const num_t* b, size_t size);
+static inline void num_set(num_t a, num_t b);
+static inline void num_set_array(num_t* a, num_t* b, size_t size);
 static inline void num_set_int(num_t a, long int i);
 
 /* ====================================================================== */
@@ -64,7 +64,7 @@ static inline void num_set_int(num_t a, long int i);
 
 static inline void num_init(num_t a);
 static inline void num_init_array(num_t* a, size_t size);
-static inline void num_init_set(num_t a, const num_t b);
+static inline void num_init_set(num_t a, num_t b);
 static inline void num_init_set_int(num_t a, long int i);
 
 static inline void num_clear(num_t a);
@@ -76,38 +76,38 @@ static inline void num_swap(num_t a, num_t b);
 /* Arithmetic Operations */
 /* ====================================================================== */
 
-static inline void num_neg(num_t a, const num_t b);
-static inline void num_abs(num_t a, const num_t b);
-static inline void num_add(num_t a, const num_t b, const num_t c);
-static inline void num_add_uint(num_t a, const num_t b, unsigned long int c);
-static inline void num_sub(num_t a, const num_t b, const num_t c);
-static inline void num_sub_uint(num_t a, const num_t b, unsigned long int c);
-static inline void num_mul(num_t a, const num_t b, const num_t c);
-static inline void num_mul_2(num_t a, const num_t b);
-static inline void num_div(num_t a, const num_t b, const num_t c);
-static inline void num_div_2(num_t a, const num_t b);
-static inline void num_min(num_t a, const num_t b, const num_t c);
-static inline void num_max(num_t a, const num_t b, const num_t c);
-static inline void num_floor(num_t a, const num_t b);
-static inline void num_ceil(num_t a, const num_t b);
+static inline void num_neg(num_t a, num_t b);
+static inline void num_abs(num_t a, num_t b);
+static inline void num_add(num_t a, num_t b, num_t c);
+static inline void num_add_uint(num_t a, num_t b, unsigned long int c);
+static inline void num_sub(num_t a, num_t b, num_t c);
+static inline void num_sub_uint(num_t a, num_t b, unsigned long int c);
+static inline void num_mul(num_t a, num_t b, num_t c);
+static inline void num_mul_2(num_t a, num_t b);
+static inline void num_div(num_t a, num_t b, num_t c);
+static inline void num_div_2(num_t a, num_t b);
+static inline void num_min(num_t a, num_t b, num_t c);
+static inline void num_max(num_t a, num_t b, num_t c);
+static inline void num_floor(num_t a, num_t b);
+static inline void num_ceil(num_t a, num_t b);
   /* Approximate to the nearest integer toward resp. -infty, +infty */
 
 /* ====================================================================== */
 /* Arithmetic Tests */
 /* ====================================================================== */
 
-static inline int num_sgn(const num_t a);
-static inline int num_cmp(const num_t a, const num_t b);
-static inline int num_cmp_int(const num_t a, long int b);
-static inline bool num_equal(const num_t a, const num_t b);
+static inline int num_sgn(num_t a);
+static inline int num_cmp(num_t a, num_t b);
+static inline int num_cmp_int(num_t a, long int b);
+static inline bool num_equal(num_t a, num_t b);
 
 /* ====================================================================== */
 /* Printing */
 /* ====================================================================== */
 
-static inline void num_print(const num_t a);
-static inline void num_fprint(FILE* stream, const num_t a);
-static inline int num_snprint(char* s, size_t size, const num_t a);
+static inline void num_print(num_t a);
+static inline void num_fprint(FILE* stream, num_t a);
+static inline int num_snprint(char* s, size_t size, num_t a);
 
 /* ====================================================================== */
 /* Conversions */
@@ -115,47 +115,47 @@ static inline int num_snprint(char* s, size_t size, const num_t a);
 
 static inline void num_set_int2(num_t a, long int i, unsigned long int j);
   /* int2 -> num */
-static inline bool num_set_mpz(num_t a, const mpz_t b);
+static inline bool num_set_mpz(num_t a, mpz_t b);
   /* mpz -> num */
-static inline bool num_set_mpq(num_t a, const mpq_t b);
+static inline bool num_set_mpq(num_t a, mpq_t b);
   /* mpq -> num */
 static inline bool num_set_double(num_t a, double b);
   /* double -> num */
-static inline bool num_set_ap_scalar(num_t a, const ap_scalar_t* b);
+static inline bool num_set_ap_scalar(num_t a, ap_scalar_t* b);
   /* (finite) ap_scalar -> num */
 
-static inline bool int_set_num(long int* a, const num_t b);
+static inline bool int_set_num(long int* a, num_t b);
   /* num -> int */
-static inline bool mpz_set_num(mpz_t a, const num_t b);
+static inline bool mpz_set_num(mpz_t a, num_t b);
   /* num -> mpz */
-static inline bool mpq_set_num(mpq_t a, const num_t b);
+static inline bool mpq_set_num(mpq_t a, num_t b);
   /* num -> mpq */
-static inline bool double_set_num(double* a, const num_t b);
+static inline bool double_set_num(double* a, num_t b);
   /* num -> double */
-static inline bool ap_scalar_set_num(ap_scalar_t* a, const num_t b);
+static inline bool ap_scalar_set_num(ap_scalar_t* a, num_t b);
   /* num -> ap_scalar */
 
-static inline bool mpz_fits_num(const mpz_t a);
-static inline bool mpq_fits_num(const mpq_t a);
+static inline bool mpz_fits_num(mpz_t a);
+static inline bool mpq_fits_num(mpq_t a);
 static inline bool double_fits_num(double a);
-static inline bool num_fits_int(const num_t a);
-static inline bool num_fits_double(const num_t a);
+static inline bool num_fits_int(num_t a);
+static inline bool num_fits_double(num_t a);
 
 /* Optimized versions */
 /* mpfr should have exactly the precision NUMFLT_MANT_DIG */
-static inline bool num_set_mpz_tmp(num_t a, const mpz_t b, mpfr_t mpfr);
-static inline bool num_set_mpq_tmp(num_t a, const mpq_t b, 
+static inline bool num_set_mpz_tmp(num_t a, mpz_t b, mpfr_t mpfr);
+static inline bool num_set_mpq_tmp(num_t a, mpq_t b, 
 				   mpz_t q, mpz_t r, mpfr_t mpfr);
 static inline bool num_set_double_tmp(num_t a, double k, mpq_t mpq);
 
-static inline bool int_set_num_tmp(long int* a, const num_t b, 
+static inline bool int_set_num_tmp(long int* a, num_t b, 
 				   mpz_t q, mpz_t r);
-static inline bool mpz_set_num_tmp(mpz_t a, const num_t b, mpz_t mpz);
+static inline bool mpz_set_num_tmp(mpz_t a, num_t b, mpz_t mpz);
 /* mpfr should have exactly the precision DBL_MANT_DIG */
-static inline bool double_set_num_tmp(double* a, const num_t b, 
+static inline bool double_set_num_tmp(double* a, num_t b, 
 				      mpq_t mpq, mpfr_t mpfr);
 
-static inline bool mpq_fits_num_tmp(const mpq_t a, mpz_t mpz);
+static inline bool mpq_fits_num_tmp(mpq_t a, mpz_t mpz);
 static inline bool double_fits_num_tmp(double k, mpq_t mpq);
 
 /* ====================================================================== */
@@ -179,11 +179,11 @@ static inline bool double_fits_num_tmp(double k, mpq_t mpq);
 
 static inline unsigned char num_serialize_id(void);
 
-static inline size_t num_serialize(void* dst, const num_t src);
+static inline size_t num_serialize(void* dst, num_t src);
 static inline size_t num_deserialize(num_t dst, const void* src);
-static inline size_t num_serialized_size(const num_t a);
+static inline size_t num_serialized_size(num_t a);
 
-static inline size_t num_serialize_array(void* dst, const num_t* src, size_t size)
+static inline size_t num_serialize_array(void* dst, num_t* src, size_t size)
 {
   size_t i,n=0;
   for (i=0;i<size;i++)
@@ -199,7 +199,7 @@ static inline size_t num_deserialize_array(num_t* dst, const void* src, size_t s
   return n;
 }
 
-static inline size_t num_serialized_size_array(const num_t* src, size_t size)
+static inline size_t num_serialized_size_array(num_t* src, size_t size)
 {
   size_t i,n=0;
   for (i=0;i<size;i++)

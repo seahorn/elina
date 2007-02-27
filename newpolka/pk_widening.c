@@ -45,9 +45,9 @@ static satmat_row_t* esatmat_of_satmat(satmat_t* sat)
 We use here the insertion sort. 
 The array tab is supposed to be of size sat->nbrows.
 */
-static void esatmat_isort_rows(satmat_row_t* tab, const satmat_t* sat)
+static void esatmat_isort_rows(satmat_row_t* tab, satmat_t* sat)
 {
-  int i,j;
+  size_t i,j;
 
   for (i=1; i<sat->nbrows; i++){
     satmat_row_t row = tab[i];
@@ -74,7 +74,7 @@ static int qsort_rows_compar(void* qsort_man, const void* p1, const void* p2)
 			 qm->size));
 }
 
-static void esatmat_sort_rows(satmat_row_t* tab, const satmat_t* sat)
+static void esatmat_sort_rows(satmat_row_t* tab, satmat_t* sat)
 {
   if (sat->nbrows>=6){
     qsort_man_t qsort_man;
@@ -95,7 +95,7 @@ matrix. If it is the case, it returns its rank in the saturation
 matrix. Otherwise, it returns -1 */
 
 typedef struct bsearch_man_t {
-  const bitstring_t* satline;
+  bitstring_t* satline;
   satmat_row_t* tab;
   size_t size;
 } bsearch_man_t;
@@ -103,7 +103,7 @@ typedef struct bsearch_man_t {
 static bool bsearch2(bsearch_man_t* man, size_t low, size_t high)
 {
   if (high - low <= 4){
-    int i;
+    size_t i;
     int res=-1;
     for (i=low; i<high; i++){
       int cmp = bitstring_cmp(man->tab[i].p, man->satline, man->size);
@@ -127,9 +127,9 @@ static bool bsearch2(bsearch_man_t* man, size_t low, size_t high)
 }
 
 static
-int esatmat_index_in_sorted_rows(const bitstring_t* const satline, 
+int esatmat_index_in_sorted_rows(bitstring_t* satline, 
 				 satmat_row_t* tab, 
-				 const satmat_t* const sat)
+				 satmat_t* sat)
 {
   bsearch_man_t man;
   man.satline = satline;
@@ -140,7 +140,7 @@ int esatmat_index_in_sorted_rows(const bitstring_t* const satline,
 
 /* This function defines the standard widening operator.  The resulting
    polyhedron has no frame matrix, unless pa is empty. */
-poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
+poly_t* poly_widening(ap_manager_t* man, poly_t* pa, poly_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_WIDENING);
   bool widening_affine = pk->funopt->algorithm<=0;
@@ -183,17 +183,17 @@ poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
     bitstringp = bitstring_alloc(sat_nbcols);
     for (i=0; i<pb->C->nbrows; i++){
       bitstring_clear(bitstringp,sat_nbcols);
-      cherni_buildsatline(pk, pa->F, (const numint_t*)pb->C->p[i], bitstringp);
+      cherni_buildsatline(pk, pa->F, pb->C->p[i], bitstringp);
       index = esatmat_index_in_sorted_rows(bitstringp,tab,pa->satF);
       if (index>=0){
 	index = tab[index].index;
 	if (!widening_affine ||
 	    !vector_is_positivity_constraint(pk, 
-					     (const numint_t*)pa->C->p[index],
+					     pa->C->p[index],
 					     pa->C->nbcolumns)){
 	  /* Belongs to saturation matrix, and does not correspond to the
 	     positivity constraint. */
-	  vector_copy(po->C->p[nbrows],(const numint_t*)pb->C->p[i], 
+	  vector_copy(po->C->p[nbrows],pb->C->p[i], 
 		      pa->C->nbcolumns);
 	  nbrows++;
 	}
@@ -211,11 +211,11 @@ poly_t* poly_widening(ap_manager_t* man, const poly_t* pa, const poly_t* pb)
 when a constraint of this set is verified by both polyhedra, it is kept in
 the result. */
 poly_t* poly_widening_threshold(ap_manager_t* man, 
-			       const poly_t* pa, const poly_t* pb, 
-			       const ap_lincons0_array_t* array)
+			       poly_t* pa, poly_t* pb, 
+			       ap_lincons0_array_t* array)
 {
   poly_t* po;
-  int i,nbrows;
+  size_t i,nbrows;
   matrix_t* mat;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
@@ -230,12 +230,12 @@ poly_t* poly_widening_threshold(ap_manager_t* man,
   matrix_realloc_lazy(po->C, nbrows + mat->nbrows);
   for (i=0; i<mat->nbrows; i++){
     if (do_generators_sat_constraint(pk,pb->F,
-				     (const numint_t*)mat->p[i],
+				     mat->p[i],
 				     pk->strict && 
 				     numint_sgn(mat->p[i][polka_eps])<0))
     {
       /* if the constraint is satisfied by pb, add it */
-      vector_copy(po->C->p[nbrows],(const numint_t*)mat->p[i],mat->nbcolumns);
+      vector_copy(po->C->p[nbrows],mat->p[i],mat->nbcolumns);
       nbrows++;
     }
   }

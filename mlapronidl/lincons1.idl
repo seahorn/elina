@@ -117,7 +117,7 @@ void ap_lincons1_set_coeff([ref]struct ap_lincons1_t* a, ap_var_t var,
 quote(MLI,"(** Build the unsatisfiable constraint -1>=0 *)")
 struct ap_lincons1_t ap_lincons1_make_unsat(ap_environment_ptr env);
 quote(MLI,"(** Is the constraint not satisfiable ? *)")
-boolean ap_lincons1_is_unsat([ref]const struct ap_lincons1_t* cons);
+boolean ap_lincons1_is_unsat([ref]struct ap_lincons1_t* cons);
 
 quote(MLI,"(** Change the environement of the constraint for a super-environement. Raise [Failure] if it is not the case *)")
 struct ap_lincons1_t ap_lincons1_extend_environment(const struct ap_lincons1_t lincons,

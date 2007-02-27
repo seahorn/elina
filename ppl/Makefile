@@ -23,25 +23,8 @@ SRCDIR = $(shell pwd)
 # Programs
 #---------------------------------------
 
-# Installation program
-INSTALL = install
-INSTALLd = install -d
-
-# C compiler and C preprocessor
-CC = gcc
-
-# C++ compiler
-CXX = g++
-
 # Library creation
-AR = ar
 SHARED = gcc -shared
-
-OCAMLC = ocamlc.opt
-OCAMLOPT = ocamlopt.opt
-OCAMLMKTOP = ocamlmktop
-OCAMLMKLIB = ocamlmklib
-CAMLIDL = camlidl
 
 #---------------------------------------
 # Flags
@@ -54,26 +37,23 @@ ICFLAGS = \
 -I../apron \
 -I../mlapronidl \
 -I../num \
--I$(POLKA_PREFIX)/include \
--I$(MLGMPIDL_PREFIX)/include \
 -I$(GMP_PREFIX)/include \
--I$(APRON_PREFIX)/include \
--I$(MLAPRONIDL_PREFIX)/include \
--I$(NUM_PREFIX)/include \
 -I$(PPL_PREFIX)/include \
--I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml \
--Wall -W -Wundef -Wcast-align \
--Wdisabled-optimization \
--Wno-unused
-# -Winline
-CCFLAGS = $(OPTFLAGS) $(ICFLAGS) -DNDEBUG
-CXXFLAGS = $(OPTFLAGS) $(ICFLAGS) -DNDEBUG
+-I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
+
+ICXXFLAGS = \
+-I../newpolka \
+-I../mlgmpidl \
+-I../apron \
+-I../mlapronidl \
+-I../num \
+-I$(GMP_PREFIX)/include \
+-I$(PPL_PREFIX)/include \
+-I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
+
 
 # Caml
 OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
-OCAMLFLAGS = -g
-OCAMLOPTFLAGS = -inline 20
-
 
 #---------------------------------------
 # Files
@@ -82,9 +62,6 @@ OCAMLOPTFLAGS = -inline 20
 CXXSOURCES = ppl_user.cc ppl_poly.cc ppl_grid.cc
 CSOURCES = ppl_test.c
 CCINC = ppl_user.h apron_ppl.h
-
-# trigers a whole recompilation
-# DEPS = $(APRON_PREFIX)/include/ap_abstract0.h
 
 #---------------------------------------
 # Rules
@@ -126,29 +103,36 @@ dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) apron_ppl.idl s
 
 .SUFFIXES: .tex .cc .h .a .o .so
 
-
-
 #-----------------------------------
 # C / C++ part
 #-----------------------------------
 
 libapron_ppl.a: $(subst .cc,.o,$(CXXSOURCES))
 	$(AR) rcs $@ $^
+	$(RANLIB) $@
+libapron_ppl_debug.a: $(subst .cc,_debug.o,$(CXXSOURCES))
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
-apron_ppl_test: libapron_ppl.a ppl_test.o
-	$(CXX) $(CXXFLAGS) -o $@ ppl_test.o \
-	-L. -lapron_ppl \
+apron_ppl_test: libapron_ppl_debug.a ppl_test_debug.o
+	$(CXX) $(CXXFLAGS) -o $@ ppl_test_dedbug.o \
+	-L. -lapron_ppl_debug \
 	-L../newpolka -L$(POLKA_PREFIX)/lib -lpolkag_debug \
 	-L../apron -L$(APRON_PREFIX)/lib -lapron \
 	-L$(PPL_PREFIX)/lib -lppl \
 	-L$(GMP_PREFIX)/lib -lgmpxx -lmpfr -lgmp -lm
 
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(ICXXFLAGS) -c -o $@ $<
 
 %.o: %.c
-	$(CC) $(CCFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -c -o $@ $<
 
+%_debug.o: %.cc
+	$(CXX) $(CXXFLAGS_DEBUG) $(ICXXFLAGS) -c -o $@ $<
+
+%_debug.o: %.c
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -c -o $@ $<
 
 #-----------------------------------
 # Caml part
@@ -167,24 +151,25 @@ apron_ppl.cma: apron_ppl.cmi apron_ppl.cmo libapron_ppl_caml.a
 
 apron_ppl.cmxa apron_ppl.a: apron_ppl.cmi apron_ppl.cmx libapron_ppl_caml.a
 	$(OCAMLMKLIB) $(OCAMLINC) -o apron_ppl apron_ppl.cmx -lapron_ppl_caml
+	$(RANLIB) apron_ppl.a
 
 libapron_ppl_caml.a: apron_ppl_caml.o
 	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 libapron_ppl_caml.so: apron_ppl_caml.o
 	$(SHARED) -o $@ $^
 
-%_caml.c %.ml %.mli: %.idl sedscript_caml $(DEPS)
-	mkdir -p tmp
-	cp ../mlapronidl/*.idl tmp/
-	cp $*.idl tmp/
-	cd tmp && $(CAMLIDL) -no-include -nocpp -I $(MLAPRONIDL_PREFIX)/lib $*.idl
-	cp tmp/$*_stubs.c $*_caml.c
-	sed -f sedscript_caml tmp/$*.ml | grep --extended-regexp '^(.)+$$' >$*.ml
-	sed -f sedscript_caml tmp/$*.mli | grep --extended-regexp '^(.)+$$' >$*.mli
-
 manager.idl: ../mlapronidl/manager.idl
-	cp $^ $@
+	ln -s $< $@
+
+rebuild: manager.idl apron_ppl.idl
+	mkdir -p tmp
+	cp apron_ppl.idl tmp/
+	cd tmp && $(CAMLIDL) -no-include -nocpp -apron_ppl.idl
+	cp tmp/apron_ppl_stubs.c apron_ppl_caml.c
+	sed -f sedscript_caml tmp/apron_ppl.ml | grep --extended-regexp '^(.)+$$' >apron_ppl.ml
+	sed -f sedscript_caml tmp/apron_ppl.mli | grep --extended-regexp '^(.)+$$' >apron_ppl.mli
 
 .PRECIOUS: %_caml.c %.ml %.mli %.cmi libapron_ppl_caml.a libapron_ppl_caml.so apron_ppl.cmx apron_ppl.cmo
 

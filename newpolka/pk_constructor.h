@@ -24,7 +24,7 @@ void _matrix_fill_constraint_top(pk_internal_t* pk, matrix_t* C, size_t start);
 
 int _matrix_fill_constraint_box(pk_internal_t* pk, 
 				matrix_t* C, size_t start,
-				const ap_interval_t** box, 
+				ap_interval_t** box, 
 				size_t intdim, size_t realdim,
 				bool integer);
 
@@ -56,7 +56,7 @@ bool vector_set_dim_bound(pk_internal_t* pk,
 
 bool vector_set_linexpr_bound(pk_internal_t* pk,
 			      numint_t* vec,
-			      const numint_t* vec2,
+			      numint_t* vec2,
 			      mpq_t mpq,
 			      size_t intdim, size_t realdim,
 			      int sgn,
@@ -79,7 +79,7 @@ poly_t* poly_top(ap_manager_t* man, size_t intdim, size_t realdim);
    (intdim+realdim). */ 
 poly_t* poly_of_box(ap_manager_t* man, 
 		    size_t intdim, size_t realdim, 
-		    const ap_interval_t** array);
+		    ap_interval_t** array);
 
 /* Abstract a convex polyhedra defined by the array of linear constraints.:
 
@@ -87,10 +87,10 @@ poly_t* poly_of_box(ap_manager_t* man,
    linear constraints. */
 poly_t* poly_of_lincons_array(ap_manager_t* man,
 			      size_t intdim, size_t realdim,
-			      const ap_lincons0_array_t* cons);
+			      ap_lincons0_array_t* cons);
 
 /* Return the dimensions of the polyhedra */
-ap_dimension_t poly_dimension(ap_manager_t* man, const poly_t* po);
+ap_dimension_t poly_dimension(ap_manager_t* man, poly_t* po);
 
 #ifdef __cplusplus
 }

@@ -1,31 +1,3 @@
-% -*- mode: Noweb; noweb-code-mode: c-mode -*-
-
-% This file is part of the APRON Library, released under LGPL license.
-% Please read the COPYING file packaged in the distribution 
-
-%**********************************************************************
-\chapter{Environment: liaison des variables aux dimensions (entiers), fichier [[ap_environlent.h]]}
-\label{chap:env}
-%**********************************************************************
-
-Ce fichier définit les environnements qui font le lien avec d'une
-part des \emph{variables} et d'autre part leur type et la
-dimension qui leur est associée au niveau 0.
-
-On distingue deux catégories de fonctions:
-\begin{itemize}
-\item Celles utiles à un utilisateur du niveau 1 de l'interface,
-  pour manipuler des environnements.  Il s'agit des fonctions
-  [[ap_environment_free, ap_environment_alloc, ap_environment_add,
-  ap_environment_remove, ap_environment_is_eq,
-  environement_is_leq, ap_environment_compare]].
-\item Celles utilisées essentiellement par l'interface commune
-  (module abstract1) pour passer automatiquement du niveau 1 au
-niveau 0, qui sont d'un usage interne
-\end{itemize}
-
-
-<<*>>=
 /* ********************************************************************** */
 /* ap_environment.h: binding of addresses (strings) to dimensions */
 /* ********************************************************************** */
@@ -46,19 +18,11 @@ niveau 0, qui sont d'un usage interne
 extern "C" {
 #endif
 
-@
-
-%======================================================================
-\section{Datatypes}
-%======================================================================
-
-<<*>>=
 
 /* ====================================================================== */
 /* Datatype */
 /* ====================================================================== */
 
-<<*>>=
 /* The ap_environment_t type is the type used by the level 1 of the interface.
    It should be considered as an abstract type.
 
@@ -91,13 +55,7 @@ typedef struct ap_environment_name_of_dim_t {
   size_t size;
   char* p[]; /* Assumed to be of size size */
 } ap_environment_name_of_dim_t;
-@
 
-%======================================================================
-\section{Memory management, Constructor, Destructors}
-%======================================================================
-
-<<*>>=
 /* ====================================================================== */
 /* Memory management, Constructor, Destructors */
 /* ====================================================================== */
@@ -129,7 +87,7 @@ ap_environment_t* ap_environment_alloc_empty(void);
   /* Build an empty environement */
 
 ap_environment_t* ap_environment_alloc(ap_var_t* name_of_intdim, size_t intdim,
-                                ap_var_t* name_of_realdim, size_t realdim);
+				       ap_var_t* name_of_realdim, size_t realdim);
   /* Build an environement from an array of integer and
      an array of real variables.
      - Variables are duplicated in the result, so it is the responsability
@@ -137,55 +95,48 @@ ap_environment_t* ap_environment_alloc(ap_var_t* name_of_intdim, size_t intdim,
      - If the result does not satisfy the invariant, return NULL.
   */
 
-ap_environment_t* ap_environment_add(const ap_environment_t* env,
-                               ap_var_t* name_of_intdim, size_t intdim,
-                               ap_var_t* name_of_realdim, size_t realdim);
+ap_environment_t* ap_environment_add(ap_environment_t* env,
+				     ap_var_t* name_of_intdim, size_t intdim,
+				     ap_var_t* name_of_realdim, size_t realdim);
   /* Add variables to an environement.
      Same comments as for ap_environment_alloc */
-ap_environment_t* ap_environment_add_perm(const ap_environment_t* env,
-                                    ap_var_t* name_of_intdim, size_t intdim,
-                                    ap_var_t* name_of_realdim, size_t realdim,
-                                    ap_dimperm_t* dimpermu);
+ap_environment_t* ap_environment_add_perm(ap_environment_t* env,
+					  ap_var_t* name_of_intdim, size_t intdim,
+					  ap_var_t* name_of_realdim, size_t realdim,
+					  ap_dimperm_t* dimpermu);
   /* Same as previous functions, but in addition return in *dimperm
      the permutation to apply after having added new variables at the end of their
      respective slice, in order to get them sorted. 
      If the result is NULL, so is dimperm->dim */
-ap_environment_t* ap_environment_remove(const ap_environment_t* env,
-                                  ap_var_t* name_of_intdim, size_t intdim,
-                                  ap_var_t* name_of_realdim, size_t realdim);
+ap_environment_t* ap_environment_remove(ap_environment_t* env,
+					ap_var_t* name_of_intdim, size_t intdim,
+					ap_var_t* name_of_realdim, size_t realdim);
   /* Remove variables from an environement.
      Same comments as for environement_alloc */
 
-ap_dim_t ap_environment_dim_of_var(const ap_environment_t* env, ap_var_t name);
+ap_dim_t ap_environment_dim_of_var(ap_environment_t* env, ap_var_t name);
   /* - If the variable is present in the environemnt,
        return its associated dimension.
      - Otherwise, return AP_DIM_MAX
   */
 
 static inline
-ap_var_t ap_environment_var_of_dim(const ap_environment_t* env, ap_dim_t dim);
+ap_var_t ap_environment_var_of_dim(ap_environment_t* env, ap_dim_t dim);
   /* - Return the variable associated to the dimension.
      - There is no bound check here */
-@
-
-%======================================================================
-\section{Tests}
-%======================================================================
-
-<<*>>=
 
 /* ========================================================================= */
 /* Tests */
 /* ========================================================================= */
 
-bool ap_environment_is_eq(const ap_environment_t* env1,
-                       const ap_environment_t* env2);
+bool ap_environment_is_eq(ap_environment_t* env1,
+			  ap_environment_t* env2);
   /* Equality test */
-bool ap_environment_is_leq(const ap_environment_t* env1,
-                       const ap_environment_t* env2);
+bool ap_environment_is_leq(ap_environment_t* env1,
+			   ap_environment_t* env2);
   /* Inclusion test */
-int ap_environment_compare(const ap_environment_t* env1,
-                           const ap_environment_t* env2);
+int ap_environment_compare(ap_environment_t* env1,
+                           ap_environment_t* env2);
   /* Return
     - -2 if the environements are not compatible
       (a variable has a different type in the 2 environements)
@@ -194,29 +145,22 @@ int ap_environment_compare(const ap_environment_t* env1,
     - +1 if env1 is a superset of env2
     - +2 otherwise (the lce exists and is a strict superset of both)
   */
-@
-
-%======================================================================
-\section{Least common environments and conversion permutations}
-%======================================================================
-
-<<*>>=
 
 /* ========================================================================= */
 /* Least common environments and conversion permutations */
 /* ========================================================================= */
 
-ap_dimchange_t* ap_environment_dimchange(const ap_environment_t* env1,
-                                   const ap_environment_t* env);
+ap_dimchange_t* ap_environment_dimchange(ap_environment_t* env1,
+                                   ap_environment_t* env);
   /* Compute the transformation for converting from an environment to a
      superenvironment.
      Return NULL if env is not a superenvironment.
   */
 
-ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
-                               const ap_environment_t* env2,
-                               ap_dimchange_t** dimchange1,
-                               ap_dimchange_t** dimchange2);
+ap_environment_t* ap_environment_lce(ap_environment_t* env1,
+				     ap_environment_t* env2,
+				     ap_dimchange_t** dimchange1,
+				     ap_dimchange_t** dimchange2);
   /*
   Least common environment to two environements.
 
@@ -230,9 +174,9 @@ ap_environment_t* ap_environment_lce(const ap_environment_t* env1,
      actually env1. In this case, *dimchange1==NULL. Otherwise, the
      function allocates *dimchange1 with ap_dimchange_alloc.
  */
-ap_environment_t* ap_environment_lce_array(const ap_environment_t** tenv,
-                                     size_t size,
-                                     ap_dimchange_t*** ptdimchange);
+ap_environment_t* ap_environment_lce_array(ap_environment_t** tenv,
+					   size_t size,
+					   ap_dimchange_t*** ptdimchange);
 /*
   Least common environement to an array environements.
 
@@ -248,20 +192,13 @@ ap_environment_t* ap_environment_lce_array(const ap_environment_t** tenv,
 
  */
 
-@
-
-%======================================================================
-\section{Renommage de variables}
-%======================================================================
-
-<<*>>=
 /* ========================================================================= */
 /* Variable renaming */
 /* ========================================================================= */
 
 ap_environment_t* ap_environment_rename(ap_environment_t* env,
-                                  ap_var_t* tvar1, ap_var_t* tvar2, size_t size,
-                                  ap_dimperm_t* perm);
+					ap_var_t* tvar1, ap_var_t* tvar2, size_t size,
+					ap_dimperm_t* perm);
   /* Rename the variables in the environment.
      size is the common size of tvar1 and tvar2,
      and perm is a result-parameter
@@ -272,20 +209,13 @@ ap_environment_t* ap_environment_rename(ap_environment_t* env,
      
      If the parameters are not valid, returns NULL with perm->dim==NULL
   */
-@
-
-%======================================================================
-\section{Définitions en-ligne}
-%======================================================================
-
-<<*>>=
 
 /* ====================================================================== */
 /* Inline definitions */
 /* ====================================================================== */
 
 static inline
-ap_var_t ap_environment_var_of_dim(const ap_environment_t* env, ap_dim_t dim){
+ap_var_t ap_environment_var_of_dim(ap_environment_t* env, ap_dim_t dim){
   return dim < env->intdim+env->realdim ? env->var_of_dim[dim] : NULL;
 }
 static inline
@@ -300,12 +230,8 @@ ap_environment_t* ap_environment_copy(ap_environment_t* env){
   env->count++;
   return env;
 }
-@
-
-<<*>>=
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-@

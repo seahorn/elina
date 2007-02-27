@@ -22,7 +22,7 @@ numint_t* _vector_alloc_int(size_t size){
 /* Standard allocation function, with initialization of the elements. */
 numint_t* vector_alloc(size_t size)
 {
-  int i;
+  size_t i;
   numint_t* q;
   q = _vector_alloc_int(size);
   for(i=0; i<size; i++){
@@ -34,7 +34,7 @@ numint_t* vector_alloc(size_t size)
 /* Reallocation function, to change the dimension */
 void vector_realloc(numint_t** pq, size_t size, size_t nsize)
 {
-  int i;
+  size_t i;
   numint_t* q;
   numint_t* nq;
 
@@ -50,9 +50,9 @@ void vector_realloc(numint_t** pq, size_t size, size_t nsize)
 }
 
 /* Copy/Assign function */
-void vector_copy(numint_t* q2, const numint_t* q1, size_t size)
+void vector_copy(numint_t* q2, numint_t* q1, size_t size)
 {
-  int i;
+  size_t i;
   for (i=0; i<size; i++){
     numint_set(q2[i],q1[i]);
   }
@@ -60,7 +60,7 @@ void vector_copy(numint_t* q2, const numint_t* q1, size_t size)
 /* Deallocation function. */
 void vector_free(numint_t* q, size_t size)
 {
-  int i;
+  size_t i;
   for(i=0; i<size; i++) numint_clear(q[i]);
   free(q);
 }
@@ -68,14 +68,14 @@ void vector_free(numint_t* q, size_t size)
 /* Set all elements to zero. */
 void vector_clear(numint_t* q, size_t size)
 {
-  int i;
+  size_t i;
   for (i=0; i<size; i++) numint_set_int(q[i],0);
 }
 
 /* Raw printing function. */
-void vector_print(const numint_t* q, size_t size)
+void vector_print(numint_t* q, size_t size)
 {
-  int i;
+  size_t i;
   printf("vector %ld: ", (long)size);
   for (i=0; i<size; i++){
     numint_print(q[i]); printf(" ");
@@ -110,7 +110,7 @@ vector_min_notzero(pk_internal_t* pk,
 		   size_t size,
 		   int* index, numint_t min)
 {
-  int i;
+  size_t i;
 
   numint_t* v = pk->vector_numintp; 
 
@@ -146,7 +146,8 @@ vector_min_notzero(pk_internal_t* pk,
 void vector_gcd(pk_internal_t* pk,
 		numint_t* q, size_t size, numint_t gcd)
 {
-  int i,not_all_zero;
+  size_t i;
+  bool not_all_zero;
   numint_t* v = pk->vector_numintp; 
 
   for (i=0;i<size;i++)
@@ -158,7 +159,7 @@ void vector_gcd(pk_internal_t* pk,
     if (numint_sgn(gcd)==0) break;
     not_all_zero = false;
     for (i=0; i<size; i++)
-      if (i!=index){
+      if ((int)i!=index){
 	numint_mod(v[i],v[i],gcd);
 	not_all_zero = not_all_zero || numint_sgn(v[i]);
       }
@@ -178,7 +179,7 @@ void vector_gcd(pk_internal_t* pk,
 bool vector_normalize(pk_internal_t* pk,
 		      numint_t* q, size_t size)
 {
-  int i;
+  size_t i;
 
   assert(size<=pk->maxcols);
 
@@ -202,7 +203,7 @@ bool vector_normalize(pk_internal_t* pk,
 bool vector_normalize_expr(pk_internal_t* pk,
 			   numint_t* q, size_t size)
 {
-  int i;
+  size_t i;
 
   assert(size<=pk->maxcols);
 
@@ -229,7 +230,7 @@ bool vector_normalize_constraint(pk_internal_t* pk,
 				       numint_t* q,
 				       size_t intdim, size_t realdim)
 {
-  int i;
+  size_t i;
   bool change = false;
   size_t size = pk->dec+intdim+realdim;
   
@@ -269,7 +270,7 @@ bool vector_normalize_constraint_int(pk_internal_t* pk,
 				       numint_t* q,
 				       size_t intdim, size_t realdim)
 {
-  int i;
+  size_t i;
   bool change = false;
   size_t size = pk->dec+intdim+realdim;
   
@@ -277,7 +278,7 @@ bool vector_normalize_constraint_int(pk_internal_t* pk,
 
   if (intdim>0 && 
       vector_is_integer(pk,q,intdim,realdim) &&
-      !vector_is_positivity_constraint(pk,(const numint_t*)q,size)){
+      !vector_is_positivity_constraint(pk,q,size)){
     if (pk->strict && numint_sgn(q[polka_eps])<0){
       change = true;
       numint_set_int(q[polka_eps],0);
@@ -331,10 +332,10 @@ This function uses pk->vector_tmp[0..3] and pk->vector_numintp.
 */
 
 int vector_compare(pk_internal_t* pk,
-		   const numint_t* q1, const numint_t* q2,
+		   numint_t* q1, numint_t* q2,
 		   size_t size)
 {
-  int i;
+  size_t i;
   int res=1;
 
   assert(size<=pk->maxcols);
@@ -380,10 +381,10 @@ This function uses pk->vector_tmp[0..3] and pk->vector_numintp.
 */
 
 int vector_compare_constraint(pk_internal_t* pk,
-		   const numint_t* q1, const numint_t* q2,
+		   numint_t* q1, numint_t* q2,
 		   size_t size)
 {
-  int i;
+  size_t i;
   int res=1;
   int s1,s2;
 
@@ -397,9 +398,9 @@ int vector_compare_constraint(pk_internal_t* pk,
   else {
     /* normal non-constant coefficients */
     /* compute pgcd q1 */
-    vector_gcd(pk, (numint_t*)&q1[pk->dec],size-pk->dec,pk->vector_tmp[1]);
+    vector_gcd(pk, &q1[pk->dec],size-pk->dec,pk->vector_tmp[1]);
     /* compute pgcd q2 */
-    vector_gcd(pk, (numint_t*)&q2[pk->dec],size-pk->dec,pk->vector_tmp[2]);
+    vector_gcd(pk, &q2[pk->dec],size-pk->dec,pk->vector_tmp[2]);
     /* special cases */
     s1 = numint_sgn(pk->vector_tmp[1]);
     s2 = numint_sgn(pk->vector_tmp[2]);
@@ -450,10 +451,10 @@ int vector_compare_constraint(pk_internal_t* pk,
    This function uses pk->vector_tmp[0..4] and pk->vector_numintp. */
 
 void vector_combine(pk_internal_t* pk,
-		    const numint_t* q1, const numint_t* q2,
+		    numint_t* q1, numint_t* q2,
 		    numint_t* q3, size_t k, size_t size)
 {
-  int j;
+  size_t j;
   numint_gcd(pk->vector_tmp[0],q1[k],q2[k]);
   numint_divexact(pk->vector_tmp[1],q1[k],pk->vector_tmp[0]);
   numint_divexact(pk->vector_tmp[2],q2[k],pk->vector_tmp[0]);
@@ -489,9 +490,9 @@ This function uses pk->vector_tmp[0]. */
 
 void vector_product(pk_internal_t* pk,
 		    numint_t prod,
-		    const numint_t const* q1, const numint_t const* q2, size_t size)
+		    numint_t* q1, numint_t* q2, size_t size)
 {
-  int j;
+  size_t j;
   numint_set_int(prod,0);
   for (j=1; j<size; j++){
     numint_mul(pk->vector_tmp[0],q1[j],q2[j]);
@@ -504,9 +505,9 @@ void vector_product(pk_internal_t* pk,
 
 void vector_product_strict(pk_internal_t* pk,
 			   numint_t prod,
-			   const numint_t* q1, const numint_t* q2, size_t size)
+			   numint_t* q1, numint_t* q2, size_t size)
 {
-  int j;
+  size_t j;
   if (polka_cst<size){
     numint_mul(prod,q1[polka_cst],q2[polka_cst]);
   }
@@ -527,9 +528,9 @@ void vector_product_strict(pk_internal_t* pk,
 /* The function tests if the given vector is null. */
 
 bool vector_is_null(pk_internal_t* pk,
-		    const numint_t* q, size_t size)
+		    numint_t* q, size_t size)
 {
-  int i;
+  size_t i;
   bool res = true;
  
   for (i=1; i<size; i++){
@@ -545,9 +546,9 @@ bool vector_is_null(pk_internal_t* pk,
    non-$\epsilon$ coefficients is null. */
 
 bool vector_is_null_strict(pk_internal_t* pk,
-			   const numint_t* q, size_t size)
+			   numint_t* q, size_t size)
 {
-  int i;
+  size_t i;
   bool res = true;
 
   if (size>polka_cst){
@@ -568,13 +569,13 @@ bool vector_is_null_strict(pk_internal_t* pk,
    constraint. */
 
 bool vector_is_positivity_constraint(pk_internal_t* pk,
-				     const numint_t* q, size_t size)
+				     numint_t* q, size_t size)
 {
   if (size < pk->dec){
     return false;
   }
   else {
-    int i;
+    size_t i;
     bool res;
 
     res = numint_sgn(q[0])>0;
@@ -601,13 +602,13 @@ bool vector_is_positivity_constraint(pk_internal_t* pk,
    or a strictness constraint. */
 
 bool vector_is_dummy_constraint(pk_internal_t* pk,
-				const numint_t* q, size_t size)
+				numint_t* q, size_t size)
 {
   if (size < pk->dec){
     return false;
   }
   else {
-    int i;
+    size_t i;
     bool res;
 
     res = numint_sgn(q[0])>0;
@@ -636,7 +637,7 @@ bool vector_is_dummy_constraint(pk_internal_t* pk,
 
 /* The function tests if the given vector represents the strictness ray, or has a non-null epsilon component. */ 
 bool vector_is_dummy_or_strict_generator(pk_internal_t* pk,
-					 const numint_t* q, size_t size)
+					 numint_t* q, size_t size)
 {
   if (size < pk->dec){
     return false;
@@ -656,7 +657,7 @@ bool vector_is_integer(pk_internal_t* pk,
 		       numint_t* vec,
 		       size_t intdim, size_t realdim)
 {
-  int i;
+  size_t i;
   
   for (i=intdim; i<intdim+realdim; i++){
     if (numint_sgn(vec[pk->dec+i]) != 0){
@@ -672,7 +673,7 @@ bool vector_is_real(pk_internal_t* pk,
 		       numint_t* vec,
 		       size_t intdim, size_t realdim)
 {
-  int i;
+  size_t i;
   
   for (i=0; i<intdim; i++){
     if (numint_sgn(vec[pk->dec+i]) != 0){

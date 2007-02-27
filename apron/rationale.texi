@@ -1,5 +1,5 @@
 @c *******************************************************************
-@node APRON Rationale, Installing APRON, Introduction to APRON, Top
+@node APRON Rationale, Notes, Examples, Top
 @chapter APRON Rationale
 @c *******************************************************************
 
@@ -485,10 +485,10 @@ $$X\subseteq V\rightarrow ({\cal N}\cup{\cal R})$$
 @end iftex
 @ifnottex
 @quotation
-X of V -> (N+R).
+X -> (N+R).
 @end quotation
 @end ifnottex
-
+where @math{X} is a set of variables.
 @noindent
 Abstract values are typed according to their environment.
 

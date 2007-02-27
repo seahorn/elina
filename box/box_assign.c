@@ -15,8 +15,8 @@
 box_t* box_assign_linexpr(ap_manager_t* man,
 			  bool destructive,
 			  box_t* a,
-			  ap_dim_t dim, const ap_linexpr0_t* linexpr,
-			  const box_t* dest)
+			  ap_dim_t dim, ap_linexpr0_t* linexpr,
+			  box_t* dest)
 {
   bool exact;
   box_t* res;
@@ -30,7 +30,7 @@ box_t* box_assign_linexpr(ap_manager_t* man,
   }
   exact = itv_eval_ap_linexpr0(intern->itv,
 			       res->p[dim],
-			       (const itv_t*)a->p,linexpr);
+			       (itv_t*)a->p,linexpr);
   if (dest)
     res = box_meet(man,true,res,dest);
   man->result.flag_exact = tbool_top;
@@ -40,10 +40,10 @@ box_t* box_assign_linexpr(ap_manager_t* man,
 box_t* box_assign_linexpr_array(ap_manager_t* man,
 				bool destructive,
 				box_t* a,
-				const ap_dim_t* tdim, 
-				const ap_linexpr0_t*const* texpr,
+				ap_dim_t* tdim, 
+				ap_linexpr0_t** texpr,
 				size_t size,
-				const box_t* dest)
+				box_t* dest)
 {
   size_t i;
   box_t* res;
@@ -58,7 +58,7 @@ box_t* box_assign_linexpr_array(ap_manager_t* man,
   for (i=0;i<size;i++){
     itv_eval_ap_linexpr0(intern->itv,
 			 res->p[tdim[i]],
-			 (const itv_t*)a->p,texpr[i]);
+			 (itv_t*)a->p,texpr[i]);
   }
   if (destructive) box_free(man,a);
   if (dest)
@@ -71,10 +71,10 @@ box_t* box_assign_linexpr_array(ap_manager_t* man,
 box_t* box_substitute_linexpr_array(ap_manager_t* man,
 				    bool destructive,
 				    box_t* a,
-				    const ap_dim_t* tdim, 
-				    const ap_linexpr0_t*const* texpr,
+				    ap_dim_t* tdim, 
+				    ap_linexpr0_t** texpr,
 				    size_t size,
-				    const box_t* dest)
+				    box_t* dest)
 {
   return (box_t*)ap_generic_substitute_linexpr_array(man,destructive,a,
 						     tdim,texpr,size,
@@ -84,8 +84,8 @@ box_t* box_substitute_linexpr_array(ap_manager_t* man,
 box_t* box_substitute_linexpr(ap_manager_t* man,
 			      bool destructive,
 			      box_t* a,
-			      ap_dim_t dim, const ap_linexpr0_t* linexpr,
-			      const box_t* dest)
+			      ap_dim_t dim, ap_linexpr0_t* linexpr,
+			      box_t* dest)
 {
   return (box_t*)ap_generic_substitute_linexpr_array(man,destructive,a,
 						     &dim,&linexpr,1,

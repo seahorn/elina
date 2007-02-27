@@ -32,31 +32,32 @@ dist: $(H_FILES) Makefile README
 clean:
 	rm -f testl* testmp* testdbl testldbl
 
-FLAGS = -Wswitch -Werror-implicit-function-declaration -Wall -std=c99 -g -I$(APRON_PREFIX)/include -I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include -L$(APRON_PREFIX)/lib -L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib
-LIBS = -lapron -lmpfr -lgmp -lm
+ICFLAGS = -I$(APRON_PREFIX)/include -I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include -L$(APRON_PREFIX)/lib -L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib
+
+CLIBS = -lapron -lmpfr -lgmp -lm
 
 test: testli testlli testlr testllr testmpz testmpq testdbl testldbl
 
 testli: test.c
-	gcc $(FLAGS) -DNUM_LONGINT -o $@ test.c $(LIBS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGINT -o $@ test.c $(CLIBS)
 
 testlli: test.c
-	gcc $(FLAGS) -DNUM_LONGLONGINT -o $@ test.c $(LIBS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGINT -o $@ test.c $(CLIBS)
 
 testlr: test.c
-	gcc $(FLAGS) -DNUM_LONGRAT -o $@ test.c $(LIBS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGRAT -o $@ test.c $(CLIBS)
 
 testllr: test.c
-	gcc $(FLAGS) -DNUM_LONGLONGRAT -o $@ test.c $(LIBS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGRAT -o $@ test.c $(CLIBS)
 
 testmpz: test.c
-	gcc $(FLAGS) -DNUM_MPZ -o $@ test.c $(LIBS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPZ -o $@ test.c $(CLIBS)
 
 testmpq: test.c
-	gcc $(FLAGS) -DNUM_MPQ -o $@ test.c $(LIBS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -o $@ test.c $(CLIBS)
 
 testdbl: test.c
-	gcc $(FLAGS) -DNUM_DOUBLE -o $@ test.c $(LIBS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -o $@ test.c $(CLIBS)
 
 testldbl: test.c
-	gcc $(FLAGS) -DNUM_LONGDOUBLE -o $@ test.c $(LIBS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGDOUBLE -o $@ test.c $(CLIBS)

@@ -11,7 +11,7 @@
 /* I. Linear constraints */
 /* ********************************************************************** */
 
-void ap_lincons0_fprint(FILE* stream, const ap_lincons0_t* cons, char** name_of_dim)
+void ap_lincons0_fprint(FILE* stream, ap_lincons0_t* cons, char** name_of_dim)
 {
   ap_linexpr0_fprint(stream,cons->linexpr0,name_of_dim);
   fprintf(stream,
@@ -19,14 +19,14 @@ void ap_lincons0_fprint(FILE* stream, const ap_lincons0_t* cons, char** name_of_
 	  " = 0" :
 	  ( cons->constyp == AP_CONS_SUPEQ ?
 	    " >= 0" :
-	    (cons->constyp == AP_CONS_SUP ? 
+	    (cons->constyp == AP_CONS_SUP ?
 	     " > 0" :
 	     "\"ERROR in ap_lincons0_fprint\"")));
   if (cons->constyp == AP_CONS_EQMOD){
     assert(cons->scalar!=NULL);
     fprintf(stream," mod ");
     ap_scalar_fprint(stream,cons->scalar);
-  } 
+  }
 }
 
 ap_lincons0_t ap_lincons0_make_unsat()
@@ -38,14 +38,14 @@ ap_lincons0_t ap_lincons0_make_unsat()
   return ap_lincons0_make(AP_CONS_SUPEQ,expr,NULL);
 }
 
-bool ap_lincons0_is_unsat(const ap_lincons0_t* cons)
+bool ap_lincons0_is_unsat(ap_lincons0_t* cons)
 {
   size_t i,nbcoeffs;
   ap_dim_t dim;
   ap_coeff_t* coeff;
   int sgn;
   ap_linexpr0_t* expr = cons->linexpr0;
-  
+
   nbcoeffs = 0;
   ap_linexpr0_ForeachLinterm(expr,i,dim,coeff){
     if (!ap_coeff_zero(coeff)){
@@ -73,18 +73,18 @@ bool ap_lincons0_is_unsat(const ap_lincons0_t* cons)
       switch(cons->constyp){
       case AP_CONS_EQ:
       case AP_CONS_EQMOD:
-	return 
+	return
 	  sgn < 0 ||
 	  ap_scalar_sgn(expr->cst.val.interval->inf)>0;
       case AP_CONS_DISEQ:
-	return 
-	  sgn>=0 && 
+	return
+	  sgn>=0 &&
 	  ap_scalar_sgn(expr->cst.val.interval->inf)<=0;
       case AP_CONS_SUPEQ:
 	return sgn<0;
       case AP_CONS_SUP:
 	return (sgn<=0);
-      }	
+      }
     default:
       abort();
     }
@@ -100,7 +100,7 @@ bool ap_lincons0_is_unsat(const ap_lincons0_t* cons)
 ap_lincons0_array_t ap_lincons0_array_make(size_t size)
 {
   ap_lincons0_array_t array;
-  int i;
+  size_t i;
   array.size = size;
   array.p = (size==0) ? NULL : (ap_lincons0_t*)malloc(size*sizeof(ap_lincons0_t));
   for (i=0; i<size; i++){
@@ -112,7 +112,7 @@ ap_lincons0_array_t ap_lincons0_array_make(size_t size)
 
 void ap_lincons0_array_clear(ap_lincons0_array_t* array)
 {
-  int i;
+  size_t i;
 
   if (array->p!=NULL){
     for (i=0; i<array->size; i++)
@@ -123,8 +123,8 @@ void ap_lincons0_array_clear(ap_lincons0_array_t* array)
 }
 
 void ap_lincons0_array_fprint(FILE* stream,
-			 const ap_lincons0_array_t* array,
-			 char** name_of_dim)
+			      ap_lincons0_array_t* array,
+			      char** name_of_dim)
 {
   size_t i;
 
@@ -145,7 +145,7 @@ void ap_lincons0_array_fprint(FILE* stream,
 /* II.1 Change of dimensions and permutations */
 /* ====================================================================== */
 void ap_lincons0_array_add_dimensions_with(ap_lincons0_array_t* array,
-					const ap_dimchange_t* dimchange)
+					   ap_dimchange_t* dimchange)
 {
   size_t i;
   for(i=0; i<array->size; i++){
@@ -153,8 +153,8 @@ void ap_lincons0_array_add_dimensions_with(ap_lincons0_array_t* array,
     if (expr) ap_linexpr0_add_dimensions_with(expr,dimchange);
   }
 }
-ap_lincons0_array_t ap_lincons0_array_add_dimensions(const ap_lincons0_array_t* array,
-						     const ap_dimchange_t* dimchange)
+ap_lincons0_array_t ap_lincons0_array_add_dimensions(ap_lincons0_array_t* array,
+						     ap_dimchange_t* dimchange)
 {
   size_t i;
   ap_lincons0_array_t narray;
@@ -167,7 +167,7 @@ ap_lincons0_array_t ap_lincons0_array_add_dimensions(const ap_lincons0_array_t* 
 }
 
 void ap_lincons0_array_permute_dimensions_with(ap_lincons0_array_t* array,
-						  const ap_dimperm_t* perm)
+					       ap_dimperm_t* perm)
 {
   size_t i;
   for(i=0; i<array->size; i++){
@@ -175,12 +175,12 @@ void ap_lincons0_array_permute_dimensions_with(ap_lincons0_array_t* array,
     if (expr) ap_linexpr0_permute_dimensions_with(expr,perm);
   }
 }
-ap_lincons0_array_t ap_lincons0_array_permute_dimensions(const ap_lincons0_array_t* array,
-							 const ap_dimperm_t* perm)
+ap_lincons0_array_t ap_lincons0_array_permute_dimensions(ap_lincons0_array_t* array,
+							 ap_dimperm_t* perm)
 {
   size_t i;
   ap_lincons0_array_t narray;
-  
+
   narray = ap_lincons0_array_make(array->size);
   for(i=0; i<array->size; i++){
     narray.p[i] =  ap_lincons0_permute_dimensions(&array->p[i],perm);

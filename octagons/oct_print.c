@@ -143,9 +143,9 @@ ap_membuf_t oct_serialize_raw(ap_manager_t* man, oct_t* a)
   ap_membuf_t buf;
   size_t n = 10;
   if (a->m) 
-    n += bound_serialized_size_array((const bound_t*)a->m,matsize(a->dim));
+    n += bound_serialized_size_array(a->m,matsize(a->dim));
   else if (a->closed) 
-    n += bound_serialized_size_array((const bound_t*)a->closed,matsize(a->dim));
+    n += bound_serialized_size_array(a->closed,matsize(a->dim));
   checked_malloc(buf.ptr,char,n,buf.size=0;return buf;);
   ((unsigned char*)buf.ptr)[0] = num_serialize_id();
   num_dump_word32((char*)buf.ptr+2,a->dim);
@@ -154,13 +154,13 @@ ap_membuf_t oct_serialize_raw(ap_manager_t* man, oct_t* a)
   if (a->m) {
     ((char*)buf.ptr)[1] = 1;
     buf.size = 10 + bound_serialize_array
-      ((char*)buf.ptr+10,(const bound_t*)a->m,matsize(a->dim));
+      ((char*)buf.ptr+10,a->m,matsize(a->dim));
     
   }
   else if (a->closed) {
     ((char*)buf.ptr)[1] = 2;
     buf.size = 10 + bound_serialize_array
-      ((char*)buf.ptr+10,(const bound_t*)a->closed,matsize(a->dim));
+      ((char*)buf.ptr+10,a->closed,matsize(a->dim));
   }
   else {
     ((char*)buf.ptr)[1] = 0;

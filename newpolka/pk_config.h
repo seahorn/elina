@@ -111,8 +111,8 @@ static inline size_t numint_size2(numint_t a)
 
 
 /* Do not change ! */
-static const int polka_cst = 1;
-static const int polka_eps = 2;
+static const size_t polka_cst = 1;
+static const size_t polka_eps = 2;
 
 #ifdef __cplusplus
 }

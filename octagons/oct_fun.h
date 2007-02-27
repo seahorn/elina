@@ -145,18 +145,18 @@ oct_t* oct_top(ap_manager_t* man, size_t intdim, size_t realdim);
 
 oct_t* oct_of_box(ap_manager_t* man,
 		  size_t intdim, size_t realdim,
-		  const ap_interval_t** tinterval);
+		  ap_interval_t** tinterval);
   /* Abstract an hypercube defined by the array of intervals
      of size intdim+realdim */
 
 oct_t* oct_of_lincons_array(ap_manager_t* man,
                               size_t intdim, size_t realdim,
-                              const ap_lincons0_array_t* array);
+                              ap_lincons0_array_t* array);
   /* Abstract a convex polyhedra defined by an array of linear constraints */
 
 oct_t* oct_of_generator_array(ap_manager_t* man,
                               size_t intdim, size_t realdim,
-                              const ap_generator0_array_t* array);
+                              ap_generator0_array_t* array);
   /* Abstract a convex polyhedra defined an array of generators */
 
 
@@ -187,11 +187,11 @@ tbool_t oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2);
   /* equality check */
 
 /* NOT IMPLEMENTED */
-tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a, const ap_lincons0_t* lincons);
+tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a, ap_lincons0_t* lincons);
   /* does the abstract value satisfy the linear constraint ? */
 
 tbool_t oct_sat_interval(ap_manager_t* man, oct_t* a,
-			 ap_dim_t dim, const ap_interval_t* interval);
+			 ap_dim_t dim, ap_interval_t* interval);
   /* is the dimension included in the interval in the abstract value ? */
 
 tbool_t oct_is_dimension_unconstrained(ap_manager_t* man, oct_t* a,
@@ -203,7 +203,7 @@ tbool_t oct_is_dimension_unconstrained(ap_manager_t* man, oct_t* a,
 /* ============================================================ */
 
 ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
-				 oct_t* a, const ap_linexpr0_t* expr);
+				 oct_t* a, ap_linexpr0_t* expr);
   /* Returns the interval taken by a linear expression
      over the abstract value */
 
@@ -245,13 +245,13 @@ oct_t* oct_join_array(ap_manager_t* man, oct_t** tab, size_t size);
 
 oct_t* oct_meet_lincons_array(ap_manager_t* man,
 			      bool destructive, oct_t* a,
-			      const ap_lincons0_array_t* array);
+			      ap_lincons0_array_t* array);
   /* Meet of an abstract value with a set of constraints
      (generalize oct_of_lincons_array) */
 
 oct_t* oct_add_ray_array(ap_manager_t* man,
 			 bool destructive, oct_t* a,
-			 const ap_generator0_array_t* array);
+			 ap_generator0_array_t* array);
   /* Generalized time elapse operator.
      Note: this is not like adding arbitrary generators because:
      - oct_add_ray_array is strict
@@ -264,12 +264,12 @@ oct_t* oct_add_ray_array(ap_manager_t* man,
 
 oct_t* oct_assign_linexpr(ap_manager_t* man,
 			  bool destructive, oct_t* a,
-			  ap_dim_t dim, const ap_linexpr0_t* expr,
+			  ap_dim_t dim, ap_linexpr0_t* expr,
 			  oct_t* dest);
 
 oct_t* oct_substitute_linexpr(ap_manager_t* man,
 			      bool destructive, oct_t* a,
-			      ap_dim_t dim, const ap_linexpr0_t* expr,
+			      ap_dim_t dim, ap_linexpr0_t* expr,
 			      oct_t* dest);
 
   /* Assignement and Substitution of a single dimension by a (interval)
@@ -284,14 +284,14 @@ oct_t* oct_substitute_linexpr(ap_manager_t* man,
 
 oct_t* oct_assign_linexpr_array(ap_manager_t* man,
 				bool destructive, oct_t* a,
-				const ap_dim_t* tdim,
-				const ap_linexpr0_t** texpr,
+				ap_dim_t* tdim,
+				ap_linexpr0_t** texpr,
 				size_t size,
 				oct_t* dest);
 oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
 				    bool destructive, oct_t* a,
-				    const ap_dim_t* tdim,
-				    const ap_linexpr0_t** texpr,
+				    ap_dim_t* tdim,
+				    ap_linexpr0_t** texpr,
 				    size_t size,
 				    oct_t* dest);
 
@@ -310,7 +310,7 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
 
 oct_t* oct_forget_array(ap_manager_t* man,
 			bool destructive, oct_t* a,
-			const ap_dim_t* tdim, size_t size,
+			ap_dim_t* tdim, size_t size,
 			bool project);
 
 /* ============================================================ */
@@ -319,17 +319,17 @@ oct_t* oct_forget_array(ap_manager_t* man,
 
 oct_t* oct_add_dimensions(ap_manager_t* man,
 			  bool destructive, oct_t* a,
-			  const ap_dimchange_t* dimchange,
+			  ap_dimchange_t* dimchange,
 			  bool project);
 
 oct_t* oct_remove_dimensions(ap_manager_t* man,
 			     bool destructive, oct_t* a,
-			     const ap_dimchange_t* dimchange);
+			     ap_dimchange_t* dimchange);
 
 oct_t* oct_permute_dimensions(ap_manager_t* man,
 			      bool destructive,
 			      oct_t* a,
-			      const ap_dimperm_t* permutation);
+			      ap_dimperm_t* permutation);
 
 /* ============================================================ */
 /* III.5 Expansion and folding of dimensions */
@@ -352,7 +352,7 @@ oct_t* oct_expand(ap_manager_t* man,
 
 oct_t* oct_fold(ap_manager_t* man,
 		bool destructive, oct_t* a,
-		const ap_dim_t* tdim,
+		ap_dim_t* tdim,
 		size_t size);
   /* Fold the dimensions in the array tdim of size n>=1 and put the result
      in the first dimension in the array. The other dimensions of the array
@@ -367,7 +367,7 @@ oct_t* oct_widening(ap_manager_t* man, oct_t* a1, oct_t* a2);
   
 oct_t* oct_widening_thresholds(ap_manager_t* man,
 			       oct_t* a1, oct_t* a2,
-			       const ap_scalar_t** array,
+			       ap_scalar_t** array,
 			       size_t nb);
   /* Widening with threshold.
      array is assumed to contain nb thresholds, sorted in increasing order. */
@@ -375,12 +375,12 @@ oct_t* oct_widening_thresholds(ap_manager_t* man,
 oct_t* oct_narrowing(ap_manager_t* man, oct_t* a1, oct_t* a2);
   /* Standard narrowing: refine only +oo constraint */
 
-oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, const ap_scalar_t* epsilon);
+oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, ap_scalar_t* epsilon);
   /* Enlarge each bound by epsilon times the maximum finite bound in 
      the octagon */
 
 oct_t* oct_add_epsilon_bin(ap_manager_t* man, oct_t* a1, oct_t* a2, 
-			   const ap_scalar_t* epsilon);
+			   ap_scalar_t* epsilon);
   /* Enlarge each bound from a1 by epsilon times the maximum finite bound in 
      a2. Only bounds in a1 that are not stable in a2 are enlared. */
 

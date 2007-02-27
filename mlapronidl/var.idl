@@ -14,7 +14,8 @@ struct apron_var_ptr ap_var_t;
 
 ap_var_t ap_var_of_string([string]char* name);
 int ap_var_compare(ap_var_t var1, ap_var_t var2);
-[string]char* ap_var_to_string(ap_var_t var);
+[string]char* ap_var_to_string(ap_var_t var)
+  quote(call,"_res = ((apron_var_ptr)var)->name;");
 int ap_var_hash(ap_var_t var);
 
 quote(MLMLI,"(** APRON Variables *)")

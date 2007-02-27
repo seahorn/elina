@@ -42,9 +42,9 @@ typedef numint_native numint_t[1];
 /* Assignement */
 /* ====================================================================== */
 
-static inline void numint_set(numint_t a, const numint_t b)
+static inline void numint_set(numint_t a, numint_t b)
 { *a = *b; }
-static inline void numint_set_array(numint_t* a, const numint_t* b, size_t size)
+static inline void numint_set_array(numint_t* a, numint_t* b, size_t size)
 { memcpy(a,b,size*sizeof(numint_t)); }
 static inline void numint_set_int(numint_t a, long int i)
 { *a = (numint_native)i; }
@@ -60,7 +60,7 @@ static inline void numint_init_array(numint_t* a, size_t size)
   size_t i; 
   for (i=0; i<size; i++) *(a[i]) = NUMINT_ZERO; 
 }
-static inline void numint_init_set(numint_t a, const numint_t b)
+static inline void numint_init_set(numint_t a, numint_t b)
 { numint_set(a,b); }
 static inline void numint_init_set_int(numint_t a, long int i)
 { numint_set_int(a,i); }
@@ -74,29 +74,29 @@ static inline void numint_clear_array(numint_t* a, size_t size)
 /* Arithmetic Operations */
 /* ====================================================================== */
 
-static inline void numint_neg(numint_t a, const numint_t b)
+static inline void numint_neg(numint_t a, numint_t b)
 { *a = -(*b); }
-static inline void numint_abs(numint_t a, const numint_t b)
+static inline void numint_abs(numint_t a, numint_t b)
 #if defined(NUMINT_LONGINT)
 { *a = labs(*b); }
 #else
 { *a = llabs(*b); }
 #endif
-static inline void numint_add(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_add(numint_t a, numint_t b, numint_t c)
 { *a = *b + *c; }
-static inline void numint_add_uint(numint_t a, const numint_t b, unsigned long int c)
+static inline void numint_add_uint(numint_t a, numint_t b, unsigned long int c)
 { *a = *b + c; }
-static inline void numint_sub(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_sub(numint_t a, numint_t b, numint_t c)
 { *a = *b - *c; }
-static inline void numint_sub_uint(numint_t a, const numint_t b, unsigned long int c)
+static inline void numint_sub_uint(numint_t a, numint_t b, unsigned long int c)
 { *a = *b - c; }
-static inline void numint_mul(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_mul(numint_t a, numint_t b, numint_t c)
 { *a = *b * *c; }
-static inline void numint_mul_2(numint_t a, const numint_t b)
+static inline void numint_mul_2(numint_t a, numint_t b)
 { *a = *b << 1; }
 
 #if defined(NUMINT_LONGINT)
-static inline void numint_fdiv_q(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_fdiv_q(numint_t a, numint_t b, numint_t c)
 {
   ldiv_t d = ldiv(*b,*c); /* rounding towards 0 */
   *a = d.quot;
@@ -104,7 +104,7 @@ static inline void numint_fdiv_q(numint_t a, const numint_t b, const numint_t c)
     *a = *a - 1; /* rounding towards minus infty */
   }
 } 
-static inline void numint_cdiv_q(numint_t q, const numint_t a, const numint_t b)
+static inline void numint_cdiv_q(numint_t q, numint_t a, numint_t b)
 {
   ldiv_t d = ldiv(*a,*b); /* rounding towards 0 */
   if (d.quot>=NUMINT_ZERO && d.rem!=NUMINT_ZERO){
@@ -112,7 +112,7 @@ static inline void numint_cdiv_q(numint_t q, const numint_t a, const numint_t b)
   }
   *q = d.quot;
 } 
-static inline void numint_cdiv_qr(numint_t q, numint_t r, const numint_t a, const numint_t b)
+static inline void numint_cdiv_qr(numint_t q, numint_t r, numint_t a, numint_t b)
 {
   ldiv_t d = ldiv(*a,*b); /* rounding towards 0 */
   if (d.quot>=NUMINT_ZERO && d.rem!=NUMINT_ZERO){
@@ -123,7 +123,7 @@ static inline void numint_cdiv_qr(numint_t q, numint_t r, const numint_t a, cons
   *r = d.rem;
 } 
 #else
-static inline void numint_fdiv_q(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_fdiv_q(numint_t a, numint_t b, numint_t c)
 {
   lldiv_t d = lldiv(*b,*c); /* rounding towards 0 */
   *a = d.quot;
@@ -131,7 +131,7 @@ static inline void numint_fdiv_q(numint_t a, const numint_t b, const numint_t c)
     *a = *a - 1; /* rounding towards minus infty */
   }
 } 
-static inline void numint_cdiv_q(numint_t q, const numint_t a, const numint_t b)
+static inline void numint_cdiv_q(numint_t q, numint_t a, numint_t b)
 {
   lldiv_t d = lldiv(*a,*b); /* rounding towards 0 */
   if (d.quot>=NUMINT_ZERO && d.rem!=NUMINT_ZERO){
@@ -139,7 +139,7 @@ static inline void numint_cdiv_q(numint_t q, const numint_t a, const numint_t b)
   }
   *q = d.quot;
 } 
-static inline void numint_cdiv_qr(numint_t q, numint_t r, const numint_t a, const numint_t b)
+static inline void numint_cdiv_qr(numint_t q, numint_t r, numint_t a, numint_t b)
 {
   lldiv_t d = lldiv(*a,*b); /* rounding towards 0 */
   if (d.quot>=NUMINT_ZERO && d.rem!=NUMINT_ZERO){
@@ -151,24 +151,24 @@ static inline void numint_cdiv_qr(numint_t q, numint_t r, const numint_t a, cons
 } 
 #endif
 
-static inline void numint_cdiv_2(numint_t a, const numint_t b)
+static inline void numint_cdiv_2(numint_t a, numint_t b)
 { *a = (*b>=NUMINT_ZERO) ? (*b+1)/2 : *b/2; }
-static inline void numint_cdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c)
+static inline void numint_cdiv_q_2exp(numint_t a, numint_t b, unsigned long int c)
 { *a = (*b >> c)+(*b & ((NUMINT_ONE<<c)-NUMINT_ONE) ? 1 : 0); }
-static inline void numint_fdiv_q_2exp(numint_t a, const numint_t b, unsigned long int c)
+static inline void numint_fdiv_q_2exp(numint_t a, numint_t b, unsigned long int c)
 { *a = (*b >> c); }
-static inline void numint_min(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_min(numint_t a, numint_t b, numint_t c)
 { *a = (*b<=*c) ? *b : *c; }
-static inline void numint_max(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_max(numint_t a, numint_t b, numint_t c)
 { *a = (*b>=*c) ? *b : *c; }
 
 /* ====================================================================== */
 /* Arithmetic Integer Operations */
 /* ====================================================================== */
 
-static inline void numint_divexact(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_divexact(numint_t a, numint_t b, numint_t c)
 { *a = *b / *c; }
-static inline void numint_mod(numint_t a, const numint_t b, const numint_t c)
+static inline void numint_mod(numint_t a, numint_t b, numint_t c)
 { *a = *b % *c; }
 static inline numint_native _gcd_aux2(numint_native a, numint_native b)
 { /* a is supposed to be greater than b */
@@ -186,20 +186,20 @@ static inline numint_native _gcd_aux(numint_native a, numint_native b)
   numint_abs(&b,&b);
   return (a>=b) ? _gcd_aux2(a,b) : _gcd_aux2(b,a);
 }
-static inline void numint_gcd(numint_t a, const numint_t b,  const numint_t c)
+static inline void numint_gcd(numint_t a, numint_t b,  numint_t c)
 { *a = _gcd_aux(*b,*c); }
 
 /* ====================================================================== */
 /* Arithmetic Tests */
 /* ====================================================================== */
 
-static inline int numint_sgn(const numint_t a)
+static inline int numint_sgn(numint_t a)
 { return (*a==NUMINT_ZERO ? 0 : (*a>NUMINT_ZERO ? 1 : -1)); }
-static inline int numint_cmp(const numint_t a, const numint_t b)
+static inline int numint_cmp(numint_t a, numint_t b)
 { return (*a==*b ? 0 : (*a>*b ? 1 : -1)); }
-static inline int numint_cmp_int(const numint_t a, long int b)
+static inline int numint_cmp_int(numint_t a, long int b)
 { return (*a==b ? 0 : (*a>b ? 1 : -1)); }
-static inline bool numint_equal(const numint_t a, const numint_t b)
+static inline bool numint_equal(numint_t a, numint_t b)
 { return *a==*b; }
 
 /* ====================================================================== */
@@ -207,18 +207,18 @@ static inline bool numint_equal(const numint_t a, const numint_t b)
 /* ====================================================================== */
 
 #if defined(NUMINT_LONGINT)
-static inline void numint_print(const numint_t a)
+static inline void numint_print(numint_t a)
 { printf("%li",*a); }
-static inline void numint_fprint(FILE* stream, const numint_t a)
+static inline void numint_fprint(FILE* stream, numint_t a)
 { fprintf(stream,"%li",*a); }
-static inline int numint_snprint(char* s, size_t size, const numint_t a)
+static inline int numint_snprint(char* s, size_t size, numint_t a)
 { return snprintf(s,size,"%li",*a); }
 #else
-static inline void numint_print(const numint_t a)
+static inline void numint_print(numint_t a)
 { printf("%lli",*a); }
-static inline void numint_fprint(FILE* stream, const numint_t a)
+static inline void numint_fprint(FILE* stream, numint_t a)
 { fprintf(stream,"%lli",*a); }
-static inline int numint_snprint(char* s, size_t size, const numint_t a)
+static inline int numint_snprint(char* s, size_t size, numint_t a)
 { return snprintf(s,size,"%lli",*a); }
 #endif
 
@@ -236,7 +236,7 @@ static inline void numint_set_int2(numint_t a, long int i, unsigned long int j)
 }
 
 /* mpz -> numint */
-static inline bool numint_set_mpz(numint_t a, const mpz_t b)
+static inline bool numint_set_mpz(numint_t a, mpz_t b)
 #if defined(NUMINT_LONGINT)
 { *a = mpz_get_si(b); return true; }
 #else
@@ -266,7 +266,7 @@ static inline bool numint_set_mpz(numint_t a, const mpz_t b)
 #endif
 
 /* mpq -> numint */
-static inline bool numint_set_mpq_tmp(numint_t a, const mpq_t b, 
+static inline bool numint_set_mpq_tmp(numint_t a, mpq_t b, 
 				      mpz_t q, mpz_t r)
 { 
   mpz_cdiv_qr(q,r, mpq_numref(b),mpq_denref(b));
@@ -274,7 +274,7 @@ static inline bool numint_set_mpq_tmp(numint_t a, const mpq_t b,
   bool res = (mpz_sgn(r)==0);
   return res;
 }
-static inline bool numint_set_mpq(numint_t a, const mpq_t b)
+static inline bool numint_set_mpq(numint_t a, mpq_t b)
 { 
   mpz_t q,r;
   mpz_init(q);mpz_init(r);
@@ -290,11 +290,11 @@ static inline bool numint_set_double(numint_t a, double b)
   return (b==c);
 }
 /* numint -> int */
-static inline bool int_set_numint(long int* a, const numint_t b)
+static inline bool int_set_numint(long int* a, numint_t b)
 { *a = (long int)(*b); return true; }
 
 /* numint -> mpz */
-static inline bool mpz_set_numint(mpz_t a, const numint_t b)
+static inline bool mpz_set_numint(mpz_t a, numint_t b)
 #if defined(NUMINT_LONGINT)
 { mpz_set_si(a,*b); return true; }
 #else
@@ -313,7 +313,7 @@ static inline bool mpz_set_numint(mpz_t a, const numint_t b)
 #endif
 
 /* numint -> mpq */
-static inline bool mpq_set_numint(mpq_t a, const numint_t b)
+static inline bool mpq_set_numint(mpq_t a, numint_t b)
 #if defined(NUMINT_LONGINT)
 { mpq_set_si(a,*b,1); return true; }
 #else
@@ -325,7 +325,7 @@ static inline bool mpq_set_numint(mpq_t a, const numint_t b)
 #endif
 
 /* numint -> double */
-static inline bool double_set_numint(double* a, const numint_t b)
+static inline bool double_set_numint(double* a, numint_t b)
 { 
   *a = (double)(*b); 
   double aa = -((double)(-(*b)));
@@ -333,7 +333,7 @@ static inline bool double_set_numint(double* a, const numint_t b)
 }
 
 
-static inline bool mpz_fits_numint(const mpz_t a)
+static inline bool mpz_fits_numint(mpz_t a)
 #if defined(NUMINT_LONGINT)
 { return mpz_fits_slong_p(a); }
 #else
@@ -343,13 +343,13 @@ static inline bool mpz_fits_numint(const mpz_t a)
 }
 #endif
 
-static inline bool mpq_fits_numint_tmp(const mpq_t a, mpz_t mpz)
+static inline bool mpq_fits_numint_tmp(mpq_t a, mpz_t mpz)
 {
   mpz_cdiv_q(mpz,mpq_numref(a),mpq_denref(a));
   bool res = mpz_fits_numint(mpz);
   return res;
 }
-static inline bool mpq_fits_numint(const mpq_t a)
+static inline bool mpq_fits_numint(mpq_t a)
 {
   mpz_t mpz;
   mpz_init(mpz);
@@ -361,13 +361,13 @@ static inline bool double_fits_numint(double a)
 {
   return a>=(double)(-NUMINT_MAX) && a<=(double)NUMINT_MAX;
 }
-static inline bool numint_fits_int(const numint_t a)
+static inline bool numint_fits_int(numint_t a)
 #if defined(NUMINT_LONGINT)
 { return true; }
 #else
 { return (*a>=-LONG_MAX && *a<=LONG_MAX); }
 #endif
-static inline bool numint_fits_double(const numint_t a)
+static inline bool numint_fits_double(numint_t a)
 { return true; }
 
 /* ====================================================================== */
@@ -377,7 +377,7 @@ static inline bool numint_fits_double(const numint_t a)
 static inline unsigned char numint_serialize_id(void)
 { return sizeof(numint_t)/4; }
 
-static inline size_t numint_serialize(void* dst, const numint_t src)
+static inline size_t numint_serialize(void* dst, numint_t src)
 {
   num_store_words8(dst,src,sizeof(numint_t));
   return sizeof(numint_t);
@@ -389,7 +389,7 @@ static inline size_t numint_deserialize(numint_t dst, const void* src)
   return sizeof(numint_t);
 }
 
-static inline size_t numint_serialized_size(const numint_t a)
+static inline size_t numint_serialized_size(numint_t a)
 { return sizeof(numint_t); }
 
 #endif

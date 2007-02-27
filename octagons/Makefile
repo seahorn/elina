@@ -22,22 +22,8 @@ SRCDIR = $(shell pwd)
 # Programs
 #---------------------------------------
 
-# Installation program
-INSTALL = install
-INSTALLd = install -d
-
-# C compiler and C preprocessor
-CC = gcc
-
 # Library creation
-AR = ar
 SHARED = gcc -shared
-
-OCAMLC = $(CAML_PREFIX)/bin/ocamlc.opt
-OCAMLOPT = $(CAML_PREFIX)/bin/ocamlopt.opt
-OCAMLMKTOP = $(CAML_PREFIX)/bin/ocamlmktop
-OCAMLMKLIB = $(CAML_PREFIX)/bin/ocamlmklib
-CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 
 #---------------------------------------
 # Flags
@@ -52,19 +38,10 @@ ICFLAGS = \
 -I../apron \
 -I../mlapronidl \
 -I../num \
--I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml \
--Wall -Wextra -Wundef -Wbad-function-cast -Wcast-align \
--Wstrict-prototypes -Wdisabled-optimization \
--Wno-unused \
--std=c99
-# -Winline
-
-CFLAGS = $(OPTFLAGS) $(ICFLAGS) -DNDEBUG
+-I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml 
 
 # Caml
 OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
-OCAMLFLAGS = -g
-OCAMLOPTFLAGS = -inline 20
 
 #---------------------------------------
 # Files
@@ -120,8 +97,11 @@ clean:
 	/bin/rm -f *.[ao] *.so octtest*
 	/bin/rm -f *.?.tex *.log *.aux *.bbl *.blg *.toc *.dvi *.ps *.pstex*
 	/bin/rm -fr *.cm[ioax] *.cmxa
-	/bin/rm -fr oct_caml.c oct.ml oct.mli octtop* octrun* manager.idl tmp
+	/bin/rm -fr octtop* octrun* tmp
 	/bin/rm -fr *~ \#*\#
+
+mostlyclean: clean
+	/bin/rm -fr oct_caml.c oct.ml oct.mli 
 
 install:
 	$(INSTALLd) $(INCDIR) $(INCDIR)/oct $(LIBDIR) $(BINDIR)
@@ -162,12 +142,13 @@ dist: Makefile COPYING README oct_doc.html sedscript_caml $(CCSOURCES) $(CCINC) 
 
 liboct%.a: $(subst .c,%.o,$(CCSOURCES))
 	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 liboct%.so: $(subst .c,%.o,$(CCSOURCES))
 	$(SHARED) -o $@ $^
 
 octtest%: liboct%.a oct_test%.o
-	$(CC) -o $@ oct_test$*.o \
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -o $@ oct_test$*.o \
 	-L. -loct$* \
 	-L../newpolka -lpolkag_debug \
 	-L../apron -lapron \
@@ -176,25 +157,25 @@ octtest%: liboct%.a oct_test%.o
 	-lm
 
 %_caml.o: %_caml.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) -DNUM_LONGINT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGINT -c -o $@ $<
 %Zi.o: %.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) -DNUM_LONGINT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGINT -c -o $@ $<
 %Zl.o: %.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) -DNUM_LONGLONGINT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGINT -c -o $@ $<
 %Zg.o: %.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) -DNUM_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 %Qi.o: %.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) -DNUM_LONGRAT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGRAT -c -o $@ $<
 %Ql.o: %.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
 %Qg.o: %.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 %Fd.o: %.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) -DNUM_DOUBLE -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -c -o $@ $<
 %Fl.o: %.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) -DNUM_LONGDOUBLE -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGDOUBLE -c -o $@ $<
 
 # TODO: mpfr ?
 
@@ -217,34 +198,37 @@ mlFd: oct.mli oct.cmi oct.cma oct.cmxa octtopFd octrunFd
 mlFl: oct.mli oct.cmi oct.cma oct.cmxa octtopFl octrunFl
 
 octtop%: oct.cma liboct_caml.a liboct%.a
-	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
+	$(OCAMLMKTOP) $(OCAMLFLAGS) $(OCAMLINC) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
 
 octrun%: oct.cma liboct_caml.a
-	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
 
 oct.cma: oct.cmi oct.cmo liboct_caml.a
-	$(OCAMLMKLIB) $(OCAMLINC) -o oct oct.cmo -loct_caml
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -custom -a -o $@ \
+	oct.cmo \
+	-ccopt "-L$(OCT_PREFIX)/lib" -cclib "-loct_caml"
 
 oct.cmxa oct.a: oct.cmi oct.cmx liboct_caml.a
-	$(OCAMLMKLIB) $(OCAMLINC) -o oct oct.cmx -loct_caml
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
+	oct.cmx \
+	-ccopt "-L$(OCT_PREFIX)/lib" -cclib "-loct_caml"
+	$(RANLIB) oct.a
 
 liboct_caml.a: oct_caml.o
 	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 liboct_caml.so: oct_caml.o
 	$(SHARED) -o $@ $^
 
-%_caml.c %.ml %.mli: %.idl sedscript_caml $(DEPS)
+rebuild: oct.idl
 	mkdir -p tmp
-	cp ../mlapronidl/*.idl tmp/
-	cp $*.idl tmp/
-	cd tmp && $(CAMLIDL) -no-include -nocpp -I $(MLAPRONIDL_PREFIX)/lib $*.idl
-	cp tmp/$*_stubs.c $*_caml.c
-	sed -f sedscript_caml tmp/$*.ml | grep --extended-regexp '^(.)+$$' >$*.ml
-	sed -f sedscript_caml tmp/$*.mli | grep --extended-regexp '^(.)+$$' >$*.mli
-
-manager.idl: ../mlapronidl/manager.idl
-	cp $^ $@
+	cp ../mlapronidl/*.idl tmp
+	cp oct.idl tmp/
+	cd tmp && $(CAMLIDL) -no-include -nocpp -I . oct.idl
+	cp tmp/oct_stubs.c oct_caml.c
+	sed -f sedscript_caml tmp/oct.ml | grep --extended-regexp '^(.)+$$' >oct.ml
+	sed -f sedscript_caml tmp/oct.mli | grep --extended-regexp '^(.)+$$' >oct.mli
 
 .PRECIOUS: %_caml.c %.ml %.mli %.cmi liboct%_caml.a liboct%_caml.so oct.cmx oct.cmo
 
