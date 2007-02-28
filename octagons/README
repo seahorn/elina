@@ -24,6 +24,19 @@ specific to the octagon implementation. For other features, you should read
 the generic APRON documentation.
 
 
+EASY START
+==========
+
+The main APRON makefile (likely ../Makefile)  should automatically build
+and install the octagon library.
+Actually, it only builds the most useful parts: the C libraries using GMP
+integers (liboctZg.a) and using doubles (liboctFd.a) as well as the OCaml
+wrapper (oct.cm(x)a) (provided HAS_OCAML has been defined in Makefile.config).
+
+The rest documents some extra things you can do by calling directly the
+Makefile in the octagon directory.
+
+
 C LIBRARY
 =========
 
@@ -97,21 +110,42 @@ Requirements:
  * the GMP library
  * the APRON library (including the apron, num, mlgmpidl, and mlapronidl
    modules)
- * camlidl
 
-How to compile (given a numeric suffix Xx):
+How to compile the library:
  1) make sure the Makefile.config has the following variables defined:
     CAML_PREFIX        where the standard OCaml distribution is installed
                        (without the /bin/ocaml suffix)
-    CAMLIDL_PREFIX     where the camlidl distribution is installed
     MLAPRONIDL_PREFIX  where the OCaml binding for APRON is installed
     MLGMPIDL_PREFIX    where the OCaml binding for GMP from APRON is installed
- 2) "make mlXx"
+ 2) "make ml"
  3) "make install" will install the OCaml module(s) in OCT_PREFIX/lib
 
-The library to link with is called octXx.cma, for byte-code, and octXx.cmxa 
-for native code.
-The corresponding module is always called Oct (without numeric suffix).
-Also, a top-level octtopXx and a byte-code run-time octrunXx are built and
-installed in OCT_PREFIX/bin.
+The library to link with is called oct.cma, for byte-code, and oct.cmxa 
+for native code. The corresponding module is called Oct.
+There is no numeric suffix here: the OCaml wrapper is independent from the
+number representation chosen.
 
+When building OCaml programs, you must link with both:
+- the generic OCaml library oct.cma or oct.cmxa
+- the C octagon library with the desired suffix.
+and all the apron & gmp libraries.
+See mltest.ml for an example.
+
+Top-level & byte-code runtime can be compiling using "make mlXx".
+Here, you must tell with numeric suffix "Xx" you wish to use.
+"make install" will install them in OCT_PREFIX/bin.
+
+
+CLEANING
+========
+
+"make clean" will delete all object files, but not auto-generated sources.
+
+"make mostlyclean" will also delete sources generated from idl files
+(only relevant for the OCaml library).
+After mostlyclean-ing, you will need to rebuild them manually with
+"make rebuild".
+This requires CAMLIDL_PREFIX to be setup properly in ../Makefile.config.
+
+"make distclean" will clean all objects (not auto-generated sources) and
+uninstall them.
