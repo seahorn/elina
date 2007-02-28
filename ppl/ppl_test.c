@@ -32,9 +32,9 @@ int intdim;
 
 void random_interval(ap_interval_t* i)
 {
-  int n1 = lrand48()%20-10;
-  int n2 = n1 + lrand48()%20;
-  int d  = lrand48()%3+1;
+  int n1 = rand()%20-10;
+  int n2 = n1 + rand()%20;
+  int d  = rand()%3+1;
   ap_interval_set_frac(i,n1,d,n2,d);
 }
 
@@ -44,8 +44,8 @@ ap_linexpr0_t* random_linexpr(int dim)
   ap_linexpr0_t* l = ap_linexpr0_alloc(AP_LINEXPR_DENSE,dim);
   int i;
   for (i=0;i<dim;i++)
-    ap_coeff_set_scalar_frac(l->p.coeff+i,lrand48()%20-10,lrand48()%4+1);
-  ap_coeff_set_scalar_frac(&l->cst,lrand48()%20-10,lrand48()%4+1);
+    ap_coeff_set_scalar_frac(l->p.coeff+i,rand()%20-10,rand()%4+1);
+  ap_coeff_set_scalar_frac(&l->cst,rand()%20-10,rand()%4+1);
   return l;
 }
 
@@ -53,9 +53,9 @@ ap_linexpr0_t* random_linexpr(int dim)
 ap_linexpr0_t* random_linexpr_inter(int dim)
 {
   ap_linexpr0_t* l = random_linexpr(dim);
-  int n1 = lrand48()%20-10;
-  int n2 = n1 + lrand48()%20;
-  int d  = lrand48()%4+1;
+  int n1 = rand()%20-10;
+  int n2 = n1 + rand()%20;
+  int d  = rand()%4+1;
   ap_linexpr0_set_cst_interval_frac(l,n1,d,n2,d);
   return l;
 }
@@ -66,7 +66,7 @@ ap_generator0_t random_generator(int dim, ap_gentyp_t g)
   ap_linexpr0_t* l = ap_linexpr0_alloc(AP_LINEXPR_DENSE,dim);
   int i;
   for (i=0;i<dim;i++)
-    ap_coeff_set_scalar_frac(l->p.coeff+i,lrand48()%20-2,lrand48()%4+1);
+    ap_coeff_set_scalar_frac(l->p.coeff+i,rand()%20-2,rand()%4+1);
   ap_coeff_set_scalar_int(&l->cst,1);
   return ap_generator0_make(g,l);
 }
@@ -81,12 +81,12 @@ ap_abstract0_t* random_poly(ap_manager_t* man,int dim)
   for (i=0;i<dim;i++)
     ap_interval_set_int(t[i],0,0);
   for (i=0;i<dim;i++)
-    ar.p[i] = random_generator(dim,(lrand48()%100>=90)?AP_GEN_RAY:AP_GEN_VERTEX);
+    ar.p[i] = random_generator(dim,(rand()%100>=90)?AP_GEN_RAY:AP_GEN_VERTEX);
   //ap_generator0_array_fprint(stderr,&ar,NULL);
   if (intdim)
-    p = ap_abstract0_of_box(man,dim/2,dim-dim/2,(const ap_interval_t**)t);
+    p = ap_abstract0_of_box(man,dim/2,dim-dim/2,(ap_interval_t**)t);
   else
-    p = ap_abstract0_of_box(man,0,dim,(const ap_interval_t**)t);
+    p = ap_abstract0_of_box(man,0,dim,(ap_interval_t**)t);
     
   ap_abstract0_add_ray_array(man,true,p,&ar);
   ap_generator0_array_clear(&ar);
@@ -160,7 +160,7 @@ int error_ = 0;
 /* tests */
 /* ***** */
 
-void test_conv()
+void test_conv(void)
 {
   int dim = 5;
   printf("\nconversions\n");
@@ -181,7 +181,7 @@ void test_conv()
 }
 
 
-void test_join()
+void test_join(void)
 {
   int dim = 4;
   printf("\nbinary join\n");
@@ -205,7 +205,7 @@ void test_join()
 
 #define NB 3
 
-void test_join_array()
+void test_join_array(void)
 {
   int i,dim = 3;
   printf("\narray join\n");
@@ -216,8 +216,8 @@ void test_join_array()
       pka[i] = random_poly(pk,dim);
       ppla[i] = convert(ppl,pka[i]);
     }
-    pkr = ap_abstract0_join_array(pk,(const ap_abstract0_t*const*)pka,NB);
-    pplr = ap_abstract0_join_array(ppl,(const ap_abstract0_t*const*)ppla,NB);
+    pkr = ap_abstract0_join_array(pk,(ap_abstract0_t**)pka,NB);
+    pplr = ap_abstract0_join_array(ppl,(ap_abstract0_t**)ppla,NB);
     RESULT('*');
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results");
@@ -228,7 +228,7 @@ void test_join_array()
   } ENDLOOP;
 }
 
-void test_meet()
+void test_meet(void)
 {
   int dim = 4;
   printf("\nbinary meet\n");
@@ -250,7 +250,7 @@ void test_meet()
   } ENDLOOP;
 }
 
-void test_meet_array()
+void test_meet_array(void)
 {
   int i,dim = 3;
   printf("\narray meet\n");
@@ -261,8 +261,8 @@ void test_meet_array()
       pka[i] = random_poly(pk,dim);
       ppla[i] = convert(ppl,pka[i]);
     }
-    pkr = ap_abstract0_meet_array(pk,(const ap_abstract0_t*const*)pka,NB);
-    pplr = ap_abstract0_meet_array(ppl,(const ap_abstract0_t*const*)ppla,NB);
+    pkr = ap_abstract0_meet_array(pk,(ap_abstract0_t**)pka,NB);
+    pplr = ap_abstract0_meet_array(ppl,(ap_abstract0_t**)ppla,NB);
     RESULT('*');
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results");
@@ -281,13 +281,13 @@ void test_dimadd(void)
     size_t i, dim = 8;
     ap_dimchange_t* a = ap_dimchange_alloc(0,3);
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
-    int proj = lrand48()%2;
+    int proj = rand()%2;
     ap_dimension_t d;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
     d = ap_abstract0_dimension(pk,pka);
     for (i=0;i<a->intdim+a->realdim;i++) {
-      a->dim[i] = lrand48()%3;
+      a->dim[i] = rand()%3;
       if (i) a->dim[i] += a->dim[i-1];
       if (a->dim[i]<d.intdim) { a->intdim++; a->realdim--; }
       assert(a->dim[i]<dim);
@@ -318,7 +318,7 @@ void test_dimrem(void)
     ppla = convert(ppl,pka);
     d = ap_abstract0_dimension(pk,pka);
     for (i=0;i<a->intdim+a->realdim;i++) {
-      a->dim[i] = lrand48()%3 + 1;
+      a->dim[i] = rand()%3 + 1;
       if (i) a->dim[i] += a->dim[i-1];
       if (a->dim[i]<d.intdim) { a->intdim++; a->realdim--; }
       assert(a->dim[i]<dim);
@@ -345,12 +345,12 @@ void test_forget(void)
     ap_dimchange_t* a = ap_dimchange_alloc(0,2);
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
     ap_dimension_t d;
-    int proj = lrand48()%2;
+    int proj = rand()%2;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
     d = ap_abstract0_dimension(pk,pka);
     for (i=0;i<a->intdim+a->realdim;i++) {
-      a->dim[i] = lrand48()%3 + 1;
+      a->dim[i] = rand()%3 + 1;
       if (i) a->dim[i] += a->dim[i-1];
       if (a->dim[i]<d.intdim) { a->intdim++; a->realdim--; }
       assert(a->dim[i]<dim);
@@ -384,8 +384,8 @@ void test_permute(void)
     ap_dimperm_set_id(p);
     for (i=0;i<p->size-1;i++) {
       int a, j;
-      if (i<d.intdim) j = i + (lrand48() % (d.intdim-i));
-      else j = i + (lrand48() % (d.intdim+d.realdim-i));
+      if (i<d.intdim) j = i + (rand() % (d.intdim-i));
+      else j = i + (rand() % (d.intdim+d.realdim-i));
       a = p->dim[j]; p->dim[j] = p->dim[i]; p->dim[i] = a;
     }
     pkr = ap_abstract0_permute_dimensions(pk,false,pka,p);
@@ -407,8 +407,8 @@ void test_expand(void)
   printf("\nexpand dimensions\n");
   LOOP {
     size_t i, dim = 6;
-    ap_dim_t dd = lrand48() % dim;
-    size_t n = (lrand48() % 2) + 1;
+    ap_dim_t dd = rand() % dim;
+    size_t n = (rand() % 2) + 1;
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
     ap_dimension_t d;
     pka = random_poly(pk,dim);
@@ -439,9 +439,9 @@ void test_fold(void)
     ppla = convert(ppl,pka);
     d = ap_abstract0_dimension(pk,pka);
     do {
-      dd[0] = lrand48() % dim;
-      if (dd[0]<d.intdim) dd[1] = lrand48() % (d.intdim-1);
-      else dd[1] = d.intdim + lrand48() % (d.realdim-1);
+      dd[0] = rand() % dim;
+      if (dd[0]<d.intdim) dd[1] = rand() % (d.intdim-1);
+      else dd[1] = d.intdim + rand() % (d.realdim-1);
     }
     while (dd[0]>=dd[1]);
     pkr = ap_abstract0_fold(pk,false,pka,dd,2);
@@ -468,8 +468,8 @@ void test_add_lincons(void)
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
     for (i=0;i<nb;i++) {
-      ar.p[i] = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ:
-				 (lrand48()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
+      ar.p[i] = ap_lincons0_make((rand()%100>=90)?AP_CONS_EQ:
+				 (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
 				 random_linexpr(dim),NULL);
     }
     pkr = ap_abstract0_meet_lincons_array(pk,false,pka,&ar);
@@ -496,7 +496,7 @@ void test_add_ray(void)
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
     for (i=0;i<nb;i++)
-      ar.p[i] = random_generator(dim,(lrand48()%100>=80)?AP_GEN_LINE:AP_GEN_RAY);
+      ar.p[i] = random_generator(dim,(rand()%100>=80)?AP_GEN_LINE:AP_GEN_RAY);
     pkr = ap_abstract0_add_ray_array(pk,false,pka,&ar);
     pplr = ap_abstract0_add_ray_array(ppl,false,ppla,&ar);
     RESULT('*');
@@ -522,8 +522,8 @@ void test_box(void)
     ppla = convert(ppl,pka);
     pki = ap_abstract0_to_box(pk,pka);
     ppli = ap_abstract0_to_box(ppl,ppla);
-    pkr = ap_abstract0_of_box(pk,0,dim,(const ap_interval_t*const*)pki);
-    pplr = ap_abstract0_of_box(ppl,0,dim,(const ap_interval_t*const*)ppli);
+    pkr = ap_abstract0_of_box(pk,0,dim,(ap_interval_t**)pki);
+    pplr = ap_abstract0_of_box(ppl,0,dim,(ap_interval_t**)ppli);
     RESULT('*');
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results");
@@ -604,8 +604,8 @@ void test_csat(void)
   LOOP {
     size_t dim = 6;
     ap_abstract0_t* pka,*ppla;
-    ap_lincons0_t l = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ:
-				       (lrand48()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
+    ap_lincons0_t l = ap_lincons0_make((rand()%100>=90)?AP_CONS_EQ:
+				       (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
 				       random_linexpr(dim),NULL);
     tbool_t pks,ppls;
     pka = random_poly(pk,dim);
@@ -629,7 +629,7 @@ void test_isat(void)
   printf("\ninterval saturation\n");
   LOOP {
     size_t dim = 6;
-    size_t p = lrand48() % dim;
+    size_t p = rand() % dim;
     ap_abstract0_t* pka,*ppla;
     ap_interval_t* i = ap_interval_alloc();
     tbool_t pks,ppls;
@@ -655,7 +655,7 @@ void test_assign(void)
   printf("\nassign\n");
   LOOP {
     size_t i, dim = 7;
-    size_t p = lrand48() % dim;
+    size_t p = rand() % dim;
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
     ap_linexpr0_t* l = random_linexpr(dim);
     pka = random_poly(pk,dim);
@@ -679,7 +679,7 @@ void test_par_assign(void)
   printf("\nparallel assign\n");
   LOOP {
     size_t i, dim = 7;
-    size_t p = lrand48() % dim;
+    size_t p = rand() % dim;
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
     ap_dim_t d[NB];
     ap_linexpr0_t *l[NB];
@@ -687,11 +687,11 @@ void test_par_assign(void)
     ppla = convert(ppl,pka);
     for (i=0;i<NB;i++) {
       l[i]  = random_linexpr(dim);
-      if (!i) d[i] = lrand48()%(dim-NB);
-      else d[i] = d[i-1] + 1 + (lrand48()%(dim-NB+i-d[i-1]));
+      if (!i) d[i] = rand()%(dim-NB);
+      else d[i] = d[i-1] + 1 + (rand()%(dim-NB+i-d[i-1]));
     }
-    pkr = ap_abstract0_assign_linexpr_array(pk,false,pka,d,(const ap_linexpr0_t**)l,NB,NULL);
-    pplr = ap_abstract0_assign_linexpr_array(ppl,false,ppla,d,(const ap_linexpr0_t**)l,NB,NULL);
+    pkr = ap_abstract0_assign_linexpr_array(pk,false,pka,d,(ap_linexpr0_t**)l,NB,NULL);
+    pplr = ap_abstract0_assign_linexpr_array(ppl,false,ppla,d,(ap_linexpr0_t**)l,NB,NULL);
     RESULT('*');
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results"); 
@@ -713,7 +713,7 @@ void test_subst(void)
   printf("\nsubst\n");
   LOOP {
     size_t i, dim = 7;
-    size_t p = lrand48() % dim;
+    size_t p = rand() % dim;
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
     ap_linexpr0_t* l = random_linexpr(dim);
     pka = random_poly(pk,dim);
@@ -737,7 +737,7 @@ void test_par_subst(void)
   printf("\nparallel subst\n");
   LOOP {
     size_t i, dim = 7;
-    size_t p = lrand48() % dim;
+    size_t p = rand() % dim;
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
     ap_dim_t d[NB];
     ap_linexpr0_t *l[NB];
@@ -745,11 +745,11 @@ void test_par_subst(void)
     ppla = convert(ppl,pka);
     for (i=0;i<NB;i++) {
       l[i]  = random_linexpr(dim);
-      if (!i) d[i] = lrand48()%(dim-NB);
-      else d[i] = d[i-1] + 1 + (lrand48()%(dim-NB+i-d[i-1]));
+      if (!i) d[i] = rand()%(dim-NB);
+      else d[i] = d[i-1] + 1 + (rand()%(dim-NB+i-d[i-1]));
     }
-    pkr = ap_abstract0_substitute_linexpr_array(pk,false,pka,d,(const ap_linexpr0_t**)l,NB,NULL);
-    pplr = ap_abstract0_substitute_linexpr_array(ppl,false,ppla,d,(const ap_linexpr0_t**)l,NB,NULL);
+    pkr = ap_abstract0_substitute_linexpr_array(pk,false,pka,d,(ap_linexpr0_t**)l,NB,NULL);
+    pplr = ap_abstract0_substitute_linexpr_array(ppl,false,ppla,d,(ap_linexpr0_t**)l,NB,NULL);
     RESULT('*');
     if (is_eq(pkr,pplr)!=tbool_true) {
       ERROR("different results"); 
@@ -766,7 +766,7 @@ void test_par_subst(void)
   } ENDLOOP;
 }
 
-void test_widen()
+void test_widen(void)
 {
   int dim = 5;
   printf("\nwidening\n");
@@ -798,7 +798,7 @@ void test_widen()
 int main(void)
 {
   int i, strict;
-  srand48(time(NULL));
+  srand(time(NULL));
 
   intdim = 0;
   /*for (intdim=1;intdim<2;intdim++) {*/

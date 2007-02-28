@@ -206,7 +206,7 @@ ap_interval_t** ap_ppl_box_universe(ap_interval_t** i,size_t nb)
 }
 
 /* ap_interval_t box => Constraint_System (return inexact) */
-bool ap_ppl_of_box(Constraint_System& r,size_t nb, const ap_interval_t*const* a)
+bool ap_ppl_of_box(Constraint_System& r,size_t nb, ap_interval_t** a)
 {
   bool inexact = false;
   size_t i;
@@ -248,7 +248,7 @@ bool ap_ppl_of_box(Constraint_System& r,size_t nb, const ap_interval_t*const* a)
 }
 
 /* ap_interval_t box => Congruence_System (return inexact) */
-bool ap_ppl_of_box(Congruence_System& r,size_t nb, const ap_interval_t*const* a)
+bool ap_ppl_of_box(Congruence_System& r,size_t nb, ap_interval_t** a)
 {
   bool inexact = false;
   size_t i;
@@ -276,7 +276,7 @@ bool ap_ppl_of_box(Congruence_System& r,size_t nb, const ap_interval_t*const* a)
 
 /* ap_linexpr0_t => Linear_Expression (may raise cannot_convert) */
 /* NOTE: we perform each converson twice; could be optimized */
-void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,const ap_linexpr0_t* c)
+void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,ap_linexpr0_t* c)
 {
   mpq_class temp;
   ap_ppl_mpq_of_coef(temp,c->cst);
@@ -316,7 +316,7 @@ void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,const ap_linexpr0_t* 
 
 /* ap_lincons0_t => Constraint (may raise cannot_convert, return inexact) */
 /* congruences are overapproximated as linear equalities */
-bool ap_ppl_of_lincons(Constraint& r,const ap_lincons0_t* c,bool allow_strict)
+bool ap_ppl_of_lincons(Constraint& r,ap_lincons0_t* c,bool allow_strict)
 {
   Linear_Expression l;
   mpz_class den;
@@ -336,7 +336,7 @@ bool ap_ppl_of_lincons(Constraint& r,const ap_lincons0_t* c,bool allow_strict)
 }
 
 /* ap_lincons0_t => Congruence (may raise cannot_convert, return inexact) */
-bool ap_ppl_of_lincons(Congruence& r,const ap_lincons0_t* c)
+bool ap_ppl_of_lincons(Congruence& r,ap_lincons0_t* c)
 {
   Linear_Expression l;
   mpz_class den;
@@ -367,7 +367,7 @@ bool ap_ppl_of_lincons(Congruence& r,const ap_lincons0_t* c)
 
 /* ap_lincons0_array_t => Constraint_System 
    returns true if inexact (some constraint was dropped or approximated) */
-bool ap_ppl_of_lincons_array(Constraint_System& r,const ap_lincons0_array_t* a,bool allow_strict)
+bool ap_ppl_of_lincons_array(Constraint_System& r,ap_lincons0_array_t* a,bool allow_strict)
 {
   bool inexact = false;
   size_t i;
@@ -385,7 +385,7 @@ bool ap_ppl_of_lincons_array(Constraint_System& r,const ap_lincons0_array_t* a,b
 
 /* ap_lincons0_array_t => Congruence_System 
    returns true if inexact (some constraint was dropped or approximated) */
-bool ap_ppl_of_lincons_array(Congruence_System& r,const ap_lincons0_array_t* a)
+bool ap_ppl_of_lincons_array(Congruence_System& r,ap_lincons0_array_t* a)
 {
   bool inexact = false;
   size_t i;
@@ -402,7 +402,7 @@ bool ap_ppl_of_lincons_array(Congruence_System& r,const ap_lincons0_array_t* a)
 }
 
 /* ap_generator0_t => Generator (may raise cannot_convert, or return true) */
-bool ap_ppl_of_generator(Generator& r,const ap_generator0_t* c)
+bool ap_ppl_of_generator(Generator& r,ap_generator0_t* c)
 {
   Linear_Expression l;
   mpz_class den;
@@ -421,7 +421,7 @@ bool ap_ppl_of_generator(Generator& r,const ap_generator0_t* c)
 /* ap_generator0_array_t => Generator_System 
    (may raise cannot_convert, or return true)
 */
-bool ap_ppl_of_generator_array(Generator_System& r,const ap_generator0_array_t* a)
+bool ap_ppl_of_generator_array(Generator_System& r,ap_generator0_array_t* a)
 {
   bool inexact = false;
   size_t i;
@@ -435,7 +435,7 @@ bool ap_ppl_of_generator_array(Generator_System& r,const ap_generator0_array_t* 
 }
 
 /* ap_generator0_t => Grid_Generator (may raise cannot_convert, or return true) */
-bool ap_ppl_of_generator(Grid_Generator& r,const ap_generator0_t* c)
+bool ap_ppl_of_generator(Grid_Generator& r,ap_generator0_t* c)
 {
   Linear_Expression l;
   mpz_class den;
@@ -454,7 +454,7 @@ bool ap_ppl_of_generator(Grid_Generator& r,const ap_generator0_t* c)
 /* ap_generator0_array_t => Grid_Generator_System 
    (may raise cannot_convert, or return true)
 */
-bool ap_ppl_of_generator_array(Grid_Generator_System& r,const ap_generator0_array_t* a)
+bool ap_ppl_of_generator_array(Grid_Generator_System& r,ap_generator0_array_t* a)
 {
   bool inexact = false;
   size_t i;

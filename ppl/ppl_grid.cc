@@ -107,7 +107,7 @@ class PPL_Grid {
   }
 
 extern "C"
-PPL_Grid* ap_ppl_grid_copy(ap_manager_t* man, const PPL_Grid* a)
+PPL_Grid* ap_ppl_grid_copy(ap_manager_t* man, PPL_Grid* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -127,7 +127,7 @@ void ap_ppl_grid_free(ap_manager_t* man, PPL_Grid* a)
 }
 
 extern "C" 
-size_t ap_ppl_grid_size(ap_manager_t* man, const PPL_Grid* a)
+size_t ap_ppl_grid_size(ap_manager_t* man, PPL_Grid* a)
 { 
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -137,7 +137,7 @@ size_t ap_ppl_grid_size(ap_manager_t* man, const PPL_Grid* a)
 }
 
 extern "C" 
-void ap_ppl_grid_minimize(ap_manager_t* man, const PPL_Grid* a)
+void ap_ppl_grid_minimize(ap_manager_t* man, PPL_Grid* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -152,7 +152,7 @@ void ap_ppl_grid_minimize(ap_manager_t* man, const PPL_Grid* a)
 
 /* NOT IMPLEMENTED! */
 extern "C" 
-void ap_ppl_grid_canonicalize(ap_manager_t* man, const PPL_Grid* a)
+void ap_ppl_grid_canonicalize(ap_manager_t* man, PPL_Grid* a)
 {
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_CANONICALIZE,"not implemented");
 }
@@ -167,7 +167,7 @@ void ap_ppl_grid_approximate(ap_manager_t* man, PPL_Grid* a, int algorithm)
 extern "C" 
 void ap_ppl_grid_fprint(FILE* stream,
 			ap_manager_t* man,
-			const PPL_Grid* a,
+			PPL_Grid* a,
 			char** name_of_dim)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -183,7 +183,7 @@ void ap_ppl_grid_fprint(FILE* stream,
 extern "C" 
 void ap_ppl_grid_fprintdiff(FILE* stream,
 			     ap_manager_t* man,
-			     const PPL_Grid* a1, const PPL_Grid* a2,
+			     PPL_Grid* a1, PPL_Grid* a2,
 			     char** name_of_dim)
 {
   fprintf(stream,"not implemented");
@@ -192,7 +192,7 @@ void ap_ppl_grid_fprintdiff(FILE* stream,
 
 /* fdump will print the unminimized contraint & generator systems */
 extern "C" 
-void ap_ppl_grid_fdump(FILE* stream, ap_manager_t* man, const PPL_Grid* a)
+void ap_ppl_grid_fdump(FILE* stream, ap_manager_t* man, PPL_Grid* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -212,7 +212,7 @@ void ap_ppl_grid_fdump(FILE* stream, ap_manager_t* man, const PPL_Grid* a)
 
 /* NOT IMPLEMENTED! */
 extern "C" 
-ap_membuf_t ap_ppl_grid_serialize_raw(ap_manager_t* man, const PPL_Grid* a)
+ap_membuf_t ap_ppl_grid_serialize_raw(ap_manager_t* man, PPL_Grid* a)
 {
   ap_membuf_t membuf;
   membuf.ptr = NULL;
@@ -252,7 +252,7 @@ PPL_Grid* ap_ppl_grid_top(ap_manager_t* man, size_t intdim, size_t realdim)
 extern "C" 
 PPL_Grid* ap_ppl_grid_of_box(ap_manager_t* man,
 			     size_t intdim, size_t realdim,
-			     const ap_interval_t*const* tinterval)
+			     ap_interval_t** tinterval)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -269,7 +269,7 @@ PPL_Grid* ap_ppl_grid_of_box(ap_manager_t* man,
 extern "C" 
 PPL_Grid* ap_ppl_grid_of_lincons_array(ap_manager_t* man,
 				       size_t intdim, size_t realdim,
-				       const ap_lincons0_array_t* array)
+				       ap_lincons0_array_t* array)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -284,7 +284,7 @@ PPL_Grid* ap_ppl_grid_of_lincons_array(ap_manager_t* man,
 }
 
 extern "C" 
-ap_dimension_t ap_ppl_grid_dimension(ap_manager_t* man, const PPL_Grid* a)
+ap_dimension_t ap_ppl_grid_dimension(ap_manager_t* man, PPL_Grid* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   ap_dimension_t d = { 0, 0 };
@@ -297,7 +297,7 @@ ap_dimension_t ap_ppl_grid_dimension(ap_manager_t* man, const PPL_Grid* a)
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_is_bottom(ap_manager_t* man, const PPL_Grid* a)
+tbool_t ap_ppl_grid_is_bottom(ap_manager_t* man, PPL_Grid* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -307,7 +307,7 @@ tbool_t ap_ppl_grid_is_bottom(ap_manager_t* man, const PPL_Grid* a)
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_is_top(ap_manager_t* man, const PPL_Grid* a)
+tbool_t ap_ppl_grid_is_top(ap_manager_t* man, PPL_Grid* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -317,8 +317,8 @@ tbool_t ap_ppl_grid_is_top(ap_manager_t* man, const PPL_Grid* a)
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_is_leq(ap_manager_t* man, const PPL_Grid* a1, 
-			   const PPL_Grid* a2)
+tbool_t ap_ppl_grid_is_leq(ap_manager_t* man, PPL_Grid* a1, 
+			   PPL_Grid* a2)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -328,8 +328,8 @@ tbool_t ap_ppl_grid_is_leq(ap_manager_t* man, const PPL_Grid* a1,
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_is_eq(ap_manager_t* man, const PPL_Grid* a1, 
-			  const PPL_Grid* a2)
+tbool_t ap_ppl_grid_is_eq(ap_manager_t* man, PPL_Grid* a1, 
+			  PPL_Grid* a2)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -339,8 +339,8 @@ tbool_t ap_ppl_grid_is_eq(ap_manager_t* man, const PPL_Grid* a1,
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, const PPL_Grid* a, 
-				const ap_lincons0_t* lincons)
+tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, PPL_Grid* a, 
+				ap_lincons0_t* lincons)
 {
   man->result.flag_exact = man->result.flag_best = tbool_top;
   try {
@@ -357,7 +357,7 @@ tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, const PPL_Grid* a,
 }
 
 /* utility shared by _bound_dimension, _to_box, & _sat_interval (exact) */
-static void ap_ppl_grid_bound_dim(ap_interval_t* r,const PPL_Grid* a,int dim)
+static void ap_ppl_grid_bound_dim(ap_interval_t* r,PPL_Grid* a,int dim)
 {
   Coefficient sup_n,sup_d,inf_n,inf_d;
   Linear_Expression l = Variable(dim);
@@ -373,8 +373,8 @@ static void ap_ppl_grid_bound_dim(ap_interval_t* r,const PPL_Grid* a,int dim)
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_sat_interval(ap_manager_t* man, const PPL_Grid* a,
-				 ap_dim_t dim, const ap_interval_t* i)
+tbool_t ap_ppl_grid_sat_interval(ap_manager_t* man, PPL_Grid* a,
+				 ap_dim_t dim, ap_interval_t* i)
 {
   ap_interval_t* ig = ap_interval_alloc();
   man->result.flag_exact = man->result.flag_best = tbool_top;
@@ -391,7 +391,7 @@ tbool_t ap_ppl_grid_sat_interval(ap_manager_t* man, const PPL_Grid* a,
 
 extern "C" 
 tbool_t ap_ppl_grid_is_dimension_unconstrained(ap_manager_t* man, 
-					       const PPL_Grid* a, 
+					       PPL_Grid* a, 
 					       ap_dim_t dim)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -404,8 +404,8 @@ tbool_t ap_ppl_grid_is_dimension_unconstrained(ap_manager_t* man,
 
 extern "C" 
 ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
-					 const PPL_Grid* a, 
-					 const ap_linexpr0_t* expr)
+					 PPL_Grid* a, 
+					 ap_linexpr0_t* expr)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   ap_interval_t* r = ap_interval_alloc();
@@ -442,7 +442,7 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
 
 extern "C" 
 ap_interval_t* ap_ppl_grid_bound_dimension(ap_manager_t* man,
-					   const PPL_Grid* a, ap_dim_t dim)
+					   PPL_Grid* a, ap_dim_t dim)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   ap_interval_t* r = ap_interval_alloc();
@@ -456,7 +456,7 @@ ap_interval_t* ap_ppl_grid_bound_dimension(ap_manager_t* man,
 
 extern "C" 
 ap_lincons0_array_t ap_ppl_grid_to_lincons_array(ap_manager_t* man, 
-						 const PPL_Grid* a)
+						 PPL_Grid* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -466,7 +466,7 @@ ap_lincons0_array_t ap_ppl_grid_to_lincons_array(ap_manager_t* man,
 }
 
 extern "C" 
-ap_interval_t** ap_ppl_grid_to_box(ap_manager_t* man, const PPL_Grid* a)
+ap_interval_t** ap_ppl_grid_to_box(ap_manager_t* man, PPL_Grid* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   size_t dim = a->p->space_dimension();
@@ -487,7 +487,7 @@ ap_interval_t** ap_ppl_grid_to_box(ap_manager_t* man, const PPL_Grid* a)
 
 extern "C" 
 ap_generator0_array_t ap_ppl_grid_to_generator_array(ap_manager_t* man, 
-						     const PPL_Grid* a)
+						     PPL_Grid* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -498,7 +498,7 @@ ap_generator0_array_t ap_ppl_grid_to_generator_array(ap_manager_t* man,
 
 extern "C" 
 PPL_Grid* ap_ppl_grid_meet(ap_manager_t* man, bool destructive, 
-			   PPL_Grid* a1, const PPL_Grid* a2)
+			   PPL_Grid* a1, PPL_Grid* a2)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -511,7 +511,7 @@ PPL_Grid* ap_ppl_grid_meet(ap_manager_t* man, bool destructive,
  
 extern "C" 
 PPL_Grid* ap_ppl_grid_join(ap_manager_t* man, bool destructive, 
-			   PPL_Grid* a1, const PPL_Grid* a2)
+			   PPL_Grid* a1, PPL_Grid* a2)
 {
   man->result.flag_exact = tbool_top;
   man->result.flag_best = tbool_true;
@@ -526,7 +526,7 @@ PPL_Grid* ap_ppl_grid_join(ap_manager_t* man, bool destructive,
 
 extern "C" 
 PPL_Grid* ap_ppl_grid_meet_array(ap_manager_t* man, 
-				 const PPL_Grid*const* tab, size_t size)
+				 PPL_Grid** tab, size_t size)
 {
   assert(size>=1);
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -541,7 +541,7 @@ PPL_Grid* ap_ppl_grid_meet_array(ap_manager_t* man,
 
 extern "C" 
 PPL_Grid* ap_ppl_grid_join_array(ap_manager_t* man, 
-				 const PPL_Grid*const* tab, size_t size)
+				 PPL_Grid** tab, size_t size)
 {  
   assert(size>=1);
   man->result.flag_exact = tbool_top;
@@ -560,7 +560,7 @@ extern "C"
 PPL_Grid* ap_ppl_grid_meet_lincons_array(ap_manager_t* man,
 					 bool destructive,
 					 PPL_Grid* a,
-					 const ap_lincons0_array_t* array)
+					 ap_lincons0_array_t* array)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -578,7 +578,7 @@ extern "C"
 PPL_Grid* ap_ppl_grid_add_ray_array(ap_manager_t* man,
 				    bool destructive,
 				    PPL_Grid* a,
-				    const ap_generator0_array_t* array)
+				    ap_generator0_array_t* array)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -596,8 +596,8 @@ extern "C"
 PPL_Grid* ap_ppl_grid_assign_linexpr(ap_manager_t* man,
 				     bool destructive,
 				     PPL_Grid* org,
-				     ap_dim_t dim, const ap_linexpr0_t* expr,
-				     const PPL_Grid* dest)
+				     ap_dim_t dim, ap_linexpr0_t* expr,
+				     PPL_Grid* dest)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -625,8 +625,8 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr(ap_manager_t* man,
 					 bool destructive,
 					 PPL_Grid* org,
 					 ap_dim_t dim, 
-					 const ap_linexpr0_t* expr,
-					 const PPL_Grid* dest)
+					 ap_linexpr0_t* expr,
+					 PPL_Grid* dest)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -653,10 +653,10 @@ extern "C"
 PPL_Grid* ap_ppl_grid_assign_linexpr_array(ap_manager_t* man,
 					   bool destructive,
 					   PPL_Grid* org,
-					   const ap_dim_t* tdim,
-					   const ap_linexpr0_t*const* texpr,
+					   ap_dim_t* tdim,
+					   ap_linexpr0_t** texpr,
 					   size_t size,
-					   const PPL_Grid* dest)
+					   PPL_Grid* dest)
 {
   man->result.flag_exact = man->result.flag_best = 
     org->intdim ? tbool_top : tbool_true;
@@ -695,10 +695,10 @@ extern "C"
 PPL_Grid* ap_ppl_grid_substitute_linexpr_array(ap_manager_t* man,
 					       bool destructive,
 					       PPL_Grid* org,
-					       const ap_dim_t* tdim,
-					       const ap_linexpr0_t*const* texpr,
+					       ap_dim_t* tdim,
+					       ap_linexpr0_t** texpr,
 					       size_t size,
-					       const PPL_Grid* dest)
+					       PPL_Grid* dest)
 {
   man->result.flag_exact = man->result.flag_best = 
     org->intdim ? tbool_top : tbool_true;
@@ -738,7 +738,7 @@ extern "C"
 PPL_Grid* ap_ppl_grid_forget_array(ap_manager_t* man,
 				   bool destructive,
 				   PPL_Grid* a, 
-				   const ap_dim_t* tdim, size_t size,
+				   ap_dim_t* tdim, size_t size,
 				   bool project)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -835,7 +835,7 @@ extern "C"
 PPL_Grid* ap_ppl_grid_permute_dimensions(ap_manager_t* man,
 					 bool destructive,
 					 PPL_Grid* a,
-					 const ap_dimperm_t* perm)
+					 ap_dimperm_t* perm)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -883,7 +883,7 @@ extern "C"
 PPL_Grid* ap_ppl_grid_fold(ap_manager_t* man,
 			   bool destructive,
 			   PPL_Grid* a,
-			   const ap_dim_t* tdim,
+			   ap_dim_t* tdim,
 			   size_t size)
 {
   man->result.flag_exact = tbool_top;
@@ -904,8 +904,8 @@ PPL_Grid* ap_ppl_grid_fold(ap_manager_t* man,
 
 extern "C" 
 PPL_Grid* ap_ppl_grid_widening(ap_manager_t* man,
-			       const PPL_Grid* a1, 
-			       const PPL_Grid* a2)
+			       PPL_Grid* a1, 
+			       PPL_Grid* a2)
 {
   man->result.flag_exact = man->result.flag_best = tbool_top;
   try {
@@ -918,8 +918,8 @@ PPL_Grid* ap_ppl_grid_widening(ap_manager_t* man,
 
 extern "C" 
 PPL_Grid* ap_ppl_grid_widening_threshold(ap_manager_t* man,
-					 const PPL_Grid* a1, 
-					 const PPL_Grid* a2,
+					 PPL_Grid* a1, 
+					 PPL_Grid* a2,
 					 ap_lincons0_array_t* array)
 {
   man->result.flag_exact = man->result.flag_best = tbool_top;
@@ -936,8 +936,8 @@ PPL_Grid* ap_ppl_grid_widening_threshold(ap_manager_t* man,
 
 ap_abstract0_t*
 ap_abstract0_ppl_grid_widening_thresholds(ap_manager_t* man,
-					  const ap_abstract0_t* a1,
-					  const ap_abstract0_t* a2,
+					  ap_abstract0_t* a1,
+					  ap_abstract0_t* a2,
 					  ap_lincons0_array_t* array)
 {
   arg_assert(man->library==a1->man->library &&

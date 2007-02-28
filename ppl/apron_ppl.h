@@ -37,14 +37,14 @@ ap_manager_t* ap_ppl_grid_manager_alloc(void);
 
 ap_abstract0_t*
 ap_abstract0_ppl_poly_widening_thresholds(ap_manager_t* man,
-					  const ap_abstract0_t* a1,
-					  const ap_abstract0_t* a2,
+					  ap_abstract0_t* a1,
+					  ap_abstract0_t* a2,
 					  ap_lincons0_array_t* array);
 
 ap_abstract0_t*
 ap_abstract0_ppl_grid_widening_thresholds(ap_manager_t* man,
-					  const ap_abstract0_t* a1,
-					  const ap_abstract0_t* a2,
+					  ap_abstract0_t* a1,
+					  ap_abstract0_t* a2,
 					  ap_lincons0_array_t* array);
 
 

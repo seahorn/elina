@@ -104,7 +104,7 @@ class PPL_Poly {
 
 
 extern "C"
-PPL_Poly* ap_ppl_poly_copy(ap_manager_t* man, const PPL_Poly* a)
+PPL_Poly* ap_ppl_poly_copy(ap_manager_t* man, PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -124,7 +124,7 @@ void ap_ppl_poly_free(ap_manager_t* man, PPL_Poly* a)
 }
 
 extern "C" 
-size_t ap_ppl_poly_size(ap_manager_t* man, const PPL_Poly* a)
+size_t ap_ppl_poly_size(ap_manager_t* man, PPL_Poly* a)
 { 
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -134,7 +134,7 @@ size_t ap_ppl_poly_size(ap_manager_t* man, const PPL_Poly* a)
 }
 
 extern "C" 
-void ap_ppl_poly_minimize(ap_manager_t* man, const PPL_Poly* a)
+void ap_ppl_poly_minimize(ap_manager_t* man, PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -147,7 +147,7 @@ void ap_ppl_poly_minimize(ap_manager_t* man, const PPL_Poly* a)
 
 /* NOT IMPLEMENTED! */
 extern "C" 
-void ap_ppl_poly_canonicalize(ap_manager_t* man, const PPL_Poly* a)
+void ap_ppl_poly_canonicalize(ap_manager_t* man, PPL_Poly* a)
 {
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_CANONICALIZE,"not implemented");
 }
@@ -162,7 +162,7 @@ void ap_ppl_poly_approximate(ap_manager_t* man, PPL_Poly* a, int algorithm)
 extern "C" 
 void ap_ppl_poly_fprint(FILE* stream,
 			ap_manager_t* man,
-			const PPL_Poly* a,
+			PPL_Poly* a,
 			char** name_of_dim)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -178,7 +178,7 @@ void ap_ppl_poly_fprint(FILE* stream,
 extern "C" 
 void ap_ppl_poly_fprintdiff(FILE* stream,
 			     ap_manager_t* man,
-			     const PPL_Poly* a1, const PPL_Poly* a2,
+			     PPL_Poly* a1, PPL_Poly* a2,
 			     char** name_of_dim)
 {
   fprintf(stream,"not implemented");
@@ -187,7 +187,7 @@ void ap_ppl_poly_fprintdiff(FILE* stream,
 
 /* fdump will print the unminimized contraint & generator systems */
 extern "C" 
-void ap_ppl_poly_fdump(FILE* stream, ap_manager_t* man, const PPL_Poly* a)
+void ap_ppl_poly_fdump(FILE* stream, ap_manager_t* man, PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -210,7 +210,7 @@ void ap_ppl_poly_fdump(FILE* stream, ap_manager_t* man, const PPL_Poly* a)
 
 /* NOT IMPLEMENTED! */
 extern "C" 
-ap_membuf_t ap_ppl_poly_serialize_raw(ap_manager_t* man, const PPL_Poly* a)
+ap_membuf_t ap_ppl_poly_serialize_raw(ap_manager_t* man, PPL_Poly* a)
 {
   ap_membuf_t membuf;
   membuf.ptr = NULL;
@@ -251,7 +251,7 @@ PPL_Poly* ap_ppl_poly_top(ap_manager_t* man, size_t intdim, size_t realdim, bool
 static
 PPL_Poly* ap_ppl_poly_of_box(ap_manager_t* man,
 			     size_t intdim, size_t realdim,
-			     const ap_interval_t*const* tinterval,
+			     ap_interval_t** tinterval,
 			     bool strict)
 {
   man->result.flag_exact = man->result.flag_best = 
@@ -270,7 +270,7 @@ PPL_Poly* ap_ppl_poly_of_box(ap_manager_t* man,
 static
 PPL_Poly* ap_ppl_poly_of_lincons_array(ap_manager_t* man,
 				       size_t intdim, size_t realdim,
-				       const ap_lincons0_array_t* array,
+				       ap_lincons0_array_t* array,
 				       bool strict)
 {
   man->result.flag_exact = man->result.flag_best = 
@@ -306,7 +306,7 @@ PPL_Poly* ap_ppl_cpoly_top(ap_manager_t* man, size_t intdim, size_t realdim)
 extern "C" 
 PPL_Poly* ap_ppl_cpoly_of_box(ap_manager_t* man,
 			      size_t intdim, size_t realdim,
-			      const ap_interval_t*const* tinterval)
+			      ap_interval_t** tinterval)
 {
   return ap_ppl_poly_of_box(man,intdim,realdim,tinterval,false);
 }
@@ -314,7 +314,7 @@ PPL_Poly* ap_ppl_cpoly_of_box(ap_manager_t* man,
 extern "C" 
 PPL_Poly* ap_ppl_cpoly_of_lincons_array(ap_manager_t* man,
 					size_t intdim, size_t realdim,
-					const ap_lincons0_array_t* array)
+					ap_lincons0_array_t* array)
 {
   return ap_ppl_poly_of_lincons_array(man,intdim,realdim,array,false);
 }
@@ -337,7 +337,7 @@ PPL_Poly* ap_ppl_nncpoly_top(ap_manager_t* man, size_t intdim, size_t realdim)
 extern "C" 
 PPL_Poly* ap_ppl_nncpoly_of_box(ap_manager_t* man,
 				size_t intdim, size_t realdim,
-				const ap_interval_t*const* tinterval)
+			        ap_interval_t** tinterval)
 {
   return ap_ppl_poly_of_box(man,intdim,realdim,tinterval,true);
 }
@@ -345,7 +345,7 @@ PPL_Poly* ap_ppl_nncpoly_of_box(ap_manager_t* man,
 extern "C" 
 PPL_Poly* ap_ppl_nncpoly_of_lincons_array(ap_manager_t* man,
 					  size_t intdim, size_t realdim,
-					  const ap_lincons0_array_t* array)
+					  ap_lincons0_array_t* array)
 {
   return ap_ppl_poly_of_lincons_array(man,intdim,realdim,array,true);
 }
@@ -354,7 +354,7 @@ PPL_Poly* ap_ppl_nncpoly_of_lincons_array(ap_manager_t* man,
 /* functions common to NNC_Polyhedron and C_Polyhedron */
 
 extern "C" 
-ap_dimension_t ap_ppl_poly_dimension(ap_manager_t* man, const PPL_Poly* a)
+ap_dimension_t ap_ppl_poly_dimension(ap_manager_t* man, PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   ap_dimension_t d = { 0, 0 };
@@ -367,7 +367,7 @@ ap_dimension_t ap_ppl_poly_dimension(ap_manager_t* man, const PPL_Poly* a)
 }
 
 extern "C" 
-tbool_t ap_ppl_poly_is_bottom(ap_manager_t* man, const PPL_Poly* a)
+tbool_t ap_ppl_poly_is_bottom(ap_manager_t* man, PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
@@ -378,7 +378,7 @@ tbool_t ap_ppl_poly_is_bottom(ap_manager_t* man, const PPL_Poly* a)
 }
 
 extern "C" 
-tbool_t ap_ppl_poly_is_top(ap_manager_t* man, const PPL_Poly* a)
+tbool_t ap_ppl_poly_is_top(ap_manager_t* man, PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -388,8 +388,8 @@ tbool_t ap_ppl_poly_is_top(ap_manager_t* man, const PPL_Poly* a)
 }
 
 extern "C" 
-tbool_t ap_ppl_poly_is_leq(ap_manager_t* man, const PPL_Poly* a1, 
-			   const PPL_Poly* a2)
+tbool_t ap_ppl_poly_is_leq(ap_manager_t* man, PPL_Poly* a1, 
+			   PPL_Poly* a2)
 {
   man->result.flag_exact = man->result.flag_best = 
     a1->intdim ? tbool_top : tbool_true;
@@ -400,8 +400,8 @@ tbool_t ap_ppl_poly_is_leq(ap_manager_t* man, const PPL_Poly* a1,
 }
 
 extern "C" 
-tbool_t ap_ppl_poly_is_eq(ap_manager_t* man, const PPL_Poly* a1, 
-			  const PPL_Poly* a2)
+tbool_t ap_ppl_poly_is_eq(ap_manager_t* man, PPL_Poly* a1, 
+			  PPL_Poly* a2)
 {
   if (a1->intdim) man->result.flag_exact = man->result.flag_best = tbool_top;
   else man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -412,8 +412,8 @@ tbool_t ap_ppl_poly_is_eq(ap_manager_t* man, const PPL_Poly* a1,
 }
 
 extern "C" 
-tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, const PPL_Poly* a, 
-				const ap_lincons0_t* lincons)
+tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a, 
+				ap_lincons0_t* lincons)
 {
   man->result.flag_exact = man->result.flag_best = tbool_top;
   try {
@@ -432,7 +432,7 @@ tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, const PPL_Poly* a,
 }
 
 /* utility shared by _bound_dimension & _to_box, _sat_interval (exact) */
-static void ap_ppl_poly_bound_dim(ap_interval_t* r,const PPL_Poly* a,int dim)
+static void ap_ppl_poly_bound_dim(ap_interval_t* r,PPL_Poly* a,int dim)
 {
   Coefficient sup_n,sup_d,inf_n,inf_d;
   Linear_Expression l = Variable(dim);
@@ -448,8 +448,8 @@ static void ap_ppl_poly_bound_dim(ap_interval_t* r,const PPL_Poly* a,int dim)
 }
 
 extern "C" 
-tbool_t ap_ppl_poly_sat_interval(ap_manager_t* man, const PPL_Poly* a,
-				 ap_dim_t dim, const ap_interval_t* i)
+tbool_t ap_ppl_poly_sat_interval(ap_manager_t* man, PPL_Poly* a,
+				 ap_dim_t dim, ap_interval_t* i)
 {
   ap_interval_t* ig = ap_interval_alloc();
   man->result.flag_exact = man->result.flag_best = tbool_top;
@@ -467,7 +467,7 @@ tbool_t ap_ppl_poly_sat_interval(ap_manager_t* man, const PPL_Poly* a,
 
 extern "C" 
 tbool_t ap_ppl_poly_is_dimension_unconstrained(ap_manager_t* man, 
-					       const PPL_Poly* a, 
+					       PPL_Poly* a, 
 					       ap_dim_t dim)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -480,8 +480,8 @@ tbool_t ap_ppl_poly_is_dimension_unconstrained(ap_manager_t* man,
 
 extern "C" 
 ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
-					 const PPL_Poly* a, 
-					 const ap_linexpr0_t* expr)
+					 PPL_Poly* a, 
+					 ap_linexpr0_t* expr)
 {
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
@@ -519,7 +519,7 @@ ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
 
 extern "C" 
 ap_interval_t* ap_ppl_poly_bound_dimension(ap_manager_t* man,
-					   const PPL_Poly* a, ap_dim_t dim)
+					   PPL_Poly* a, ap_dim_t dim)
 {
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
@@ -534,7 +534,7 @@ ap_interval_t* ap_ppl_poly_bound_dimension(ap_manager_t* man,
 
 extern "C" 
 ap_lincons0_array_t ap_ppl_poly_to_lincons_array(ap_manager_t* man, 
-						 const PPL_Poly* a)
+						 PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
@@ -545,7 +545,7 @@ ap_lincons0_array_t ap_ppl_poly_to_lincons_array(ap_manager_t* man,
 }
 
 extern "C" 
-ap_interval_t** ap_ppl_poly_to_box(ap_manager_t* man, const PPL_Poly* a)
+ap_interval_t** ap_ppl_poly_to_box(ap_manager_t* man, PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
@@ -567,7 +567,7 @@ ap_interval_t** ap_ppl_poly_to_box(ap_manager_t* man, const PPL_Poly* a)
 
 extern "C" 
 ap_generator0_array_t ap_ppl_poly_to_generator_array(ap_manager_t* man, 
-						     const PPL_Poly* a)
+						     PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
@@ -583,7 +583,7 @@ ap_generator0_array_t ap_ppl_poly_to_generator_array(ap_manager_t* man,
 
 extern "C" 
 PPL_Poly* ap_ppl_poly_meet(ap_manager_t* man, bool destructive, 
-			   PPL_Poly* a1, const PPL_Poly* a2)
+			   PPL_Poly* a1, PPL_Poly* a2)
 {
   man->result.flag_exact = man->result.flag_best = 
     a1->intdim ? tbool_top : tbool_true;
@@ -597,7 +597,7 @@ PPL_Poly* ap_ppl_poly_meet(ap_manager_t* man, bool destructive,
  
 extern "C" 
 PPL_Poly* ap_ppl_poly_join(ap_manager_t* man, bool destructive, 
-			   PPL_Poly* a1, const PPL_Poly* a2)
+			   PPL_Poly* a1, PPL_Poly* a2)
 {
   man->result.flag_exact = tbool_top;
   man->result.flag_best = a1->intdim ? tbool_top : tbool_true;
@@ -611,7 +611,7 @@ PPL_Poly* ap_ppl_poly_join(ap_manager_t* man, bool destructive,
 
 extern "C" 
 PPL_Poly* ap_ppl_poly_meet_array(ap_manager_t* man, 
-				 const PPL_Poly*const* tab, size_t size)
+				 PPL_Poly** tab, size_t size)
 {
   assert(size>=1);
   man->result.flag_exact = man->result.flag_best = 
@@ -627,7 +627,7 @@ PPL_Poly* ap_ppl_poly_meet_array(ap_manager_t* man,
 
 extern "C" 
 PPL_Poly* ap_ppl_poly_join_array(ap_manager_t* man, 
-				 const PPL_Poly*const* tab, size_t size)
+				 PPL_Poly** tab, size_t size)
 {  
   assert(size>=1);
   man->result.flag_exact = tbool_top;
@@ -645,7 +645,7 @@ extern "C"
 PPL_Poly* ap_ppl_poly_meet_lincons_array(ap_manager_t* man,
 					 bool destructive,
 					 PPL_Poly* a,
-					 const ap_lincons0_array_t* array)
+					 ap_lincons0_array_t* array)
 {
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
@@ -665,7 +665,7 @@ extern "C"
 PPL_Poly* ap_ppl_poly_add_ray_array(ap_manager_t* man,
 				    bool destructive,
 				    PPL_Poly* a,
-				    const ap_generator0_array_t* array)
+				    ap_generator0_array_t* array)
 {
   man->result.flag_exact = man->result.flag_best = 
     a->intdim ? tbool_top : tbool_true;
@@ -683,8 +683,8 @@ extern "C"
 PPL_Poly* ap_ppl_poly_assign_linexpr(ap_manager_t* man,
 				     bool destructive,
 				     PPL_Poly* org,
-				     ap_dim_t dim, const ap_linexpr0_t* expr,
-				     const PPL_Poly* dest)
+				     ap_dim_t dim, ap_linexpr0_t* expr,
+				     PPL_Poly* dest)
 {
   man->result.flag_exact = man->result.flag_best = 
     org->intdim ? tbool_top : tbool_true;
@@ -712,8 +712,8 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr(ap_manager_t* man,
 					 bool destructive,
 					 PPL_Poly* org,
 					 ap_dim_t dim, 
-					 const ap_linexpr0_t* expr,
-					 const PPL_Poly* dest)
+					 ap_linexpr0_t* expr,
+					 PPL_Poly* dest)
 {
   man->result.flag_exact = man->result.flag_best = 
     org->intdim ? tbool_top : tbool_true;
@@ -740,10 +740,10 @@ extern "C"
 PPL_Poly* ap_ppl_poly_assign_linexpr_array(ap_manager_t* man,
 					   bool destructive,
 					   PPL_Poly* org,
-					   const ap_dim_t* tdim,
-					   const ap_linexpr0_t*const* texpr,
+					   ap_dim_t* tdim,
+					   ap_linexpr0_t** texpr,
 					   size_t size,
-					   const PPL_Poly* dest)
+					   PPL_Poly* dest)
 {
   man->result.flag_exact = man->result.flag_best = 
     org->intdim ? tbool_top : tbool_true;
@@ -781,10 +781,10 @@ extern "C"
 PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
 					       bool destructive,
 					       PPL_Poly* org,
-					       const ap_dim_t* tdim,
-					       const ap_linexpr0_t*const* texpr,
+					       ap_dim_t* tdim,
+					       ap_linexpr0_t** texpr,
 					       size_t size,
-					       const PPL_Poly* dest)
+					       PPL_Poly* dest)
 {
   man->result.flag_exact = man->result.flag_best = 
     org->intdim ? tbool_top : tbool_true;
@@ -823,7 +823,7 @@ extern "C"
 PPL_Poly* ap_ppl_poly_forget_array(ap_manager_t* man,
 				   bool destructive,
 				   PPL_Poly* a, 
-				   const ap_dim_t* tdim, size_t size,
+				   ap_dim_t* tdim, size_t size,
 				   bool project)
 {
   man->result.flag_exact = man->result.flag_best = 
@@ -921,7 +921,7 @@ extern "C"
 PPL_Poly* ap_ppl_poly_permute_dimensions(ap_manager_t* man,
 					 bool destructive,
 					 PPL_Poly* a,
-					 const ap_dimperm_t* perm)
+					 ap_dimperm_t* perm)
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
@@ -969,7 +969,7 @@ extern "C"
 PPL_Poly* ap_ppl_poly_fold(ap_manager_t* man,
 			   bool destructive,
 			   PPL_Poly* a,
-			   const ap_dim_t* tdim,
+			   ap_dim_t* tdim,
 			   size_t size)
 {
   man->result.flag_exact = tbool_top;
@@ -989,8 +989,8 @@ PPL_Poly* ap_ppl_poly_fold(ap_manager_t* man,
 
 extern "C" 
 PPL_Poly* ap_ppl_poly_widening(ap_manager_t* man,
-			       const PPL_Poly* a1, 
-			       const PPL_Poly* a2)
+			       PPL_Poly* a1, 
+			       PPL_Poly* a2)
 {
   man->result.flag_exact = man->result.flag_best = tbool_top;
   int algo = man->option.funopt[AP_FUNID_WIDENING].algorithm;
@@ -1005,8 +1005,8 @@ PPL_Poly* ap_ppl_poly_widening(ap_manager_t* man,
 
 extern "C" 
 PPL_Poly* ap_ppl_poly_widening_threshold(ap_manager_t* man,
-					 const PPL_Poly* a1, 
-					 const PPL_Poly* a2,
+					 PPL_Poly* a1, 
+					 PPL_Poly* a2,
 					 ap_lincons0_array_t* array)
 {
   man->result.flag_exact = man->result.flag_best = tbool_top;
@@ -1027,8 +1027,8 @@ PPL_Poly* ap_ppl_poly_widening_threshold(ap_manager_t* man,
 
 ap_abstract0_t*
 ap_abstract0_ppl_poly_widening_thresholds(ap_manager_t* man,
-					  const ap_abstract0_t* a1,
-					  const ap_abstract0_t* a2,
+					  ap_abstract0_t* a1,
+					  ap_abstract0_t* a2,
 					  ap_lincons0_array_t* array)
 {
   arg_assert(man->library==a1->man->library &&

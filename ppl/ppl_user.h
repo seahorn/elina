@@ -88,17 +88,17 @@ extern ap_generator0_array_t ap_ppl_to_generator_array(const Generator_System& c
 extern ap_generator0_array_t ap_ppl_to_generator_array(const Grid_Generator_System& c);
 extern ap_generator0_array_t ap_ppl_generator_universe(size_t dim);
 extern ap_interval_t** ap_ppl_box_universe(ap_interval_t** i,size_t nb);
-extern void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,const ap_linexpr0_t* c);
-extern bool ap_ppl_of_lincons(Constraint& r,const ap_lincons0_t* c,bool allow_strict);
-extern bool ap_ppl_of_lincons(Congruence& r,const ap_lincons0_t* c);
-extern bool ap_ppl_of_lincons_array(Constraint_System& r,const ap_lincons0_array_t* a,bool allow_strict);
-extern bool ap_ppl_of_lincons_array(Congruence_System& r,const ap_lincons0_array_t* a);
-extern bool ap_ppl_of_generator(Generator& r,const ap_generator0_t* c);
-extern bool ap_ppl_of_generator(Grid_Generator& r,const ap_generator0_t* c);
-extern bool ap_ppl_of_generator_array(Generator_System& r,const ap_generator0_array_t* a);
-extern bool ap_ppl_of_generator_array(Grid_Generator_System& r,const ap_generator0_array_t* a);
-extern bool ap_ppl_of_box(Constraint_System& r,size_t nb, const ap_interval_t*const* a);
-extern bool ap_ppl_of_box(Congruence_System& r,size_t nb, const ap_interval_t*const* a);
+extern void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,ap_linexpr0_t* c);
+extern bool ap_ppl_of_lincons(Constraint& r,ap_lincons0_t* c,bool allow_strict);
+extern bool ap_ppl_of_lincons(Congruence& r,ap_lincons0_t* c);
+extern bool ap_ppl_of_lincons_array(Constraint_System& r,ap_lincons0_array_t* a,bool allow_strict);
+extern bool ap_ppl_of_lincons_array(Congruence_System& r,ap_lincons0_array_t* a);
+extern bool ap_ppl_of_generator(Generator& r,ap_generator0_t* c);
+extern bool ap_ppl_of_generator(Grid_Generator& r,ap_generator0_t* c);
+extern bool ap_ppl_of_generator_array(Generator_System& r,ap_generator0_array_t* a);
+extern bool ap_ppl_of_generator_array(Grid_Generator_System& r,ap_generator0_array_t* a);
+extern bool ap_ppl_of_box(Constraint_System& r,size_t nb, ap_interval_t** a);
+extern bool ap_ppl_of_box(Congruence_System& r,size_t nb, ap_interval_t** a);
 
 static ap_abstract0_t* ap_ppl_make_abstract0(ap_manager_t* man, void* v)
 {
@@ -110,7 +110,7 @@ static ap_abstract0_t* ap_ppl_make_abstract0(ap_manager_t* man, void* v)
 }
 
 /* returns an element with the correct manager and, if possible, size */
-static ap_abstract0_t* ap_ppl_invalid_abstract0(ap_manager_t* man, const ap_abstract0_t* org = NULL)
+static ap_abstract0_t* ap_ppl_invalid_abstract0(ap_manager_t* man, ap_abstract0_t* org = NULL)
 {
   if (org) {
     ap_dimension_t d = ap_abstract0_dimension(org->man,org);

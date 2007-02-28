@@ -115,7 +115,7 @@ libapron_ppl_debug.a: $(subst .cc,_debug.o,$(CXXSOURCES))
 	$(RANLIB) $@
 
 apron_ppl_test: libapron_ppl_debug.a ppl_test_debug.o
-	$(CXX) $(CXXFLAGS) -o $@ ppl_test_dedbug.o \
+	$(CXX) $(CXXFLAGS) -o $@ ppl_test_debug.o \
 	-L. -lapron_ppl_debug \
 	-L../newpolka -L$(POLKA_PREFIX)/lib -lpolkag_debug \
 	-L../apron -L$(APRON_PREFIX)/lib -lapron \
