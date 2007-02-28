@@ -14,6 +14,9 @@ c:
 	(cd newpolka; make allg)
 	(cd box; make all)
 	(cd octagons; make Qg Fd)
+ifdef HAS_PPL
+	(cd ppl; make)
+endif
 
 ml:
 	(cd mlgmpidl; make all)
@@ -42,6 +45,10 @@ ifdef HAS_OCAML
 	(cd mlgmpidl; make install)
 	(cd mlapronidl; make install)
 endif
+ifdef HAS_PPL
+	(cd ppl; make)
+endif
+
 
 clean:
 	(cd apron; make clean)
@@ -53,6 +60,7 @@ clean:
 	(cd newpolka; make clean)
 	(cd octagons; make clean)
 	(cd examples; make clean)
+	(cd ppl; make clean)
 	rm -fr online tmp
 
 mostlyclean: clean
@@ -61,7 +69,7 @@ mostlyclean: clean
 	(cd box; make mostlyclean)
 	(cd octagons; make mostlyclean)
 	(cd newpolka; make mostlyclean)
-
+	(cd ppl; make mostyclean)
 
 distclean:
 	(cd apron; make distclean)
@@ -73,6 +81,7 @@ distclean:
 	(cd newpolka; make distclean)
 	(cd octagons; make distclean)
 	(cd examples; make distclean)
+	(cd ppl; make distclean)
 
 doc:
 	(hyperlatex index.tex)
