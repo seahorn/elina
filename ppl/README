@@ -15,6 +15,9 @@ Requirements:
 - GMPXX (normally installed with GMP)
 - for apron_ppl_test: NewPolka APRON module
 
+If HAS_PPL is defined in ../Makefile.config, then the main APRON Makefile
+will automatically build and install this module.
+
 
 IMPORTANT
 

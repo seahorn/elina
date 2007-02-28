@@ -72,8 +72,10 @@ all: libapron_ppl.a apron_ppl_test
 clean:
 	/bin/rm -f *.[ao] *.so apron_ppl_test
 	/bin/rm -f *.cm[ioax] *.cmxa apron_ppl_run apron_ppl_top
-	/bin/rm -f apron_ppl_caml.c apron_ppl.ml apron_ppl.mli
 	/bin/rm -fr *~ \#*\# tmp
+
+mostlyclean:
+	/bin/rm -f apron_ppl_caml.c apron_ppl.ml apron_ppl.mli
 
 install:
 	$(INSTALLd) $(INCDIR) $(LIBDIR) $(BINDIR) $(CAMLDIR)
@@ -138,7 +140,7 @@ apron_ppl_test: libapron_ppl_debug.a ppl_test_debug.o
 # Caml part
 #-----------------------------------
 
-ml: apron_ppl.mli apron_ppl.cmi apron_ppl.cma apron_ppl.cmxa apron_ppl_top apron_ppl_run
+ml: apron_ppl.cma apron_ppl.cmxa apron_ppl_top apron_ppl_run
 
 apron_ppl_top: apron_ppl.cma libapron_ppl_caml.a libapron_ppl.a
 	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -cc $(CXX) -custom bigarray.cma gmp.cma apron.cma apron_ppl.cma -ccopt -L. -cclib -lapron_ppl -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L$(GMP_PREFIX)/lib -cclib -lgmpxx
@@ -147,11 +149,10 @@ apron_ppl_run: apron_ppl.cma libapron_ppl_caml.a
 	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime -cc $(CXX) bigarray.cma gmp.cma apron.cma apron_ppl.cma -ccopt -L. -cclib -lapron_ppl -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L$(GMP_PREFIX)/lib -cclib -lgmpxx
 
 apron_ppl.cma: apron_ppl.cmi apron_ppl.cmo libapron_ppl_caml.a
-	$(OCAMLMKLIB) $(OCAMLINC) -o apron_ppl apron_ppl.cmo -lapron_ppl_caml
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ apron_ppl.cmo -ccopt -L$(PPL_PREFIX)/lib -cclib -lapron_ppl_caml
 
-apron_ppl.cmxa apron_ppl.a: apron_ppl.cmi apron_ppl.cmx libapron_ppl_caml.a
-	$(OCAMLMKLIB) $(OCAMLINC) -o apron_ppl apron_ppl.cmx -lapron_ppl_caml
-	$(RANLIB) apron_ppl.a
+apron_ppl.cmxa: apron_ppl.cmi apron_ppl.cmx libapron_ppl_caml.a
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ apron_ppl.cmx -ccopt -L$(PPL_PREFIX)/lib -cclib -lapron_ppl_caml
 
 libapron_ppl_caml.a: apron_ppl_caml.o
 	$(AR) rcs $@ $^
@@ -166,7 +167,7 @@ manager.idl: ../mlapronidl/manager.idl
 rebuild: manager.idl apron_ppl.idl
 	mkdir -p tmp
 	cp apron_ppl.idl tmp/
-	cd tmp && $(CAMLIDL) -no-include -nocpp -apron_ppl.idl
+	$(CAMLIDL) -no-include -nocpp tmp/apron_ppl.idl
 	cp tmp/apron_ppl_stubs.c apron_ppl_caml.c
 	sed -f sedscript_caml tmp/apron_ppl.ml | grep --extended-regexp '^(.)+$$' >apron_ppl.ml
 	sed -f sedscript_caml tmp/apron_ppl.mli | grep --extended-regexp '^(.)+$$' >apron_ppl.mli

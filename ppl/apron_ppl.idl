@@ -26,9 +26,6 @@ quote(C,"#include \"apron_caml.h\"")
 
 quote(C,"#define I0_CHECK_EXC(man) if (man->result.exn!=AP_EXC_NONE){ value v = camlidl_c2ml_manager_struct_ap_exclog_t(man->result.exclog,_ctx); caml_raise_with_arg(*caml_named_value(\"apron exception\"),v); } ")
 
-import "generator0.idl";
-import "abstract0.idl";
-import "scalar.idl";
 import "manager.idl";
 
 ap_manager_ptr ap_ppl_poly_manager_alloc(boolean strict);
