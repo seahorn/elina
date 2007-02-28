@@ -245,9 +245,8 @@ ap_dimension_t oct_dimension(ap_manager_t* man, oct_t* a)
    => this DOES NOT affect the semantics of functions that rely on a->m
    (e.g., widening)
  */
-void oct_cache_closure(oct_internal_t* pr, oct_t* aa)
+void oct_cache_closure(oct_internal_t* pr, oct_t* a)
 {
-  oct_t* a = (oct_t*) aa;
   if (a->closed || !a->m) return;
   a->closed = hmat_copy(pr,a->m,a->dim);
   if (hmat_close(a->closed,a->dim)) {
