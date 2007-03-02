@@ -10,7 +10,7 @@ HAS_OCAML = 1
 
 # If defined to non-empty value, compiles the PPL domain
 
-HAS_PPL = 0
+# HAS_PPL = 1
 
 ######################################################################
 # Directories
