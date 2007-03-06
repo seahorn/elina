@@ -37,6 +37,7 @@ let print_array = Abstract0.print_array;;
 
 let manpk = Polka.manager_alloc_strict();;
 let manbox = Box.manager_alloc ();;
+let manoct = Oct.manager_alloc ();;
 
 let lincons1_array_print fmt x =
   Lincons1.array_print fmt x
@@ -173,3 +174,5 @@ let ex1 (man:'a Manager.t) : 'a Abstract1.t =
 let abs1 = ex1 manpk;;
 
 let abs2 = ex1 manbox;;
+
+let abs3 = ex1 manoct;;

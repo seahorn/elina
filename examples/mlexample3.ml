@@ -149,9 +149,12 @@ let ex2 (man:'a Manager.t) =
 
 let manpk = Polka.manager_alloc_strict ();;
 let manbox = Box.manager_alloc ();;
+let manoct = Oct.manager_alloc ();;
 
 let abs1 = ex1 manpk;;
 
 let abs2 = ex1 manbox;;
 
-let abs3 = ex2 manpk;;
+let abs3 = ex1 manoct;;
+
+let abs4 = ex2 manpk;;
