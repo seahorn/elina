@@ -26,7 +26,7 @@ box:
 ppl:
 	wrapper to call the Parma Polyhedra Library from APRON (C & OCaml)
 	requires PPL 0.9 and GMPXX
-	not compiled-in by default
+	not compiled unless HAS_PPL is defined in Makefile.config
 
 mlgmpidl:
 	OCaml interface for the GMP library, used by mlapronidl.

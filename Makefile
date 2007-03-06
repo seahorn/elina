@@ -69,7 +69,7 @@ mostlyclean: clean
 	(cd box; make mostlyclean)
 	(cd octagons; make mostlyclean)
 	(cd newpolka; make mostlyclean)
-	(cd ppl; make mostyclean)
+	(cd ppl; make mostlyclean)
 
 distclean:
 	(cd apron; make distclean)
