@@ -52,6 +52,6 @@ val generator1_of_lstring : Environment.t -> string list -> Generator1.earray
   (** Conversion from lists of strings to array of resp. linear
     constraints and generators, defined on the given environment. *)
 
-val of_lstring : Manager.t -> Environment.t -> string list -> Abstract1.t
+val of_lstring : 'a Manager.t -> Environment.t -> string list -> 'a Abstract1.t
   (** Abstraction of lists of strings representing constraints to abstract
     values, on the abstract domain defined by the given manager. *)

@@ -14,7 +14,7 @@ PREFIX = $(APRON_INSTALL)
 # CAML part
 #---------------------------------------
 
-OCAMLINC = -I ../mlgmpidl
+OCAMLINC = -I ../mlgmpidl -I ../newpolka
 
 #---------------------------------------
 # C part
@@ -37,7 +37,7 @@ IDLMODULEStex = ocamldoc.tex \
 Scalar.tex Interval.tex Coeff.tex \
 Dim.tex Linexpr0.tex Lincons0.tex Generator0.tex Manager.tex Abstract0.tex \
 Var.tex Environment.tex Linexpr1.tex Lincons1.tex Generator1.tex Abstract1.tex \
-Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Gmp_random.tex Box.tex Polka.tex Oct.tex
+Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Gmp_random.tex Box.tex Polka.tex Polkaeq.tex Oct.tex
 
 MLMODULES = $(IDLMODULES) apron_parser apron_lexer parser
 
@@ -143,7 +143,7 @@ mlapronidl.pdf: mlapronidl.dvi
 
 mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli)
 	$(OCAMLDOC) $(OCAMLINC) \
-	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli  ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli
+	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polkaeq.mli ../newpolka/polka.mli  ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli
 	latex mlapronidl
 	makeindex mlapronidl
 	latex mlapronidl
@@ -189,6 +189,7 @@ rebuild: mpz.idl mpq.idl
 		$(SED) -f sedscript_caml tmp/$${i}.ml >$${i}.ml; \
 		$(SED) -f sedscript_caml tmp/$${i}.mli >$${i}.mli; \
 	done
+	rm -fr tmp
 
 #---------------------------------------
 # ML generic rules

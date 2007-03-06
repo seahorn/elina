@@ -6,7 +6,17 @@ quote(C,"#include \"apron_caml.h\"")
 
 import "manager.idl";
 
-quote(MLMLI,"(** BOX: intervals abstract domain *)")
+quote(MLMLI,"(** Intervals abstract domain *)")
 
-quote(MLI,"\n(** Create an Box manager. *)")
+quote(MLMLI,"\n\
+(** Type of boxes.\n\
+\n\
+    Abstract values which are boxes have the type \n\
+    [t Apron.Abstract0.t] or [t Apron.Abstract1.t].\n\n\
+    Managers allocated for boxes have the type [t Apron.manager.t].\n\
+*)\n\
+type t\n\
+")
+
+quote(MLI,"\n(** Create a Box manager. *)")
 ap_manager_ptr box_manager_alloc();

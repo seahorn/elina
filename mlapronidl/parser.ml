@@ -205,9 +205,9 @@ let generator1_of_lstring (env:Environment.t) (lstr:string list)
   ;
   res
 
-let of_lstring (man:Manager.t) (env:Environment.t) (lstr:string list) 
+let of_lstring (man:'a Manager.t) (env:Environment.t) (lstr:string list) 
   : 
-  Abstract1.t
+  'a Abstract1.t
   =
   let array = lincons1_of_lstring env lstr in
   Abstract1.of_lincons_array man env array

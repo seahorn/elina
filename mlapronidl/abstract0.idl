@@ -73,7 +73,7 @@ void ap_abstract0_fdump(ap_manager_ptr man, ap_abstract0_ptr a)
   quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Print as a set of constraints *)")
-quote(MLI,"val print: (int -> string) -> Format.formatter -> t -> unit")
+quote(MLI,"val print: (int -> string) -> Format.formatter -> 'a t -> unit")
 
 quote(MLMLI,"(* ============================================================ *)")
 quote(MLMLI,"(** {3 Serialization} *)")

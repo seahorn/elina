@@ -13,19 +13,37 @@ import "manager.idl";
 
 typedef [abstract] struct pk_internal_t* internal_ptr;
 
-quote(MLMLI,"(** POLKA: Convex Polyhedra abstract domain *)")
+quote(MLMLI,"(** Convex Polyhedra abstract domain *)")
 
-quote(MLI,"\n\n(** Create a NewPolka manager. A true Boolean enables strict constraints. *)")
-ap_manager_ptr pk_manager_alloc(boolean strict);
+quote(MLMLI,"\n\
+type loose
+type strict
+  (** Two flavors for convex polyhedra: loose or strict.\n\n\
+      Loose polyhedra cannot have strict inequality constraints like [x>0].\n\
+      They are algorithmically more efficient\n\
+      (less generators, simpler normalization).\n\
+*)\n\n\
+type 'a t\n\
+(** Type of convex polyhedra, where ['a] is [loose] or [strict].\n\
+\n\
+    Abstract values which are convex polyhedra have the type\n\
+    [(loose t) Apron.Abstract0.t] or [(loose t) Apron.Abstract1.t] or\n\
+    [(strict t) Apron.Abstract0.t] or [(strict t) Apron.Abstract1.t].\n\n\
+    Managers allocated for convex polyhedra have the type ['a t Apron.manager.t].\n\
+*)\n\
+")
+
+quote(MLI,"\n\n(** Create a NewPolka manager for loose convex polyhedra. *)")
+ap_manager_ptr pk_manager_alloc_loose()
+quote(call,"_res = pk_manager_alloc(false);");
+
+quote(MLI,"\n\n(** Create a NewPolka manager for strict convex polyhedra. *)")
+ap_manager_ptr pk_manager_alloc_strict()
+quote(call,"_res = pk_manager_alloc(true);");
 
 quote(MLI,"\n\n(** Get the internal submanager of a NewPolka manager. *)")
 internal_ptr manager_get_internal(ap_manager_ptr man)
-  quote(call,"\n\
-if (strcmp(man->library,\"polka\")!=0){\n\
-  caml_failwith(\"Polka.get_internal applied to a manager not created by Polka\");\n\
-}\n\
-_res = (internal_ptr)man->internal;\n\
-");
+  quote(call,"_res = (internal_ptr)man->internal;");
 
 quote(MLI,"\n\n(** Various options. See the C documentation *)\n\n")
 void pk_set_max_coeff_size(internal_ptr pk, unsigned int size);

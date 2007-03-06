@@ -3,21 +3,29 @@
    read the COPYING file packaged in the distribution. *)
 
 (*
-boxpolkatopg -I $MLGMPIDL_INSTALL/lib -I $MLAPRONIDL_INSTALL/lib -I $CAMLLIB_INSTALL/lib -I $POLKA_INSTALL/lib -I $BOX_INSTALL/lib
+with default setting:
 
-or with default setting
-
-boxpolkatopg -I $APRON_INSTALL/lib
+aprontopg -I $APRON_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cma";;
 #load "polka.cma";;
-#load "box.cma";;
+#load "polkaeq.cma";;
+#load "box.cma"
+#load "oct.cma"
 
 #install_printer Apron.Linexpr1.print;;
 #install_printer Apron.Lincons1.print;;
 #install_printer Apron.Generator1.print;;
 #install_printer Apron.Abstract1.print;;
+
+let environment_print fmt x = Apron.Environment.print fmt x;;
+let lincons1_array_print fmt x = Apron.Lincons1.array_print fmt x;;
+let generator1_array_print fmt x = Apron.Generator1.array_print fmt x;;
+
+#install_printer environment_print;;
+#install_printer lincons1_array_print;;
+#install_printer generator1_array_print;;
 
 *)
 
@@ -44,7 +52,7 @@ let var_a = Var.of_string "a";;
 let var_b = Var.of_string "b";;
 
 
-let ex1 (man:Manager.t) : Abstract1.t =
+let ex1 (man:'a Manager.t) : 'a Abstract1.t =
   printf "Using Library: %s, version %s@." (Manager.get_library man) (Manager.get_version man);
 
   let env = Environment.make
@@ -158,7 +166,7 @@ let ex1 (man:Manager.t) : Abstract1.t =
   abs
 ;;
 
-let ex2 (man:Manager.t) =
+let ex2 (man:'a Manager.t) =
   let env = Environment.make
     [||]
     [|var_x; var_y; var_z|]
@@ -183,7 +191,7 @@ let ex2 (man:Manager.t) =
   abs3
 ;;
 
-let manpk = Polka.manager_alloc true;;
+let manpk = Polka.manager_alloc_strict ();;
 let manbox = Box.manager_alloc ();;
 
 let abs1 = ex1 manpk;;
@@ -191,6 +199,3 @@ let abs1 = ex1 manpk;;
 let abs2 = ex1 manbox;;
 
 let abs3 = ex2 manpk;;
-
-Abstract1.is_eq manpk abs1 abs2;;
-Abstract1.is_eq manbox abs1 abs2;;

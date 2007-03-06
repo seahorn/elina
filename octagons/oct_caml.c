@@ -161,12 +161,7 @@ value camlidl_oct_manager_get_internal(
   camlidl_ctx _ctx = &_ctxs;
   camlidl_ml2c_manager_ap_manager_ptr(_v_man, &man, _ctx);
   /* begin user-supplied calling sequence */
-
-if (strcmp(man->library,"oct")!=0){
-caml_failwith("Oct.get_internal applied to a manager not created by Oct");
-}
 _res = (internal_ptr)man->internal;
-
   /* end user-supplied calling sequence */
   _vres = camlidl_c2ml_oct_internal_ptr(&_res, _ctx);
   camlidl_free(_ctx);

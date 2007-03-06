@@ -47,10 +47,10 @@ quote(MLMLI,"(* ============================================================ *)"
 
 quote(MLI,"\n\
 (** Copy a value *)
-val copy : Manager.t -> t -> t\n\
+val copy : 'a Manager.t -> 'a t -> 'a t\n\
 \n\
 (** Return the abstract size of a value *)
-val size : Manager.t -> t -> int\n\
+val size : 'a Manager.t -> 'a t -> int\n\
 ")
 quote(ML,"\n\
 let copy man x = { abstract0 = Abstract0.copy man x.abstract0; env = x.env }\n\
@@ -63,13 +63,13 @@ quote(MLMLI,"(* ============================================================ *)"
 
 quote(MLI,"\n\
 (** Minimize the size of the representation of the value. This may result in a later recomputation of internal information.*)
-val minimize : Manager.t -> t -> unit\n\
+val minimize : 'a Manager.t -> 'a t -> unit\n\
 \n\
 (** Put the abstract value in canonical form. (not yet clear definition) *)
-val canonicalize : Manager.t -> t -> unit\n\
+val canonicalize : 'a Manager.t -> 'a t -> unit\n\
 \n\
 (** [approximate man abs alg] perform some transformation on the abstract value, guided by the argument [alg]. The transformation may lose information.  The argument [alg] overrides the field algorithm of the structure of type [Manager.funopt] associated to ap_abstract0_approximate (commodity feature).*)
-val approximate : Manager.t -> t -> int -> unit\n\
+val approximate : 'a Manager.t -> 'a t -> int -> unit\n\
 \n\
 ")
 quote(ML,"\n\
@@ -88,7 +88,7 @@ void ap_abstract1_fdump(ap_manager_ptr man, [ref]struct ap_abstract1_t* a)
   quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Print as a set of constraints *)")
-quote(MLI,"val print: Format.formatter -> t -> unit")
+quote(MLI,"val print: Format.formatter -> 'a t -> unit")
 
 quote(MLMLI,"(* ============================================================ *)")
 quote(MLMLI,"(** {3 Serialization} *)")
@@ -136,9 +136,9 @@ quote(MLMLI,"(** {3 Accessors} *)\n")
 quote(MLMLI,"(* ============================================================ *)")
 
 quote(MLI,"\n\
-val manager : t -> Manager.t\n\
-val env : t -> Environment.t\n\
-val abstract0 : t -> Abstract0.t\n\
+val manager : 'a t -> 'a Manager.t\n\
+val env : 'a t -> Environment.t\n\
+val abstract0 : 'a t -> 'a Abstract0.t\n\
   (** Return resp. the underlying manager, environment and abstract value of level 0 *)\n\
 ")
 
@@ -154,10 +154,10 @@ quote(MLMLI,"(* ============================================================ *)"
 
 quote(MLI,"\n\
 (** Emptiness test *)
-val is_bottom : Manager.t -> t -> Manager.tbool_t\n\
+val is_bottom : 'a Manager.t -> 'a t -> Manager.tbool_t\n\
 \n\
 (** Universality test *)
-val is_top : Manager.t -> t -> Manager.tbool_t\n\
+val is_top : 'a Manager.t -> 'a t -> Manager.tbool_t\n\
 ")
 quote(ML,"\n\
 let is_bottom man x = Abstract0.is_bottom man x.abstract0\n\
@@ -201,13 +201,13 @@ quote(MLI,"\n(** Return the interval of variation of the linear expression in th
 
 quote(MLI,"\n\
 (** Convert the abstract value to an hypercube *)
-val to_box : Manager.t -> t -> box1\n\
+val to_box : 'a Manager.t -> 'a t -> box1\n\
 \n\
 (** Convert the abstract value to a conjunction of linear constraints. *)
-val to_lincons_array : Manager.t -> t -> Lincons1.earray\n\
+val to_lincons_array : 'a Manager.t -> 'a t -> Lincons1.earray\n\
 \n\
 (** Convert the abstract value to a set of generators that defines it. *)
-val to_generator_array : Manager.t -> t -> Generator1.earray\n\
+val to_generator_array : 'a Manager.t -> 'a t -> Generator1.earray\n\
 \n\
 ")
 
