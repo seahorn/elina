@@ -207,10 +207,15 @@ quote(ML,"\
 let _ = Callback.register_exception \"apron exception\" \
 	  (Error { exn=Exc_none; funid = Funid_bottom; msg = \"dummy\"; })")
 
-quote(MLI,"val string_of_tbool: tbool_t -> string")
+quote(MLI,"\nval string_of_tbool: tbool_t -> string")
 quote(MLI,"val string_of_funid: ap_funid_t -> string")
 quote(MLI,"val string_of_exc: ap_exc_t -> string")
 quote(MLI,"val print_tbool: Format.formatter -> tbool_t -> unit")
+quote(MLI,"val print_funid: Format.formatter -> ap_funid_t -> unit")
+quote(MLI,"val print_funopt: Format.formatter -> ap_funopt_t -> unit")
+quote(MLI,"val print_exc: Format.formatter -> ap_exc_t -> unit")
+quote(MLI,"val print_exclog: Format.formatter -> ap_exclog_t -> unit")
+quote(MLI,"  (** Printing functions *)")
 quote(ML,"\n\
 let string_of_tbool = function\n\
 | False -> \"False\"\n\
@@ -279,6 +284,14 @@ let string_of_exc = function\n\
 | Exc_size -> \"Exc_size\"\n\
 \n\
 let print_tbool fmt x = Format.pp_print_string fmt (string_of_tbool x)\n\
+let print_funid fmt x = Format.pp_print_string fmt (string_of_funid x)\n\
+let print_exc fmt x = Format.pp_print_string fmt (string_of_exc x)\n\
+let print_exclog fmt x =\n\
+  Format.fprintf fmt \"{ @[ exn = %a;@ funid = %a;@ msg = %s;@] }\"
+    print_exc x.exn print_funid x.funid x.msg\n\
+let print_funopt fmt x =\n\
+  Format.fprintf fmt \"{ @[ algorithm = %i;@ timeout = %i;@ max_object_size = %i;@ flag_exact_wanted = %b;@ flag_best_wanted = %b;@] }\"
+    x.algorithm x.timeout x.max_object_size x.flag_exact_wanted x.flag_best_wanted\n\
 ")
 
 quote(MLI,"(** Set / get the global manager used for deserialization *)")
