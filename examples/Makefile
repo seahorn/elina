@@ -32,20 +32,20 @@ OCAMLLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS)" \
 bigarray.cma gmp.cma apron.cma \
 box.cma oct.cma polka.cma \
--cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lgmp -lmpfr -lbigarray -lcamlidl"
+-cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
 
 OCAMLOPTLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS) -g" \
 bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa \
--cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lgmp -lmpfr -lbigarray -lcamlidl"
+-cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
 
 all: C ml
 
 # C examples
 
-C: example1g
+C: example1
 
-%g: %g.o
+%g: %.o
 	$(CC) $(LDFLAGS) -o $@  $< -lpolkag_debug -lapron_debug -lgmp
 
 %g.o: %.c
@@ -53,18 +53,18 @@ C: example1g
 
 # OCaml examples
 
-ml: mlexample1g 
+ml: mlexample1
 
-mlexample%g.opt: mlexample%.cmx
+mlexample%.opt: mlexample%.cmx
 	$(OCAMLOPT) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
 
-%g: %.cmo apronrung
-	$(OCAMLC) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime apronrung -o $@ $<
+%: %.cmo apronrun
+	$(OCAMLC) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime apronrun -o $@ $<
 
-apronrung:
+apronrun:
 	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ $(OCAMLLDFLAGS)
 
-aprontopg:
+aprontop:
 	ocamlmktop $(OCAMLINC) -verbose -custom -o $@ $(OCAMLLDFLAGS)
 
 %.cmo: %.ml
@@ -76,7 +76,7 @@ aprontopg:
 #
 
 clean:
-	rm -f example1g apronrung aprontopg *.cm[ioxa] *.o mlexample1g mlexample2g mlexample3g mlexample4g mlexample5g *.opt
+	rm -f example1g apronrun aprontop *.cm[ioxa] *.o mlexample1 mlexample2 mlexample3 mlexample4 mlexample5 *.opt
 
 distclean: clean
 

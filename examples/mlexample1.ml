@@ -5,7 +5,7 @@
 (*
 with default setting:
 
-aprontopg -I $APRON_INSTALL/lib
+aprontop -I $APRON_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cma";;
