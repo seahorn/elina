@@ -43,10 +43,10 @@ all: C ml
 
 # C examples
 
-C: example1
+C: example1g
 
 %g: %.o
-	$(CC) $(LDFLAGS) -o $@  $< -lpolkag_debug -lapron_debug -lgmp
+	$(CC) $(LDFLAGS) -o $@  $< -lpolkag_debug -lapron_debug -lgmp -lmpfr
 
 %g.o: %.c
 	$(CC) $(CFLAGS_DEBUG) -c -o $@ $<
@@ -59,7 +59,7 @@ mlexample%.opt: mlexample%.cmx
 	$(OCAMLOPT) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
 
 %: %.cmo apronrun
-	$(OCAMLC) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime apronrun -o $@ $<
+	$(OCAMLC) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime ./apronrun -o $@ $<
 
 apronrun:
 	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ $(OCAMLLDFLAGS)
