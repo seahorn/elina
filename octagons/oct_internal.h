@@ -17,6 +17,8 @@
 #ifndef __OCT_INTERNAL_H
 #define __OCT_INTERNAL_H
 
+#include "num.h"
+#include "bound.h"
 #include "oct_fun.h"
 
 #ifdef __cplusplus

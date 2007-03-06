@@ -160,7 +160,8 @@ octtest%: liboct%.a oct_test%.o
 	-lm
 
 %_caml.o: %_caml.c $(CCINC) $(DEPS)
-	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGINT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -c -o $@ $<
+
 %Zi.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGINT -c -o $@ $<
 %Zl.o: %.c $(CCINC) $(DEPS)

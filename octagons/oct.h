@@ -24,9 +24,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "num.h"
-#include "bound.h"
-
 #include "ap_coeff.h"
 #include "ap_dimension.h"
 #include "ap_expr0.h"

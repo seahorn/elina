@@ -10,11 +10,9 @@
 
 (* compile with:
 
-ocamlc -I ${INSTALL_DIR}/lib mltest.ml \
-  oct.cma -cclib -loctQg -cclib -loct_caml \
-  apron.cma -cclib -lapron -cclib -lapron_caml \
-  gmp.cma -cclib -lgmp_caml \
-  -cclib -lcamlidl
+ocamlc -I ${INSTALL_DIR}/lib \
+   gmp.cma apron.cma oct.cma mltest.ml \
+   -cclib -loctQg -cclib -lapron
 
 you can change:
 - INSTALL_DIR to where APRON is installed,
