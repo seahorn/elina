@@ -39,6 +39,8 @@ s/external ap_abstract0_/external /g;
 s/\([^_]\)ap_var_/\1/g;
 s/ap_environment_ptr/t/g;
 s/external ap_environment_/external /g;
+s/AP_INT/INT/g;
+s/AP_REAL/REAL/g;
 s/ap_linexpr1_t/t/g;
 s/external ap_linexpr1_/external /g;
 s/ap_lincons1_t/t/g;

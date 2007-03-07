@@ -15,12 +15,12 @@ import "var.idl";
 
 
 quote(C,"enum typvar {\n\
-  INT,REAL\n\
+  AP_INT,AP_REAL\n\
 };\n\
 ")
 
 enum typvar {
-  INT,REAL
+  AP_INT,AP_REAL
 };
 
 typedef [abstract,
@@ -104,7 +104,7 @@ enum typvar ap_environment_typ_of_var(ap_environment_ptr e, ap_var_t var)
     if (dim==AP_DIM_MAX)\n\
       caml_failwith(\"Environment.dim_of_var: unknown variable in the environment\");\n\
     _res =\n\
-      dim=( dim<e->intdim ? INT : REAL);\n\
+      dim=( dim<e->intdim ? AP_INT : AP_REAL);\n\
   }");
 
 quote(MLI,"\n(** Return the (lexicographically ordered) sets of integer and real variables in the environment *)")
