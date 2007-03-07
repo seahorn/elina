@@ -66,9 +66,9 @@ install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
 	for i in $(CCLIB_TO_INSTALL); do \
 		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/lib; fi; \
 	done
-	for i in $(CCBIN_TO_INSTALL); do \
-		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/bin; fi; \
-	done
+#	for i in $(CCBIN_TO_INSTALL); do \
+#		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/bin; fi; \
+#	done
 	for i in $(CAML_TO_INSTALL); do \
 		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/lib; fi; \
 	done
@@ -76,7 +76,7 @@ install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
 distclean:
 	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(PREFIX)/include/$$i; done
 	for i in $(CCLIB_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
-	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(PREFIX)/bin/$$i; done
+#	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(PREFIX)/bin/$$i; done
 	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
 	/bin/rm -f Makefile.depend
 

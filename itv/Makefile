@@ -82,9 +82,9 @@ install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
 	for i in $(CCLIB_TO_INSTALL); do \
 		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/lib; fi; \
 	done
-	for i in $(CCBIN_TO_INSTALL); do \
-		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/bin; fi; \
-	done
+#	for i in $(CCBIN_TO_INSTALL); do \
+#		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/bin; fi; \
+#	done
 
 distclean:
 	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(PREFIX)/include/$$i; done
