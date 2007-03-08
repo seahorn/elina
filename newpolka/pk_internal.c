@@ -182,7 +182,7 @@ ap_manager_t* pk_manager_alloc(bool strict)
 
   pk = pk_internal_alloc(strict);
   pk_set_approximate_max_coeff_size(pk, 1);
-  man = ap_manager_alloc("polka",
+  man = ap_manager_alloc(strict ? "polka, strict mode" : "polka, loose mode",
 #if defined(NUMINT_LONGINT)
 		      "3.0 with NUMINT_LONGINT",
 #elif defined(NUMINT_LONGLONGINT)
@@ -255,10 +255,10 @@ ap_manager_t* pk_manager_alloc(bool strict)
 poly_t* pk_to_poly(ap_abstract0_t* abstract)
 {
   ap_manager_t* man = abstract->man;
-  if (strcmp(man->library,"polka")!=0){
+  if (strncmp(man->library,"polka",5)!=0){
     ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
 			       AP_FUNID_UNKNOWN,
-			       "pk_to_poly: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPOlka polyhedra");
+			       "pk_to_poly: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPolka polyhedra");
     return NULL;
   }
   return abstract->value;
@@ -266,10 +266,10 @@ poly_t* pk_to_poly(ap_abstract0_t* abstract)
 
 ap_abstract0_t* pk_of_poly(ap_manager_t* man, poly_t* poly)
 {
-  if (strcmp(man->library,"polka")!=0){
+  if (strncmp(man->library,"polka",5)!=0){
     ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
 			       AP_FUNID_UNKNOWN,
-			       "pk_to_poly: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPOlka polyhedra");
+			       "pk_to_poly: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPolka polyhedra");
     return ap_abstract0_top(man,poly->intdim,poly->realdim);
   }
   ap_abstract0_t* res = malloc(sizeof(ap_abstract0_t));
@@ -277,3 +277,4 @@ ap_abstract0_t* pk_of_poly(ap_manager_t* man, poly_t* poly)
   res->man = ap_manager_copy(man);
   return res;
 }
+

@@ -649,7 +649,7 @@ ap_manager_t* pkeq_manager_alloc(void)
   void** funptr;
 
   man = pk_manager_alloc(false);
-  man->library = "polkaeq";
+  man->library = "polka, equalities mode";
   funptr = man->funptr;
   // funptr[AP_FUNID_COPY] = &poly_copy;
   // funptr[AP_FUNID_FREE] = &poly_free;

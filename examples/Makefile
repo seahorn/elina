@@ -15,18 +15,9 @@ LCFLAGS = \
 -L$(APRON_PREFIX)/lib \
 -L$(CAMLIDL_PREFIX)/lib/ocaml
 
-CFLAGS = $(ICFLAGS) -O3 -DNDEBUG
-CFLAGS_DEBUG = $(ICFLAGS) -O0 -g -UNDEBUG
-LDFLAGS = $(ICFLAGS) $(LCFLAGS)
-
-OCAMLC = ocamlc.opt
-OCAMLOPT = ocamlopt.opt
-
 OCAMLINC = \
 -I $(MLGMPIDL_PREFIX)/lib \
 -I $(MLAPRONIDL_PREFIX)/lib 
-
-OCAMLFLAGS = $(OCAMLINC)
 
 OCAMLLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS)" \
@@ -45,40 +36,34 @@ all: C ml
 
 C: example1g
 
-%g: %.o
-	$(CC) $(LDFLAGS) -o $@  $< -lpolkag_debug -lapron_debug -lgmp -lmpfr
+%g: %g.o
+	$(CC) $(CFLAGS) $(ICFLAGS) $(LCFLAGS) -o $@  $< -lpolkag_debug -lapron_debug -lmpfr -lgmp 
 
 %g.o: %.c
-	$(CC) $(CFLAGS_DEBUG) -c -o $@ $<
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -c -o $@ $<
 
 # OCaml examples
 
 ml: mlexample1
 
 mlexample%.opt: mlexample%.cmx
-	$(OCAMLOPT) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
+	$(OCAMLOPT) $(OCAMLFLAGS) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
 
-%: %.cmo apronrun
-	$(OCAMLC) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime ./apronrun -o $@ $<
-
-apronrun:
-	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ $(OCAMLLDFLAGS)
-
-aprontop:
-	ocamlmktop $(OCAMLINC) -verbose -custom -o $@ $(OCAMLLDFLAGS)
+%: %.cmo $(APRON_PREFIX)/bin/apronrun
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime $(APRON_PREFIX)/bin/apronrun -o $@ $<
 
 %.cmo: %.ml
-	$(OCAMLC) $(OCAMLFLAGS) -c -o $@ $<
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -c -o $@ $<
 
 %.cmx: %.ml
-	$(OCAMLOPT) $(OCAMLFLAGS) -c -o $@ $<
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC)  -c -o $@ $<
 
 #
 
 clean:
-	rm -f example1g apronrun aprontop *.cm[ioxa] *.o mlexample1 mlexample2 mlexample3 mlexample4 mlexample5 *.opt
+	rm -f example1g *.cm[ioxa] *.o mlexample1 mlexample2 mlexample3 mlexample4 mlexample5 *.opt
 
 distclean: clean
 
-dist: example1.c mlexample1.ml mlexample2.ml Makefile README
+dist: example1.c mlexample1.ml mlexample2.ml mlexample3.ml Makefile README
 	(cd ..; tar zcvf examples.tgz $(^:%=examples/%))

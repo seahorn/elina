@@ -127,7 +127,7 @@ uninstall:
 	/bin/rm -f $(LIBDIR)/oct.mli $(LIBDIR)/oct.cmi $(LIBDIR)/oct.idl $(LIBDIR)/oct??.cma $(LIBDIR)/oct??.cmxa $(LIBDIR)/oct??.a
 	/bin/rm -f Makefile.depend
 
-distclean: clean uninstall
+distclean: uninstall
 	/bin/rm -f Makefile.depend
 
 dist: Makefile COPYING README oct_doc.html sedscript_caml $(CCSOURCES) $(CCINC) oct.h oct_test.c oct.idl

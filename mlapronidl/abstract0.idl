@@ -25,7 +25,8 @@ typedef [abstract,
 	 ml2c(camlidl_apron_abstract0_ptr_ml2c)]
 struct ap_abstract0_ptr ap_abstract0_ptr;
 
-quote(MLI,"(** APRON Abstract value of level 0 *)")
+quote(MLMLI,"(** APRON Abstract value of level 0 *)")
+quote(MLMLI,"(** The type parameter ['a] allows to distinguish abstract values with different underlying abstract domains. *)\n")
 
 quote(MLI,"\n(** TO BE DOCUMENTED *)")
 void ap_abstract0_set_gc(int size)

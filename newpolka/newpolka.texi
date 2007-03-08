@@ -78,8 +78,10 @@ specific to each execution thread in multithreaded programs).
 @deftypefun ap_manager_t* pk_manager_alloc (bool @var{strict})
 Allocate a APRON manager linked to the NewPolka library.
 
-The @var{strict} option, when true, enables strict constraints (like
-@code{x>0}).
+The @var{strict} option, when true, enables strict constraints
+(like @code{x>0}). Managers in strict mode or in loose mode
+(strict constraints disabled) are not compatible, and so are
+corresponding abstract values.
 @end deftypefun
 
 @subheading Setting options

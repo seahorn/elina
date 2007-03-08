@@ -413,7 +413,7 @@ void ex3(ap_manager_t* man)
   ap_environment_free(env);
 }
 
-void main()
+int main()
 {
   ap_manager_t* man = pk_manager_alloc(true);
   ex1(man);

@@ -3,7 +3,6 @@
 /* This file is part of the APRON Library, released under LGPL license.
    Please read the COPYING file packaged in the distribution  */
 
-quote(MLI,"(** APRON Abstract values of level 1 *)")
 
 quote(C, "\n\
 #include <limits.h>\n\
@@ -34,6 +33,8 @@ struct ap_abstract1_t {
   [mlname(mutable_abstract0)] ap_abstract0_ptr abstract0;
   [mlname(mutable_env)] ap_environment_ptr env;
 };
+quote(MLMLI,"(** APRON Abstract values of level 1 *)")
+quote(MLMLI,"(** The type parameter ['a] allows to distinguish abstract values with different underlying abstract domains. *)\n")
 
 quote(MLMLI,"type box1 = { mutable interval_array : Interval.t array; mutable box1_env : Environment.t }")
 

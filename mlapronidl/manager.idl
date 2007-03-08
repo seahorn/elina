@@ -133,16 +133,6 @@ enum ap_funid_t {
   Funid_size2
 };
 
-enum ap_exc_t {
-  Exc_none,           /* no exception detected */
-  Exc_timeout,        /* timeout detected */
-  Exc_out_of_space,   /* out of space detected */
-  Exc_overflow,        /* magnitude overflow detected */
-  Exc_invalid_argument, /* invalid arguments */
-  Exc_not_implemented, /* not implemented */
-  Exc_size
-};
-
 struct ap_funopt_t {
   int algorithm;
   /* Algorithm selection:
@@ -167,6 +157,16 @@ struct ap_funopt_t {
   */
 };
 
+enum ap_exc_t {
+  Exc_none,           /* no exception detected */
+  Exc_timeout,        /* timeout detected */
+  Exc_out_of_space,   /* out of space detected */
+  Exc_overflow,        /* magnitude overflow detected */
+  Exc_invalid_argument, /* invalid arguments */
+  Exc_not_implemented, /* not implemented */
+  Exc_size
+};
+
 struct ap_exclog_t {
   enum ap_exc_t exn;
   enum ap_funid_t funid;
@@ -178,6 +178,18 @@ typedef [abstract,
 struct ap_manager_ptr ap_manager_ptr;
 
 quote(MLMLI,"(** APRON Managers *)")
+
+quote(MLMLI,"(** The type parameter ['a] allows to distinguish managers allocated by different underlying abstract domains. *)\n")
+
+quote(MLMLI,"(** Concerning the other types,\n\n\
+- [tbool] extends Booleans;\n\n\
+- [funid] defines identifiers for the generic function working on abstrat values;\n\n\
+- [funopt] defines the options associated to generic functions; \n\n\
+- [exc] defines the different kind of exceptions; \n\n\
+- [exclog] defines the exceptions raised by APRON functions.\n\n\
+*)\n")
+
+
 
 quote(MLI,"(** Get the name of the effective library which allocated the manager *)")
 [string]const char* ap_manager_get_library(ap_manager_ptr man);
@@ -195,9 +207,10 @@ struct ap_funopt_t ap_manager_get_funopt(ap_manager_ptr man, enum ap_funid_t fun
 quote(MLI,"(** Set the options for the function *)")
 void ap_manager_set_funopt(ap_manager_ptr man, enum ap_funid_t funid, [ref]struct ap_funopt_t* funopt);
 
-quote(MLI,"(** Get the corresponding result flags *)")
+quote(MLI,"(** Get the corresponding result flag *)")
 enum tbool_t ap_manager_get_flag_exact(ap_manager_ptr man);
-enum tbool_t ap_manager_get_flag_best(ap_manager_ptr man);
+quote(MLI,"(** Get the corresponding result flag *)")
+enum tbool_t ap_manager_get_flag_best(ap_manager_ptr man); 
 
 
 quote(MLI,"(** Exception raised by functions of the interface *)")

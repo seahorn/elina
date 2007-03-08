@@ -78,17 +78,25 @@ Abstract1  & abstract values, level 1 \\
 Parser     & strings parsing 
 \end{tabular}
 
+The package also includes the \textsc{MLGmpIDL} wrapper to GMP and
+MPFR libraries.
+
 %=============================================================================
 \subsection*{Requirements}
 %=============================================================================
 
 \begin{itemize}
-\item M4 preprocessor (standard on any UNIX system)
 \item APRON library
-\item GMP library (tested with version 4.0 and up)
-\item mlgmpidl package
+\item GMP library version 4.2 or up (tested with version 4.2.1)
+\item MPFR library version 2.2 or up (tested with version 2.2.1)
 \item OCaml 3.0 or up (tested with 3.09)
 \item Camlidl (tested with 1.05)
+\end{itemize}
+
+Optionally,
+\begin{itemize}
+\item GNU M4 preprocessor
+\item GNU sed
 \end{itemize}
 
 %=============================================================================
@@ -98,7 +106,6 @@ Parser     & strings parsing
 \begin{description}
 \item[Library]
 Set the file ../Makefile.config to your own setting.
-You might also have to modify the Makefile for executables
 
 type 'make', and then 'make install'
 
@@ -132,7 +139,7 @@ are located in directory \$APRON/lib.
 
 The native-code compilation command looks like
 \begin{quote}\tt
-  ocamlopt -I \$APRON/lib -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -lboxmpq"
+  ocamlopt -I \$APRON/lib -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -lboxmpq -litvmpq"
 \end{quote}
 Comments:
 \begin{enumerate}
@@ -153,9 +160,9 @@ Comments:
 
 The byte-code compilation process looks like
 \begin{quote}\tt
-  ocamlc -I \$APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq" \\
+  ocamlc -I \$APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq -litvmpq" \\
   ~\\
-  ocamlc -I \$APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq" example.ml
+  ocamlc -I \$APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq -litvmpq" example.ml
 \end{quote}
 Comments:
 \begin{enumerate}
@@ -168,15 +175,13 @@ The automatic search for C libraries associated to these
 \texttt{-noautolink} supported by both \texttt{ocamlc} and
 \texttt{ocamlopt} commands. For instance, the command for native-code compilation can alternatively looks like:
 \begin{quote}\tt
-  ocamlopt -I \$APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -polka\_caml -lboxmpq -lbox\_caml -lapron\_caml -lapron -lgmp\_caml -LGMP/lib -lgmp"
+  ocamlopt -I \$APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "--polka\_caml lpolkag -lbox\_caml -lboxmpq -litvmpq -lapron\_caml -lapron -lgmp\_caml -LGMP/lib -lgmp"
 \end{quote}
 
 The option \texttt{-verbose} helps to understand what is happening
 in case of problem.
 
 \part{Coefficients}
-\input{Mpzf.tex}
-\input{Mpqf.tex}
 \input{Scalar.tex}
 \input{Interval.tex}
 \input{Coeff.tex}
@@ -186,7 +191,6 @@ in case of problem.
 \input{Box.tex}
 \input{Oct.tex}
 \input{Polka.tex}
-\input{Polkaeq.tex}
 
 \part{Level 1 of the interface}
 \input{Var.tex}
@@ -204,10 +208,14 @@ in case of problem.
 \input{Generator0.tex}
 \input{Abstract0.tex}
 
-\part{Others}
+\part{MLGmpIDL modules}
 \input{Mpz.tex}
 \input{Mpq.tex}
+\input{Mpf.tex}
+\input{Mpfr.tex}
 \input{Gmp_random.tex}
+\input{Mpzf.tex}
+\input{Mpqf.tex}
 
 \appendix
 \printindex

@@ -42,10 +42,9 @@ CCINC_TO_INSTALL = pk.h pkeq.h
 CCBIN_TO_INSTALL =
 CCLIB_TO_INSTALL = libpolkag.a libpolkag_debug.a libpolka_caml.a libpolka_caml_debug.a
 
-CAML_TO_INSTALL = polka.idl polkaeq.idl \
+CAML_TO_INSTALL = polka.idl \
 polka.cma polka.cmxa polka.a \
-polka.cmi polka.cmx polka.mli polka.ml \
-polkaeq.cmi polkaeq.cmx polkaeq.mli polkaeq.ml
+polka.cmi polka.cmx polka.mli polka.ml
 
 #---------------------------------------
 # Rules
@@ -101,7 +100,7 @@ distclean:
 	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
 	/bin/rm -f Makefile.depend
 
-dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polkaeq.idl polkaeq.ml polkaeq.mli polka_caml.c polkaeq_caml.c COPYING README
+dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polka_caml.c COPYING README
 	(cd ..; tar zcvf newpolka.tgz $(^:%=newpolka/%))
 
 #---------------------------------------
@@ -159,11 +158,11 @@ test.cmo: test.ml
 # C rules
 #---------------------------------------
 
-libpolka_caml.a: polka_caml.o polkaeq_caml.o
+libpolka_caml.a: polka_caml.o 
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-libpolka_caml_debug.a: polka_caml_debug.o polkaeq_caml_debug.o
+libpolka_caml_debug.a: polka_caml_debug.o 
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
@@ -171,14 +170,14 @@ libpolka_caml_debug.a: polka_caml_debug.o polkaeq_caml_debug.o
 # ML rules
 #---------------------------------------
 
-polka.cma: polka.cmo polkaeq.cmo libpolka_caml.a
+polka.cma: polka.cmo libpolka_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -custom -a -o $@ \
-	polka.cmo polkaeq.cmo \
+	polka.cmo \
 	-ccopt "-L$(POLKA_PREFIX)/lib" -cclib "-lpolka_caml"
 
-polka.cmxa: polka.cmx polkaeq.cmx libpolka_caml.a
+polka.cmxa: polka.cmx libpolka_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
-	polka.cmx polkaeq.cmx \
+	polka.cmx \
 	-ccopt "-L$(POLKA_PREFIX)/lib" -cclib "-lpolka_caml"
 	$(RANLIB) polka.a
 
@@ -189,10 +188,10 @@ polka.cmxa: polka.cmx polkaeq.cmx libpolka_caml.a
 manager.idl: ../mlapronidl/manager.idl
 	ln -s $< $@
 
-# generates X.ml, X.mli, X_caml.c for X = polka, polkaeq
-rebuild: manager.idl polka.idl polkaeq.idl
+# generates X.ml, X.mli, X_caml.c for X = polka
+rebuild: manager.idl polka.idl 
 	mkdir -p tmp
-	for i in polka polkaeq; do \
+	for i in polka; do \
 		echo "module $$i"; \
 		cp $${i}.idl tmp/$${i}.idl; \
 		$(CAMLIDL) -no-include -nocpp tmp/$${i}.idl; \

@@ -4,6 +4,7 @@
    read the COPYING file packaged in the distribution */
 
 quote(C,"#include \"pk_internal.h\"")
+quote(C,"#include \"pkeq.h\"")
 quote(C,"#include \"ap_manager.h\"")
 quote(C,"#include \"apron_caml.h\"")
 
@@ -13,23 +14,27 @@ import "manager.idl";
 
 typedef [abstract] struct pk_internal_t* internal_ptr;
 
-quote(MLMLI,"(** Convex Polyhedra abstract domain *)")
+quote(MLMLI,"(** Convex Polyhedra and Linear Equalities abstract domain *)")
 
 quote(MLMLI,"\n\
-type loose
-type strict
+type loose\n\
+type strict\n\
   (** Two flavors for convex polyhedra: loose or strict.\n\n\
       Loose polyhedra cannot have strict inequality constraints like [x>0].\n\
       They are algorithmically more efficient\n\
       (less generators, simpler normalization).\n\
-*)\n\n\
+  *)\n\n\
+type equalities\n\
+  (** Linear equalities *)\n\n\
 type 'a t\n\
-(** Type of convex polyhedra, where ['a] is [loose] or [strict].\n\
+(** Type of convex polyhedra/linear equalities, where ['a] is [loose], [strict] or [equalities].\n\
 \n\
     Abstract values which are convex polyhedra have the type\n\
     [(loose t) Apron.Abstract0.t] or [(loose t) Apron.Abstract1.t] or\n\
     [(strict t) Apron.Abstract0.t] or [(strict t) Apron.Abstract1.t].\n\n\
-    Managers allocated for convex polyhedra have the type ['a t Apron.manager.t].\n\
+    Abstract values which are conjunction of linear equalities have the type\n\
+    [(equalities t) Apron.Abstract0.t] or [(equalities t) Apron.Abstract1.t].\n\n\
+    Managers allocated by NewPolka have the type ['a t Apron.manager.t].\n\
 *)\n\
 ")
 
@@ -40,6 +45,10 @@ quote(call,"_res = pk_manager_alloc(false);");
 quote(MLI,"\n\n(** Create a NewPolka manager for strict convex polyhedra. *)")
 ap_manager_ptr pk_manager_alloc_strict()
 quote(call,"_res = pk_manager_alloc(true);");
+
+quote(MLI,"\n\n(** Create a NewPolka manager for conjunctions of linear equalities. *)")
+ap_manager_ptr pk_manager_alloc_equalities()
+quote(call,"_res = pkeq_manager_alloc();");
 
 quote(MLI,"\n\n(** Get the internal submanager of a NewPolka manager. *)")
 internal_ptr manager_get_internal(ap_manager_ptr man)
