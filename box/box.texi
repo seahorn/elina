@@ -6,7 +6,7 @@
 The @sc{Box} interval library is aimed to be used through
 the APRON interface.
 
-It is a beta version, and may still contain important bugs.
+It is an alpha version, and may still contain important bugs.
 
 @menu
 * Use of Box::             

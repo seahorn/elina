@@ -20,7 +20,7 @@ General:
 - NewPolka offers a layer for linear equalities only, in addition to more
   general linear inequalities.
 - Improved Makefiles and Makefile.config.model
-- Bugs corrected
+- Bugs corrected, in particular in Box and Newpolka.
 
 Version 0.9.4
 

@@ -512,6 +512,7 @@ intervals.
 * Coefficients::
 @end menu
 
+@ifnothtml
 We sum up the involved types below (numbers denotes sizes in bytes
 on a typical 32 bits computer.
 @verbatim
@@ -532,7 +533,7 @@ on a typical 32 bits computer.
 
 These types are manipulated using pointers, with creator
 @code{X_t* X_alloc()} and destructors @code{void X_free(X_t*)}.
-
+@end ifnothtml
 
 
 
@@ -1026,6 +1027,7 @@ to a common super-environement (see @ref{Environements} and
 @ref{Change of environements of abstract values of level 1}).
 @end itemize
 
+@ifnothtml
 For information only (as these types are considered as abstract),
 we sum up the involved types below.
 @verbatim
@@ -1060,6 +1062,7 @@ we sum up the involved types below.
 | ap_environment_t* |
 |-------------------|
 @end verbatim
+@end ifnothtml
 
 @c ===================================================================
 @node Variables and related operations, Environements, Level 1 of the interface, Level 1 of the interface
@@ -2295,6 +2298,7 @@ from existing ones.
 * Abstract values and operations of level 0::
 @end menu
 
+@ifnothtml
 For information only (as most of these types are considered as
 abstract) and for implementors, we sum up the involved types
 below.
@@ -2334,6 +2338,7 @@ below.
 | ap_manager_t* |
 |---------------|
 @end verbatim
+@end ifnothtml
 
 @c ===================================================================
 @node Dimensions and related operations, Linear expressions of level 0, Level 0 of the interface, Level 0 of the interface
