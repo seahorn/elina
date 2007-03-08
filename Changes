@@ -1,14 +1,25 @@
 Version 0.9.5
 
-- itv becomes box
+OCaml interface
+- Better type systems, similar to the system used by the [Bigarray] 
+  library of the OCaml standard distribution.
+- Generation and installation in $(APRON_PREFIX)/bin of apronrun 
+  and aprontop executables in the main Makefile.
 
-- NewPolka offers a layer for linear equalities only, in addition to more
-  general linear inequalities.
-
+C interface:
 - Use of const qualifier removed in the API, except for strings (const char *)
 	
+General:
+- mpfr library now required in addition to gmp library.
+- conversions between mpq_t and double are now safer, thanks to the use of
+  mpfr.
+- itv becomes box.
+- package num extended with a new package itv, used by box, octagons and
+  newpolka.
+- support for linear congruences added in constraints and generators.
+- NewPolka offers a layer for linear equalities only, in addition to more
+  general linear inequalities.
 - Improved Makefiles and Makefile.config.model
-
 - Bugs corrected
 
 Version 0.9.4
