@@ -9,10 +9,9 @@ aprontop -I $APRON_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cma";;
-#load "polka.cma";;
-#load "polkaeq.cma";;
 #load "box.cma"
 #load "oct.cma"
+#load "polka.cma";;
 
 #install_printer Apron.Linexpr1.print;;
 #install_printer Apron.Lincons1.print;;
@@ -132,8 +131,6 @@ let ex1 (man:'a Manager.t) : 'a Abstract1.t =
   printf "abs=%a@." Abstract1.print abs;
   let array = Abstract1.to_generator_array man abs in
   printf "gen=%a@." generator1_array_print array;
-  Abstract1.canonicalize man abs;
-  printf "abs=%a@." Abstract1.print abs;
   let array = Abstract1.to_generator_array man abs in
   printf "gen=%a@." generator1_array_print array;
 

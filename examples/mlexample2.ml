@@ -124,8 +124,6 @@ let ex1 (man:'a Manager.t) : 'a Abstract1.t =
   printf "abs=%a@." Abstract1.print abs;
   let array = Abstract1.to_generator_array man abs in
   printf "gen=%a@." generator1_array_print array;
-  Abstract1.canonicalize man abs;
-  printf "abs=%a@." Abstract1.print abs;
   let array = Abstract1.to_generator_array man abs in
   printf "gen=%a@." generator1_array_print array;
 
