@@ -94,7 +94,7 @@ dist: $(CCSRC) Makefile sedscript_caml box.texi box.idl box.ml box.mli box_caml.
 #-----------------------------------
 
 libboxmpq.a: $(CCMODULES:%=%mpq.o)
-	$(AR) rcs $@ $^ ../itv/libitvmpq.a
+	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
 libboxmpq_debug.a: $(CCMODULES:%=%mpq_debug.o)

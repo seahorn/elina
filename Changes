@@ -3,19 +3,19 @@ Version 0.9.5
 OCaml interface
 - Better type systems, similar to the system used by the [Bigarray] 
   library of the OCaml standard distribution.
-- Generation and installation in $(APRON_PREFIX)/bin of apronrun 
+- Generation and installation in $(APRON_PREFIX)/bin of apronrun
   and aprontop executables in the main Makefile.
 
 C interface:
-- Use of const qualifier removed in the API, except for strings (const char *)
-	
+- Use of const qualifier removed in the API, except for strings
+  (const char *)
+
 General:
 - mpfr library now required in addition to gmp library.
 - conversions between mpq_t and double are now safer, thanks to the use of
   mpfr.
 - itv becomes box.
-- package num extended with a new package itv, used by box, octagons and
-  newpolka.
+- package num extended with a new package itv, used currently by box.
 - support for linear congruences added in constraints and generators.
 - NewPolka offers a layer for linear equalities only, in addition to more
   general linear inequalities.

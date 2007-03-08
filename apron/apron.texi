@@ -49,7 +49,7 @@ numerical variables.
 
 @title APRON
 @subtitle The APRON library
-@subtitle Edition 0.9.4, December 2006
+@subtitle Edition 0.9.5, March 2007
 
 @author by Bertrand Jeannet and the APRON team
 @c Include the Distribution inside the titlepage so
@@ -179,12 +179,13 @@ All programs using APRON must link against the @file{libapron} and
 @file{libgmp} libraries, and the underlying libraries you want to
 use it via APRON.
 
-For instance, if some file @file{test.c} uses the POLKA library via APRON, the
-compilation command should look like @samp{gcc -IGMP/include
--IAPRON/include -IPOLKA/include -L/GMP/lib -L/APRON/lib
--LPOLKA/lib -o testg test.c -lpolkag -lapron -lgmp}, assuming that
-the POLKA library is used in its 'g' version (internal number
-representation is GMP integer.
+For instance, if some file @file{test.c} uses the POLKA library via
+APRON, the compilation command should look like @samp{gcc
+-IMPFR/include -IGMP/include -IAPRON/include -IPOLKA/include
+-LMPFR/lib -LGMP/lib -LAPRON/lib -LPOLKA/lib -o testg test.c -lpolkag
+-litvmpq -lapron -lmpfr -lgmp}, assuming that the POLKA library is
+used in its 'g' version (internal number representation is GMP
+integer.
 
 @c ===================================================================
 @node C Programming Conventions,  , Headers and Libraries, APRON Basics
@@ -256,13 +257,13 @@ Managers are allocated by the underlying libraries/abstract domains, but are fre
 
 @menu
 * Managers::
-* NewPolka::
 * Box::
 * Oct::
+* NewPolka::
 @end menu
 
 @c ===================================================================
-@node Managers, NewPolka, Managers and Abstract Domains, Managers and Abstract Domains
+@node Managers, Box, Managers and Abstract Domains, Managers and Abstract Domains
 @section Managers (@file{ap_manager.h})
 @c ===================================================================
 
@@ -475,25 +476,25 @@ raised one.
 @end deftypefun
 
 @c ===================================================================
-@node NewPolka, Box, Managers, Managers and Abstract Domains
-@section NewPolka (@file{pk.h}): convex polyhedra abstract domain
-@c ===================================================================
-
-@include newpolka.texi
-
-@c ===================================================================
-@node Box, Oct, NewPolka, Managers and Abstract Domains
+@node Box, Oct, Managers, Managers and Abstract Domains
 @section Box (@file{box.h}): intervals abstract domain
 @c ===================================================================
 
 @include box.texi
 
 @c ===================================================================
-@node Oct,  , Box, Managers and Abstract Domains
+@node Oct, NewPolka, Box, Managers and Abstract Domains
 @section Oct: octagon abstract domain
 @c ===================================================================
 
 @uref{oct_doc.html}
+
+@c ===================================================================
+@node NewPolka,  , Oct, Managers and Abstract Domains
+@section NewPolka (@file{pk.h}): convex polyhedra and linear equalities abstract domains
+@c ===================================================================
+
+@include newpolka.texi
 
 @c *******************************************************************
 @node Scalars & Intervals & Coefficients, Level 1 of the interface, Managers and Abstract Domains, Top

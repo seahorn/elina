@@ -11,6 +11,9 @@ num:
 	manipulating "generic" numbers (used by intervals,
         newpolka and possibly octagons).
 
+itv:
+	extension of num, manipulating also linear expressions.
+
 apron:
 	apron interface, C version
 
@@ -29,8 +32,8 @@ ppl:
 	not compiled unless HAS_PPL is defined in Makefile.config
 
 mlgmpidl:
-	OCaml interface for the GMP library, used by mlapronidl.
-	Requires GMP version 4.0 or up.
+	OCaml interface for the GMP and MPFR libraries, used by mlapronidl.
+	Requires GMP version 4.2 or up, MPFR 2.2 or up.
 
 mlapronidl:
 	apron interface, OCaml version (require apron)

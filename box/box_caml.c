@@ -26,13 +26,13 @@ extern value camlidl_c2ml_manager_enum_ap_funid_t(int);
 
 extern int camlidl_transl_table_manager_enum_ap_funid_t[];
 
+extern void camlidl_ml2c_manager_struct_ap_funopt_t(value, struct ap_funopt_t *, camlidl_ctx _ctx);
+extern value camlidl_c2ml_manager_struct_ap_funopt_t(struct ap_funopt_t *, camlidl_ctx _ctx);
+
 extern int camlidl_ml2c_manager_enum_ap_exc_t(value);
 extern value camlidl_c2ml_manager_enum_ap_exc_t(int);
 
 extern int camlidl_transl_table_manager_enum_ap_exc_t[];
-
-extern void camlidl_ml2c_manager_struct_ap_funopt_t(value, struct ap_funopt_t *, camlidl_ctx _ctx);
-extern value camlidl_c2ml_manager_struct_ap_funopt_t(struct ap_funopt_t *, camlidl_ctx _ctx);
 
 extern void camlidl_ml2c_manager_struct_ap_exclog_t(value, struct ap_exclog_t *, camlidl_ctx _ctx);
 extern value camlidl_c2ml_manager_struct_ap_exclog_t(struct ap_exclog_t *, camlidl_ctx _ctx);

@@ -3,12 +3,12 @@
 
 @c to be included from apron.texi
 
-The @sc{NewPolka} convex polyhedra library is aimed to be used through
-the APRON interface. However some specific points should be precised.
-First, @sc{NewPolka} can use several underlying representations for
-numbers, which lead to several library variants. Second, some specific
-functions are needed, typically to allocate managers, and to specify
-special options.
+The @sc{NewPolka} convex polyhedra and linear equalities library is
+aimed to be used through the APRON interface. However some specific
+points should be precised.  First, @sc{NewPolka} can use several
+underlying representations for numbers, which lead to several library
+variants. Second, some specific functions are needed, typically to
+allocate managers, and to specify special options.
 
 @menu
 * Use of NewPolka::
@@ -24,6 +24,8 @@ special options.
 To use @sc{NewPolka} in C, add
 @example
 #include "pk.h"
+#include "pkeq.h"
+  /* if you want linear equalities */
 @end example
 in your source file(s) and add @samp{-I$(POLKA_PREFIX)/include} in the
 command line in your Makefile.
@@ -40,9 +42,8 @@ The underlying representation for integers is @code{long int}. This
 may easily cause overflows, especially with many dimensions or
 variables. Overflows are not detected but usually result in infinite
 looping.
-@item libpolkal.a
-The underlying representation for integers is @code{long long int}. This
-may (less) easily cause overflows.
+The underlying representation for integers is @code{long long
+int}. This may (less) easily cause overflows.
 @item libpolkag.a
 The underlying representation for integers is @code{mpz_t}, the
 multi-precision integers from the GNU GMP library. Overflows are not
@@ -76,12 +77,23 @@ specific to each execution thread in multithreaded programs).
 @subheading Allocating managers
 
 @deftypefun ap_manager_t* pk_manager_alloc (bool @var{strict})
-Allocate a APRON manager linked to the NewPolka library.
+Allocate an APRON manager for convex polyhedra, linked to the NewPolka
+library.
 
-The @var{strict} option, when true, enables strict constraints
+The @var{strict} option, when true, enables strict constraints in polyhedra
 (like @code{x>0}). Managers in strict mode or in loose mode
 (strict constraints disabled) are not compatible, and so are
 corresponding abstract values.
+@end deftypefun
+
+@deftypefun ap_manager_t* pkeq_manager_alloc ()
+Allocate an APRON manager for linear equalities, linked to the NewPolka
+library.
+
+Most options which makes sense for convex polyhedra are meaningless
+for linear equalities. It is better to set the standard options
+associated to functions so that abstract values are in canonical form
+(@pxref{NewPolka standard options}). This is the default anyway.
 @end deftypefun
 
 @subheading Setting options
@@ -92,7 +104,7 @@ function.
 
 @deftypefun pk_internal_t* pk_manager_get_internal (ap_manager_t* @var{man})
 Return the internal submanager. If @var{man} has not been created by
-@code{pk_manager_alloc}, return @code{NULL}.
+@code{pk_manager_alloc} or @code{pkeq_manager_alloc}, return @code{NULL}.
 @end deftypefun
 
 @deftypefun void pk_set_max_coeff_size (pk_internal_t* @var{pk}, size_t @var{size})
@@ -146,7 +158,7 @@ ordering constraints and generators.
 
 @multitable @columnfractions .2 .06 .74
 
-@headitem Function              @tab algo      @tab Comments
+@item Function              @tab algo      @tab Comments
 
 @item copy                      @tab
 @tab Identical representation

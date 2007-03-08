@@ -25,25 +25,28 @@ To use @sc{Box} in C, add
 in your source file(s) and add @samp{-I$(BOX_PREFIX)/include} in the
 command line in your Makefile.
 
-You should also link your object files with the @sc{Box} library
-to produce an executable, by adding something like
-@samp{-L$(BOX_PREFIX)/li -lboxmpq_debug} in the command line in your
-Makefile.
+You should also link your object files with the @sc{Box} library to
+produce an executable, by adding something like
+@samp{-L$(BOX_PREFIX)/lib -lboxmpq_debug -L$(ITV_PREFIX)/lib -lbitvmpq_debug} 
+in the command line in your Makefile.
 
 There are actually several variants of the library:
 @table @file
 @item libboxllr.a
 The underlying representation for numbers is rationals based on
 @code{long long int} integers. This may cause overflows. These are
-currently not detected.
+currently not detected. It requires also the @file{libitvllr.a}
+library.
 @item libboxdbl.a
 The underlying representations for numbers is @code{double}. Overflows
 are not possible (we use infinite floating numbers), but currently the
-soundness is not ensured for all operations.
+soundness is not ensured for all operations. It requires also the
+@file{libitvdbl.a} library.
 @item libboxmpq.a
 The underlying representations for rationams is @code{mpq_t}, the
 multi-precision rationals from the GNU GMP library. Overflows are not
-possible any more, but huge numbers may appear.
+possible any more, but huge numbers may appear. It requires also the
+@file{libitvmpq.a} library.
 @end table
 
 Also, all library are available in debug mode

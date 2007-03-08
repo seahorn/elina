@@ -144,6 +144,7 @@ online: doc
 	cp mlgmpidl/mlgmpidl.pdf online
 	cp examples/example1.c online
 	cp examples/mlexample?.ml online
+	cp Changes online
 
 pkg_%:
 	(cd $*; $(MAKE) dist)
