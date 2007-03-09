@@ -19,7 +19,7 @@
 #include "apron_ppl.h"
 
 /* PPL includes */
-#include <ppl.hh>
+#include "ppl.hh"
 using namespace std;
 using namespace Parma_Polyhedra_Library;
 

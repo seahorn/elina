@@ -16,10 +16,8 @@
 */
 
 quote(C,"/*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*/")
-quote(MLMLI,"(*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*)")
+quote(MLMLI,"(*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*)\n")
 
-quote(MLI,"(** APRON PPL: Parma Polyhedra Library wrapper. \n*)\n\n")
-quote(MLI,"(* *)\n\n");
 
 quote(C,"#include \"apron_ppl.h\"")
 quote(C,"#include \"apron_caml.h\"")
@@ -28,8 +26,40 @@ quote(C,"#define I0_CHECK_EXC(man) if (man->result.exn!=AP_EXC_NONE){ value v = 
 
 import "manager.idl";
 
-ap_manager_ptr ap_ppl_poly_manager_alloc(boolean strict);
-quote(MLI,"(** Allocate a new manager to manipulate PPL Polyhedra. *)\n\n")
+quote(MLMLI,"(** Convex Polyhedra and Linear Congruences abstract domains (PPL wrapper) *)\n")
 
-ap_manager_ptr ap_ppl_grid_manager_alloc();
-quote(MLI,"(** Allocate a new manager to manipulate PPL Grids. *)\n\n")
+quote(MLMLI,"(** This module is a wrapper around the Parma Polyhedra Library. *)\n\n")
+
+
+quote(MLMLI,"\
+type loose\n\
+type strict\n\
+  (** Two flavors for convex polyhedra: loose or strict.\n\n\
+      Loose polyhedra cannot have strict inequality constraints like [x>0].\n\
+      They are algorithmically more efficient\n\
+      (less generators, simpler normalization).\n\
+  *)\n\n\
+type grid\n\
+  (** Linear congruences *)\n\n\
+type 'a t\n\
+(** Type of convex polyhedra/linear congruences, where ['a] is [loose], [strict] or [grid].\n\
+\n\
+    Abstract values which are convex polyhedra have the type\n\
+    [loose t Apron.AbstractX.t] or [strict t Apron.AbstractX.t].\n\n\
+    Abstract values which are conjunction of linear congruences equalities have the type\n\
+    [grid t Apron.AbstractX.t].\n\n\
+    Managers allocated by PPL have the type ['a t Apron.Manager.t].\n\
+*)\n\
+")
+
+quote(MLI,"\n\n(** Allocate a PPL manager for loose convex polyhedra. *)")
+ap_manager_ptr ap_ppl_manager_alloc_loose()
+quote(call,"_res = ap_ppl_poly_manager_alloc(false);");
+
+quote(MLI,"\n\n(** Allocate a PPL manager for strict convex polyhedra. *)")
+ap_manager_ptr ap_ppl_manager_alloc_strict()
+quote(call,"_res = ap_ppl_poly_manager_alloc(true);");
+
+quote(MLI,"\n\n(** Allocate a new manager for linear congruences (grids) *)")
+ap_manager_ptr ap_ppl_manager_alloc_grid()
+quote(call,"_res = ap_ppl_grid_manager_alloc();");

@@ -25,7 +25,11 @@ IMPORTANT
 
    PPL 0.9 misses Grid_Generator::coefficient and must be patched
 
-   please apply ppl.patch against PPL 0.9
+   please apply ppl.patch against PPL 0.9 as follows:
+
+   1. go to the directoy containing the ppl-0.9 directory
+   2. type 'patch -p0 <PREFIX/apron/ppl/ppl.patch
+   and then compile ppl
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

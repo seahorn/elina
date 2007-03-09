@@ -37,7 +37,7 @@ ICFLAGS = \
 -I../apron \
 -I../mlapronidl \
 -I../num \
--I$(GMP_PREFIX)/include \
+-I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include \
 -I$(PPL_PREFIX)/include \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
 
@@ -47,7 +47,7 @@ ICXXFLAGS = \
 -I../apron \
 -I../mlapronidl \
 -I../num \
--I$(GMP_PREFIX)/include \
+-I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include \
 -I$(PPL_PREFIX)/include \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
 
@@ -122,7 +122,7 @@ apron_ppl_test: libapron_ppl_debug.a ppl_test_debug.o
 	-L../newpolka -L$(POLKA_PREFIX)/lib -lpolkag_debug \
 	-L../apron -L$(APRON_PREFIX)/lib -lapron \
 	-L$(PPL_PREFIX)/lib -lppl \
-	-L$(GMP_PREFIX)/lib -lgmpxx -lmpfr -lgmp -lm
+	-L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib -lgmpxx -lmpfr -lgmp -lm
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) $(ICXXFLAGS) -c -o $@ $<
@@ -169,8 +169,8 @@ rebuild: manager.idl apron_ppl.idl
 	cp apron_ppl.idl tmp/
 	$(CAMLIDL) -no-include -nocpp tmp/apron_ppl.idl
 	cp tmp/apron_ppl_stubs.c apron_ppl_caml.c
-	sed -f sedscript_caml tmp/apron_ppl.ml | grep --extended-regexp '^(.)+$$' >apron_ppl.ml
-	sed -f sedscript_caml tmp/apron_ppl.mli | grep --extended-regexp '^(.)+$$' >apron_ppl.mli
+	sed -f sedscript_caml tmp/apron_ppl.ml >apron_ppl.ml
+	sed -f sedscript_caml tmp/apron_ppl.mli >apron_ppl.mli
 
 .PRECIOUS: %_caml.c %.ml %.mli %.cmi libapron_ppl_caml.a libapron_ppl_caml.so apron_ppl.cmx apron_ppl.cmo
 

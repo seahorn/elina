@@ -30,13 +30,13 @@ extern value camlidl_c2ml_manager_enum_ap_funid_t(int);
 
 extern int camlidl_transl_table_manager_enum_ap_funid_t[];
 
+extern void camlidl_ml2c_manager_struct_ap_funopt_t(value, struct ap_funopt_t *, camlidl_ctx _ctx);
+extern value camlidl_c2ml_manager_struct_ap_funopt_t(struct ap_funopt_t *, camlidl_ctx _ctx);
+
 extern int camlidl_ml2c_manager_enum_ap_exc_t(value);
 extern value camlidl_c2ml_manager_enum_ap_exc_t(int);
 
 extern int camlidl_transl_table_manager_enum_ap_exc_t[];
-
-extern void camlidl_ml2c_manager_struct_ap_funopt_t(value, struct ap_funopt_t *, camlidl_ctx _ctx);
-extern value camlidl_c2ml_manager_struct_ap_funopt_t(struct ap_funopt_t *, camlidl_ctx _ctx);
 
 extern void camlidl_ml2c_manager_struct_ap_exclog_t(value, struct ap_exclog_t *, camlidl_ctx _ctx);
 extern value camlidl_c2ml_manager_struct_ap_exclog_t(struct ap_exclog_t *, camlidl_ctx _ctx);
@@ -44,30 +44,46 @@ extern value camlidl_c2ml_manager_struct_ap_exclog_t(struct ap_exclog_t *, camli
 extern void camlidl_ml2c_manager_ap_manager_ptr(value, ap_manager_ptr *, camlidl_ctx _ctx);
 extern value camlidl_c2ml_manager_ap_manager_ptr(ap_manager_ptr *, camlidl_ctx _ctx);
 
-value camlidl_apron_ppl_ap_ppl_poly_manager_alloc(
-	value _v_strict)
+value camlidl_apron_ppl_ap_ppl_manager_alloc_loose(value _unit)
 {
-  int strict; /*in*/
   ap_manager_ptr _res;
   value _vres;
 
   struct camlidl_ctx_struct _ctxs = { CAMLIDL_TRANSIENT, NULL };
   camlidl_ctx _ctx = &_ctxs;
-  strict = Int_val(_v_strict);
-  _res = ap_ppl_poly_manager_alloc(strict);
+  /* begin user-supplied calling sequence */
+_res = ap_ppl_poly_manager_alloc(false);
+  /* end user-supplied calling sequence */
   _vres = camlidl_c2ml_manager_ap_manager_ptr(&_res, _ctx);
   camlidl_free(_ctx);
   return _vres;
 }
 
-value camlidl_apron_ppl_ap_ppl_grid_manager_alloc(value _unit)
+value camlidl_apron_ppl_ap_ppl_manager_alloc_strict(value _unit)
 {
   ap_manager_ptr _res;
   value _vres;
 
   struct camlidl_ctx_struct _ctxs = { CAMLIDL_TRANSIENT, NULL };
   camlidl_ctx _ctx = &_ctxs;
-  _res = ap_ppl_grid_manager_alloc();
+  /* begin user-supplied calling sequence */
+_res = ap_ppl_poly_manager_alloc(true);
+  /* end user-supplied calling sequence */
+  _vres = camlidl_c2ml_manager_ap_manager_ptr(&_res, _ctx);
+  camlidl_free(_ctx);
+  return _vres;
+}
+
+value camlidl_apron_ppl_ap_ppl_manager_alloc_grid(value _unit)
+{
+  ap_manager_ptr _res;
+  value _vres;
+
+  struct camlidl_ctx_struct _ctxs = { CAMLIDL_TRANSIENT, NULL };
+  camlidl_ctx _ctx = &_ctxs;
+  /* begin user-supplied calling sequence */
+_res = ap_ppl_grid_manager_alloc();
+  /* end user-supplied calling sequence */
   _vres = camlidl_c2ml_manager_ap_manager_ptr(&_res, _ctx);
   camlidl_free(_ctx);
   return _vres;
