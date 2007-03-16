@@ -11,8 +11,8 @@ quote(MLMLI,"(** Intervals abstract domain *)")
 quote(MLMLI,"\n\
 (** Type of boxes.\n\
 \n\
-    Abstract values which are boxes have the type \n\
-    [t Apron.Abstract0.t] or [t Apron.Abstract1.t].\n\n\
+    Boxes constrains each dimension/variable [x_i] to belong to an interval [I_i].\n\n\
+    Abstract values which are boxes have the type [t Apron.AbstractX.t].\n\n\
     Managers allocated for boxes have the type [t Apron.manager.t].\n\
 *)\n\
 type t\n\

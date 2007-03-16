@@ -14,7 +14,7 @@ import "manager.idl";
 
 typedef [abstract] struct pk_internal_t* internal_ptr;
 
-quote(MLMLI,"(** Convex Polyhedra and Linear Equalities abstract domain *)")
+quote(MLMLI,"(** Convex Polyhedra and Linear Equalities abstract domains *)")
 
 quote(MLMLI,"\n\
 type loose\n\
@@ -22,10 +22,17 @@ type strict\n\
   (** Two flavors for convex polyhedra: loose or strict.\n\n\
       Loose polyhedra cannot have strict inequality constraints like [x>0].\n\
       They are algorithmically more efficient\n\
-      (less generators, simpler normalization).\n\
+      (less generators, simpler normalization).\n\n\
+      Convex polyhedra are defined by the conjunction of a set of linear\n\
+      constraints of the form [a_0*x_0 + ... + a_n*x_n + b >= 0] or\n\
+      [a_0*x_0 + ... + a_n*x_n + b > 0]\n\
+      where [a_0, ..., a_n, b, c] are constants and [x_0, ..., x_n] variables.\n\n\
   *)\n\n\
 type equalities\n\
-  (** Linear equalities *)\n\n\
+  (** Linear equalities.\n\n\
+      Linear equalities are conjunctions of linear\n\
+      equalities of the form [a_0*x_0 + ... + a_n*x_n + b = 0].\n\
+  *)\n\n\
 type 'a t\n\
 (** Type of convex polyhedra/linear equalities, where ['a] is [loose], [strict] or [equalities].\n\
 \n\
@@ -34,7 +41,7 @@ type 'a t\n\
     [(strict t) Apron.Abstract0.t] or [(strict t) Apron.Abstract1.t].\n\n\
     Abstract values which are conjunction of linear equalities have the type\n\
     [(equalities t) Apron.Abstract0.t] or [(equalities t) Apron.Abstract1.t].\n\n\
-    Managers allocated by NewPolka have the type ['a t Apron.manager.t].\n\
+    Managers allocated by NewPolka have the type ['a t Apron.Manager.t].\n\
 *)\n\
 ")
 

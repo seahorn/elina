@@ -5,16 +5,21 @@ LCFLAGS = \
 -L$(GMP_PREFIX)/lib \
 -L$(MPFR_PREFIX)/lib \
 -Lapron -Litv -Lbox -Loctagons -Lnewpolka \
+-L$(PPL_PREFIX)/lib -Lppl \
 -L$(CAMLIDL_PREFIX)/lib/ocaml
 
 OCAMLINC = \
--I mlgmpidl -I mlapronidl -I box -I octagons -I newpolka
+-I mlgmpidl -I mlapronidl -I box -I octagons -I newpolka -I ppl
 
+ifdef HAS_PPL
+OCAMLLDFLAGS_PPL = ppl.cma -cclib "-lppl_caml -lapron_ppl -lppl -lgmpxx" -cc "g++"
+endif
 
 OCAMLLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS)" \
 bigarray.cma gmp.cma apron.cma box.cma oct.cma polka.cma \
--cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
+$(OCAMLLDFLAGS_PPL) \
+-cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl" 
 
 ifdef HAS_OCAML
 all: c ml aprontop apronrun 
@@ -39,6 +44,9 @@ ml:
 	(cd newpolka; make ml)
 	(cd box; make ml)
 	(cd octagons; make mlQg mlFd)
+ifdef HAS_PPL
+	(cd ppl; make ml)
+endif
 
 .PHONY: apronrun aprontop
 
@@ -55,6 +63,7 @@ ifdef HAS_OCAML
 	(cd newpolka; make rebuild)
 	(cd box; make rebuild)
 	(cd octagons; make rebuild)
+	(cd ppl; make rebuild)
 endif
 
 install:
@@ -64,6 +73,10 @@ install:
 	(cd newpolka; make install)
 	(cd box; make install)
 	(cd octagons; make install)
+ifdef HAS_PPL
+	(cd ppl; make install)
+endif
+
 ifdef HAS_OCAML
 	(cd mlgmpidl; make install)
 	(cd mlapronidl; make install)
@@ -71,10 +84,6 @@ ifdef HAS_OCAML
 	$(INSTALL) apronrun $(APRON_PREFIX)/bin
 	$(INSTALL) aprontop $(APRON_PREFIX)/bin
 endif
-ifdef HAS_PPL
-	(cd ppl; make)
-endif
-
 
 clean:
 	(cd apron; make clean)

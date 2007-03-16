@@ -33,7 +33,14 @@ typedef struct pk_internal_t pk_internal_t;
 /* ============================================================ */
 
 ap_manager_t* pk_manager_alloc(bool strict);
-
+  /* Allocate a NewPolka manager for convex polyhedra.
+    
+     If the Boolean parameter is true, abstract values generated with the
+     manager can have strict constraints (like x>0). Otherwise they are defined
+     using only loose constraints. Managers and abstract values in strict or
+     loose mode are incompatible.
+  */
+ 
 /* ============================================================ */
 /* B. Options */
 /* ============================================================ */

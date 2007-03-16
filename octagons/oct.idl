@@ -18,7 +18,7 @@
 quote(C,"/*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*/")
 quote(MLMLI,"(*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*)")
 
-quote(MLI,"\n \n(** Octagon abstract domain. \n*)\n \n")
+quote(MLI,"\n \n(** Octagon abstract domain. *)\n \n")
 
 quote(C,"#include \"oct.h\"")
 quote(C,"#include \"apron_caml.h\"")
@@ -37,42 +37,42 @@ typedef [abstract] struct oct_internal_t* internal_ptr;
 
 quote(MLMLI,"\n \n\
 type t\n\
-  (** Type of octagons.\n\
-\n\
-    Abstract values which are octagons have the type\n\
-    [t Apron.Abstract0.t] or [t Apron.Abstract1.t].\n\n\
+  (** Type of octagons.\n\n\
+      Octagons are defined by conjunctions of inequalities of the form\n\
+      [+/-x_i +/- x_j >= 0].\n\n\
+    Abstract values which are octagons have the type [t Apron.AbstractX.t].\n\n\
     Managers allocated for octagons have the type [t Apron.manager.t].\n\
   *)\n\n \
 ")
 
+quote(MLI,"(** Allocate a new manager to manipulate octagons. *)")
 ap_manager_ptr oct_manager_alloc(void);
-quote(MLI,"  (** Allocate a new manager to manipulate octagons. *)\n\n ")
 
+quote(MLI,"(** No internal parameters for now... *)")
 internal_ptr manager_get_internal(ap_manager_ptr man)
   quote(call,"_res = (internal_ptr)man->internal;");
-quote(MLI,"(** No internal parameters for now... *)\n\n ")
 
+quote(MLI,"(** Approximate a set of generators to an abstract value, with best precision. *)")
 ap_abstract0_ptr ap_abstract0_oct_of_generator_array(ap_manager_ptr man, int v1, int v2, [ref]struct ap_generator0_array_t* v3)
      quote(dealloc,"I0_CHECK_EXC(man)");
-quote(MLI,"  (** Approximate a set of generators to an abstract value, with best precision. *)\n\n ")
 
+quote(MLI,"(** Widening with scalar thresholds. *)")  
 ap_abstract0_ptr ap_abstract0_oct_widening_thresholds(ap_manager_ptr man,ap_abstract0_ptr a1,ap_abstract0_ptr a2,struct ap_scalar_array_t array)
      quote(call,"_res = ap_abstract0_oct_widening_thresholds(man,a1,a2,(const ap_scalar_t**)array.p,array.size);")
      quote(dealloc,"I0_CHECK_EXC(man)");
-quote(MLI,"  (** Widening with scalar thresholds. *)\n\n ")  
 
+quote(MLI,"(** Standard narrowing. *)")  
 ap_abstract0_ptr ap_abstract0_oct_narrowing(ap_manager_ptr man, ap_abstract0_ptr a1,ap_abstract0_ptr a2)
      quote(dealloc,"I0_CHECK_EXC(man)");
-quote(MLI,"  (** Standard narrowing. *)\n\n ")  
 
+quote(MLI,"(** Perturbation. *)")  
 ap_abstract0_ptr ap_abstract0_oct_add_epsilon(ap_manager_ptr man,ap_abstract0_ptr a,ap_scalar_ptr epsilon)
      quote(dealloc,"I0_CHECK_EXC(man)");
-quote(MLI,"  (** Perturbation. *)\n\n ")  
 
+quote(MLI,"(** Perturbation. *)")  
 ap_abstract0_ptr ap_abstract0_oct_add_epsilon_bin(ap_manager_ptr man,ap_abstract0_ptr a1,ap_abstract0_ptr a2,ap_scalar_ptr epsilon)
      quote(dealloc,"I0_CHECK_EXC(man)");
-quote(MLI,"  (** Perturbation. *)\n\n ")  
 
+quote(MLI,"(** Algorithms. *)")
 const int pre_widening = 99;
-quote(MLI,"  (** Algorithms. *)\n\n ")
 

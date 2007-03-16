@@ -26,10 +26,21 @@ extern "C" {
 
 
 ap_manager_t* ap_ppl_poly_manager_alloc(bool strict);
-  /* PPL::Polyhedron */
+  /* (PPL::Polyhedron )
+
+    Allocate an APRON manager for convex polyhedra, linked to PPL.
+
+    If the Boolean parameter is true, abstract values generated with the
+    manager can have strict constraints (like x>0). Otherwise they are defined
+    using only loose constraints. Managers and abstract values in strict and
+    loose mode are incompatible.
+  */
 
 ap_manager_t* ap_ppl_grid_manager_alloc(void);
-  /* PPL::Grid */
+  /* (PPL::Grid)
+
+     Allocate a APRON manager for grids, linked to PPL.
+  */
 
 
 

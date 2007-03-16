@@ -49,7 +49,7 @@ numerical variables.
 
 @title APRON
 @subtitle The APRON library
-@subtitle Edition 0.9.5, March 2007
+@subtitle Edition 0.9.6, March 2007
 
 @author by Bertrand Jeannet and the APRON team
 @c Include the Distribution inside the titlepage so
@@ -69,6 +69,8 @@ numerical variables.
 @menu
 * Copying::
 * Introduction to APRON::
+* APRON Rationale::
+* Notes::
 * Installing APRON::
 * APRON Basics::
 * Managers and Abstract Domains::
@@ -77,8 +79,6 @@ numerical variables.
 * Level 0 of the interface::
 * Functions for implementors::
 * Examples::
-* APRON Rationale::
-* Notes::
 * Appendices::
 @end menu
 
@@ -96,36 +96,46 @@ including all source code, libraries, binaries, and documentation.
 @include lgpl.texi
 
 @c *******************************************************************
-@node Introduction to APRON, Installing APRON, Copying, Top
+@node Introduction to APRON, APRON Rationale, Copying, Top
 @chapter Introduction to APRON
 @c *******************************************************************
 
-The APRON library is dedicated to the static analysis of the numerical
-variables of a program by Abstract Interpretation. The aim of such an
-analysis is to infer invariants about these variables, like
-@math{1<=x+y<=z}, which holds during any execution of the program.
+The APRON library provides a common interface for @emph{abstract
+domains of invariants} for numerical variables, in the sense of the
+Abstract Interpretation theory. It also implements a few domains.
 
-It works by computing iteratively the solution of
-fixpoint equations on an @emph{abstract domain} of invariants. The
-result is a overapproximation of the least inductive invariant of the
-program.
+@c The APRON library is dedicated to the static analysis of the numerical
+@c variables of a program by Abstract Interpretation. The aim of such an
+@c analysis is to infer invariants about these variables, like
+@c @math{1<=x+y<=z}, which holds during any execution of the program.
+@c Such an analysis works by computing iteratively the solution of
+@c fixpoint equations on an @emph{abstract domain} of invariants. The
+@c result is a overapproximation of the least inductive invariant of the
+@c program.
 
-Several libraries exists, wich implement various abstract domains of
+Several libraries already exists, wich implement various abstract domains of
 invariants.  One can cite intervals, linear equalities, octagons,
 octahedra, convex polyhedra, polynomial equalities, polynomial
 inequalities. Although they offer a kernel of common functionalities,
 their API may differ greatly, and some functionalities may lack in some
-libraries.
-
-The aim of the APRON library is to offer a common interface to these
-libraries, so as to allow to compare easily:
+libraries. The aim of the APRON library is to offer a common interface to these
+libraries. Such a standardized interface offers several advantages:
 @itemize
-@item the efficiency of 2 different implementations of the same abstract domain
-@item the precision of 2 different abstract domains,
+@item 
+it allows to easily compare the efficiency of 2 different
+implementations of the same abstract domain, or the precision of 2
+different abstract domains; more generally it allows to easily
+substitute a library by another in the same analysis tool.
+@item
+to make easier the combination of abstract domains: the combined
+abstract domains may be used through the same interface, as the
+resulting combination;
+@item
+to factorize services which are mostly independant of the abstract
+domain (variables management, linearization of non-linear expressions,
+etc...);
 @end itemize
-and more generally to be able to substitute a library by another in the
-same analysis tool.
-
+ 
 The contributions of the project are
 @itemize
 @item
@@ -142,7 +152,21 @@ shared between the underlying implementations.
 @end itemize
 
 @c *******************************************************************
-@node Installing APRON, APRON Basics, Introduction to APRON, Top
+@node APRON Rationale, Notes, Introduction to APRON, Top
+@chapter APRON Rationale
+@c *******************************************************************
+
+@include rationale.texi
+
+@c *******************************************************************
+@node Notes, Installing APRON, APRON Rationale, Top
+@chapter Notes
+@c *******************************************************************
+
+@include implementor.texi
+
+@c *******************************************************************
+@node Installing APRON, APRON Basics, Notes, Top
 @chapter Installing APRON
 @c *******************************************************************
 
@@ -260,6 +284,7 @@ Managers are allocated by the underlying libraries/abstract domains, but are fre
 * Box::
 * Oct::
 * NewPolka::
+* PPL::
 @end menu
 
 @c ===================================================================
@@ -490,11 +515,18 @@ raised one.
 @uref{oct_doc.html}
 
 @c ===================================================================
-@node NewPolka,  , Oct, Managers and Abstract Domains
+@node NewPolka, PPL, Oct, Managers and Abstract Domains
 @section NewPolka (@file{pk.h}): convex polyhedra and linear equalities abstract domains
 @c ===================================================================
 
 @include newpolka.texi
+
+@c ===================================================================
+@node PPL, , NewPolka, Managers and Abstract Domains
+@section PPL (@file{apron_ppl.h}): convex polyhedra and linear congruences abstract domains
+@c ===================================================================
+
+@include apron_ppl.texi
 
 @c *******************************************************************
 @node Scalars & Intervals & Coefficients, Level 1 of the interface, Managers and Abstract Domains, Top
@@ -3524,7 +3556,7 @@ This implies calls to @code{ap_abstract0_bound_dimension}.
 
 
 @c *******************************************************************
-@node Examples, APRON Rationale, Functions for implementors, Top
+@node Examples, Appendices, Functions for implementors, Top
 @chapter Examples
 @c *******************************************************************
 
@@ -3540,15 +3572,7 @@ distribution, or click on the links below:
 @end ifhtml
 
 @c *******************************************************************
-@include rationale.texi
-@c *******************************************************************
-
-@c *******************************************************************
-@include implementor.texi
-@c *******************************************************************
-
-@c *******************************************************************
-@node Appendices,  , Notes, Top
+@node Appendices,  , Examples, Top
 @appendix Appendices
 @c *******************************************************************
 

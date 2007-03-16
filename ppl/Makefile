@@ -71,26 +71,26 @@ all: libapron_ppl.a apron_ppl_test
 
 clean:
 	/bin/rm -f *.[ao] *.so apron_ppl_test
-	/bin/rm -f *.cm[ioax] *.cmxa apron_ppl_run apron_ppl_top
+	/bin/rm -f *.cm[ioax] *.cmxa pplrun ppltop
 	/bin/rm -fr *~ \#*\# tmp
 
 mostlyclean:
-	/bin/rm -f apron_ppl_caml.c apron_ppl.ml apron_ppl.mli
+	/bin/rm -f ppl_caml.c ppl.ml ppl.mli
 
 install:
 	$(INSTALLd) $(INCDIR) $(LIBDIR) $(BINDIR) $(CAMLDIR)
 	$(INSTALL) apron_ppl.h $(INCDIR)
 	$(INSTALL) libapron_ppl.a $(LIBDIR)
-	for i in apron_ppl_test apron_ppl_run apron_ppl_top; do \
+	for i in apron_ppl_test pplrun ppltop; do \
 		if test -f $$i; then $(INSTALL) $$i $(BINDIR); fi; \
 	done
-	for i in libapron_ppl_caml.a apron_ppl.idl apron_ppl.cmi apron_ppl.cma apron_ppl.cmxa apron_ppl.a; do \
+	for i in libppl_caml.a ppl.idl ppl.cmi ppl.cma ppl.cmxa ppl.a; do \
 		if test -f $$i; then $(INSTALL) $$i $(CAMLDIR); fi; \
 	done
 
 uninstall:
 	/bin/rm -f $(INCDIR)/*apron_ppl*
-	/bin/rm -f $(LIBDIR)/*apron_ppl*
+	/bin/rm -f $(LIBDIR)/*apron_ppl* $(LIBDIR)/ppl.a $(LIBDIR)/ppl.idl $(LIBDIR)/ppl.cm*
 	/bin/rm -f $(BINDIR)/*apron_ppl*
 	/bin/rm -f $(CAMLDIR)/*apron_ppl*
 
@@ -140,39 +140,39 @@ apron_ppl_test: libapron_ppl_debug.a ppl_test_debug.o
 # Caml part
 #-----------------------------------
 
-ml: apron_ppl.cma apron_ppl.cmxa apron_ppl_top apron_ppl_run
+ml: ppl.cma ppl.cmxa ppltop pplrun
 
-apron_ppl_top: apron_ppl.cma libapron_ppl_caml.a libapron_ppl.a
-	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -cc $(CXX) -custom bigarray.cma gmp.cma apron.cma apron_ppl.cma -ccopt -L. -cclib -lapron_ppl -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L$(GMP_PREFIX)/lib -cclib -lgmpxx
+ppltop: ppl.cma libppl_caml.a libapron_ppl.a
+	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -cc $(CXX) -custom bigarray.cma gmp.cma apron.cma ppl.cma -ccopt -L. -cclib -lapron_ppl -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L$(GMP_PREFIX)/lib -cclib "-lgmpxx -lgmp"
 
-apron_ppl_run: apron_ppl.cma libapron_ppl_caml.a
-	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime -cc $(CXX) bigarray.cma gmp.cma apron.cma apron_ppl.cma -ccopt -L. -cclib -lapron_ppl -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L$(GMP_PREFIX)/lib -cclib -lgmpxx
+pplrun: ppl.cma libppl_caml.a
+	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime -cc $(CXX) bigarray.cma gmp.cma apron.cma ppl.cma -ccopt -L. -cclib -lapron_ppl -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L$(GMP_PREFIX)/lib -cclib "-lgmpxx -lgmp"
 
-apron_ppl.cma: apron_ppl.cmi apron_ppl.cmo libapron_ppl_caml.a
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ apron_ppl.cmo -ccopt -L$(PPL_PREFIX)/lib -cclib -lapron_ppl_caml
+ppl.cma: ppl.cmi ppl.cmo libppl_caml.a
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ ppl.cmo -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl_caml
 
-apron_ppl.cmxa: apron_ppl.cmi apron_ppl.cmx libapron_ppl_caml.a
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ apron_ppl.cmx -ccopt -L$(PPL_PREFIX)/lib -cclib -lapron_ppl_caml
+ppl.cmxa: ppl.cmi ppl.cmx libppl_caml.a
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ ppl.cmx -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl_caml
 
-libapron_ppl_caml.a: apron_ppl_caml.o
+libppl_caml.a: ppl_caml.o
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-libapron_ppl_caml.so: apron_ppl_caml.o
+libppl_caml.so: ppl_caml.o
 	$(SHARED) -o $@ $^
 
 manager.idl: ../mlapronidl/manager.idl
 	ln -s $< $@
 
-rebuild: manager.idl apron_ppl.idl
+rebuild: manager.idl ppl.idl
 	mkdir -p tmp
-	cp apron_ppl.idl tmp/
-	$(CAMLIDL) -no-include -nocpp tmp/apron_ppl.idl
-	cp tmp/apron_ppl_stubs.c apron_ppl_caml.c
-	sed -f sedscript_caml tmp/apron_ppl.ml >apron_ppl.ml
-	sed -f sedscript_caml tmp/apron_ppl.mli >apron_ppl.mli
+	cp ppl.idl tmp/
+	$(CAMLIDL) -no-include -nocpp tmp/ppl.idl
+	cp tmp/ppl_stubs.c ppl_caml.c
+	sed -f sedscript_caml tmp/ppl.ml >ppl.ml
+	sed -f sedscript_caml tmp/ppl.mli >ppl.mli
 
-.PRECIOUS: %_caml.c %.ml %.mli %.cmi libapron_ppl_caml.a libapron_ppl_caml.so apron_ppl.cmx apron_ppl.cmo
+.PRECIOUS: %_caml.c %.ml %.mli %.cmi libppl_caml.a libppl_caml.so ppl.cmx ppl.cmo
 
 
 #---------------------------------------

@@ -18,7 +18,7 @@ BINDIR = $(PREFIX)/bin
 #---------------------------------------
 # C part
 #---------------------------------------
-ICFLAGS = -I$(GMP_PREFIX)/include
+ICFLAGS = -I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include
 
 #---------------------------------------
 # Files
@@ -59,7 +59,7 @@ dist: $(H_FILES) $(C_FILES) apron.texi Makefile COPYING README apron.info apron.
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
 clean:
-	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps apron.cps apron.fns apron.info apron.fn apron.ky apron.pg apron.cp apron.tp apron.vr apron.kys apron.pgs apron.tps apron.vrs newpolka.texi box.texi
+	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps apron.cps apron.fns apron.info apron.fn apron.ky apron.pg apron.cp apron.tp apron.vr apron.kys apron.pgs apron.tps apron.vrs newpolka.texi box.texi apron_ppl.texi
 	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
 	/bin/rm -fr html
 
@@ -80,6 +80,8 @@ distclean:
 
 .PHONY : html
 
+apron_ppl.texi: ../ppl/apron_ppl.texi
+	ln -s $< $@
 newpolka.texi: ../newpolka/newpolka.texi
 	ln -s $< $@
 box.texi: ../box/box.texi
@@ -88,14 +90,14 @@ box.texi: ../box/box.texi
 apron.pdf: apron.dvi
 	$(DVIPDF) apron.dvi $@
 
-apron.dvi: apron.texi newpolka.texi box.texi
+apron.dvi: apron.texi apron_ppl.texi newpolka.texi box.texi
 	$(TEXI2DVI) -o $@ $<
 
-apron.info: apron.texi newpolka.texi box.texi
+apron.info: apron.texi apron_ppl.texi newpolka.texi box.texi
 	$(MAKEINFO) -o $@ $<
 
 
-html: apron.texi newpolka.texi box.texi
+html: apron.texi apron_ppl.texi newpolka.texi box.texi
 	$(TEXI2HTML) -split=section -nonumber -menu -subdir=html $<
 	cp -f ../octagons/oct_doc.html html
 

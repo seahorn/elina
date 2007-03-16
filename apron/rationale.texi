@@ -1,7 +1,3 @@
-@c *******************************************************************
-@node APRON Rationale, Notes, Examples, Top
-@chapter APRON Rationale
-@c *******************************************************************
 
 @menu
 * General choices::             
