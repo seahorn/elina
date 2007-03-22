@@ -60,23 +60,27 @@ They are distinguished by a two-letter "numeric suffix":
 Given the numeric suffix Xx, the library is named liboctXx.a.
 
 How to compile (given a numeric suffix Xx):
+
  1) the parent directory must contain a Makefile.config file
+
  2) make sure the Makefile.config has the following variables defined:
     OCT_PREFIX    where to install the octagon library
     APRON_PREFIX  where the apron module from APRON is installed
     NUM_PREFIX    where the num module from APRON is installed
     GMP_PREFIX    where the GMP library is installed
- 3) "make Xx"
- 4) "make install" will install the compiled C library(ies) in
+
+ 3) if you just check-out the SVN distribution, you need to
+    "make rebuild"
+    if you use a stable tarball distribution, this is not necessary
+
+ 4) "make Xx"
+
+ 5) "make install" will install the compiled C library(ies) in
      OCT_PREFIX/lib, and the headers in OCT_PREFIX/include/oct
 
-Note that "make allXx" is a shortcut for "make Xx octtestXx mlXx"
-(including the self-testing utility and OCaml library, see bellow)
-while "make all" is a shortcut for "make allZi allZl ... allFl", that is,
-it builds everything.
 
-Note that "make uninstall" will uninstall all the octagon libraries currently
-exiting in the OCT_PREFIX directory.
+Note that "make all" is a shortcut for "make Zi Zl ... Fl", that is,
+it builds all C libraries.
 
 
 SELF-TEST
@@ -90,8 +94,11 @@ Requirements:
  * the newpolka module for APRON
 
 How to use (given a numeric suffix Xx):
+
  1) make sure the Makefile.config file has the POLKA_PREFIX variable defined
+
  2) type "make octtestXx" 
+
  3) run with "./octtestXx"
 
 The self-test compares the result on the octagon domain and the polyhedron
@@ -112,13 +119,20 @@ Requirements:
    modules)
 
 How to compile the library:
+
  1) make sure the Makefile.config has the following variables defined:
     CAML_PREFIX        where the standard OCaml distribution is installed
                        (without the /bin/ocaml suffix)
     MLAPRONIDL_PREFIX  where the OCaml binding for APRON is installed
     MLGMPIDL_PREFIX    where the OCaml binding for GMP from APRON is installed
+
  2) "make ml"
+
  3) "make install" will install the OCaml module(s) in OCT_PREFIX/lib
+
+"make rebuild" will generate some .ml, .mli, .c source files from the .idl
+files (and some sed scripts). This is only needed if you check-out from SVN as
+the generated files are provided in tarballs (to ease installtion).
 
 The library to link with is called oct.cma, for byte-code, and oct.cmxa 
 for native code. The corresponding module is called Oct.
