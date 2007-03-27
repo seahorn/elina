@@ -168,7 +168,7 @@ ap_generic_asssub_linexpr_array(bool assign,
     return destructive ? abs : copy(man,abs);
   }
   /* 1. Compute the number of integer and real dimensions assigned */
-  d = dimension(abs);
+  d = dimension(man,abs);
   dsup.intdim = 0;
   dsup.realdim = 0;
   for (i=0; i<size; i++){
