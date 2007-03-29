@@ -9,10 +9,10 @@ aprontop -I $APRON_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cma";;
-#load "polka.cma";;
-#load "polkaeq.cma";;
 #load "box.cma"
 #load "oct.cma"
+#load "polka.cma";;
+#load "ppl.cma"
 
 #install_printer Apron.Linexpr1.print;;
 #install_printer Apron.Lincons1.print;;

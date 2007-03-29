@@ -90,7 +90,7 @@ box.texi: ../box/box.texi
 apron.pdf: apron.dvi
 	$(DVIPDF) apron.dvi $@
 
-apron.dvi: apron.texi apron_ppl.texi newpolka.texi box.texi
+apron.dvi: apron.texi rationale.texi apron_ppl.texi newpolka.texi box.texi
 	$(TEXI2DVI) -o $@ $<
 
 apron.info: apron.texi apron_ppl.texi newpolka.texi box.texi

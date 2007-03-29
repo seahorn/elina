@@ -6,7 +6,7 @@
 The @sc{Box} interval library is aimed to be used through
 the APRON interface.
 
-It is an alpha version, and may still contain important bugs.
+It is a beta version.
 
 @menu
 * Use of Box::             
@@ -27,8 +27,9 @@ command line in your Makefile.
 
 You should also link your object files with the @sc{Box} library to
 produce an executable, by adding something like
-@samp{-L$(BOX_PREFIX)/lib -lboxmpq_debug -L$(ITV_PREFIX)/lib -lbitvmpq_debug} 
-in the command line in your Makefile.
+@samp{-L$(APRON_PREFIX)/lib -lboxmpq -litvmpq} in the command line in
+your Makefile (followed by the standard @samp{-lapron
+-L$(MPFR_PREFIX)/lib -lmpfr -L$(GMP_PREFIX)/lib -lgmp}).
 
 There are actually several variants of the library:
 @table @file

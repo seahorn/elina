@@ -27,13 +27,14 @@ To use @sc{NewPolka} in C, add
 #include "pkeq.h"
   /* if you want linear equalities */
 @end example
-in your source file(s) and add @samp{-I$(POLKA_PREFIX)/include} in the
+in your source file(s) and add @samp{-I$(APRON_PREFIX)/include} in the
 command line in your Makefile.
 
 You should also link your object files with the @sc{NewPolka} library
 to produce an executable, by adding something like
-@samp{-L$(POLKA_PREFIX)/lib -lpolkag} in the command line in your
-Makefile.
+@samp{-L$(APRON_PREFIX)/lib -lpolkag} in the command line in your
+Makefile (followed by the standard @samp{-lapron -L$(MPFR_PREFIX)/lib
+-lmpfr -L$(GMP_PREFIX)/lib -lgmp}).
 
 There are actually several variants of the library:
 @table @file

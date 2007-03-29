@@ -280,7 +280,11 @@ interval linear expression is a linear expression where any
 coefficient may be an interval. In order to have a unique datatype for
 these variations, we introduced the notion of coefficient described
 above.
-@item linear constraints and generators
+@item ``linear'' constraints 
+``Linear'' constraints includes proper linear constraints, linear
+constraints in which the expression can be possibly an interval linear
+expression, linear equalities modulo a number, and linear disequalities.
+@item generators
 @end table
 
 @c -------------------------------------------------------------------
@@ -338,11 +342,11 @@ Four basic constructors are offered:
 
 @itemize
 @item
-bottom (empty) and top (universe) values (with a specified dimensionality)
+bottom (empty) and top (universe) values (with a specified dimensionality);
 @item
-abstraction of an hypercube
+abstraction of a bounding box;
 @item
-abstraction of a convex polyhedron (conjunction of linear constraints)
+abstraction of conjunction of linear constraints (in the broad sense).
 @end itemize
 
 @c -------------------------------------------------------------------
@@ -350,16 +354,25 @@ abstraction of a convex polyhedron (conjunction of linear constraints)
 @subsubheading Tests
 
 Predicates are offered for testing
-
 @itemize
 @item
-emptiness and universality;
+emptiness and universality of an abstract value:
 @item
-inclusion and equality;
+inclusion and equality of two abstract values;
 @item
 inclusion of a dimension into an interval given an abstract value;
+@iftex
+@tex
+$${\it abs}(\vec{x}) \models x_i \in I ~~ ?$$
+@end tex
+@end iftex
 @item
 satisfaction of a linear constraint by the abstract value.
+@iftex
+@tex
+$${\it abs}(\vec{x}) \models {\it cons}(\vec{x}) ~~ {\tt or} ~~ {\it abs}(\vec{x}) \Rightarrow {\it cons}(\vec{x}) ~~ ?$$
+@end tex
+@end iftex
 @end itemize
 
 @c -------------------------------------------------------------------
@@ -370,9 +383,25 @@ Some properties may be inferred given an abstract values:
 
 @itemize
 @item Interval of variation of a dimension in an abstract value;
+@iftex
+@tex
+$$\bigcap\{ I ~|~ {\it abs}(\vec{x}) \models x_i\in I\}$$
+@end tex
+@end iftex
+
 @item Interval of variation of a linear expression in an abstract value;
-@item Conversion to an hypercube;
-@item Conversion to a convex polyhedron (set of linear constraints).
+@iftex
+@tex
+$$\bigcap\{ I ~|~ {\it abs}(\vec{x}) \models {\it expr}(\vec{x})\in I\}$$
+@end tex
+@end iftex
+@item Conversion to a bounding box
+@iftex
+@tex
+$$\bigcap\{ B ~|~ {\it abs}(\vec{x}) \subseteq B \}$$
+@end tex
+@end iftex
+@item Conversion to a set of linear constraints (in the broad sense).
 @end itemize
 
 @noindent Notice that the second operation implements linear programming if it
@@ -390,9 +419,19 @@ one, as the number of linear expression is infinite.
 Least upper bound and greatest lower bound of two abstract values, and of arrays of abstract values;
 @item
 Intersection with one or several linear constraints;
+@iftex
+@tex
+$$\alpha\left(\gamma({\it abs}(\vec{x})) \cap \bigcap_i {\it cons}_i(\vec{x})\right)$$
+@end tex
+@end iftex
 @item
 Addition of rays (for instance for implement generalized time elapse
 operator in linear hybrid systems).
+@iftex
+@tex
+$$\alpha\left(\left\{ \vec{x} + \sum_i \lambda_i \vec{r}_i ~|~ \vec{x}\in\gamma({\it abs}), \lambda_i\geq 0\right\}\right)$$
+@end tex
+@end iftex
 @end itemize
 
 @c -------------------------------------------------------------------
@@ -402,8 +441,32 @@ operator in linear hybrid systems).
 @itemize
 @item
 of a dimension by a (interval) linear expression
+@iftex
+@tex
+
+Assignement:
+$$\alpha\left(\biggl(
+\exists x_i: \Bigl(\gamma({\it abs}(\vec{x})) \cap x_i'={\it expr}(\vec{x})\Bigr)\biggr)[x_i\leftarrow x_i']\right)$$
+Substitution:
+$$\alpha\biggl(
+\exists x_i': \Bigl(\gamma({\it abs}(\vec{x}))[x_i'\leftarrow x_i] \cap x_i'={\it expr}(\vec{x})\Bigr)\biggr)$$
+
+@end tex
+@end iftex
 @item
 in parallel of several dimensions by several (interval) linear expressions
+@iftex
+@tex
+
+Assignement:
+$$\alpha\left(\biggl(
+\exists \vec{x}: \Bigl(\gamma({\it abs}(\vec{x})) \cap \bigcap_i x_i'={\it expr}_i(\vec{x})\Bigr)\biggr)[\vec{x}\leftarrow \vec{x'}]\right)$$
+Substitution:
+$$\alpha\biggl(
+\exists \vec{x'}: \Bigl(\gamma({\it abs}(\vec{x'})) \cap \bigcap_i x_i'={\it expr}(\vec{x})\Bigr)\biggr)$$
+
+@end tex
+@end iftex
 @end itemize
 
 @noindent Parallel assignement and substitution ar enot minimal operations, but
@@ -418,6 +481,14 @@ efficient or more precise operations.
 @item
 Projection/Elimination of one or several dimensions with constant
 dimensionality;
+@iftex
+@tex
+
+Elimination: $$\exists x_i:{\it abs}(\vec{x})$$
+
+Projection: $$(\exists x_i:{\it abs}(\vec{x}))\cap x_i=0$$
+@end tex
+@end iftex
 @item
 Addition/Removal/Permutation of dimensions with corresponding change
 of dimensionality (with the exception of permutation). These
@@ -427,6 +498,19 @@ dimensions.
 Expansion and folding of dimensions. This is useful for the
 abstraction of arrays, where a dimension may represent several
 variables.
+@iftex
+@tex
+
+Expansion of $i$ into $i$, $j_1$, $j_2$ assuming $x_{j_1}$, $x_{j_2}$ are new dimensions:
+$${\it abs}(\vec{x}) \sqcap {\it abs}(\vec{x})[x_{j_1}\leftarrow x_i] \sqcap {\it abs}(\vec{x})[x_{j_2}\leftarrow x_i] ...
+$$
+Folding of $j_0$ and $j_1$ into $j_0$:
+$$(\exists x_{j_1}:{\it abs}(\vec{x})) \sqcup (\exists x_{j_0}:{\it abs}(\vec{x})[x_{j_0}\leftarrow x_{j_1}] 
+$$
+@end tex
+@end iftex
+
+
 @end itemize
 
 @c -------------------------------------------------------------------

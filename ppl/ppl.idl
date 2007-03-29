@@ -72,3 +72,47 @@ quote(call,"_res = ap_ppl_poly_manager_alloc(true);");
 quote(MLI,"\n\n(** Allocate a new manager for linear congruences (grids) *)")
 ap_manager_ptr ap_ppl_manager_alloc_grid()
 quote(call,"_res = ap_ppl_grid_manager_alloc();");
+
+quote(MLI,"\n\n(**
+{2 Compilation information}
+
+{3 Bytecode compilation}
+To compile to bytecode, you should first generate a custom
+interpreter with a command which should look like:
+
+[ocamlc -I $APRON_PREFIX/lib -make-runtime -o myrun -cc \"g++\" bigarray.cma gmp.cma apron.cma ppl.cma]
+
+and then you compile and link your example [X.ml] with
+
+[ocamlc -I $APRON_PREFIX/lib -c X.ml] and
+
+[ocamlc -I $APRON_PREFIX/lib -use-runtime myrun -o X bigarray.cma gmp.cma apron.cma ppl.cma X.cmo]
+
+{b Comments:}
+
+Do not forget the [-cc \"g++\"] option: PPL is a C++ library which requires
+a C++ linker.
+
+The C libraries related to [gmp.cma], [apron.cma] and [ppl.cma]
+are automatically looked for (thanks to the auto-linking feature
+provided by [ocamlc]).  Be aware that PPL requires the C++ wrapper
+[libgmpxx.a] library on top of GMP library, which should thus be
+installed.  With the [-noautolink] option, the generation of the
+custom runtime executable should be done with
+
+[ocamlc -I $APRON_PREFIX/lib -noautolink -make-runtime -o myrun -cc \"g++\" 
+bigarray.cma gmp.cma apron.cma ppl.cma -ccopt \"-L$GMP_PREFIX/lib ...\" 
+-cclib \"-lppl_caml -lapron_ppl -lppl -lgmpxx -lapron_caml -lapron -lgmp_caml 
+-lmpfr -lgmp -lbigarray -lcamlidl\"]
+
+{3 Native-code compilation}
+You compile and link with
+
+[ocamlopt -I $APRON_PREFIX/lib -c X.ml] and
+
+[ocamlopt -I $APRON_PREFIX/lib -o X -cc \"g++\" bigarray.cmxa gmp.cmxa apron.cmxa ppl.cmxa X.cmx]
+
+{b Comments:} Same as for bytecode compilation. Do not forget the [-cc \"g++\"] option. With the [-noautolink] option, the linking command becomes
+
+[ocamlopt -I $APRON_PREFIX/lib -o X -cc \"g++\" bigarray.cmxa gmp.cmxa apron.cmxa ppl.cmxa -ccopt \"-L$GMP_PREFIX/lib ...\" -cclib \"-lppl_caml -lapron_ppl -lppl -lgmpxx -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl\" X.cmx]
+*)")

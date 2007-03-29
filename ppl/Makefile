@@ -143,16 +143,26 @@ apron_ppl_test: libapron_ppl_debug.a ppl_test_debug.o
 ml: ppl.cma ppl.cmxa ppltop pplrun
 
 ppltop: ppl.cma libppl_caml.a libapron_ppl.a
-	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -cc $(CXX) -custom bigarray.cma gmp.cma apron.cma ppl.cma -ccopt -L. -cclib -lapron_ppl -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L$(GMP_PREFIX)/lib -cclib "-lgmpxx -lgmp"
+	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -cc $(CXX) -custom \
+	bigarray.cma gmp.cma apron.cma ppl.cma \
+	-ccopt "-L. -L../apron -L../mlgmpidl -L../mlapronidl"
 
 pplrun: ppl.cma libppl_caml.a
-	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime -cc $(CXX) bigarray.cma gmp.cma apron.cma ppl.cma -ccopt -L. -cclib -lapron_ppl -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L$(GMP_PREFIX)/lib -cclib "-lgmpxx -lgmp"
+	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime -cc $(CXX) \
+	bigarray.cma gmp.cma apron.cma ppl.cma \
+	-ccopt "-L.  -L../apron -L../mlgmpidl -L../mlapronidl"
 
 ppl.cma: ppl.cmi ppl.cmo libppl_caml.a
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ ppl.cmo -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl_caml
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ \
+	ppl.cmo \
+	-ccopt "-L$(PPL_PREFIX)/lib" \
+	-cclib "-lppl_caml -lapron_ppl -lppl -lgmpxx"
 
 ppl.cmxa: ppl.cmi ppl.cmx libppl_caml.a
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ ppl.cmx -ccopt -L$(PPL_PREFIX)/lib -cclib -lppl_caml
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
+	ppl.cmx \
+	-ccopt "-L$(PPL_PREFIX)/lib" \
+	-cclib "-lppl_caml -lapron_ppl -lppl -lgmpxx"
 
 libppl_caml.a: ppl_caml.o
 	$(AR) rcs $@ $^

@@ -19,18 +19,24 @@ domains.
 @subsection Use of APRON PPL
 @c ===================================================================
 
-To use APRON PPL in C, you need of course to install PPL, @emph{after having patched it} following the recommendations of the @file{README} file. 
-You need also to add
+To use APRON PPL in C, you need of course to install PPL, @emph{after
+having patched it} following the recommendations of the @file{README}
+file.  You need also to add
 @example
 #include "apron_ppl.h"
 @end example
 in your source file(s) and add @samp{-I$(APRON_PREFIX)/include} in the
 command line in your Makefile.
 
-You should also link your object files with the APRON PPL library
-to produce an executable, by adding something like
-@samp{-L$(APRON_PREFIX) -lapron_ppl -L$(PPL_PREFIX)/lib -lppl} in the
-command line in your Makefile.
+You should also link your object files with the APRON PPL library to
+produce an executable, @emph{using} @samp{g++} (instead of @samp{gcc},
+because @file{libppl.a} is a C++ library), and adding something like
+@samp{-L$(APRON_PREFIX)/lib -lapron_ppl -L$(PPL_PREFIX)/lib -lppl
+-L$(GMP_PREFIX)/lib -lgmpxx} in the command line in your Makefile
+(followed by the standard @samp{-lapron -L$(MPFR_PREFIX)/lib -lmpfr
+-L$(GMP_PREFIX)/lib -lgmp}). The @file{libgmpxx.a} library is the C++
+wrapper on top of the GMP library. Ensure that your GMP installation
+contains it, as it is not always installed by default.
 
 All scalars of type @code{double} are converted to scalars of type
 @code{mpq_t} inside APRON PPL, as APRON PPL works internally with exact

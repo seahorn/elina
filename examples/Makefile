@@ -13,6 +13,7 @@ LCFLAGS = \
 -L$(GMP_PREFIX)/lib \
 -L$(MPFR_PREFIX)/lib \
 -L$(APRON_PREFIX)/lib \
+-L$(PPL_PREFIX)/lib \
 -L$(CAMLIDL_PREFIX)/lib/ocaml
 
 OCAMLINC = \
@@ -22,13 +23,13 @@ OCAMLINC = \
 OCAMLLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS)" \
 bigarray.cma gmp.cma apron.cma \
-box.cma oct.cma polka.cma \
--cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
+box.cma oct.cma polka.cma ppl.cma \
+-cclib "-lppl_caml -lapron_ppl -lppl -lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmpxx -lgmp -lbigarray -lcamlidl"
 
 OCAMLOPTLDFLAGS = \
--noautolink -ccopt "$(LCFLAGS) -g" \
-bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa \
--cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
+-noautolink -verbose -ccopt "$(LCFLAGS)" \
+bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa ppl.cmxa \
+-cclib "-lppl_caml -lapron_ppl -lppl -lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmpxx -lgmp -lbigarray -lcamlidl"
 
 all: C ml
 
@@ -47,7 +48,9 @@ C: example1g
 ml: mlexample1
 
 mlexample%.opt: mlexample%.cmx
-	$(OCAMLOPT) $(OCAMLFLAGS) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
+	$(OCAMLOPT) -cc "g++" $(OCAMLOPTFLAGS) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
+test.opt: test.cmx
+	$(OCAMLOPT) -cc "g++" $(OCAMLOPTFLAGS) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
 
 %: %.cmo $(APRON_PREFIX)/bin/apronrun
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime $(APRON_PREFIX)/bin/apronrun -o $@ $<
