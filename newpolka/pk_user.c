@@ -117,6 +117,7 @@ void vector_set_generator(pk_internal_t* pk,
 			  ap_generator0_t* gen,
 			  size_t intdim, size_t realdim)
 {
+  assert(gen->gentyp != AP_GEN_VERTEX);
   vector_set_linexpr(pk, vec, gen->linexpr0, intdim+realdim, -1);
 
   if (pk->strict)

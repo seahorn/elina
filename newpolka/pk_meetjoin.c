@@ -646,8 +646,8 @@ poly_t* poly_join_array(ap_manager_t* man, poly_t** po, size_t size)
 /* Factorized version */
 
 void _poly_add_ray_array(bool lazy, 
-			  ap_manager_t* man,
-			  poly_t* po, poly_t* pa, ap_generator0_array_t* array)
+			 ap_manager_t* man,
+			 poly_t* po, poly_t* pa, ap_generator0_array_t* array)
 {
   matrix_t* mat;
 

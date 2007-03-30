@@ -119,6 +119,7 @@ void box_add_ray(box_internal_t* intern,
   ap_dim_t dim;
   ap_linexpr0_t* expr;
 
+  assert(gen->gentyp != AP_GEN_VERTEX);
   if (a->p==NULL){
     box_set_bottom(a);
     return;
