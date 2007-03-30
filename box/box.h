@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include "ap_global0.h"
-#include "box_config.h"
 
 #ifdef __cplusplus
 extern "C" {
