@@ -374,7 +374,6 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, box_t* a)
 	ap_coeff_reinit(&expr->cst,AP_COEFF_SCALAR,AP_SCALAR_DOUBLE);
 	scalar = expr->cst.val.scalar;
 	ap_scalar_set_bound(scalar,a->p[i]->inf);
-	ap_scalar_neg(scalar,scalar);
 
 	point = itv_is_point(intern->itv,a->p[i]);
 	array.p[size].constyp = point ? AP_CONS_EQ : AP_CONS_SUPEQ;

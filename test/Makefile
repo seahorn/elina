@@ -2,6 +2,7 @@ include ../Makefile.config
 
 ICFLAGS = \
 -I$(GMP_PREFIX)/include \
+-I$(MPFR_PREFIX)/include \
 -I$(APRON_PREFIX)/include \
 -Wall -Wstrict-prototypes -Wimplicit-function-declaration \
 -std=c99
@@ -16,7 +17,7 @@ LCFLAGS = \
 
 OCAMLINC = \
 -I $(MLGMPIDL_PREFIX)/lib \
--I $(MLAPRONIDL_PREFIX)/lib 
+-I $(MLAPRONIDL_PREFIX)/lib
 
 OCAMLLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS)" \
@@ -33,38 +34,29 @@ all: C ml
 
 # C examples
 
-C: example1g
+C: ctest1q
 
-%g: %g.o
-	$(CC) $(CFLAGS) $(ICFLAGS) $(LCFLAGS) -o $@  $< -lpolkag_debug -lapron_debug -lmpfr -lgmp 
+%q: %.o
+	$(CXX) $(CFLAGS) $(ICFLAGS) $(LCFLAGS) -o $@  $< \
+	-lapron_ppl -lppl -lgmpxx -lpolkag -loctQg -lboxmpq -litvmpq -lapron -lmpfr -lgmp
 
-%g.o: %.c
+%q_debug: %_debug.o
+	$(CXX) $(CFLAGS_DEBUG) $(ICFLAGS) $(LCFLAGS) -o $@  $< \
+	-lapron_ppl -lppl -lgmpxx -lpolkag_debug -loctQg -lboxmpq_debug -litvmpq_debug -lapron_debug -lmpfr -lgmp
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(ICFLAGS) -c -o $@ $<
+%_debug.o: %.c
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -c -o $@ $<
 
 # OCaml examples
 
-ml: mlexample1
-
-mlexample%.opt: mlexample%.cmx
-	$(OCAMLOPT) -cc "g++" $(OCAMLOPTFLAGS) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
-test.opt: test.cmx
-	$(OCAMLOPT) -cc "g++" $(OCAMLOPTFLAGS) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
-
-%: %.cmo $(APRON_PREFIX)/bin/apronrun
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) $(OCAMLLDFLAGS) -g -use-runtime $(APRON_PREFIX)/bin/apronrun -o $@ $<
-
-%.cmo: %.ml
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -c -o $@ $<
-
-%.cmx: %.ml
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC)  -c -o $@ $<
-
 #
 
 clean:
-	rm -f example1g *.cm[ioxa] *.o mlexample1 mlexample2 mlexample3 mlexample4 mlexample5 *.opt
+	rm -f ctest1q *_debug *.o
 
 distclean: clean
 
-dist: example1.c mlexample1.ml mlexample2.ml mlexample3.ml Makefile README
-	(cd ..; tar zcvf examples.tgz $(^:%=examples/%))
+dist: ctest1.c Makefile README
+	(cd ..; tar zcvf test.tgz $(^:%=test/%))
