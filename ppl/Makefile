@@ -94,7 +94,7 @@ uninstall:
 	/bin/rm -f $(BINDIR)/*apron_ppl*
 	/bin/rm -f $(CAMLDIR)/*apron_ppl*
 
-distclean: clean uninstall
+distclean: uninstall
 
 dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) apron_ppl.idl sedscript_caml
 	(cd ..; tar zcvf ppl.tgz $(^:%=ppl/%))
