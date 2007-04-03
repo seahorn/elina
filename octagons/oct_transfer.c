@@ -101,6 +101,27 @@ void bounds_of_generator(oct_internal_t* pr, bound_t* dst,
   }
 }
 
+/* for debugging */
+static void print_uexpr(uexpr u, bound_t* dst, size_t dim)
+{
+  size_t i;
+  printf("[-");
+  bound_print(dst[0]); printf(","); bound_print(dst[1]); 
+  printf("]");
+  for (i=0;i<dim;i++) {
+    printf(" + [-");
+    bound_print(dst[2*i+2]); printf(","); bound_print(dst[2*i+3]);
+    printf("]v%i",(int)i);
+  }
+  printf(" >= 0 ");
+  switch (u.type) {
+  case ZERO:   printf(" zeroary\n"); break;
+  case UNARY:  printf(" unary v%i=%i\n",(int)u.i,u.coef_i); break;
+  case BINARY: printf(" binary v%i=%i v%i=%i\n",(int)u.i,u.coef_i,(int)u.j,u.coef_j); break;
+  default:     printf("\n");
+  }
+  fflush(stdout);
+}
 
 
 /* ============================================================ */
@@ -187,7 +208,7 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 	if (hmat_close_incremental(b,dim,var_pending)) return true;
       }
       closure_pending = 1;
-      var_pending = u.i;
+      var_pending = (var_pending==u.j) ? u.j : u.i;
 
       if ( u.coef_i==1) ui = 2*u.i; else ui = 2*u.i+1;
       if ( u.coef_j==1) uj = 2*u.j; else uj = 2*u.j+1;
@@ -213,6 +234,7 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 	bound_init(tmpa); bound_init(tmpb); bound_init(Cb); bound_init(cb);
 
 	/* compute 2 * upper bound, ignoring components leading to +oo */
+	bound_mul_2(cb,pr->tmp[0]);
 	bound_mul_2(Cb,pr->tmp[1]);
 	for (j=0;j<dim;j++) {
 	  bounds_mul(tmpa,tmpb, b[matpos(2*j,2*j+1)],b[matpos(2*j+1,2*j)],
@@ -265,9 +287,9 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 	else if (Cinf==1) {
 	  /* one infinite bound: derive linear number of bounds */
 	  if (!bound_cmp_int(pr->tmp[2*Cj1+3],-1) &&
-	      !bound_cmp_int(pr->tmp[2*Cj1+2], 1)) uj = 2*Cj1+1;
+	      !bound_cmp_int(pr->tmp[2*Cj1+2], 1)) uj = 2*Cj1;
 	  else if (!bound_cmp_int(pr->tmp[2*Cj1+3], 1) &&
-		   !bound_cmp_int(pr->tmp[2*Cj1+2],-1)) uj = 2*Cj1;
+		   !bound_cmp_int(pr->tmp[2*Cj1+2],-1)) uj = 2*Cj1+1;
 	  else goto Cbrk;
 	  for (k=0;k<dim;k++) {
 	    if (k==Cj1) continue;
@@ -343,9 +365,9 @@ bool hmat_add_lincons(oct_internal_t* pr, bound_t* b, size_t dim,
 	}
 	else if (cinf==1) {
 	  if (!bound_cmp_int(pr->tmp[2*cj1+2],-1) &&
-	      !bound_cmp_int(pr->tmp[2*cj1+3], 1)) uj = 2*cj1+1;
+	      !bound_cmp_int(pr->tmp[2*cj1+3], 1)) uj = 2*cj1;
 	  else if (!bound_cmp_int(pr->tmp[2*cj1+2], 1) &&
-		   !bound_cmp_int(pr->tmp[2*cj1+3],-1)) uj = 2*cj1;
+		   !bound_cmp_int(pr->tmp[2*cj1+3],-1)) uj = 2*cj1+1;
 	  else goto cbrk;
 	  for (k=0;k<dim;k++) {
 	    if (k==cj1) continue;

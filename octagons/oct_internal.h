@@ -236,6 +236,7 @@ static inline void bound_badd(bound_t dst, bound_t arg)
   num_of_double_approx  num are approximated when converted from double
   num_of_mpq_approx     num are approximated when converted from mpq
   num_fpu               num requires init_fpu to be called
+  num_export_double     constraints are output using double instead of mpq
 */
 
 
@@ -249,6 +250,7 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_of_double_approx 1
 #define num_of_mpq_approx    1
 #define num_fpu              0
+#define num_export_double    0
 #elif defined ( NUM_LONGLONGINT )
 #define num_name             "NUM_LONGLONGINT"
 #define num_incomplete       1
@@ -258,6 +260,7 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_of_double_approx 1
 #define num_of_mpq_approx    1
 #define num_fpu              0
+#define num_export_double    0
 
 #elif defined ( NUM_MPZ )
 /* no overflow, type not closed by / 2 */
@@ -269,6 +272,7 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_of_double_approx 1
 #define num_of_mpq_approx    1
 #define num_fpu              0
+#define num_export_double    0
 
 #elif defined ( NUM_LONGRAT )
 /* complete algorithms, but overflows produce unsound results */
@@ -280,6 +284,7 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_of_double_approx 1
 #define num_of_mpq_approx    0 /* as long as mpq_fits_num */
 #define num_fpu              0
+#define num_export_double    0
 #elif defined ( NUM_LONGLONGRAT )
 #define num_name             "NUM_LONGLONGRAT"
 #define num_incomplete       0
@@ -288,6 +293,8 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_to_mpq_approx    0
 #define num_of_double_approx 1
 #define num_of_mpq_approx    0 /* as long as mpq_fits_num */
+#define num_fpu              0
+#define num_export_double    0
 
 #elif defined ( NUM_MPQ )
 /* the "perfect" type */
@@ -299,6 +306,7 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_of_double_approx 0
 #define num_of_mpq_approx    0
 #define num_fpu              0
+#define num_export_double    0
 
 #elif defined ( NUM_DOUBLE )
 /* overflow are ok (stick to +oo), type not closed by + and / 2 */
@@ -310,6 +318,7 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_of_double_approx 0
 #define num_of_mpq_approx    1
 #define num_fpu              1
+#define num_export_double    1
 #elif defined ( NUM_LONGDOUBLE )
 #define num_name             "NUM_LONGDOUBLE"
 #define num_incomplete       1
@@ -319,6 +328,7 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_of_double_approx 0
 #define num_of_mpq_approx    1
 #define num_fpu              1
+#define num_export_double    1
 
 /* duh */
 #else
@@ -423,19 +433,20 @@ static inline void scalar_of_upper_bound(oct_internal_t* pr,
 					 bool div2)
 {
   if (bound_infty(b)) ap_scalar_set_infty(r,1);
-  else if (pr->man->option.scalar_discr==AP_SCALAR_DOUBLE) {
+  else {
+#if num_export_double
     /* use double */
     ap_scalar_reinit(r,AP_SCALAR_DOUBLE);
     double_set_num(&r->val.dbl,bound_numref(b));
     if (div2) r->val.dbl /= 2;
     if (num_to_double_approx || div2) pr->conv = 1;
-  }
-  else {
+#else
     /* use mpq */
     ap_scalar_reinit(r,AP_SCALAR_MPQ);
     mpq_set_num(r->val.mpq,bound_numref(b));
     if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
     if (num_to_mpq_approx) pr->conv = 1;
+#endif
   }
 }
 
@@ -448,21 +459,22 @@ static inline void scalar_of_lower_bound(oct_internal_t* pr,
 					 bool div2)
 {
   if (bound_infty(b)) ap_scalar_set_infty(r,-1);
-  else if (pr->man->option.scalar_discr==AP_SCALAR_DOUBLE) {
+  else {
+#if num_export_double
     /* use double */
     ap_scalar_reinit(r,AP_SCALAR_DOUBLE);
     double_set_num(&r->val.dbl,bound_numref(b));
     if (div2) r->val.dbl /= 2;
     r->val.dbl = -r->val.dbl;
     if (num_to_double_approx || div2) pr->conv = 1;
-  }
-  else {
+#else
     /* use mpq */
     ap_scalar_reinit(r,AP_SCALAR_MPQ);
     mpq_set_num(r->val.mpq,bound_numref(b));
     if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
     mpq_neg(r->val.mpq,r->val.mpq);
     if (num_to_mpq_approx) pr->conv = 1;
+#endif
   }
 }
 

@@ -345,7 +345,6 @@ ap_manager_t* oct_manager_alloc(void)
     return NULL;
   }
 #endif
-
   pr = (oct_internal_t*)malloc(sizeof(oct_internal_t));
   assert(pr);
   pr->tmp_size = 10;

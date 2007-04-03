@@ -105,8 +105,13 @@ The self-test compares the result on the octagon domain and the polyhedron
 domain to check for soundness.
 It generates random constraints, and so, its result vary from run to run.
 
-NOTE: currently, the test results are only meaningful for the Qg numeric
-type.
+For each test, a character is displayed. Generally, '*' means a result as good
+as in polyhedra, 'x' means an optimal octagonal result, 'o' means an empty
+result, '=', '<' and '>' compare the precision of two octagon transfer 
+functions and '.' just means a correct result.
+
+The test should not produce any error. Please report any error encountered!
+
 
 
 OCAML LIBRARY

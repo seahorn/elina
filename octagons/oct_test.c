@@ -34,7 +34,7 @@ oct_internal_t* pr;
 pk_internal_t* pk;
 
 
-#define N 60
+#define N 70
 
 char b1_[N+4]= " [";
 char b2_[N+4];
@@ -384,9 +384,9 @@ void test_misc(void)
 
 void test_closure(void)
 {
-  printf("\nclosure (c,o expected)\n");
+  printf("\nclosure %s\n",num_incomplete?"":"(c,o expected)");
   LOOP {
-    oct_t* o = random_oct(14,.1);
+    oct_t* o = random_oct(14,.01);
     oct_close(pr,o);
     RESULT(check(o));
     oct_free(mo,o);
@@ -395,10 +395,10 @@ void test_closure(void)
 
 void test_incremental_closure(void)
 {
-  printf("\nincremental closure (C,o expected)\n");
+  printf("\nincremental closure %s\n",num_incomplete?"":"(C,o expected)");
   LOOP {
     size_t dim = 14;
-    oct_t* o = random_oct(dim,.1);
+    oct_t* o = random_oct(dim,.005);
     size_t i, v = lrand48() % dim;
     oct_close(pr,o);
     if (o->closed) {
@@ -423,7 +423,7 @@ void test_incremental_closure(void)
 
 void test_polyhedra_conversion(void)
 {
-  printf("\nconversion to polyhedra (* expected)\n");
+  printf("\nconversion to polyhedra %s\n","(* expected)");
   LOOP {
     oct_t *o, *o2;
     ap_abstract0_t *p, *p2;
@@ -468,7 +468,7 @@ void test_polyhedra_conversion(void)
 
 void test_polyhedra_conversion2(void)
 {
-  printf("\nconversion from polyhedra (=from generator, * expected)\n");
+  printf("\nconversion from polyhedra (=from generator) %s\n",num_incomplete?"":"(* expected)");
   LOOP {
     ap_abstract0_t *p, *p2;
     oct_t *o, *o2;
@@ -508,8 +508,8 @@ void test_polyhedra_conversion2(void)
 
 void test_lincons_conversion(exprmode mode)
 {
-  printf("\nconversion from %slincons (%s expected)\n",exprname[mode],
-	 (mode<=expr_oct)?"*":"*,x,.");
+  printf("\nconversion from %slincons %s\n",exprname[mode],
+	 num_incomplete?"":(mode<=expr_oct)?"(* expected)":"(*,x,. expected)");
   LOOP {
     int dim = 7, nb = 10, i;
     ap_abstract0_t *p, *p2;
@@ -549,7 +549,7 @@ void test_lincons_conversion(exprmode mode)
 
 void test_generator_conversion(void)
 {
-  printf("\nconversion to generators (.,* expected)\n");
+  printf("\nconversion to generators %s\n",num_incomplete?"":"(.,* expected)");
   LOOP {
     size_t dim = 7;
     oct_t *o, *o2;
@@ -572,7 +572,7 @@ void test_generator_conversion(void)
 
 void test_box_conversion(void)
 {
-  printf("\nconversion to box (* expected)\n");
+  printf("\nconversion to box %s\n",num_incomplete?"":"(* expected)");
   LOOP {
     size_t dim = 7;
     int i;
@@ -606,7 +606,7 @@ void test_box_conversion(void)
 
 void test_serialize(void)
 {
-  printf("\nserialization (* expected)\n");
+  printf("\nserialization %s\n","(* expected)");
   LOOP {
     size_t sz;
     oct_t *o, *o2;
@@ -635,7 +635,7 @@ void test_serialize(void)
 
 void test_bound_dim(void)
 {
-  printf("\nbound dimension (* expected)\n");
+  printf("\nbound dimension %s\n",num_incomplete?"":"(* expected)");
   LOOP {
     int dim = 8;
     int v = lrand48() % dim;
@@ -673,8 +673,8 @@ void test_bound_dim(void)
 
 void test_bound_linexpr(exprmode mode)
 {
-  printf("\nbound %slinexpr (%s expected)\n",exprname[mode],
-	 (mode<=expr_oct)?"*":"*,.");
+  printf("\nbound %slinexpr %s\n",exprname[mode],
+	 num_incomplete?"":(mode<=expr_oct)?"(* expected)":"(*,. expected)");
   LOOP {
     int dim = 8;
     oct_t *o;
@@ -704,7 +704,7 @@ void test_bound_linexpr(exprmode mode)
 
 void test_meet(void)
 {
-  printf("\nmeet (* expected)\n");
+  printf("\nmeet %s\n","(* expected)");
   LOOP {
     int dim = 7;
     oct_t *o1, *o2, *o;
@@ -733,7 +733,7 @@ void test_meet(void)
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2);
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,pp); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
   } ENDLOOP;
-  printf("\nmeet top (* expected)\n");
+  printf("\nmeet top %s\n","(* expected)");
   LOOP {
     int dim = 8;
     oct_t *o1, *o2, *o, *oo;
@@ -753,7 +753,7 @@ void test_meet(void)
     else RESULT('*');
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2); oct_free(mo,oo);
   } ENDLOOP;
-  printf("\nmeet bot (* expected)\n");
+  printf("\nmeet bot %s\n","(* expected)");
   LOOP {
     int dim = 8;
     oct_t *o1, *o2, *o;
@@ -773,7 +773,7 @@ void test_meet(void)
 #define NB_MEET 5
 void test_meet_array(void)
 {
-  printf("\nmeet array (* expected)\n");
+  printf("\nmeet array %s\n","(* expected)");
   LOOP {
     int i, dim = 6;
     oct_t* o[NB_MEET], *oo;
@@ -798,8 +798,8 @@ void test_meet_array(void)
 
 void test_add_lincons(exprmode mode)
 {
-  printf("\nadd %slincons (%s expected)\n",exprname[mode],
-	 (mode<=expr_oct)?"*":"*,x,.");
+  printf("\nadd %slincons %s\n",exprname[mode],
+	 num_incomplete?"":(mode<=expr_oct)?"(* expected)":"(*,x,. expected)");
   LOOP {
     size_t i, dim = 7, nb = 4;
     oct_t *o, *o1, *o2;
@@ -826,6 +826,7 @@ void test_add_lincons(exprmode mode)
       ERROR("not included in");
       ap_lincons0_array_fprint(stderr,&ar,NULL);
       print_poly("p",p); print_poly("p1",p1); print_poly("p2",p2);
+      print_oct("o",o); print_oct("o1",o1); print_oct("o2",o2);
     }
     if (ap_abstract0_is_eq(mp,p1,p2)==tbool_true) RESULT('*');
     else if (oct_is_eq(mo,o1,o2)==tbool_true) RESULT('x');
@@ -846,8 +847,8 @@ void test_add_lincons(exprmode mode)
 
 void test_sat_lincons(exprmode mode)
 {
-  printf("\nsaturate %slincons (%s expected)\n",exprname[mode],
-	 (mode<=expr_oct)?"*":"*,.");
+  printf("\nsaturate %slincons %s\n",exprname[mode],
+	 num_incomplete?"":(mode<=expr_oct)?"(* expected)":"(*,. expected)");
   LOOP {
     size_t dim = 7;
     oct_t *o, *o1;
@@ -899,7 +900,7 @@ void test_sat_lincons(exprmode mode)
 
 void test_join(void)
 {
-  printf("\njoin (*,x expected)\n");
+  printf("\njoin %s\n",num_incomplete?"":"(*,x expected)");
   LOOP {
     int dim = 2;
     oct_t *o1, *o2, *o3, *o;
@@ -932,7 +933,7 @@ void test_join(void)
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2); oct_free(mo,o3);
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,pp); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
   } ENDLOOP;
-  printf("\njoin bot (* expected)\n");
+  printf("\njoin bot %s\n",num_incomplete?"":"(* expected)");
   LOOP {
     int dim = 8;
     oct_t *o1, *o2, *o, *oo;
@@ -952,7 +953,7 @@ void test_join(void)
     else RESULT('*');
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2); oct_free(mo,oo);
   } ENDLOOP;
-  printf("\njoin top (* expected)\n");
+  printf("\njoin top %s\n",num_incomplete?"":"(* expected)");
   LOOP {
     int dim = 8;
     oct_t *o1, *o2, *o;
@@ -972,7 +973,7 @@ void test_join(void)
 #define NB_JOIN 5
 void test_join_array(void)
 {
-  printf("\njoin array (x,* expected)\n");
+  printf("\njoin array %s\n",num_incomplete?"":"(x,* expected)");
   LOOP {
     int i, dim = 6;
     oct_t* o[NB_JOIN], *oo, *ooo;
@@ -1020,7 +1021,7 @@ void test_join_array(void)
 
 void test_add_ray(void)
 {
-  printf("\nadd rays (*,x expected)\n");
+  printf("\nadd rays %s\n",num_incomplete?"":"(*,x expected)");
   LOOP {
     size_t i, dim = 7, nb = 4;
     oct_t *o, *o1, *o2;
@@ -1095,7 +1096,7 @@ void test_dimrem(void)
     oct_t *o1, *o2, *o3 ,*o4;
     ap_dimchange_t* a = ap_dimchange_alloc(0,3);
     ap_dimchange_t* r = ap_dimchange_alloc(0,a->realdim);
-    o1 = random_oct(dim,.1);
+    o1 = random_oct(dim,.01);
     if (lrand48()%10>=8) oct_close(pr,o1);
     for (i=0;i<r->realdim;i++) {
       r->dim[i] = lrand48()%3 + 1;
@@ -1307,8 +1308,8 @@ void test_narrowing(void)
   LOOP {
     int dim = 8;
     oct_t *o1, *o2, *o, *oo;
-    o1 = random_oct(dim,.1);
-    o2 = random_oct(dim,.1);
+    o1 = random_oct(dim,.01);
+    o2 = random_oct(dim,.01);
     o  = oct_narrowing(mo,o1,o2);
     oo = oct_meet(mo,false,o1,o2);
     RESULT(check(o));
@@ -1322,9 +1323,9 @@ void test_narrowing(void)
   printf("\nwidening narrowing\n");
   LOOP {
     int dim = 5, nb = 4*dim*dim;
-    oct_t *o1 = random_oct(dim,.1);
+    oct_t *o1 = random_oct(dim,.03);
     for (;nb>0;nb--) {
-      oct_t* o2 = random_oct(dim,.1);
+      oct_t* o2 = random_oct(dim,.03);
       oct_t* o = oct_narrowing(mo,o1,o2);
       oct_free(mo,o2);
       if (oct_is_leq(mo,o,o1)) { oct_free(mo,o); break; }
@@ -1343,8 +1344,8 @@ void test_narrowing(void)
 
 void test_assign(int subst, exprmode mode)
 {
-  printf("\n%s %slinexpr%s\n", subst ? "subst" : "assign", exprname[mode],
-	 mode==expr_unary ? " (* expected)" : "");
+  printf("\n%s %slinexpr %s\n", subst ? "subst" : "assign", exprname[mode],
+	 num_incomplete?"":mode==expr_unary ? "(* expected)" : "");
   LOOP {
     size_t dim = 6, d = lrand48()%dim;
     oct_t *o, *o1, *o2;
@@ -1387,8 +1388,8 @@ void test_assign(int subst, exprmode mode)
 #define NB_ASSIGN 3
 void test_par_assign(int subst, exprmode mode)
 {
-  printf("\nparallel %s %slinexpr%s\n",subst ? "subst" : "assign",
-	 exprname[mode],mode==expr_unary ? " (* expected)" : "");
+  printf("\nparallel %s %slinexpr %s\n",subst ? "subst" : "assign",
+	 num_incomplete?"":exprname[mode],mode==expr_unary ? "(* expected)" : "");
   LOOP {
     size_t dim = 6, i, j, k;
     ap_dim_t d[NB_ASSIGN];
@@ -1557,7 +1558,6 @@ int main(int argc, const char** argv)
     mo->option.abort_if_exception[i] = true;
     mp->option.abort_if_exception[i] = true;
   }
-  mo->option.scalar_discr = mp->option.scalar_discr = AP_SCALAR_MPQ;
   pr = oct_init_from_manager(mo,0,0);
   pk = pk_manager_get_internal(mp);
   pk_set_max_coeff_size(pk,0);
