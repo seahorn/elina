@@ -229,8 +229,8 @@ static inline bool double_set_numrat_tmp(double* a, numrat_t b,
 					 mpq_t mpq, // not used
 					 mpfr_t mpfr)
 {
-  int res = mpfr_set_q(mpfr,b,+1);
-  *a = mpfr_get_d(mpfr,+1); /* should be exact */
+  int res = mpfr_set_q(mpfr,b,GMP_RNDU);
+  *a = mpfr_get_d(mpfr,GMP_RNDU); /* should be exact */
   return (res==0);
 }
 static inline bool double_set_numrat(double* a, numrat_t b)

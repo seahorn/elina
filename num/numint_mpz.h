@@ -204,8 +204,8 @@ static inline bool mpq_set_numint(mpq_t a, numint_t b)
 static inline bool double_set_numint_tmp(double* a, numint_t b, 
 					 mpfr_t mpfr)
 {
-  int res = mpfr_set_z(mpfr,b,+1);
-  *a = mpfr_get_d(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+  int res = mpfr_set_z(mpfr,b,GMP_RNDU);
+  *a = mpfr_get_d(mpfr,GMP_RNDU);/* Normally, exact conversion here (unless overfloww) */
   return (res==0);
 }
 static inline bool double_set_numint(double* a, numint_t b)

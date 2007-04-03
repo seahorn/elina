@@ -168,11 +168,11 @@ static inline void numflt_set_int2(numflt_t a, long int i, unsigned long int j)
 /* mpfr is supposed to have exactly the IEEE754 double precision of NUMFLT_MANT_DIG bits */
 static inline bool numflt_set_mpz_tmp(numflt_t a, mpz_t b, mpfr_t mpfr)
 { 
-  int res = mpfr_set_z(mpfr,b,+1);
+  int res = mpfr_set_z(mpfr,b,GMP_RNDU);
 #if defined(NUMFLT_DOUBLE)
-  *a = mpfr_get_d(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+  *a = mpfr_get_d(mpfr,GMP_RNDU);/* Normally, exact conversion here (unless overfloww) */
 #else
-  *a = mpfr_get_ld(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+  *a = mpfr_get_ld(mpfr,GMP_RNDU);/* Normally, exact conversion here (unless overfloww) */
 #endif
   return (res==0);
 }
@@ -189,11 +189,11 @@ static inline bool numflt_set_mpz(numflt_t a, mpz_t b)
 /* mpfr is supposed to have exactly the IEEE754 double precision of NUMFLT_MANT_DIG bits */
 static inline bool numflt_set_mpq_tmp(numflt_t a, mpq_t b, mpfr_t mpfr)
 {
-  int res = mpfr_set_q(mpfr,b,+1);
+  int res = mpfr_set_q(mpfr,b,GMP_RNDU);
 #if defined(NUMFLT_DOUBLE)
-  *a = mpfr_get_d(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+  *a = mpfr_get_d(mpfr,GMP_RNDU);/* Normally, exact conversion here (unless overfloww) */
 #else
-  *a = mpfr_get_ld(mpfr,+1);/* Normally, exact conversion here (unless overfloww) */
+  *a = mpfr_get_ld(mpfr,GMP_RNDU);/* Normally, exact conversion here (unless overfloww) */
 #endif
   return (res==0);
 }  
