@@ -807,7 +807,6 @@ int main(void)
     /* init */
     pk = pk_manager_alloc(strict);
     ppl = ap_ppl_poly_manager_alloc(strict);
-    pk->option.scalar_discr = ppl->option.scalar_discr = AP_SCALAR_MPQ;
     for (i=0;i<AP_EXC_SIZE;i++){
       pk->option.abort_if_exception[i] = true;
       ppl->option.abort_if_exception[i] = true;
