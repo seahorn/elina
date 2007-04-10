@@ -67,7 +67,7 @@ CCINC = ppl_user.h apron_ppl.h
 # Rules
 #---------------------------------------
 
-all: libapron_ppl.a apron_ppl_test
+all: libapron_ppl.a libapron_ppl_debug.a apron_ppl_test
 
 clean:
 	/bin/rm -f *.[ao] *.so apron_ppl_test
@@ -81,6 +81,7 @@ install:
 	$(INSTALLd) $(INCDIR) $(LIBDIR) $(BINDIR) $(CAMLDIR)
 	$(INSTALL) apron_ppl.h $(INCDIR)
 	$(INSTALL) libapron_ppl.a $(LIBDIR)
+	$(INSTALL) libapron_ppl_debug.a $(LIBDIR)
 	for i in apron_ppl_test pplrun ppltop; do \
 		if test -f $$i; then $(INSTALL) $$i $(BINDIR); fi; \
 	done

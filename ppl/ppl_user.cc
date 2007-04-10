@@ -113,7 +113,7 @@ ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& inexact)
   if (c.is_ray() || c.is_line()) {
     /* ray or line: no divisor */
     for (i=0;i<n;i++)
-      ap_ppl_mpz_to_scalar(e->p.coeff[0].val.scalar,c.coefficient(Variable(i)));
+      ap_ppl_mpz_to_scalar(e->p.coeff[i].val.scalar,c.coefficient(Variable(i)));
     return ap_generator0_make(c.is_ray() ? AP_GEN_RAY : AP_GEN_LINE,e);
   }
   else {
@@ -121,7 +121,7 @@ ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& inexact)
     const mpz_class& div = c.divisor();
     if (c.is_closure_point()) inexact = true;
     for (i=0;i<n;i++)
-      ap_ppl_mpz2_to_scalar(e->p.coeff[0].val.scalar,c.coefficient(Variable(i)),div);
+      ap_ppl_mpz2_to_scalar(e->p.coeff[i].val.scalar,c.coefficient(Variable(i)),div);
     return ap_generator0_make(AP_GEN_VERTEX,e);
   }
 }
@@ -154,14 +154,14 @@ ap_generator0_t ap_ppl_to_generator(const Grid_Generator& c)
   if (c.is_line()) {
     /* line: no divisor */
     for (i=0;i<n;i++)
-      ap_ppl_mpz_to_scalar(e->p.coeff[0].val.scalar,c.coefficient(Variable(i)));
+      ap_ppl_mpz_to_scalar(e->p.coeff[i].val.scalar,c.coefficient(Variable(i)));
     return ap_generator0_make(AP_GEN_LINE,e);
   }
   else {
     /* point or parameter: has divisor */
     const mpz_class& div = c.divisor();
     for (i=0;i<n;i++)
-      ap_ppl_mpz2_to_scalar(e->p.coeff[0].val.scalar,c.coefficient(Variable(i)),div);
+      ap_ppl_mpz2_to_scalar(e->p.coeff[i].val.scalar,c.coefficient(Variable(i)),div);
     return ap_generator0_make(c.is_point() ? AP_GEN_VERTEX : AP_GEN_LINEMOD,e);
   }
 }
@@ -176,8 +176,9 @@ ap_generator0_array_t ap_ppl_to_generator_array(const Grid_Generator_System& c)
   for (i=c.begin(),k=0;i!=end;i++,k++);
   a = ap_generator0_array_make(k);
   /* then, convert generators */
-  for (i=c.begin(),k=0;i!=end;i++,k++)
+  for (i=c.begin(),k=0;i!=end;i++,k++){
     a.p[k] = ap_ppl_to_generator(*i);
+  }
   return a;
 }
 
@@ -418,6 +419,31 @@ bool ap_ppl_of_generator(Generator& r,ap_generator0_t* c)
   }
 }
 
+/* Test if the linear part of the generator is 0 
+   Needed because PPL refuses non-vertex generators with such expressions */
+
+bool ap_ppl_ap_generator0_select(ap_generator0_t* g)
+{
+  if (g->gentyp==AP_GEN_VERTEX) {
+    return true;
+  }
+  else {
+    size_t i;
+    ap_dim_t dim;
+    ap_coeff_t* coeff;
+    ap_linexpr0_t* e = g->linexpr0;
+
+    bool res = false;
+    ap_linexpr0_ForeachLinterm(e,i,dim,coeff){
+      if (ap_coeff_zero(coeff)==false){
+	res = true;
+	break;
+      }
+    }
+    return res;
+  }
+}
+
 /* ap_generator0_array_t => Generator_System 
    (may raise cannot_convert, or return true)
 */
@@ -428,8 +454,10 @@ bool ap_ppl_of_generator_array(Generator_System& r,ap_generator0_array_t* a)
   Generator c = Generator::zero_dim_point();
   r.clear();
   for (i=0;i<a->size;i++) {
-    inexact = ap_ppl_of_generator(c,&a->p[i]) || inexact;
-    r.insert(c);
+    if (ap_ppl_ap_generator0_select(&a->p[i])){
+      inexact = ap_ppl_of_generator(c,&a->p[i]) || inexact;
+      r.insert(c);
+    }
   }
   return inexact;
 }
@@ -461,8 +489,10 @@ bool ap_ppl_of_generator_array(Grid_Generator_System& r,ap_generator0_array_t* a
   Grid_Generator c = Grid_Generator::point();
   r.clear();
   for (i=0;i<a->size;i++) {
-    inexact = ap_ppl_of_generator(c,&a->p[i]) || inexact;
-    r.insert(c);
+    if (ap_ppl_ap_generator0_select(&a->p[i])){
+      inexact = ap_ppl_of_generator(c,&a->p[i]) || inexact;
+      r.insert(c);
+    }
   }
   return inexact;
 }
