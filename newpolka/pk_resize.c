@@ -423,6 +423,12 @@ poly_t* poly_remove_dimensions(ap_manager_t* man,
   if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
   dimsup = dimchange->intdim+dimchange->realdim;
   po->F = matrix_remove_dimensions(pk,destructive,pa->F,dimchange);
+  if (pk->funopt->algorithm>0){
+    poly_chernikova(man,po,"of the result");
+    if (pk->exn){
+      pk->exn = AP_EXC_NONE;
+    }
+  }
   man->result.flag_best = man->result.flag_exact =
     dimchange->intdim>0 ? tbool_top : tbool_true;
   assert(poly_check(pk,po));
