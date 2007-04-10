@@ -222,10 +222,20 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 	    we can deduce x=-e'/a, or inf(-e'/a)<= x <= sup(-e'/a)
 	  */
 	  if (sgn>0 || cons->constyp == AP_CONS_EQ){
-	    /* We compute sup(e'/a)=)-inf(-e'/a) */
-	    bound_div(intern->meet_lincons_internal_bound,
-		      intern->meet_lincons_internal_itv3->sup,
-		      intern->meet_lincons_internal_itv2->sup);
+	    /* 
+	       If we have a>0, we compute sup(e')/a=sup(e'/a)=-inf(-e'/a) 
+	       If we have a<0, we compute -inf(e')/(-a)=-inf(-e'/a)
+	    */
+	    if (sgn>0){
+	      bound_div(intern->meet_lincons_internal_bound,
+			intern->meet_lincons_internal_itv3->sup,
+			intern->meet_lincons_internal_itv2->sup);
+	    }
+	    else {
+	      bound_div(intern->meet_lincons_internal_bound,
+			intern->meet_lincons_internal_itv3->inf,
+			intern->meet_lincons_internal_itv2->inf);
+	    }
 	    /* We update the interval */
 	    if (bound_cmp(intern->meet_lincons_internal_bound, a->p[dim]->inf)<0){
 	      change = true;
@@ -233,12 +243,20 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 	    }
 	  }
 	  if (sgn<0 || cons->constyp == AP_CONS_EQ){
-	    /* We compute sup(e'/-a) */
-	    bound_neg(intern->meet_lincons_internal_itv3->sup,
-		      intern->meet_lincons_internal_itv3->sup);
-	    bound_div(intern->meet_lincons_internal_bound,
-		      intern->meet_lincons_internal_itv3->sup,
-		      intern->meet_lincons_internal_itv2->sup);
+	    /* 
+	       If we have a<0, we compute sup(e')/(-a)=sup(e'/-a)
+	       If we have a>0, we compute -inf(e')/a=-inf(e'/a)=sup(e'/-a)
+	    */
+	    if (sgn<0){
+	      bound_div(intern->meet_lincons_internal_bound,
+			intern->meet_lincons_internal_itv3->sup,
+			intern->meet_lincons_internal_itv2->inf);
+	    }
+	    else {
+	      bound_div(intern->meet_lincons_internal_bound,
+			intern->meet_lincons_internal_itv3->inf,
+			intern->meet_lincons_internal_itv2->sup);
+	    }
 	    /* We update the interval */
 	    if (bound_cmp(intern->meet_lincons_internal_bound, a->p[dim]->sup)<0){
 	      change = true;
@@ -258,6 +276,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 	    so we need at least
 	    * if sup(e')>=0: x<=sup(e')/-M
 	    * if sup(e')<=0: x<=sup(e')/-m
+
 	  - If we have [m,M]x+e'<=0 with m>0, then [m,M]x<=-sup(e')
 	    * sup(e')>=0: x<=sup(e')/-M
 	    * sup(e')<=0: x<=sup(e')/-m
@@ -265,16 +284,16 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 	    * inf(-e')>=0: x>=inf(e')/-M
 	    * inf(-e')<=0: x>=inf(e')/-m
 	*/
-	int sgn = 
+	int sgncoeff = 
 	  bound_sgn(intern->meet_lincons_internal_itv2->inf)<0 ?
 	  1 :
 	  ( bound_sgn(intern->meet_lincons_internal_itv2->sup)<0 ?
 	    -1 :
 	    0 );
-	if (sgn != 0){
+	if (sgncoeff != 0){
 	  int sgninf = bound_sgn(intern->meet_lincons_internal_itv3->inf);
 	  int sgnsup = bound_sgn(intern->meet_lincons_internal_itv3->sup);
-	  if (sgn>0 || (cons->constyp==AP_CONS_EQ && sgn<0)){
+	  if (sgncoeff>0 || (cons->constyp==AP_CONS_EQ && sgncoeff<0)){
 	    if (sgninf>=0){
 	      /* We compute inf(-e')/M */
 	      bound_div(intern->meet_lincons_internal_bound,
@@ -294,7 +313,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 	      bound_set(a->p[dim]->inf, intern->meet_lincons_internal_bound);
 	    }
 	  }
-	  if (sgn<0 || (cons->constyp==AP_CONS_EQ && sgn>0)){
+	  if (sgncoeff<0 || (cons->constyp==AP_CONS_EQ && sgncoeff>0)){
 	    if (sgnsup>=0){
 	      /* We compute sup(e')/-M */
 	      bound_neg(intern->meet_lincons_internal_itv3->sup,
