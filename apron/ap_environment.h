@@ -114,6 +114,10 @@ ap_environment_t* ap_environment_remove(ap_environment_t* env,
   /* Remove variables from an environement.
      Same comments as for environement_alloc */
 
+static inline
+bool ap_environment_mem_var(ap_environment_t* env, ap_var_t name);
+  /* Return true if the variable is present in the environemnt */
+
 ap_dim_t ap_environment_dim_of_var(ap_environment_t* env, ap_var_t name);
   /* - If the variable is present in the environemnt,
        return its associated dimension.
@@ -213,6 +217,10 @@ ap_environment_t* ap_environment_rename(ap_environment_t* env,
 /* ====================================================================== */
 /* Inline definitions */
 /* ====================================================================== */
+
+static inline
+bool ap_environment_mem_var(ap_environment_t* env, ap_var_t name)
+{ return (ap_environment_dim_of_var(env,name) != AP_DIM_MAX); }
 
 static inline
 ap_var_t ap_environment_var_of_dim(ap_environment_t* env, ap_dim_t dim){
