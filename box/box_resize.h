@@ -13,7 +13,8 @@ extern "C" {
 
 box_t* box_add_dimensions(ap_manager_t* man,
 			  bool destructive, box_t* a,
-			  ap_dimchange_t* dimchange);
+			  ap_dimchange_t* dimchange,
+			  bool project);
 
 box_t* box_remove_dimensions(ap_manager_t* man,
 			     bool destructive, box_t* a,

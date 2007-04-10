@@ -70,7 +70,7 @@ box_t* box_expand(ap_manager_t* man,
   for (i=0;i<dimsup;i++){
     dimchange.dim[i]=offset;
   }
-  res = box_add_dimensions(man,destructive,a,&dimchange);
+  res = box_add_dimensions(man,destructive,a,&dimchange,false);
   for (i=offset;i<offset+dimsup;i++){
     itv_set(res->p[i],res->p[dim]);
   }

@@ -7,7 +7,8 @@
 
 box_t* box_add_dimensions(ap_manager_t* man,
 			  bool destructive, box_t* a,
-			  ap_dimchange_t* dimchange)
+			  ap_dimchange_t* dimchange,
+			  bool project)
 {
   box_t* res;
   size_t size;
@@ -33,7 +34,13 @@ box_t* box_add_dimensions(ap_manager_t* man,
     }
     while (k>=1 && dimchange->dim[k-1]==(ap_dim_t)i){
       k--;
-      itv_set_top(res->p[i+k]);
+      if (project){
+	bound_set_int(res->p[i+k]->inf,0);
+	bound_set_int(res->p[i+k]->sup,0);
+      }
+      else {
+	itv_set_top(res->p[i+k]);
+      }
     }
   }  
  box_add_dimensions_exit:
