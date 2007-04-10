@@ -50,7 +50,7 @@ typedef struct ap_dimchange_t {
   if k is equal to the size of the vector, then it means: add a dimension at
   the end.
 
-  Repetion are allowed, and means that one inserts more than one dimensions.
+  Repetition are allowed, and means that one inserts more than one dimensions.
 
   Example:
   linexpr0_add_dimensions([i0 i1 r0 r1], { [0 1 2 2 4],3,1 }) returns

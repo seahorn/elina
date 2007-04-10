@@ -25,9 +25,20 @@
 #include "pkeq.h"
 #include "apron_ppl.h"
 
+ap_linexpr0_t* random_linexpr_std(int);
+ap_abstract0_t* random_abstract_std(ap_manager_t* man, int dim);
+void random_abstract2_std(ap_manager_t*, ap_manager_t*, int,
+			  ap_abstract0_t**, ap_abstract0_t**);
+
+/* Global paramaters */
 ap_manager_t* manprec;
 ap_manager_t* manrough;
 int intdim;
+
+ap_linexpr0_t* (*random_linexpr)(int) = &random_linexpr_std;
+ap_abstract0_t* (*random_abstract)(ap_manager_t*, int) = &random_abstract_std;
+void (*random_abstract2)(ap_manager_t*, ap_manager_t*, int,
+			 ap_abstract0_t**, ap_abstract0_t**) = &random_abstract2_std;
 
 
 /* utilities */
@@ -52,7 +63,7 @@ void random_interval(ap_interval_t* i)
 }
 
 /* random affine expression */
-ap_linexpr0_t* random_linexpr(int dim)
+ap_linexpr0_t* random_linexpr_std(int dim)
 {
   ap_linexpr0_t* l = ap_linexpr0_alloc(AP_LINEXPR_DENSE,dim);
   int i;
@@ -65,7 +76,7 @@ ap_linexpr0_t* random_linexpr(int dim)
 /* random affine expression with scalar constant coefficient */
 ap_linexpr0_t* random_linexpr_inter(int dim)
 {
-  ap_linexpr0_t* l = random_linexpr(dim);
+  ap_linexpr0_t* l = random_linexpr_std(dim);
   int n1 = rand()%20-10;
   int n2 = n1 + rand()%20;
   int d  = rand()%4+1;
@@ -76,17 +87,36 @@ ap_linexpr0_t* random_linexpr_inter(int dim)
 /* random generator of specified type */
 ap_generator0_t random_generator(int dim, ap_gentyp_t g)
 {
-  ap_linexpr0_t* l = ap_linexpr0_alloc(AP_LINEXPR_DENSE,dim);
-  int i;
-  for (i=0;i<dim;i++)
-    ap_coeff_set_scalar_frac(l->p.coeff+i,rand()%20-2,rand()%4+1);
-  ap_coeff_set_scalar_int(&l->cst,1);
+  ap_linexpr0_t* l = random_linexpr_std(dim);
+  ap_coeff_set_scalar_int(&l->cst,0);
   return ap_generator0_make(g,l);
 }
 
-/* random abstract value, created with the origin and vdim vertices, and rdim
+/* random constraint of specified type */
+ap_lincons0_t random_constraint(int dim, ap_constyp_t c)
+{
+  ap_linexpr0_t* l = random_linexpr(dim);
+  switch (c) {
+  case AP_CONS_EQ:
+  case AP_CONS_SUPEQ:
+  case AP_CONS_SUP:
+    return ap_lincons0_make(c,l,NULL);
+    break;
+  case AP_CONS_EQMOD:
+    {
+      ap_scalar_t* scalar = ap_scalar_alloc();
+      ap_scalar_set_frac(scalar,rand()%20-10,rand()%4+1);
+      return ap_lincons0_make(c,l,scalar);
+    }
+    break;
+  default:
+    abort();
+  }
+}
+
+/* random abstract value, created with the vdim vertices, and rdim
    rays. */
-ap_abstract0_t* random_abstract(ap_manager_t* man, int dim)
+ap_abstract0_t* random_abstract_std(ap_manager_t* man, int dim)
 {
   int i;
   ap_abstract0_t* p;
@@ -99,25 +129,33 @@ ap_abstract0_t* random_abstract(ap_manager_t* man, int dim)
   rdim = dim-vdim;
   
   t = ap_interval_array_alloc(dim);
-  /* creating an abstract value with the origin */
-  for (i=0;i<dim;i++)
-    ap_interval_set_int(t[i],0,0);
-  
-  p = intdim ? 
-    ap_abstract0_of_box(man,dim/2,dim-dim/2,t) :
-    ap_abstract0_of_box(man,0,dim,t);
-  
-  /* adding vertices */
-  for (i=0; i<vdim; i++){
-    ap_abstract0_t* tmp;
-    random_vertex(t,dim);
-    tmp = intdim ? 
+  if (vdim==0){
+    /* creating an abstract value with the origin */
+    for (i=0;i<dim;i++)
+      ap_interval_set_int(t[i],0,0);
+    
+    p = intdim ? 
       ap_abstract0_of_box(man,dim/2,dim-dim/2,t) :
       ap_abstract0_of_box(man,0,dim,t);
-    p = ap_abstract0_join(man,true,p,tmp);
-    ap_abstract0_free(tmp->man,tmp);
   }
-
+  else {
+    /* creating an abstract value with a random vertex */
+    random_vertex(t,dim);
+    p = intdim ? 
+      ap_abstract0_of_box(man,dim/2,dim-dim/2,t) :
+      ap_abstract0_of_box(man,0,dim,t);
+    /* adding other vertices */
+    for (i=1; i<vdim; i++){
+      ap_abstract0_t* tmp;
+      random_vertex(t,dim);
+      tmp = intdim ? 
+	ap_abstract0_of_box(man,dim/2,dim-dim/2,t) :
+	ap_abstract0_of_box(man,0,dim,t);
+      p = ap_abstract0_join(man,true,p,tmp);
+      ap_abstract0_free(tmp->man,tmp);
+    }
+  }
+  
   /* adding rays */
   ar = ap_generator0_array_make(rdim);
   for (i=0;i<rdim;i++)
@@ -125,8 +163,59 @@ ap_abstract0_t* random_abstract(ap_manager_t* man, int dim)
   p = ap_abstract0_add_ray_array(man,true,p,&ar);
 
   /* clearing */
-  ap_generator0_array_clear(&ar);
   ap_interval_array_free(t,dim);
+  ap_generator0_array_clear(&ar);
+
+  // fprintf(stdout,"abs0:\n"); ap_abstract0_fprint(stdout,man,p,0);
+
+  return p;
+}
+
+/* random abstract value, created with dim/RATIOEQ equalities */
+#define RATIOEQ 3
+
+ap_abstract0_t* random_abstract_eq(ap_manager_t* man, int dim)
+{
+  int i;
+  ap_abstract0_t* p;
+  ap_lincons0_array_t ar;
+
+  /* creating a top abstract value */
+  p = intdim ? 
+    ap_abstract0_top(man,dim/2,dim-dim/2) :
+    ap_abstract0_top(man,0,dim);
+  
+  ar = ap_lincons0_array_make(dim/RATIOEQ);
+  for (i=0;i<dim/RATIOEQ;i++)
+    ar.p[i] = random_constraint(dim,AP_CONS_EQ);
+  p = ap_abstract0_meet_lincons_array(man,true,p,&ar);
+
+  // fprintf(stdout,"abs0:\n"); ap_abstract0_fprint(stdout,man,p,0);
+
+  return p;
+}
+
+/* random abstract value, created with dim/RATIOEQ equalities modulo */
+#define RATIOEQMOD 2
+ap_abstract0_t* random_abstract_eqmod(ap_manager_t* man, int dim)
+{
+  int i;
+  ap_abstract0_t* p;
+  ap_lincons0_array_t ar;
+
+  /* creating a top abstract value */
+  p = intdim ? 
+    ap_abstract0_top(man,dim/2,dim-dim/2) :
+    ap_abstract0_top(man,0,dim);
+  
+  ar = ap_lincons0_array_make(dim/RATIOEQ);
+  for (i=0;i<dim/RATIOEQ;i++){
+    ap_constyp_t constyp = (rand() % RATIOEQMOD == 0) ? AP_CONS_EQMOD : AP_CONS_EQ;
+    ar.p[i] = random_constraint(dim,constyp);
+  }
+  p = ap_abstract0_meet_lincons_array(man,true,p,&ar);
+
+  // fprintf(stdout,"abs0:\n"); ap_abstract0_fprint(stdout,man,p,0);
 
   return p;
 }
@@ -142,6 +231,25 @@ ap_abstract0_t* convert(ap_manager_t* man, ap_abstract0_t* a)
   ap_lincons0_array_clear(&l);
   return a;
 }
+
+/* generate a pair of related abstract values */
+void random_abstract2_std(ap_manager_t* man1,/* assumed to be the most precise */
+			  ap_manager_t* man2,/* assumed to be the less precise */
+			  int dim,
+			  ap_abstract0_t** abs1, ap_abstract0_t** abs2)
+{
+  *abs2 = random_abstract(man2,dim);
+  *abs1 = convert(man1,*abs2);
+}
+void random_abstract2_inv(ap_manager_t* man1,/* assumed to be the most precise */
+			  ap_manager_t* man2,/* assumed to be the less precise */
+			  int dim,
+			  ap_abstract0_t** abs1, ap_abstract0_t** abs2)
+{
+  *abs1 = random_abstract(man1,dim);
+  *abs2 = convert(man2,*abs1);
+}
+
 
 /* comparison 
 
@@ -201,7 +309,7 @@ int error_ = 0;
     error_++;						\
   } while (0)
 
-#define ENDLOOP	} } printf("%s%s\n",b1_,b2_)
+#define ENDLOOP	} } printf("%s%s\n",b1_,b2_); if (error_) abort();
 
 
 
@@ -237,12 +345,11 @@ void test_join(void)
   int dim = 4;
   printf("\nbinary join\n");
   LOOP {
-    ap_abstract0_t* rough0 = random_abstract(manrough,dim);
-    ap_abstract0_t* rough1 = random_abstract(manrough,dim);
-    ap_abstract0_t* roughr = ap_abstract0_join(manrough,false,rough0,rough1);
-    ap_abstract0_t* prec0 = convert(manprec,rough0);
-    ap_abstract0_t* prec1 = convert(manprec,rough1);
-    ap_abstract0_t* precr = ap_abstract0_join(manprec,false,prec0,prec1);
+    ap_abstract0_t *prec0,*prec1,*precr,*rough0,*rough1,*roughr;
+    random_abstract2(manprec,manrough,dim,&prec0,&rough0);
+    random_abstract2(manprec,manrough,dim,&prec1,&rough1);
+    roughr = ap_abstract0_join(manrough,false,rough0,rough1);
+    precr = ap_abstract0_join(manprec,false,prec0,prec1);
     RESULT('*');
     if (is_leq(precr,roughr)!=tbool_true) {
       ERROR("different results");
@@ -254,7 +361,7 @@ void test_join(void)
   } ENDLOOP;
 }
 
-#define NB 3
+#define NB 4
 
 void test_join_array(void)
 {
@@ -264,8 +371,7 @@ void test_join_array(void)
     ap_abstract0_t* rougha[NB], *roughr;
     ap_abstract0_t* preca[NB], *precr;
     for (i=0;i<NB;i++) {
-      rougha[i] = random_abstract(manrough,dim);
-      preca[i] = convert(manprec,rougha[i]);
+      random_abstract2(manprec,manrough,dim,&preca[i],&rougha[i]);
     }
     roughr = ap_abstract0_join_array(manrough,(ap_abstract0_t**)rougha,NB);
     precr = ap_abstract0_join_array(manprec,(ap_abstract0_t**)preca,NB);
@@ -284,12 +390,11 @@ void test_meet(void)
   int dim = 4;
   printf("\nbinary meet\n");
   LOOP {
-    ap_abstract0_t* rough0 = random_abstract(manrough,dim);
-    ap_abstract0_t* rough1 = random_abstract(manrough,dim);
-    ap_abstract0_t* roughr = ap_abstract0_meet(manrough,false,rough0,rough1);
-    ap_abstract0_t* prec0 = convert(manprec,rough0);
-    ap_abstract0_t* prec1 = convert(manprec,rough1);
-    ap_abstract0_t* precr = ap_abstract0_meet(manprec,false,prec0,prec1);
+    ap_abstract0_t *prec0,*prec1,*precr,*rough0,*rough1,*roughr;
+    random_abstract2(manprec,manrough,dim,&prec0,&rough0);
+    random_abstract2(manprec,manrough,dim,&prec1,&rough1);
+    roughr = ap_abstract0_meet(manrough,false,rough0,rough1);
+    precr = ap_abstract0_meet(manprec,false,prec0,prec1);
     RESULT('*');
     if (is_leq(precr,roughr)!=tbool_true) {
       ERROR("different results");
@@ -309,8 +414,7 @@ void test_meet_array(void)
     ap_abstract0_t* rougha[NB], *roughr;
     ap_abstract0_t* preca[NB], *precr;
     for (i=0;i<NB;i++) {
-      rougha[i] = random_abstract(manrough,dim);
-      preca[i] = convert(manprec,rougha[i]);
+      random_abstract2(manprec,manrough,dim,&preca[i],&rougha[i]);
     }
     roughr = ap_abstract0_meet_array(manrough,(ap_abstract0_t**)rougha,NB);
     precr = ap_abstract0_meet_array(manprec,(ap_abstract0_t**)preca,NB);
@@ -334,8 +438,7 @@ void test_dimadd(void)
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     int proj = rand()%2;
     ap_dimension_t d;
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     d = ap_abstract0_dimension(manrough,rougha);
     for (i=0;i<a->intdim+a->realdim;i++) {
       a->dim[i] = rand()%3;
@@ -349,7 +452,8 @@ void test_dimadd(void)
     if (is_eq(precr,roughr)!=tbool_true) {
       ERROR("different results");
       ap_dimchange_fprint(stderr,a);
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+      fprintf(stderr,"proj=%d\n",proj);
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("preca",preca); print_abstract("precr",precr);
     }
     ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
     ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
@@ -365,8 +469,7 @@ void test_dimrem(void)
     ap_dimchange_t* a = ap_dimchange_alloc(0,2);
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_dimension_t d;
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     d = ap_abstract0_dimension(manrough,rougha);
     for (i=0;i<a->intdim+a->realdim;i++) {
       a->dim[i] = rand()%3 + 1;
@@ -397,8 +500,7 @@ void test_forget(void)
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_dimension_t d;
     int proj = rand()%2;
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     d = ap_abstract0_dimension(manrough,rougha);
     for (i=0;i<a->intdim+a->realdim;i++) {
       a->dim[i] = rand()%3 + 1;
@@ -428,8 +530,7 @@ void test_permute(void)
     ap_dimperm_t* p = ap_dimperm_alloc(dim);
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_dimension_t d;
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     d = ap_abstract0_dimension(manrough,rougha);
     /* random permutation */
     ap_dimperm_set_id(p);
@@ -462,8 +563,7 @@ void test_expand(void)
     size_t n = (rand() % 2) + 1;
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_dimension_t d;
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     d = ap_abstract0_dimension(manrough,rougha);
     roughr = ap_abstract0_expand(manrough,false,rougha,dd,n);
     precr = ap_abstract0_expand(manprec,false,preca,dd,n);
@@ -486,8 +586,7 @@ void test_fold(void)
     ap_dim_t dd[3];
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_dimension_t d;
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     d = ap_abstract0_dimension(manrough,rougha);
     do {
       dd[0] = rand() % dim;
@@ -516,8 +615,7 @@ void test_add_lincons(void)
     size_t i, dim = 6, nb = 4;
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_lincons0_array_t ar = ap_lincons0_array_make(nb);
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     for (i=0;i<nb;i++) {
       ar.p[i] = ap_lincons0_make((rand()%100>=90)?AP_CONS_EQ:
 				 (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
@@ -544,8 +642,7 @@ void test_add_ray(void)
     size_t i, dim = 4, nb = 4;
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_generator0_array_t ar = ap_generator0_array_make(nb);
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     for (i=0;i<nb;i++)
       ar.p[i] = random_generator(dim,(rand()%100>=80)?AP_GEN_LINE:AP_GEN_RAY);
     roughr = ap_abstract0_add_ray_array(manrough,false,rougha,&ar);
@@ -569,8 +666,7 @@ void test_box(void)
     size_t i, dim = 6;
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_interval_t** roughi,**preci;
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     roughi = ap_abstract0_to_box(manrough,rougha);
     preci = ap_abstract0_to_box(manprec,preca);
     roughr = ap_abstract0_of_box(manrough,0,dim,(ap_interval_t**)roughi);
@@ -598,8 +694,7 @@ void test_vbound(void)
   LOOP {
     size_t i, dim = 6;
     ap_abstract0_t* rougha,*preca;
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     RESULT('*');
     for (i=0;i<dim;i++) {
       tbool_t roughd,precd;
@@ -630,14 +725,13 @@ void test_lbound(void)
     ap_abstract0_t* rougha,*preca;
     ap_interval_t* roughi,*preci;
     ap_linexpr0_t* l = random_linexpr(dim);
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     roughi = ap_abstract0_bound_linexpr(manrough,rougha,l);
     preci = ap_abstract0_bound_linexpr(manprec,preca,l);
     RESULT('*');
     if (ap_interval_cmp(roughi,preci)) {
       ERROR("different results");
-      print_abstract("rougha",rougha);
+      print_abstract("rougha",rougha); print_abstract("preca",preca);
       ap_linexpr0_fprint(stderr,l,NULL);
       fprintf(stderr,"\nroughi="); ap_interval_fprint(stderr,roughi);
       fprintf(stderr,"\npreci="); ap_interval_fprint(stderr,preci);
@@ -659,14 +753,14 @@ void test_csat(void)
 				       (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
 				       random_linexpr(dim),NULL);
     tbool_t roughs,precs;
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     roughs = ap_abstract0_sat_lincons(manrough,rougha,&l);
     precs = ap_abstract0_sat_lincons(manprec,preca,&l);
     RESULT('*');
-    if (roughs!=precs) {
+    if ((roughs==tbool_true && roughs!=precs) || 
+	 (precs==tbool_true && roughs!=precs)) {
       ERROR("different results");
-      print_abstract("rougha",rougha);
+      print_abstract("rougha",rougha);print_abstract("preca",preca);
       ap_lincons0_fprint(stderr,&l,NULL);
       fprintf(stderr,"\nroughs=%i precs=%i\n",roughs,precs);
     }
@@ -685,8 +779,7 @@ void test_isat(void)
     ap_interval_t* i = ap_interval_alloc();
     tbool_t roughs,precs;
     random_interval(i);
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     roughs = ap_abstract0_sat_interval(manrough,rougha,p,i);
     precs = ap_abstract0_sat_interval(manprec,preca,p,i);
     RESULT('*');
@@ -709,8 +802,7 @@ void test_assign(void)
     size_t p = rand() % dim;
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_linexpr0_t* l = random_linexpr(dim);
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     roughr = ap_abstract0_assign_linexpr(manrough,false,rougha,p,l,NULL);
     precr = ap_abstract0_assign_linexpr(manprec,false,preca,p,l,NULL);
     RESULT('*');
@@ -725,6 +817,7 @@ void test_assign(void)
   } ENDLOOP;
 }
 
+/* #define NB 2 */
 void test_par_assign(void)
 {
   printf("\nparallel assign\n");
@@ -734,8 +827,7 @@ void test_par_assign(void)
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_dim_t d[NB];
     ap_linexpr0_t *l[NB];
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     for (i=0;i<NB;i++) {
       l[i]  = random_linexpr(dim);
       if (!i) d[i] = rand()%(dim-NB);
@@ -751,7 +843,7 @@ void test_par_assign(void)
 	ap_linexpr0_fprint(stderr,l[i],NULL); 
 	fprintf(stderr,"\n");
       }
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("preca",preca); print_abstract("precr",precr);
     }
     ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
     ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
@@ -767,8 +859,7 @@ void test_subst(void)
     size_t p = rand() % dim;
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_linexpr0_t* l = random_linexpr(dim);
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     roughr = ap_abstract0_substitute_linexpr(manrough,false,rougha,p,l,NULL);
     precr = ap_abstract0_substitute_linexpr(manprec,false,preca,p,l,NULL);
     RESULT('*');
@@ -792,8 +883,7 @@ void test_par_subst(void)
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_dim_t d[NB];
     ap_linexpr0_t *l[NB];
-    rougha = random_abstract(manrough,dim);
-    preca = convert(manprec,rougha);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     for (i=0;i<NB;i++) {
       l[i]  = random_linexpr(dim);
       if (!i) d[i] = rand()%(dim-NB);
@@ -844,7 +934,9 @@ void test_widen(void)
 
 /* Main test function */
 /* Depends on global variables manprec,manrough,intdim */
-void test(ap_manager_t* man1, ap_manager_t* man2)
+void test(ap_manager_t* man1, /* the most precise */ 
+	  ap_manager_t* man2 /* the less precise */
+	  )
 {
   int i;
 
@@ -913,25 +1005,32 @@ int main(int argc, char** argv)
   ap_manager_t* manppll = ap_ppl_poly_manager_alloc(false);
   ap_manager_t* manppls = ap_ppl_poly_manager_alloc(true);
   ap_manager_t* manpplgrid = ap_ppl_grid_manager_alloc();
-  
-  test(manoct,manbox);
-  test(manpkl,manbox);
-  test(manpks,manbox);
-  test(manppll,manbox);
-  test(manppls,manbox);
 
-  test(manpkl,manoct);
-  test(manpks,manoct);
-  test(manppll,manoct);
-  test(manppls,manoct);
+  /* First serie */
+  intdim = 0;
+  random_linexpr = &random_linexpr_inter;
+  random_abstract = &random_abstract_std;
+  for (i=0; i<1; i++){
+    random_abstract2 = i==0 ? &random_abstract2_std : &random_abstract2_inv;
+    //test(manpkl,manbox);
+    //test(manpks,manbox);
+    test(manppll,manbox);
+    test(manppls,manbox);
+    test(manpks,manpkl); test(manpkl,manpks);
+    test(manppls,manppll); test(manppll,manppls);
+    test(manppll,manpkl); test(manpkl,manppll);
+    test(manppls,manpks); test(manpks,manppls);
+    //  test(manoct,manbox);
+    //  test(manpkl,manoct);
+    //  test(manpks,manoct);
+    //  test(manppll,manoct);
+    //  test(manppls,manoct);
+    random_abstract = &random_abstract_eq;
+    test(manpplgrid,manpkeq);
+    random_abstract = &random_abstract_eqmod;
+    test(manpplgrid,manpkeq);
+  }
 
-  test(manpks,manpkl); test(manpkl,manpks);
-  test(manppls,manppll); test(manppll,manppls);
-
-  test(manppll,manpkl); test(manpkl,manppll);
-  test(manppls,manpks); test(manpks,manppls);
-
-  test(manpplgrid,manpkeq);
 
   /* clean-up */
   ap_manager_free(manbox);

@@ -42,7 +42,7 @@ C: ctest1q
 
 %q_debug: %_debug.o
 	$(CXX) $(CFLAGS_DEBUG) $(ICFLAGS) $(LCFLAGS) -o $@  $< \
-	-lapron_ppl -lppl -lgmpxx -lpolkag_debug -loctQg -lboxmpq_debug -litvmpq_debug -lapron_debug -lmpfr -lgmp
+	-lapron_ppl_debug -lppl -lgmpxx -lpolkag_debug -loctQg_debug -lboxmpq_debug -litvmpq_debug -lapron_debug -lmpfr -lgmp
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(ICFLAGS) -c -o $@ $<

@@ -6,7 +6,7 @@
 @end menu
 
 @c ===================================================================
-@node General choices, Functionalities of the interface at level 0, APRON Rationale, APRON Rationale
+@node General choices, Functionalities of the interface at level 0, APRON Rationale and Functionalities, APRON Rationale and Functionalities
 @section General choices
 @c ===================================================================
 
@@ -183,7 +183,7 @@ either. As a consequence, the interface offers the choiced between
 @end itemize
 
 @c ===================================================================
-@node Functionalities of the interface at level 0, Functionalities of the interface at level 1, General choices, APRON Rationale
+@node Functionalities of the interface at level 0, Functionalities of the interface at level 1, General choices, APRON Rationale and Functionalities
 @section Functionalities of the interface at level 0
 @c ===================================================================
 
@@ -524,7 +524,7 @@ Topological closure (i.e., relaxation of strict inequalities) is
 offered.
 
 @c ===================================================================
-@node Functionalities of the interface at level 1,  , Functionalities of the interface at level 0, APRON Rationale
+@node Functionalities of the interface at level 1,  , Functionalities of the interface at level 0, APRON Rationale and Functionalities
 @section Functionalities of the interface at level 1
 @c ===================================================================
 

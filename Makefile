@@ -19,7 +19,7 @@ OCAMLLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS)" \
 bigarray.cma gmp.cma apron.cma box.cma oct.cma polka.cma \
 $(OCAMLLDFLAGS_PPL) \
--cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl" 
+-cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg_debug -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl" 
 
 ifdef HAS_OCAML
 all: c ml aprontop apronrun 
@@ -128,7 +128,7 @@ endif
 
 # make distribution, update to reflect current version
 
-PKGNAME  = apron-0.9.5
+PKGNAME  = apron-0.9.6
 PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model Changes
 PKGDIRS  = apron num itv octagons box newpolka mlgmpidl mlapronidl examples
 
