@@ -596,14 +596,15 @@ ap_linexpr0_add_dimensions_with(ap_linexpr0_t* expr,
   case AP_LINEXPR_DENSE:
     {
       int i,k;
-      size_t dimsup;
+      size_t size,dimsup;
 
+      size = expr->size;
       dimsup = dimchange->intdim+dimchange->realdim;
       ap_linexpr0_realloc(expr,
-			  expr->size+dimsup);
+			  size+dimsup);
       k = dimsup;
-      for (i=expr->size; i>=0; i--){
-	if (i<(int)expr->size){
+      for (i=size; i>=0; i--){
+	if (i<(int)size){
 	  ap_coeff_set(&expr->p.coeff[i+k],&expr->p.coeff[i]);
 	}
 	while (k>=1 && dimchange->dim[k-1]==(ap_dim_t)i){
