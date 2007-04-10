@@ -38,7 +38,7 @@ ICFLAGS = \
 -I../apron \
 -I../mlapronidl \
 -I../num \
--I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml 
+-I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
 
 # Caml
 OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
@@ -92,7 +92,7 @@ Zl: liboctZl.a octtestZl
 Zg: liboctZg.a octtestZg
 Qi: liboctQi.a octtestQi
 Ql: liboctQl.a octtestQl
-Qg: liboctQg.a octtestQg
+Qg: liboctQg.a liboctQg_debug.a octtestQg
 Fd: liboctFd.a octtestFd
 Fl: liboctFl.a octtestFl
 
@@ -104,13 +104,13 @@ clean:
 	/bin/rm -fr *~ \#*\#
 
 mostlyclean: clean
-	/bin/rm -fr oct_caml.c oct.ml oct.mli 
+	/bin/rm -fr oct_caml.c oct.ml oct.mli
 
 install:
 	$(INSTALLd) $(INCDIR) $(INCDIR)/oct $(LIBDIR) $(BINDIR)
 	$(INSTALL) oct.h $(INCDIR)
 	$(INSTALL) $(CCINC) $(INCDIR)/oct
-	for i in liboct??.* liboct_caml.* oct.idl; do \
+	for i in liboct??.* liboct??_debug.* liboct_caml.* oct.idl; do \
 		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
 	done
 	for i in octtest?? octtop?? octrun??; do \
@@ -123,7 +123,7 @@ install:
 uninstall:
 	/bin/rm -fr $(INCDIR)/oct
 	/bin/rm -f $(BINDIR)/octtest?? $(BINDIR)/octtop?? $(BINDIR)/octrun??
-	/bin/rm -f $(LIBDIR)/liboct??.* $(LIBDIR)/liboct??_caml.*
+	/bin/rm -f $(LIBDIR)/liboct??.* $(LIBDIR)/liboct??_debug.* $(LIBDIR)/liboct??_caml.*
 	/bin/rm -f $(LIBDIR)/oct.mli $(LIBDIR)/oct.cmi $(LIBDIR)/oct.idl $(LIBDIR)/oct??.cma $(LIBDIR)/oct??.cmxa $(LIBDIR)/oct??.a
 	/bin/rm -f Makefile.depend
 
@@ -144,6 +144,10 @@ dist: Makefile COPYING README oct_doc.html sedscript_caml $(CCSOURCES) $(CCINC) 
 #-----------------------------------
 
 liboct%.a: $(subst .c,%.o,$(CCSOURCES))
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
+
+liboct%_debug.a: $(subst .c,%_debug.o,$(CCSOURCES))
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
@@ -175,6 +179,8 @@ octtest%: liboct%.a oct_test%.o
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
 %Qg.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
+%Qg_debug.o: %.c $(CCINC) $(DEPS)
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 %Fd.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -c -o $@ $<
@@ -183,7 +189,7 @@ octtest%: liboct%.a oct_test%.o
 
 # TODO: mpfr ?
 
-.PRECIOUS: liboct%.a liboct%.so %Zi.o %Zl.o %Zg.o %Qi.o %Ql.o %Qg.o %Fd.o %Fl.o
+.PRECIOUS: liboct%.a liboct%_debug.a liboct%.so %Zi.o %Zl.o %Zg.o %Qi.o %Ql.o %Qg.o %Fd.o %Fl.o
 
 
 #-----------------------------------
