@@ -200,8 +200,8 @@ tbool_t box_sat_lincons(ap_manager_t* man,
   tbool_t res;
   box_internal_t* intern = box_init_from_manager(man,AP_FUNID_SAT_LINCONS);
   
-  man->result.flag_best = tbool_top;
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = tbool_true;
+  man->result.flag_exact = tbool_true;
   
   if (a->p==NULL)
     return tbool_true;
@@ -220,7 +220,7 @@ tbool_t box_sat_lincons(ap_manager_t* man,
       (bound_sgn(intern->sat_lincons_itv->inf)==0 &&
        bound_sgn(intern->sat_lincons_itv->sup)==0) ?
       tbool_true :
-      tbool_top;
+      tbool_false;
     break;
   case AP_CONS_DISEQ:
     res =
@@ -230,21 +230,17 @@ tbool_t box_sat_lincons(ap_manager_t* man,
       tbool_top;
     break;
   case AP_CONS_SUPEQ:
-    if (bound_sgn(intern->sat_lincons_itv->inf)<=0)
-      res = tbool_true;
-    else if (bound_sgn(intern->sat_lincons_itv->sup)<0)
-      res = tbool_false;
-    else
-      res = tbool_top;
+    res = 
+      (bound_sgn(intern->sat_lincons_itv->inf)<=0) ? 
+      tbool_true :
+      tbool_false;
     break;
   case AP_CONS_SUP:
-     if (bound_sgn(intern->sat_lincons_itv->inf)<0)
-      res = tbool_true;
-    else if (bound_sgn(intern->sat_lincons_itv->sup)<=0)
-      res = tbool_false;
-    else
-      res = tbool_top;
-     break;
+    res = 
+      (bound_sgn(intern->sat_lincons_itv->inf)<0) ? 
+      tbool_true :
+      tbool_false;
+    break;
   case AP_CONS_EQMOD:
     assert(cons->scalar!=NULL);
     if (itv_is_point(intern->itv,intern->sat_lincons_itv)){
@@ -280,6 +276,7 @@ tbool_t box_sat_lincons(ap_manager_t* man,
     abort();
     res = tbool_top;
   }
+  if (res==tbool_false && man->result.flag_exact != tbool_true) res = tbool_top;
   return res;
 }
 
