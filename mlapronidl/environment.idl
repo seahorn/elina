@@ -95,6 +95,15 @@ quote(MLI,"\n(** Return the size of the environment *)")
 unsigned int ap_environment_size(ap_environment_ptr e)
   quote(call,"_res = e->intdim + e->realdim;");
 
+quote(MLI,"\n(** Return true if the variable is present in the environment. *)")
+boolean ap_environment_mem_var(ap_environment_ptr e, ap_var_t var)
+  quote(call,"\n\
+  {\n\
+    ap_dim_t dim;\n\
+    dim = ap_environment_dim_of_var(e,var);\n\
+    _res = (dim != AP_DIM_MAX);\n\
+  }");
+
 quote(MLI,"\n(** Return the type of variables in the environment. If the variable does not belong to the environment, raise a [Failure] exception. *)")
 enum typvar ap_environment_typ_of_var(ap_environment_ptr e, ap_var_t var)
   quote(call,"\n\
