@@ -28,7 +28,7 @@ static inline void bound_set(bound_t a, bound_t b);
 static inline void bound_set_array(bound_t* a, bound_t* b, size_t size);
 static inline void bound_set_int(bound_t a, long int i);
 static inline void bound_set_num(bound_t a, num_t b);
-static inline void bound_set_infty(bound_t a);
+static inline void bound_set_infty(bound_t a, int sgn);
 static inline void bound_swap(bound_t a, bound_t b);
 
 /* ====================================================================== */
@@ -40,7 +40,7 @@ static inline void bound_init_array(bound_t* a, size_t size);
 
 static inline void bound_init_set(bound_t a, bound_t b);
 static inline void bound_init_set_int(bound_t a, long int i);
-static inline void bound_init_set_infty(bound_t a);
+static inline void bound_init_set_infty(bound_t a, int sgn);
 
 static inline void bound_clear(bound_t a);
 static inline void bound_clear_array(bound_t* a, size_t size);
@@ -48,6 +48,25 @@ static inline void bound_clear_array(bound_t* a, size_t size);
 /* ====================================================================== */
 /* Arithmetic Operations */
 /* ====================================================================== */
+
+/* +oo + -oo  \ 
+   -oo + +oo  | undefined
+   +oo - +oo  |
+   -oo - -oo  /
+
+   +oo + x = +oo - x = x - -oo = +oo
+   -oo + x = -oo - x = x - +oo = -oo
+
+   0 * +oo = +oo * 0 = 0 * -oo = -oo * 0 = 0
+   x * +oo = +oo * x =  sign(x) * oo  if x!=0
+   x * -oo = -oo * x = -sign(x) * oo  if x!=0
+
+   0 / x = x / +oo = x / -oo = 0
+   x / 0 = sign(x) * oo     if x!=0
+   +oo / x =  sign(x) * oo  if x!=0,+oo,-oo
+   -oo / x = -sign(x) * oo  if x!=0,+oo,-oo
+   
+*/
 
 static inline void bound_neg(bound_t a, bound_t b);
 static inline void bound_abs(bound_t a, bound_t b);
