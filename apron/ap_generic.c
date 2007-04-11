@@ -326,3 +326,13 @@ ap_generic_substitute_linexpr_array(ap_manager_t* man,
 					 abs, tdim, texpr, size,
 					 dest);
 }
+
+/* ********************************************************************** */
+/* Interval linear related operations */
+/* ********************************************************************** */
+
+/* Evaluate a interval linear expression on the abstract
+   value such as to transform it into a quasilinear expression.
+   
+   This implies calls to ap_abstract0_bound_dimension.
+*/

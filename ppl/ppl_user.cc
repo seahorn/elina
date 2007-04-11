@@ -19,6 +19,9 @@
 #include <stdexcept>
 #include "ppl_user.h"
 
+/* ====================================================================== */
+/* Conversions from PPL to APRON */
+/* ====================================================================== */
 
 /* Constraint => ap_lincons0_t (exact) */
 ap_lincons0_t ap_ppl_to_lincons(const Constraint& c)
@@ -126,6 +129,14 @@ ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& inexact)
   }
 }
 
+/* ====================================================================== */
+/* Conversions from APRON to PPL */
+/* ====================================================================== */
+
+/* ---------------------------------------------------------------------- */
+/* Generators */
+/* ---------------------------------------------------------------------- */
+
 /* Generator_System => ap_generator0_array_t (may set inexact to true) */
 ap_generator0_array_t ap_ppl_to_generator_array(const Generator_System& c,
 						bool& inexact)
@@ -197,6 +208,10 @@ ap_generator0_array_t ap_ppl_generator_universe(size_t dim)
   }
   return ar;  
 }
+
+/* ---------------------------------------------------------------------- */
+/* Boxes */
+/* ---------------------------------------------------------------------- */
 
 /* whole universe as a box */
 ap_interval_t** ap_ppl_box_universe(ap_interval_t** i,size_t nb)
@@ -274,6 +289,10 @@ bool ap_ppl_of_box(Congruence_System& r,size_t nb, ap_interval_t** a)
   }
   return inexact;
 }
+
+/* ---------------------------------------------------------------------- */
+/* Linear expressions */
+/* ---------------------------------------------------------------------- */
 
 /* ap_linexpr0_t => Linear_Expression (may raise cannot_convert) */
 /* NOTE: we perform each converson twice; could be optimized */

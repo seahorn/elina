@@ -310,11 +310,9 @@ bool ap_linexpr0_is_quasilinear(ap_linexpr0_t* expr)
   bool res;
 
   res = true;
-  if (res){
-    ap_linexpr0_ForeachLinterm(expr,i,dim,coeff){
-      res = (coeff->discr==AP_COEFF_SCALAR);
-      if (!res) break;
-    }
+  ap_linexpr0_ForeachLinterm(expr,i,dim,coeff){
+    res = (coeff->discr==AP_COEFF_SCALAR);
+    if (!res) break;
   }
   return res;
 }

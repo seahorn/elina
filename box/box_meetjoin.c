@@ -131,10 +131,10 @@ void box_add_ray(box_internal_t* intern,
     sgn = ap_scalar_sgn(scalar);
     if (sgn!=0){
       if (sgn>0 || gen->gentyp==AP_GEN_LINE){
-	bound_set_infty(a->p[dim]->sup);
+	bound_set_infty(a->p[dim]->sup,1);
       }
       if (sgn<0 || gen->gentyp==AP_GEN_LINE){
-	bound_set_infty(a->p[dim]->inf);
+	bound_set_infty(a->p[dim]->inf,1);
       }
     }
   }
