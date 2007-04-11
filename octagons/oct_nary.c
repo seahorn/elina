@@ -184,7 +184,7 @@ oct_t* oct_widening(ap_manager_t* man, oct_t* a1, oct_t* a2)
       /* standard widening */
       for (i=0;i<matsize(r->dim);i++)
 	if (bound_cmp(m1[i],m2[i])>=0) bound_set(r->m[i],m1[i]);
-	else bound_set_infty(r->m[i]);
+	else bound_set_infty(r->m[i],1);
     }
   }
   return r;
@@ -216,7 +216,7 @@ oct_t* oct_widening_thresholds(ap_manager_t* man,
     /* convert array to bounds */
     for (i=0;i<nb;i++)
       bound_of_scalar(pr,pr->tmp[i],array[i],false,false);
-    bound_set_infty(pr->tmp[nb]);
+    bound_set_infty(pr->tmp[nb],1);
     /* point-wise loop */
     for (i=0;i<matsize(r->dim);i++) 
       if (bound_cmp(m1[i],m2[i])>=0) bound_set(r->m[i],m1[i]);

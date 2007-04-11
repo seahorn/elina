@@ -40,12 +40,12 @@ oct_t* oct_forget_array(ap_manager_t* man,
       arg_assert(tdim[i]<a->dim,return NULL;);
       /* binary constraints on tdim[i] */
       for (k=0;k<d2;k++) {
-	bound_set_infty(m[matpos(d2,k)]);
-	bound_set_infty(m[matpos(d2+1,k)]);
+	bound_set_infty(m[matpos(d2,k)],1);
+	bound_set_infty(m[matpos(d2+1,k)],1);
       }
       for (k=d2+2;k<2*a->dim;k++) {
-	bound_set_infty(m[matpos(k,d2)]);
-	bound_set_infty(m[matpos(k,d2+1)]);
+	bound_set_infty(m[matpos(k,d2)],1);
+	bound_set_infty(m[matpos(k,d2+1)],1);
       }
       /* unary constraints on tdim[i] */
       if (project) {
@@ -53,8 +53,8 @@ oct_t* oct_forget_array(ap_manager_t* man,
 	bound_set_int(m[matpos(d2+1,d2)],0);
       }
       else {
-	bound_set_infty(m[matpos(d2,d2+1)]);
-	bound_set_infty(m[matpos(d2+1,d2)]);
+	bound_set_infty(m[matpos(d2,d2+1)],1);
+	bound_set_infty(m[matpos(d2+1,d2)],1);
       }
     }
     if (a->closed) {

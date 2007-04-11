@@ -447,7 +447,7 @@ void hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
       bounds_of_generator(pr,pr->tmp,ar->p[i].linexpr0,dim);
       for (bb=b,j=0;j<2*dim;j++) 
 	for (k=0;k<=(j|1);k++,bb++)
-	  if (bound_cmp(pr->tmp[j],pr->tmp[k])>0) bound_set_infty(*bb);
+	  if (bound_cmp(pr->tmp[j],pr->tmp[k])>0) bound_set_infty(*bb,1);
       break;
      
       /* lines */
@@ -456,7 +456,7 @@ void hmat_add_generators(oct_internal_t* pr, bound_t* b, size_t dim,
       bounds_of_generator(pr,pr->tmp,ar->p[i].linexpr0,dim);
       for (bb=b,j=0;j<2*dim;j++) 
 	for (k=0;k<=(j|1);k++,bb++)
-	  if (bound_cmp(pr->tmp[j],pr->tmp[k])) bound_set_infty(*bb);
+	  if (bound_cmp(pr->tmp[j],pr->tmp[k])) bound_set_infty(*bb,1);
       break;
       
     case AP_GEN_VERTEX: continue; /* already done */
@@ -542,15 +542,15 @@ static inline void hmat_forget_var(bound_t* m, size_t dim, size_t d)
 {
   size_t k;
   for (k=0;k<2*d;k++) {
-    bound_set_infty(m[matpos(2*d,k)]);
-    bound_set_infty(m[matpos(2*d+1,k)]);
+    bound_set_infty(m[matpos(2*d,k)],1);
+    bound_set_infty(m[matpos(2*d+1,k)],1);
   }
   for (k=2*d+2;k<2*dim;k++) {
-    bound_set_infty(m[matpos(k,2*d)]);
-    bound_set_infty(m[matpos(k,2*d+1)]);
+    bound_set_infty(m[matpos(k,2*d)],1);
+    bound_set_infty(m[matpos(k,2*d+1)],1);
   }
-  bound_set_infty(m[matpos(2*d,2*d+1)]);
-  bound_set_infty(m[matpos(2*d+1,2*d)]);
+  bound_set_infty(m[matpos(2*d,2*d+1)],1);
+  bound_set_infty(m[matpos(2*d+1,2*d)],1);
 }
 
 /* internal helper function: apply assignment */

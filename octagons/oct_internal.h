@@ -355,26 +355,26 @@ static inline void bound_of_scalar(oct_internal_t* pr,
       double d = t->val.dbl;
       if (neg) d = -d;
       if (mul2) d *= 2;
-      if (d==1/0.) bound_set_infty(r);
+      if (d==1/0.) bound_set_infty(r,1);
       else if (double_fits_num(d)) { 
 	num_set_double(bound_numref(r),d);
 	bound_set_num(r,bound_numref(r));
 	if (num_of_double_approx || mul2) pr->conv = true;
       }
-      else { pr->conv = true; bound_set_infty(r); }
+      else { pr->conv = true; bound_set_infty(r,1); }
     }
     break;
   case AP_SCALAR_MPQ:
     /* negate _before_ converting */
     if (neg) mpq_neg(t->val.mpq,t->val.mpq);
-    if (ap_scalar_infty(t)==1) bound_set_infty(r);
+    if (ap_scalar_infty(t)==1) bound_set_infty(r,1);
     else if (mpq_fits_num(t->val.mpq)) {
       num_set_mpq(bound_numref(r),t->val.mpq);
       bound_set_num(r,bound_numref(r));
       if (mul2) bound_mul_2(r,r);
       if (num_of_mpq_approx) pr->conv = true;
     }
-    else { pr->conv = true; bound_set_infty(r); }
+    else { pr->conv = true; bound_set_infty(r,1); }
     /* undo change in argument */
     if (neg) mpq_neg(t->val.mpq,t->val.mpq);
     break;

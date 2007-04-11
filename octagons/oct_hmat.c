@@ -82,7 +82,7 @@ inline bound_t* hmat_alloc_top(oct_internal_t* pr, size_t dim)
 {
   size_t i;
   bound_t* r = hmat_alloc(pr,dim);
-  for (i=0;i<matsize(dim);i++) bound_set_infty(r[i]);
+  for (i=0;i<matsize(dim);i++) bound_set_infty(r[i],1);
   for (i=0;i<2*dim;i++) bound_set_int(r[matpos(i,i)],0);
   return r;
 }
