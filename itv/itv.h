@@ -68,6 +68,7 @@ typedef struct itv_internal_t {
   itv_t eval_itv;
   itv_t eval_itv2;
   itv_t eval_itv3;
+  num_t quasi_num;
 } itv_internal_t;
 
 
@@ -94,6 +95,7 @@ static inline void itv_array_free(itv_t* a, size_t size);
 
 /* Assignement */
 static inline void itv_set(itv_t a, itv_t b);
+static inline void itv_set_num(itv_t a, num_t b);
 static inline void itv_set_bottom(itv_t a);
 static inline void itv_set_top(itv_t a);
 static inline void itv_swap(itv_t a, itv_t b);
@@ -130,6 +132,8 @@ static inline void itv_add(itv_t a, itv_t b, itv_t c);
 static inline void itv_sub(itv_t a, itv_t b, itv_t c);
 static inline void itv_neg(itv_t a, itv_t b);
 static inline void itv_mul(itv_internal_t* intern,
+			   itv_t a, itv_t b, itv_t c);
+static inline void itv_div(itv_internal_t* intern,
 			   itv_t a, itv_t b, itv_t c);
 static inline void itv_add_bound(itv_t a, itv_t b, bound_t c);
 static inline void itv_mul_bound(itv_internal_t* intern,
@@ -192,7 +196,7 @@ static inline bool itv_canonicalize(itv_internal_t* intern,
 void ITVFUN(mul_bound)(itv_internal_t* intern,
 		       itv_t a, itv_t b, bound_t c);
 static inline void itv_mul_bound(itv_internal_t* intern,
-		       itv_t a, itv_t b, bound_t c)
+				 itv_t a, itv_t b, bound_t c)
 { ITVFUN(mul_bound)(intern,a,b,c); }
 
 void ITVFUN(div_bound)(itv_internal_t* intern,
@@ -212,6 +216,10 @@ static inline void itv_neg(itv_t a, itv_t b)
 void ITVFUN(mul)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
 static inline void itv_mul(itv_internal_t* intern, itv_t a, itv_t b, itv_t c)
 { ITVFUN(mul)(intern,a,b,c); }
+
+void ITVFUN(div)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
+static inline void itv_div(itv_internal_t* intern, itv_t a, itv_t b, itv_t c)
+{ ITVFUN(div)(intern,a,b,c); }
 
 void ITVFUN(fprint)(FILE* stream, itv_t a);
 static inline void itv_fprint(FILE* stream, itv_t a)
@@ -290,6 +298,11 @@ static inline void itv_set(itv_t a, itv_t b)
   bound_set(a->inf,b->inf);
   bound_set(a->sup,b->sup);
 }
+static inline void itv_set_num(itv_t a, num_t b)
+{
+  bound_set_num(a->sup,b);
+  bound_neg(a->inf,a->sup);
+}
 static inline void itv_set_bottom(itv_t a)
 {
   bound_set_int(a->inf,-1);
@@ -297,8 +310,8 @@ static inline void itv_set_bottom(itv_t a)
 }
 static inline void itv_set_top(itv_t a)
 {
-  bound_set_infty(a->inf);
-  bound_set_infty(a->sup);
+  bound_set_infty(a->inf,1);
+  bound_set_infty(a->sup,1);
 }
 static inline void itv_swap(itv_t a, itv_t b)
 { itv_t t; *t=*a;*a=*b;*b=*t; }
@@ -345,7 +358,7 @@ static inline void bound_widening(bound_t a, bound_t b, bound_t c)
 {
   if (bound_infty(c) ||
       bound_cmp(b,c)<0){
-    bound_set_infty(a);
+    bound_set_infty(a,+1);
   } else {
     bound_set(a,b);
   }

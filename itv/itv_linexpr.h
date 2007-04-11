@@ -159,6 +159,17 @@ static inline bool itv_eval_ap_linexpr0(itv_internal_t* intern,
 					ap_linexpr0_t* expr)
 { return ITVFUN(eval_ap_linexpr0)(intern,itv,p,expr); }
 
+bool ITVFUN(quasilinexpr_of_ap_linexpr0)(itv_internal_t* intern,
+					 itv_linexpr_t* linexpr,
+					 itv_t* p,
+					 ap_linexpr0_t* expr);
+
+static inline bool itv_quasilinexpr_of_ap_linexpr0(itv_internal_t* intern,
+						   itv_linexpr_t* linexpr,
+						   itv_t* p,
+						   ap_linexpr0_t* expr)
+{ return ITVFUN(quasilinexpr_of_ap_linexpr0)(intern,linexpr,p,expr); }
+
 #ifdef __cplusplus
 }
 #endif

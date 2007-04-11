@@ -134,7 +134,7 @@ bool ITVFUN(eval_ap_linexpr0)(itv_internal_t* intern,
   exact = itv_set_ap_coeff(intern, intern->eval_itv3, &expr->cst);
   res = exact;
   ap_linexpr0_ForeachLinterm(expr,i,dim,pcoeff){
-    bool exact = itv_set_ap_coeff(intern,intern->eval_itv2,pcoeff);
+    exact = itv_set_ap_coeff(intern,intern->eval_itv2,pcoeff);
     res = res && exact;
     bool eq = exact && pcoeff->discr==AP_COEFF_SCALAR;
     if (eq){
@@ -157,5 +157,87 @@ bool ITVFUN(eval_ap_linexpr0)(itv_internal_t* intern,
       break;
   }
   itv_set(itv,intern->eval_itv3);
+  return res;
+}
+
+/* Evaluate an interval linear expression */
+bool ITVFUN(quasilinexpr_of_ap_linexpr0)(itv_internal_t* intern,
+					 itv_linexpr_t* linexpr,
+					 itv_t* p,
+					 ap_linexpr0_t* expr)
+{
+  size_t i,index,size;
+  ap_coeff_t* pcoeff;
+  ap_dim_t dim;
+  bool exact,res;
+  assert(p);
+
+  size=0;
+  ap_linexpr0_ForeachLinterm(expr,i,dim,pcoeff){
+    size++;
+  }
+  linexpr->linterm = realloc(linexpr->linterm,size*sizeof(itv_linterm_t));
+
+  exact = itv_set_ap_coeff(intern, linexpr->cst, &expr->cst);
+  res = exact;
+  index = 0;
+  ap_linexpr0_ForeachLinterm(expr,i,dim,pcoeff){
+    exact = itv_set_ap_coeff(intern,intern->eval_itv3,pcoeff);
+    res = res && exact;
+    bool eq = exact && pcoeff->discr==AP_COEFF_SCALAR;
+    if (eq){
+      if (bound_sgn(intern->eval_itv3->sup)!=0){
+	linexpr->linterm[index].equality = true;
+	linexpr->linterm[index].dim = dim;
+	itv_set(linexpr->linterm[index].itv,intern->eval_itv3);
+	index ++;
+      }
+    }
+    else {
+      /* Compute the middle of the interval */
+      if (bound_infty(intern->eval_itv3->inf) ||
+	  bound_infty(intern->eval_itv3->sup) ){
+	num_set_int(intern->quasi_num,0);
+      }
+      else {
+	num_sub(intern->quasi_num,
+		bound_numref(intern->eval_itv3->sup),
+		bound_numref(intern->eval_itv3->inf));
+	num_div_2(intern->quasi_num,
+		  intern->quasi_num);
+      }
+      /* Compute - ((-inf) - middle) */
+      bound_neg(intern->eval_itv2->inf,
+		intern->eval_itv3->inf);
+      bound_sub_num(intern->eval_itv2->inf,
+		    intern->eval_itv2->inf,
+		    intern->quasi_num);
+      bound_neg(intern->eval_itv2->inf,
+		intern->eval_itv2->inf);
+      /* Compute sup - middle */
+      bound_sub_num(intern->eval_itv2->sup,
+		    intern->eval_itv3->sup,
+		    intern->quasi_num);
+      /* Multiplication */
+      itv_mul(intern,
+	      intern->eval_itv,
+	      intern->eval_itv2,
+	      p[dim]);
+      /* Addition to the constant coefficient */
+      itv_add(linexpr->cst,linexpr->cst,intern->eval_itv);
+      if (itv_is_top(linexpr->cst)){
+	index = 0;
+	break;
+      }
+      /* Addition of the linear term */
+      if (num_sgn(intern->quasi_num)!=0){
+	linexpr->linterm[index].equality = true;
+	linexpr->linterm[index].dim = dim;
+	itv_set_num(linexpr->linterm[index].itv,intern->quasi_num);
+	index ++;
+      }
+    }
+  }
+  linexpr->linterm = realloc(linexpr->linterm,index);
   return res;
 }
