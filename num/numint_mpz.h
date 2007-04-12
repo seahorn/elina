@@ -109,6 +109,8 @@ static inline void numint_mod(numint_t a, numint_t b, numint_t c)
 { mpz_mod(a,b,c); }
 static inline void numint_gcd(numint_t a, numint_t b,  numint_t c)
 { mpz_gcd(a,b,c); }
+static inline void numint_lcm(numint_t a, numint_t b,  numint_t c)
+{ mpz_lcm(a,b,c); }
 
 /* ====================================================================== */
 /* Arithmetic Tests */

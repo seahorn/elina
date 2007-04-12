@@ -189,6 +189,15 @@ static inline numint_native _gcd_aux(numint_native a, numint_native b)
 static inline void numint_gcd(numint_t a, numint_t b,  numint_t c)
 { *a = _gcd_aux(*b,*c); }
 
+static inline numint_native _lcm_aux(numint_native a, numint_native b)
+{
+  numint_abs(&a,&a);
+  numint_abs(&b,&b);
+  return a / _gcd_aux(a,b) * b;
+}
+static inline void numint_lcm(numint_t a, numint_t b,  numint_t c)
+{ *a = _lcm_aux(*b,*c); }
+
 /* ====================================================================== */
 /* Arithmetic Tests */
 /* ====================================================================== */

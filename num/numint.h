@@ -79,6 +79,7 @@ static inline void numint_max(numint_t a, numint_t b, numint_t c);
 static inline void numint_divexact(numint_t a, numint_t b, numint_t c);
 static inline void numint_mod(numint_t a, numint_t b, numint_t c);
 static inline void numint_gcd(numint_t a, numint_t b,  numint_t c);
+static inline void numint_lcm(numint_t a, numint_t b,  numint_t c);
 
 /* ====================================================================== */
 /* Arithmetic Tests */
