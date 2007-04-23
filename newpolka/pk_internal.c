@@ -10,7 +10,6 @@
 #include "pk_vector.h"
 #include "pk_matrix.h"
 #include "pk_satmat.h"
-#include "pk_int.h"
 
 /* ********************************************************************** */
 /* I. Constructor and destructor for internal */
@@ -36,10 +35,16 @@ void pk_internal_init(pk_internal_t* pk, size_t maxdims)
   numint_init(pk->matrix_acc);
   numint_init(pk->matrix_prod);
 
-  /*  pk->cherni_bitstringp = bitstring_alloc(bitindex_size(pk->maxrows));*/
+  /* pk->cherni_bitstringp = bitstring_alloc(bitindex_size(pk->maxrows));*/
   pk->cherni_intp = (int*)malloc(pk->maxcols * sizeof(int));
   numint_init(pk->cherni_prod);
 
+  pk->itv = itv_internal_alloc();
+  bound_init(pk->poly_bound);
+  itv_init(pk->poly_itv);
+  itv_linexpr_init(&pk->poly_itv_linexpr,maxdims);
+  itv_lincons_init(&pk->poly_itv_lincons);
+  numrat_init(pk->poly_numrat);
   pk->poly_numintp = vector_alloc(pk->maxcols);
   pk->poly_numintp2 = vector_alloc(pk->maxcols);
   pk->poly_dimp = malloc(pk->maxdims*sizeof(ap_dim_t));
@@ -97,6 +102,13 @@ void pk_internal_clear(pk_internal_t* pk)
 
   numint_clear(pk->cherni_prod);
 
+  if (pk->itv) itv_internal_free(pk->itv);
+  pk->itv = 0;
+  bound_clear(pk->poly_bound);
+  itv_clear(pk->poly_itv);
+  itv_linexpr_clear(&pk->poly_itv_linexpr);
+  itv_lincons_clear(&pk->poly_itv_lincons);
+  numrat_clear(pk->poly_numrat);
   if (pk->poly_numintp) vector_free(pk->poly_numintp, pk->maxcols);
   pk->poly_numintp = 0; 
 
@@ -195,86 +207,56 @@ ap_manager_t* pk_manager_alloc(bool strict)
 		      pk, (void (*)(void*))pk_internal_free);
   funptr = man->funptr;
   
-  funptr[AP_FUNID_COPY] = &poly_copy;
-  funptr[AP_FUNID_FREE] = &poly_free;
-  funptr[AP_FUNID_ASIZE] = &poly_size;
-  funptr[AP_FUNID_MINIMIZE] = &poly_minimize;
-  funptr[AP_FUNID_CANONICALIZE] = &poly_canonicalize;
-  funptr[AP_FUNID_APPROXIMATE] = &poly_approximate;
-  funptr[AP_FUNID_FPRINT] = &poly_fprint;
-  funptr[AP_FUNID_FPRINTDIFF] = &poly_fprintdiff;
-  funptr[AP_FUNID_FDUMP] = &poly_fdump;
-  funptr[AP_FUNID_SERIALIZE_RAW] = &poly_serialize_raw;
-  funptr[AP_FUNID_DESERIALIZE_RAW] = &poly_deserialize_raw;
-  funptr[AP_FUNID_BOTTOM] = &poly_bottom;
-  funptr[AP_FUNID_TOP] = &poly_top;
-  funptr[AP_FUNID_OF_BOX] = &poly_of_box;
-  funptr[AP_FUNID_OF_LINCONS_ARRAY] = &poly_of_lincons_array;
-  funptr[AP_FUNID_DIMENSION] = &poly_dimension;
-  funptr[AP_FUNID_IS_BOTTOM] = &poly_is_bottom;
-  funptr[AP_FUNID_IS_TOP] = &poly_is_top;
-  funptr[AP_FUNID_IS_LEQ] = &poly_is_leq;
-  funptr[AP_FUNID_IS_EQ] = &poly_is_eq;
-  funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED] = &poly_is_dimension_unconstrained;
-  funptr[AP_FUNID_SAT_INTERVAL] = &poly_sat_interval;
-  funptr[AP_FUNID_SAT_LINCONS] = &poly_sat_lincons;
-  funptr[AP_FUNID_BOUND_DIMENSION] = &poly_bound_dimension;
-  funptr[AP_FUNID_BOUND_LINEXPR] = &poly_bound_linexpr;
-  funptr[AP_FUNID_TO_BOX] = &poly_to_box;
-  funptr[AP_FUNID_TO_LINCONS_ARRAY] = &poly_to_lincons_array;
-  funptr[AP_FUNID_TO_GENERATOR_ARRAY] = &poly_to_generator_array;
-  funptr[AP_FUNID_MEET] = &poly_meet;
-  funptr[AP_FUNID_MEET_ARRAY] = &poly_meet_array;
-  funptr[AP_FUNID_MEET_LINCONS_ARRAY] = &poly_meet_lincons_array;
-  funptr[AP_FUNID_JOIN] = &poly_join;
-  funptr[AP_FUNID_JOIN_ARRAY] = &poly_join_array;
-  funptr[AP_FUNID_ADD_RAY_ARRAY] = &poly_add_ray_array;
-  funptr[AP_FUNID_ASSIGN_LINEXPR] = &poly_assign_linexpr;
-  funptr[AP_FUNID_SUBSTITUTE_LINEXPR] = &poly_substitute_linexpr;
-  funptr[AP_FUNID_ASSIGN_LINEXPR_ARRAY] = &poly_assign_linexpr_array;
-  funptr[AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY] = &poly_substitute_linexpr_array;
-  funptr[AP_FUNID_ADD_DIMENSIONS] = &poly_add_dimensions;
-  funptr[AP_FUNID_REMOVE_DIMENSIONS] = &poly_remove_dimensions;
-  funptr[AP_FUNID_PERMUTE_DIMENSIONS] = &poly_permute_dimensions;
-  funptr[AP_FUNID_FORGET_ARRAY] = &poly_forget_array;
-  funptr[AP_FUNID_EXPAND] = &poly_expand;
-  funptr[AP_FUNID_FOLD] = &poly_fold;
-  funptr[AP_FUNID_WIDENING] = &poly_widening;
-  funptr[AP_FUNID_CLOSURE] = &poly_closure;
+  funptr[AP_FUNID_COPY] = &pk_copy;
+  funptr[AP_FUNID_FREE] = &pk_free;
+  funptr[AP_FUNID_ASIZE] = &pk_size;
+  funptr[AP_FUNID_MINIMIZE] = &pk_minimize;
+  funptr[AP_FUNID_CANONICALIZE] = &pk_canonicalize;
+  funptr[AP_FUNID_APPROXIMATE] = &pk_approximate;
+  funptr[AP_FUNID_FPRINT] = &pk_fprint;
+  funptr[AP_FUNID_FPRINTDIFF] = &pk_fprintdiff;
+  funptr[AP_FUNID_FDUMP] = &pk_fdump;
+  funptr[AP_FUNID_SERIALIZE_RAW] = &pk_serialize_raw;
+  funptr[AP_FUNID_DESERIALIZE_RAW] = &pk_deserialize_raw;
+  funptr[AP_FUNID_BOTTOM] = &pk_bottom;
+  funptr[AP_FUNID_TOP] = &pk_top;
+  funptr[AP_FUNID_OF_BOX] = &pk_of_box;
+  funptr[AP_FUNID_OF_LINCONS_ARRAY] = &pk_of_lincons_array;
+  funptr[AP_FUNID_DIMENSION] = &pk_dimension;
+  funptr[AP_FUNID_IS_BOTTOM] = &pk_is_bottom;
+  funptr[AP_FUNID_IS_TOP] = &pk_is_top;
+  funptr[AP_FUNID_IS_LEQ] = &pk_is_leq;
+  funptr[AP_FUNID_IS_EQ] = &pk_is_eq;
+  funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED] = &pk_is_dimension_unconstrained;
+  funptr[AP_FUNID_SAT_INTERVAL] = &pk_sat_interval;
+  funptr[AP_FUNID_SAT_LINCONS] = &pk_sat_lincons;
+  funptr[AP_FUNID_BOUND_DIMENSION] = &pk_bound_dimension;
+  funptr[AP_FUNID_BOUND_LINEXPR] = &pk_bound_linexpr;
+  funptr[AP_FUNID_TO_BOX] = &pk_to_box;
+  funptr[AP_FUNID_TO_LINCONS_ARRAY] = &pk_to_lincons_array;
+  funptr[AP_FUNID_TO_GENERATOR_ARRAY] = &pk_to_generator_array;
+  funptr[AP_FUNID_MEET] = &pk_meet;
+  funptr[AP_FUNID_MEET_ARRAY] = &pk_meet_array;
+  funptr[AP_FUNID_MEET_LINCONS_ARRAY] = &pk_meet_lincons_array;
+  funptr[AP_FUNID_JOIN] = &pk_join;
+  funptr[AP_FUNID_JOIN_ARRAY] = &pk_join_array;
+  funptr[AP_FUNID_ADD_RAY_ARRAY] = &pk_add_ray_array;
+  funptr[AP_FUNID_ASSIGN_LINEXPR] = &pk_assign_linexpr;
+  funptr[AP_FUNID_SUBSTITUTE_LINEXPR] = &pk_substitute_linexpr;
+  funptr[AP_FUNID_ASSIGN_LINEXPR_ARRAY] = &pk_assign_linexpr_array;
+  funptr[AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY] = &pk_substitute_linexpr_array;
+  funptr[AP_FUNID_ADD_DIMENSIONS] = &pk_add_dimensions;
+  funptr[AP_FUNID_REMOVE_DIMENSIONS] = &pk_remove_dimensions;
+  funptr[AP_FUNID_PERMUTE_DIMENSIONS] = &pk_permute_dimensions;
+  funptr[AP_FUNID_FORGET_ARRAY] = &pk_forget_array;
+  funptr[AP_FUNID_EXPAND] = &pk_expand;
+  funptr[AP_FUNID_FOLD] = &pk_fold;
+  funptr[AP_FUNID_WIDENING] = &pk_widening;
+  funptr[AP_FUNID_CLOSURE] = &pk_closure;
 
   for (i=0; i<AP_EXC_SIZE; i++){
     ap_manager_set_abort_if_exception(man, i, false);
   }
   return man;
-}
-
-/* ********************************************************************** */
-/* IV. Conversions */
-/* ********************************************************************** */
-
-poly_t* pk_to_poly(ap_abstract0_t* abstract)
-{
-  ap_manager_t* man = abstract->man;
-  if (strncmp(man->library,"polka",5)!=0){
-    ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
-			       AP_FUNID_UNKNOWN,
-			       "pk_to_poly: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPolka polyhedra");
-    return NULL;
-  }
-  return abstract->value;
-}
-
-ap_abstract0_t* pk_of_poly(ap_manager_t* man, poly_t* poly)
-{
-  if (strncmp(man->library,"polka",5)!=0){
-    ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
-			       AP_FUNID_UNKNOWN,
-			       "pk_to_poly: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPolka polyhedra");
-    return ap_abstract0_top(man,poly->intdim,poly->realdim);
-  }
-  ap_abstract0_t* res = malloc(sizeof(ap_abstract0_t));
-  res->value = poly;
-  res->man = ap_manager_copy(man);
-  return res;
 }
 

@@ -32,13 +32,12 @@ typedef struct satmat_t {
 } satmat_t;
 
 satmat_t* satmat_alloc(size_t nbrows, size_t nbcols);
-void satmat_realloc(satmat_t* sat, size_t nbrows);
-void satmat_realloc2(satmat_t* sat, size_t nbcols);
-void satmat_extend_columns(satmat_t* sat, size_t nbcols);
+void satmat_resize_rows(satmat_t* sat, size_t nbrows);
+void satmat_resize_cols(satmat_t* sat, size_t nbcols);
+satmat_t* satmat_copy_resize_cols(satmat_t* sat, size_t nbcols);
 void satmat_free(satmat_t* sat);
 void satmat_clear(satmat_t* sat);
 satmat_t* satmat_copy(satmat_t* sat);
-satmat_t* satmat_copy_extend_columns(satmat_t* sat, size_t nbcols);
 void satmat_print(satmat_t* sat);
 void satmat_fprint(FILE* stream, satmat_t* sat);
 

@@ -9,9 +9,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "gmp.h"
+
+#include "num.h"
 #include "numint.h"
 #include "numrat.h"
-#include "gmp.h"
+
+#include "bound.h"
+#include "itv.h"
+#include "itv_linexpr.h"
 
 #include "ap_coeff.h"
 #include "ap_dimension.h"

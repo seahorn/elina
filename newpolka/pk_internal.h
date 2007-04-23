@@ -53,6 +53,12 @@ struct pk_internal_t {
   int* cherni_intp;                /* of size maxcols */
   numint_t cherni_prod;             
 
+  itv_internal_t* itv;
+  bound_t poly_bound;
+  itv_t poly_itv;
+  itv_linexpr_t poly_itv_linexpr;
+  itv_lincons_t poly_itv_lincons;
+  numrat_t poly_numrat;
   numint_t* poly_numintp;            /* of size maxcols */
   numint_t* poly_numintp2;           /* of size maxcols */
   /* bitstring_t* poly_bitstringp; */    /* of size maxrows */
@@ -63,34 +69,23 @@ struct pk_internal_t {
   numint_t poly_prod; 
 };
 
+/* ********************************************************************** */
 /* A. Constructor and destructor for internal */
+/* ********************************************************************** */
 
-/* Allocates pk and initializes it with a default size */
 pk_internal_t* pk_internal_alloc(bool strict);
-/* Clear and free pk */
+  /* Allocates pk and initializes it with a default size */
 void pk_internal_free(pk_internal_t* pk);
-/* Reallocate pk only if a bigger dimension is required */
+  /* Clear and free pk */
 void pk_internal_realloc_lazy(pk_internal_t* pk, size_t maxdims);
+  /* Reallocate pk only if a bigger dimension is required */
 
-/* Initializes some fields of pk from manager */
 static inline pk_internal_t* pk_init_from_manager(ap_manager_t* man, ap_funid_t funid);
-
-/* B. Options */
-pk_internal_t* pk_manager_get_internal(ap_manager_t* man);
-void pk_set_max_coeff_size(pk_internal_t* pk, size_t size);
-void pk_set_approximate_max_coeff_size(pk_internal_t* pk, size_t size);
-size_t pk_get_max_coeff_size(pk_internal_t* pk);
-size_t pk_get_approximate_max_coeff_size(pk_internal_t* pk);
-
-/* C. Constructor for APRON manager (to be freed with ap_manager_free). */
-ap_manager_t* pk_manager_alloc(bool strict);
-
-/* D. Conversions */
-poly_t* pk_to_poly(ap_abstract0_t* abstract);
-ap_abstract0_t* pk_of_poly(ap_manager_t* man, poly_t* poly);
+  /* Initializes some fields of pk from manager */
 
 /* ********************************************************************** */
 /* Definition of inline functions */
+/* ********************************************************************** */
 static inline pk_internal_t* pk_init_from_manager(ap_manager_t* man, ap_funid_t funid)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;

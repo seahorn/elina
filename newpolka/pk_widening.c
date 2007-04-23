@@ -11,12 +11,11 @@
 #include "pk_satmat.h"
 #include "pk_matrix.h"
 #include "pk_cherni.h"
-
-#include "pk_user.h"
+#include "pk.h"
 #include "pk_representation.h"
+#include "pk_user.h"
 #include "pk_constructor.h"
 #include "pk_test.h"
-#include "pk_widening.h"
 
 #include "mf_qsort.h"
 
@@ -140,7 +139,7 @@ int esatmat_index_in_sorted_rows(bitstring_t* satline,
 
 /* This function defines the standard widening operator.  The resulting
    polyhedron has no frame matrix, unless pa is empty. */
-poly_t* poly_widening(ap_manager_t* man, poly_t* pa, poly_t* pb)
+pk_t* pk_widening(ap_manager_t* man, pk_t* pa, pk_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_WIDENING);
   bool widening_affine = pk->funopt->algorithm<=0;
@@ -148,21 +147,21 @@ poly_t* poly_widening(ap_manager_t* man, poly_t* pa, poly_t* pb)
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     man->result.flag_best = man->result.flag_exact = tbool_false;
-    return poly_top(man,pa->intdim,pa->realdim);
+    return pk_top(man,pa->intdim,pa->realdim);
   }
   poly_chernikova2(man,pb,"of the second argument");
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     man->result.flag_best = man->result.flag_exact = tbool_false;
-    return poly_top(man,pa->intdim,pa->realdim);
+    return pk_top(man,pa->intdim,pa->realdim);
   }
   if (!pa->C && !pa->F) /* pa is empty */
-    return poly_copy(man,pb);
+    return pk_copy(man,pb);
   else {
     size_t sat_nbcols;
     size_t nbrows,i;
     int index;
-    poly_t* po;
+    pk_t* po;
     bitstring_t* bitstringp;
     satmat_row_t* tab;
  
@@ -175,7 +174,7 @@ poly_t* poly_widening(ap_manager_t* man, poly_t* pa, poly_t* pb)
     po = poly_alloc(pa->intdim,pa->realdim);
 
     po->C = matrix_alloc(pk->dec-1+pb->C->nbrows, pb->C->nbcolumns, false);
-    _matrix_fill_constraint_top(pk,po->C,0);
+    matrix_fill_constraint_top(pk,po->C,0);
     nbrows = pk->dec-1;
 
     /* Adding constraints of pb mutually redundant with some of pa, except if
@@ -208,38 +207,60 @@ poly_t* poly_widening(ap_manager_t* man, poly_t* pa, poly_t* pb)
 }
 
 /* This second one implements a version parametrized by a set of constraints:
-when a constraint of this set is verified by both polyhedra, it is kept in
+   when a constraint of this set is verified by both polyhedra, it is kept in
 the result. */
-poly_t* poly_widening_threshold(ap_manager_t* man, 
-			       poly_t* pa, poly_t* pb, 
-			       ap_lincons0_array_t* array)
+pk_t* pk_widening_threshold(ap_manager_t* man, 
+			    pk_t* pa, pk_t* pb, 
+			    ap_lincons0_array_t* array)
 {
-  poly_t* po;
+  pk_t* po;
   size_t i,nbrows;
   matrix_t* mat;
+  size_t* tab;
+  size_t size,nb;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
-  po = poly_widening(man,pa,pb);
+  po = pk_widening(man,pa,pb);
   if (!po->C && !po->F)
     return po;
 
-  mat = matrix_of_lincons_array(pk,array,pa->intdim,pa->realdim,true);
-  
+  matrix_set_ap_lincons0_array(pk,&mat,&tab,&size,
+			       array,
+			       pa->intdim,pa->realdim,true);
+  if (tab) free(tab);
   /* We assume that both pa and pb are minimized, and that po->F==NULL */
   nbrows = po->C->nbrows;
-  matrix_realloc_lazy(po->C, nbrows + mat->nbrows);
+  matrix_resize_rows_lazy(po->C, nbrows + mat->nbrows);
   for (i=0; i<mat->nbrows; i++){
-    if (do_generators_sat_constraint(pk,pb->F,
-				     mat->p[i],
-				     pk->strict && 
-				     numint_sgn(mat->p[i][polka_eps])<0))
-    {
-      /* if the constraint is satisfied by pb, add it */
-      vector_copy(po->C->p[nbrows],mat->p[i],mat->nbcolumns);
-      nbrows++;
+    switch(array->p[i].constyp){
+    case AP_CONS_EQ:
+      break;
+    case AP_CONS_SUPEQ:
+    case AP_CONS_SUP:
+      if (ap_linexpr0_is_quasilinear(array->p[i].linexpr0)){
+	itv_lincons_set_ap_lincons0(pk->itv,
+				    &pk->poly_itv_lincons,
+				    &array->p[i]);
+	nb = vector_set_itv_lincons(pk,
+				    &pk->poly_numintp,
+				    &pk->poly_itv_lincons,
+				    pa->intdim,pa->realdim,true);
+	assert(nb<=1);
+	if (nb==1 && 
+	    do_generators_sat_constraint(pk,pb->F,
+					 pk->poly_numintp,
+					 pk->strict && 
+					 numint_sgn(mat->p[i][polka_eps])<0))
+	  {
+	    /* if the constraint is satisfied by pb, add it */
+	    vector_copy(po->C->p[nbrows],mat->p[i],mat->nbcolumns);
+	    nbrows++;
+	  }
+      }
+    default:
+      break;
     }
   }
-  matrix_free(mat);
   po->C->nbrows = nbrows;
   matrix_minimize(po->C);
   return po;

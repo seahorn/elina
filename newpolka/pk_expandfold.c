@@ -10,15 +10,13 @@
 #include "pk_bit.h"
 #include "pk_satmat.h"
 #include "pk_matrix.h"
-
-#include "pk_user.h"
+#include "pk.h"
 #include "pk_representation.h"
+#include "pk_user.h"
 #include "pk_constructor.h"
 #include "pk_assign.h"
 #include "pk_meetjoin.h"
-#include "pk_project.h"
 #include "pk_resize.h"
-#include "pk_expandfold.h"
 
 /* ********************************************************************** */
 /* I. Expand */
@@ -31,7 +29,7 @@
 /* Expand the dimension dim of the matrix into (dimsup+1)
    dimensions, with dimsup new dimensions inserted just before
    offset. */
-
+static
 matrix_t* matrix_expand(pk_internal_t* pk,
 			bool destructive,
 			matrix_t* C,
@@ -65,7 +63,7 @@ matrix_t* matrix_expand(pk_internal_t* pk,
   }
   nC = matrix_add_dimensions(pk,destructive,C,dimchange);
   ap_dimchange_free(dimchange);
-  matrix_realloc(nC,nbrows+nb*dimsup);
+  matrix_resize_rows(nC,nbrows+nb*dimsup);
   if (nb==0)
     return nC;
 
@@ -92,13 +90,13 @@ matrix_t* matrix_expand(pk_internal_t* pk,
 /* Polyhedra */
 /* ---------------------------------------------------------------------- */
 
-poly_t* poly_expand(ap_manager_t* man,
-		    bool destructive, poly_t* pa,
-		    ap_dim_t dim, size_t dimsup)
+pk_t* pk_expand(ap_manager_t* man,
+		bool destructive, pk_t* pa,
+		ap_dim_t dim, size_t dimsup)
 {
   size_t intdimsup,realdimsup;
   size_t nintdim,nrealdim;
-  poly_t* po;
+  pk_t* po;
 
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_EXPAND);
   pk_internal_realloc_lazy(pk,pa->intdim+pa->realdim+dimsup);
@@ -115,7 +113,7 @@ poly_t* poly_expand(ap_manager_t* man,
   nrealdim = pa->realdim + realdimsup;
 
   if (dimsup==0){
-    return (destructive ? pa : poly_copy(man,pa));
+    return (destructive ? pa : pk_copy(man,pa));
   }
 
   /* Get the constraints system, and possibly minimize */
@@ -128,7 +126,7 @@ poly_t* poly_expand(ap_manager_t* man,
     po = pa;
     po->intdim+=intdimsup;
     po->realdim+=realdimsup;
-    po->status &= ~poly_status_consgauss & ~poly_status_gengauss & ~poly_status_minimal;
+    po->status &= ~pk_status_consgauss & ~pk_status_gengauss & ~pk_status_minimal;
   }
   else {
     po = poly_alloc(nintdim,nrealdim);
@@ -156,7 +154,7 @@ poly_t* poly_expand(ap_manager_t* man,
     if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
     if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
     po->nbeq = po->nbline = 0;
-    po->status &= ~poly_status_consgauss & ~poly_status_gengauss & ~poly_status_minimal;
+    po->status &= ~pk_status_consgauss & ~pk_status_gengauss & ~pk_status_minimal;
   }
   po->C = matrix_expand(pk, destructive, pa->C, 
 			dim, 
@@ -192,7 +190,7 @@ poly_t* poly_expand(ap_manager_t* man,
    ones) in the matrix */
 
 /* the array tdim is assumed to be sorted */
-
+static
 matrix_t* matrix_fold(pk_internal_t* pk,
 		      bool destructive,
 		      matrix_t* F,
@@ -247,12 +245,12 @@ matrix_t* matrix_fold(pk_internal_t* pk,
 
 /* the array tdim is assumed to be sorted */
 
-poly_t* poly_fold(ap_manager_t* man,
-		  bool destructive, poly_t* pa,
-		  ap_dim_t* tdim, size_t size)
+pk_t* pk_fold(ap_manager_t* man,
+	      bool destructive, pk_t* pa,
+	      ap_dim_t* tdim, size_t size)
 {
   size_t intdimsup,realdimsup;
-  poly_t* po;
+  pk_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_FOLD);
   man->result.flag_best = man->result.flag_exact = tbool_true;   
 
@@ -297,7 +295,7 @@ poly_t* poly_fold(ap_manager_t* man,
     if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
     if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
     po->nbeq = po->nbline = 0;
-    po->status &= ~poly_status_consgauss & ~poly_status_gengauss & ~poly_status_minimal;
+    po->status &= ~pk_status_consgauss & ~pk_status_gengauss & ~pk_status_minimal;
   }
   
   po->F = matrix_fold(pk, destructive, pa->F, 

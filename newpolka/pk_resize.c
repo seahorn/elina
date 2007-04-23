@@ -10,11 +10,10 @@
 #include "pk_bit.h"
 #include "pk_satmat.h"
 #include "pk_matrix.h"
-
-#include "pk_user.h"
+#include "pk.h"
 #include "pk_representation.h"
+#include "pk_user.h"
 #include "pk_constructor.h"
-#include "pk_project.h"
 #include "pk_resize.h"
 
 /* ********************************************************************** */
@@ -27,7 +26,7 @@ q1 and puts the result in q2; If diff is negative,
 deletes the -diff last dimensions of q1 and puts the
 result in q2. q2 is supposed to have a sufficient size.
 */
-
+static
 void vector_resize_dimensions(numint_t* q2,
 			      numint_t* q1, size_t size,
 			      int diff)
@@ -60,7 +59,7 @@ void vector_resize_dimensions(numint_t* q2,
   
   BE CAUTIOUS: value 0 in the permutation means columns pk->dec.
 */
-
+static
 void vector_permute_dimensions(pk_internal_t* pk,
 			       numint_t* newq, numint_t* q, size_t size,
 			       ap_dim_t* permut)
@@ -93,7 +92,7 @@ void vector_permute_dimensions(pk_internal_t* pk,
   }
   return;
 }
-
+static
 void vector_add_dimensions(pk_internal_t* pk,
 			   numint_t* newq, 
 			   numint_t* q, size_t size,
@@ -119,9 +118,9 @@ void vector_add_dimensions(pk_internal_t* pk,
 }
 
 void vector_remove_dimensions(pk_internal_t* pk,
-			   numint_t* newq, 
-			   numint_t* q, size_t size,
-			   ap_dimchange_t* dimchange)
+			      numint_t* newq, 
+			      numint_t* q, size_t size,
+			      ap_dimchange_t* dimchange)
 {
   size_t i,k,dimsup;
   
@@ -144,7 +143,8 @@ void vector_remove_dimensions(pk_internal_t* pk,
 /* ====================================================================== */
 
 /* Modifications of the number of columns in-place */
-void matrix_resize(matrix_t* mat, int diff)
+static
+void matrix_resize_diffcols(matrix_t* mat, int diff)
 {
   if (diff != 0){
     size_t i;
@@ -168,7 +168,7 @@ matrix_t* matrix_add_dimensions(pk_internal_t* pk,
   dimsup = dimchange->intdim+dimchange->realdim;
   if (destructive){
     nmat = mat;
-    matrix_resize(nmat,(int)dimsup);
+    matrix_resize_diffcols(nmat,(int)dimsup);
   }
   else {
     nmat = matrix_alloc(mat->nbrows,mat->nbcolumns+dimsup,mat->_sorted);
@@ -178,7 +178,7 @@ matrix_t* matrix_add_dimensions(pk_internal_t* pk,
   }
   return nmat;
 }
-
+static
 matrix_t* matrix_remove_dimensions(pk_internal_t* pk,
 				   bool destructive,
 				   matrix_t* mat,
@@ -201,11 +201,11 @@ matrix_t* matrix_remove_dimensions(pk_internal_t* pk,
     vector_normalize(pk,nmat->p[i],nmat->nbcolumns);
   }
   if (destructive){
-    matrix_resize(nmat, -(int)dimsup);
+    matrix_resize_diffcols(nmat, -(int)dimsup);
   }
   return nmat;
 }
-
+static
 matrix_t* matrix_permute_dimensions(pk_internal_t* pk,
 				    bool destructive,
 				    matrix_t* mat,
@@ -232,13 +232,13 @@ matrix_t* matrix_permute_dimensions(pk_internal_t* pk,
    Dual version, with new dimensions sets at 0: exchanging
    constraints and generators.
 */
-
-poly_t* cherni_add_dimensions(pk_internal_t* pk,
-			      bool destructive,
-			      poly_t* pa,
-			      ap_dimchange_t* dimchange)
+static
+pk_t* cherni_add_dimensions(pk_internal_t* pk,
+			    bool destructive,
+			    pk_t* pa,
+			    ap_dimchange_t* dimchange)
 {
-  poly_t* po;
+  pk_t* po;
   int i,k;
   size_t dimsup;
 
@@ -268,7 +268,7 @@ poly_t* cherni_add_dimensions(pk_internal_t* pk,
     if (pa->F){
       size_t nbrows = pa->F->nbrows;
       po->F = matrix_add_dimensions(pk,destructive,pa->F,dimchange);
-      matrix_realloc(po->F,po->F->nbrows+dimsup);
+      matrix_resize_rows(po->F,po->F->nbrows+dimsup);
       /* translate rows [0,oldF->nbrows-1] to [dimsup,oldF->nbrows+dimsup-1] */
       matrix_move_rows(po->F,dimsup,0,nbrows);
       /* addition of new lines at the beginning of the matrix */
@@ -282,14 +282,11 @@ poly_t* cherni_add_dimensions(pk_internal_t* pk,
       }
       po->F->_sorted =
 	pa->F->_sorted && 
-	(vector_compare(pk,
-		       po->F->p[dimsup-1],
-		       po->F->p[dimsup],po->F->nbcolumns)
-	 < 0);
+	(matrix_compare_rows(pk,po->F,dimsup-1,dimsup) < 0);
     }
     if (pa->satC){
       if (destructive){
-	satmat_realloc(po->satC,po->satC->nbrows+dimsup);
+	satmat_resize_rows(po->satC,po->satC->nbrows+dimsup);
 	/* translate rows [0,oldF->nbrows-1] to [dimsup,oldF->nbrows+dimsup-1] */
 	satmat_move_rows(po->satC,dimsup,0,po->F->nbrows-dimsup);
 	/* the first rows, corresponding to new lines, to zero */
@@ -330,13 +327,13 @@ poly_t* cherni_add_dimensions(pk_internal_t* pk,
 /* IV. Exported functions */
 /* ********************************************************************** */
 
-poly_t* poly_add_dimensions(ap_manager_t* man,
-			    bool destructive,
-			    poly_t* pa,
-			    ap_dimchange_t* dimchange,
-			    bool project)
+pk_t* pk_add_dimensions(ap_manager_t* man,
+			bool destructive,
+			pk_t* pa,
+			ap_dimchange_t* dimchange,
+			bool project)
 {
-  poly_t* po;
+  pk_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_ADD_DIMENSIONS);
   pk_internal_realloc_lazy(pk,pa->intdim+pa->realdim+dimchange->intdim+dimchange->realdim);
 
@@ -357,17 +354,17 @@ poly_t* poly_add_dimensions(ap_manager_t* man,
       return pa;
     }
     else {
-      return poly_bottom(man,
-			 pa->intdim + dimchange->intdim,
-			 pa->realdim + dimchange->realdim);
+      return pk_bottom(man,
+		       pa->intdim + dimchange->intdim,
+		       pa->realdim + dimchange->realdim);
     }
   }
   if (project){
+    poly_dual(pa);
+    po = cherni_add_dimensions(pk, destructive, pa, dimchange);
+    poly_dual(po);
+    if (!destructive)
       poly_dual(pa);
-      po = cherni_add_dimensions(pk, destructive, pa, dimchange);
-      poly_dual(po);
-      if (!destructive)
-	poly_dual(pa);
   }
   else {
     po = cherni_add_dimensions(pk, destructive, pa, dimchange);
@@ -376,16 +373,16 @@ poly_t* poly_add_dimensions(ap_manager_t* man,
   return po;
 }
 
-poly_t* poly_remove_dimensions(ap_manager_t* man,
-			       bool destructive,
-			       poly_t* pa,
-			       ap_dimchange_t* dimchange)
+pk_t* pk_remove_dimensions(ap_manager_t* man,
+			   bool destructive,
+			   pk_t* pa,
+			   ap_dimchange_t* dimchange)
 {
-  poly_t* po;
+  pk_t* po;
   size_t dimsup;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_REMOVE_DIMENSIONS);
 
-   if (pk->funopt->algorithm<=0){
+  if (pk->funopt->algorithm<=0){
     poly_obtain_F(man,pa,"of the argument");
   } else {
     poly_chernikova(man,pa,"of the argument");
@@ -435,12 +432,12 @@ poly_t* poly_remove_dimensions(ap_manager_t* man,
   return po;
 }
 
-poly_t* poly_permute_dimensions(ap_manager_t* man,
-				bool destructive,
-				poly_t* pa,
-				ap_dimperm_t* permutation)
+pk_t* pk_permute_dimensions(ap_manager_t* man,
+			    bool destructive,
+			    pk_t* pa,
+			    ap_dimperm_t* permutation)
 {
-  poly_t* po;
+  pk_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_PERMUTE_DIMENSIONS);
 
   if (pk->funopt->algorithm>0){

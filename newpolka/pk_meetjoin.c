@@ -10,10 +10,11 @@
 #include "pk_satmat.h"
 #include "pk_matrix.h"
 #include "pk.h"
-#include "pk_user.h"
 #include "pk_representation.h"
+#include "pk_user.h"
 #include "pk_constructor.h"
 #include "pk_test.h"
+#include "pk_extract.h"
 #include "pk_cherni.h"
 #include "pk_meetjoin.h"
 
@@ -47,11 +48,11 @@
    Return true if exception
  */
 
-bool _poly_meet_matrix(bool meet,
-		       bool lazy,
-		       ap_manager_t* man,
-		       poly_t* po,
-		       poly_t* pa, matrix_t* mat)
+bool poly_meet_matrix(bool meet,
+		      bool lazy,
+		      ap_manager_t* man,
+		      pk_t* po,
+		      pk_t* pa, matrix_t* mat)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
@@ -74,7 +75,7 @@ bool _poly_meet_matrix(bool meet,
     }
     po->status =
       meet ?
-      poly_status_conseps :
+      pk_status_conseps :
       0
       ;
   }
@@ -85,31 +86,30 @@ bool _poly_meet_matrix(bool meet,
     if (po != pa){
       po->C = matrix_append(pa->C,mat);
       po->F = matrix_copy(pa->F);
-      po->satC = satmat_copy_extend_columns(pa->satC,
-					    bitindex_size(po->C->nbrows));
+      po->satC = satmat_copy_resize_cols(pa->satC,
+					 bitindex_size(po->C->nbrows));
       po->nbline = pa->nbline;
       po->nbeq = pa->nbeq;
     }
     else {
       matrix_append_with(pa->C,mat);
-      satmat_extend_columns(pa->satC,
-			    bitindex_size(pa->C->nbrows));
+      satmat_resize_cols(pa->satC,
+			 bitindex_size(pa->C->nbrows));
     }
     cherni_add_and_minimize(pk,meet,po,start);
     if (pk->exn) goto _poly_meet_matrix_exit0;
     po->status = 
       meet
       ?
-      ( poly_status_conseps | 
-	poly_status_consgauss) 
+      ( pk_status_conseps | 
+	pk_status_consgauss) 
       :
-      ( poly_status_gengauss ) 
+      ( pk_status_gengauss ) 
       ;
     assert( poly_check_dual(pk,po,meet) );
   }
   return false;
  _poly_meet_matrix_exit0:
-  pk->exn = AP_EXC_NONE;
   po->status = 0;
   {
     char str[160];
@@ -127,10 +127,10 @@ bool _poly_meet_matrix(bool meet,
 /* ---------------------------------------------------------------------- */
 /* Factorized form */
 /* ---------------------------------------------------------------------- */
-
-bool _poly_meet_particularcases(bool meet, bool lazy,
-				ap_manager_t* man,
-				poly_t* po, poly_t* pa, poly_t* pb)
+static
+bool poly_meet_particularcases(bool meet, bool lazy,
+			       ap_manager_t* man,
+			       pk_t* po, pk_t* pa, pk_t* pb)
 {
   assert(pa!=pb);
 
@@ -167,11 +167,11 @@ bool _poly_meet_particularcases(bool meet, bool lazy,
     if (pk->funopt->flag_exact_wanted){
       poly_dual(pa);
       poly_dual(pb);
-      if (poly_is_leq(man,pa,pb)==tbool_true){
+      if (pk_is_leq(man,pa,pb)==tbool_true){
 	poly_set(po,pb);
 	goto _poly_meet_particularcases_exit;
       }
-      else if (poly_is_leq(man,pb,pa)==tbool_true){
+      else if (pk_is_leq(man,pb,pa)==tbool_true){
 	poly_set(po,pa);
       _poly_meet_particularcases_exit:
 	poly_dual(pa);
@@ -185,11 +185,11 @@ bool _poly_meet_particularcases(bool meet, bool lazy,
   return false;
 }
 
-
-void _poly_meet(bool meet,
-		bool lazy,
-		ap_manager_t* man,
-		poly_t* po, poly_t* pa, poly_t* pb)
+static
+void poly_meet(bool meet,
+	       bool lazy,
+	       ap_manager_t* man,
+	       pk_t* po, pk_t* pa, pk_t* pb)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
@@ -210,7 +210,7 @@ void _poly_meet(bool meet,
     assert(!po->C && !po->F && !po->satC && !po->satF);
   }
   /* Particular cases */
-  if (_poly_meet_particularcases(meet,lazy,man,po,pa,pb))
+  if (poly_meet_particularcases(meet,lazy,man,po,pa,pb))
     return;
 
   /* Get the constraint system of pa */
@@ -234,7 +234,7 @@ void _poly_meet(bool meet,
     return;
   }
   /* Particular cases again */
-  if (_poly_meet_particularcases(meet,lazy,man,po,pa,pb))
+  if (poly_meet_particularcases(meet,lazy,man,po,pa,pb))
     return;
   
   /* lazy behaviour */
@@ -242,7 +242,7 @@ void _poly_meet(bool meet,
   _poly_meet_entry0:
     poly_obtain_sorted_C(pk,pa);
     poly_obtain_sorted_C(pk,pb);
-    _poly_meet_matrix(meet,lazy,man,po,pa,pb->C);
+    poly_meet_matrix(meet,lazy,man,po,pa,pb->C);
   }
   /* strict behaviour */
   else {
@@ -275,7 +275,7 @@ void _poly_meet(bool meet,
 	    }
 	  }
 	  /* Particular cases */
-	  if (_poly_meet_particularcases(meet,lazy,man,po,pa,pb))
+	  if (poly_meet_particularcases(meet,lazy,man,po,pa,pb))
 	    return;
 	}
 	/* Perform the choice */
@@ -289,7 +289,7 @@ void _poly_meet(bool meet,
 	}
       }
       if (start==2){
-	poly_t* p = pa; pa=pb; pb=p;
+	pk_t* p = pa; pa=pb; pb=p;
       }
     }
     else {
@@ -304,7 +304,7 @@ void _poly_meet(bool meet,
     /* Now, pa is the start polyhedron */
     poly_obtain_satC(pa);
     poly_obtain_sorted_C(pk,pb);
-    _poly_meet_matrix(meet,lazy,man,po,pa,pb->C);
+    poly_meet_matrix(meet,lazy,man,po,pa,pb->C);
   }
   assert(poly_check_dual(pk,po,meet));
 }
@@ -313,18 +313,15 @@ void _poly_meet(bool meet,
 /* I.3 Meet/Join array */
 /* ====================================================================== */
 
-long long int meetcount = 0;
-
-poly_t* _poly_meet_array(bool meet,
-			 bool lazy,
-			 ap_manager_t* man,
-			 poly_t** po, size_t size)
+static
+pk_t* poly_meet_array(bool meet,
+		      bool lazy,
+		      ap_manager_t* man,
+		      pk_t** po, size_t size)
 {
   size_t intdim,realdim;
-  poly_t* poly;
+  pk_t* poly;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
-
-  meetcount++;
 
   man->result.flag_best = tbool_true;
 
@@ -334,7 +331,7 @@ poly_t* _poly_meet_array(bool meet,
 			    AP_EXC_INVALID_ARGUMENT,
 			    pk->funid, "empty array");
     man->result.flag_best = man->result.flag_exact = tbool_false;
-    poly = poly_top(man,0,1);
+    poly = pk_top(man,0,1);
     if (!meet) poly_dual(poly);
     return poly;    
   }
@@ -350,7 +347,7 @@ poly_t* _poly_meet_array(bool meet,
     return poly;
   }
   else if (size==2){
-    _poly_meet(meet,lazy,man,poly,po[0],po[1]);
+    poly_meet(meet,lazy,man,poly,po[0],po[1]);
     return poly;
   }
   /* 2. General case */
@@ -392,7 +389,7 @@ poly_t* _poly_meet_array(bool meet,
 	  /* We exchange po[i] and po[size-1] */
 	  size--;
 	  if (i<size){
-	    poly_t* tmp = po[i]; po[i] = po[size]; po[size] = tmp;
+	    pk_t* tmp = po[i]; po[i] = po[size]; po[size] = tmp;
 	  }
 	}
       }
@@ -414,7 +411,7 @@ poly_t* _poly_meet_array(bool meet,
 	poly_set(poly,po[0]);
       }
       else if (size==2){
-	_poly_meet(meet,lazy,man,poly,po[0],po[1]);
+	poly_meet(meet,lazy,man,poly,po[0],po[1]);
       }
       return poly;
     }
@@ -459,17 +456,17 @@ poly_t* _poly_meet_array(bool meet,
       poly->C = C;
       poly->F = matrix_copy(po[j]->F);
       poly_obtain_satC(po[j]);
-      poly->satC = satmat_copy_extend_columns(po[j]->satC,
-					      bitindex_size(C->nbrows));
+      poly->satC = satmat_copy_resize_cols(po[j]->satC,
+					   bitindex_size(C->nbrows));
       poly->nbeq = po[j]->nbeq;
       poly->nbline = po[j]->nbline;
       cherni_add_and_minimize(pk,meet,poly,po[j]->C->nbrows);
       if (pk->exn) goto _poly_meet_array_exit0;
       poly->status = 
 	meet ?
-	( poly_status_conseps | 
-	  poly_status_consgauss) :
-	( poly_status_gengauss ) ;
+	( pk_status_conseps | 
+	  pk_status_consgauss) :
+	( pk_status_gengauss ) ;
     }
     assert(poly_check_dual(pk,poly,meet));
     return poly;
@@ -494,36 +491,76 @@ poly_t* _poly_meet_array(bool meet,
 /* II.1 Meet of two or more polyhedra */
 /* ********************************************************************** */
 
-poly_t* poly_meet(ap_manager_t* man, 
-		  bool destructive, poly_t* pa, poly_t* pb)
+pk_t* pk_meet(ap_manager_t* man, 
+	      bool destructive, pk_t* pa, pk_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET);
-  poly_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
-  _poly_meet(true, pk->funopt->algorithm < 0,
-	     man,po,pa,pb);
+  pk_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
+  poly_meet(true, pk->funopt->algorithm < 0,
+	    man,po,pa,pb);
   return po;
 }
 
-poly_t* poly_meet_array(ap_manager_t* man,
-			 poly_t** po, size_t size)
+pk_t* pk_meet_array(ap_manager_t* man,
+		      pk_t** po, size_t size)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET_ARRAY);
-  return _poly_meet_array(true, pk->funopt->algorithm < 0,
+  return poly_meet_array(true, pk->funopt->algorithm < 0,
 			  man,po,size);
 }
 
 /* ====================================================================== */
 /* II.2 Meet with (array of) linear constraint(s) */
 /* ====================================================================== */
+static
+void poly_meet_ap_intlincons0_array(ap_manager_t* man,
+				    pk_t* po,
+				    ap_lincons0_array_t* array,
+				    size_t* tab, size_t size)
+{
+  pk_internal_t* pk = (pk_internal_t*)man->internal;
+  matrix_t* C;
+  size_t nbrows;
+  itv_t* titv;
+  matrix_t* mat;
+  
+  poly_chernikova(man,po,NULL);
+  if (pk->exn){
+    pk->exn = AP_EXC_NONE;
+    man->result.flag_exact = man->result.flag_best = tbool_false;
+    return;
+  }
+  if (po->F==NULL)
+    return;
+  
+  titv = matrix_to_box(pk,po->F);
+  C = po->C;
+  nbrows = C->nbrows;
+  matrix_set_ap_intlincons0_array(pk,
+				  &mat,titv,
+				  array,tab,size,
+				  po->intdim,po->realdim,true);
+  matrix_sort_rows(pk,mat);
+  poly_obtain_satC(po);
+  poly_meet_matrix(true,false,man,po,po,mat);
+  matrix_free(mat);
+  if (pk->exn){
+    pk->exn = AP_EXC_NONE;
+    man->result.flag_exact = man->result.flag_best = tbool_false;
+  }
+}
 
 /* ---------------------------------------------------------------------- */
 /* Factorized version */
 
-void _poly_meet_lincons_array(bool lazy,
+void poly_meet_lincons_array(bool lazy,
 			      ap_manager_t* man,
-			      poly_t* po, poly_t* pa, ap_lincons0_array_t* array)
+			      pk_t* po, pk_t* pa, 
+			      ap_lincons0_array_t* array)
 {
   matrix_t* mat;
+  size_t* tab;
+  size_t size;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
   man->result.flag_best = man->result.flag_exact = tbool_true;
@@ -537,7 +574,7 @@ void _poly_meet_lincons_array(bool lazy,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     if (!pa->C){
-      poly_t* po2 = poly_of_lincons_array(man,pa->intdim,pa->realdim,array);
+      pk_t* po2 = pk_of_lincons_array(man,pa->intdim,pa->realdim,array);
       man->result.flag_best = man->result.flag_exact = tbool_false;
       poly_set(po,po2);
       free(po2);
@@ -549,18 +586,27 @@ void _poly_meet_lincons_array(bool lazy,
     poly_set(po,pa);
     return;
   }
-  mat = matrix_of_lincons_array(pk,array,pa->intdim,pa->realdim, true);
+  matrix_set_ap_lincons0_array(pk,
+			       &mat,&tab,&size,
+			       array,
+			       pa->intdim,pa->realdim, true);
   matrix_sort_rows(pk,mat);
   if (!lazy) poly_obtain_satC(pa);
-  _poly_meet_matrix(true,lazy,man,po,pa,mat);
+  poly_meet_matrix(true,lazy,man,po,pa,mat);
+  if (tab!=NULL){
+    poly_meet_ap_intlincons0_array(man,
+				   po,
+				   array,tab,size);
+    free(tab);
+  }
   matrix_free(mat);
 }
 
-poly_t* poly_meet_lincons_array(ap_manager_t* man, bool destructive, poly_t* pa, ap_lincons0_array_t* array)
+pk_t* pk_meet_lincons_array(ap_manager_t* man, bool destructive, pk_t* pa, ap_lincons0_array_t* array)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET_LINCONS_ARRAY);
-  poly_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
-  _poly_meet_lincons_array(pk->funopt->algorithm<0,
+  pk_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
+  poly_meet_lincons_array(pk->funopt->algorithm<0,
 			   man,po,pa,array);
   return po;
 }
@@ -573,15 +619,15 @@ poly_t* poly_meet_lincons_array(ap_manager_t* man, bool destructive, poly_t* pa,
 /* III.1 Join of two or more polyhedra, functional and side-effect versions */
 /* ====================================================================== */
 
-poly_t* poly_join(ap_manager_t* man, bool destructive, poly_t* pa, poly_t* pb)
+pk_t* pk_join(ap_manager_t* man, bool destructive, pk_t* pa, pk_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_JOIN);
-  poly_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
+  pk_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
 
   poly_dual(pa);
   if (pb!=pa) poly_dual(pb); /* We take care of possible alias */
-  _poly_meet(false,pk->funopt->algorithm<0,
-	     man,po,pa,pb);
+  poly_meet(false,pk->funopt->algorithm<0,
+	    man,po,pa,pb);
   poly_dual(pa);
   if (pb!=pa) poly_dual(pb); /* We take care of possible alias */
   if (po!=pa) poly_dual(po);
@@ -590,15 +636,15 @@ poly_t* poly_join(ap_manager_t* man, bool destructive, poly_t* pa, poly_t* pb)
 
 static int poly_cmp(const void* a, const void* b)
 {
-  poly_t* pa = *((poly_t**)a);
-  poly_t* pb = *((poly_t**)b);
+  pk_t* pa = *((pk_t**)a);
+  pk_t* pb = *((pk_t**)b);
   return (pa>pb ? 1 : (pa==pb ? 0 : -1));
 }
 
-poly_t* poly_join_array(ap_manager_t* man, poly_t** po, size_t size)
+pk_t* pk_join_array(ap_manager_t* man, pk_t** po, size_t size)
 {
-  poly_t** tpoly;
-  poly_t* poly;
+  pk_t** tpoly;
+  pk_t* poly;
   size_t i;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_JOIN_ARRAY);
 
@@ -607,19 +653,19 @@ poly_t* poly_join_array(ap_manager_t* man, poly_t** po, size_t size)
 			    AP_EXC_INVALID_ARGUMENT,
 			    AP_FUNID_JOIN_ARRAY, "empty array");
     man->result.flag_best = man->result.flag_exact = tbool_false;
-    poly = poly_top(man,0,1);
+    poly = pk_top(man,0,1);
     return poly;
   }
   /* We have to take care of possible aliases in the array of polyhedra */
-  tpoly = malloc(size*sizeof(poly_t*));
-  memcpy(tpoly, po, size*sizeof(poly_t*));
-  qsort(tpoly,size,sizeof(poly_t*),poly_cmp);
+  tpoly = malloc(size*sizeof(pk_t*));
+  memcpy(tpoly, po, size*sizeof(pk_t*));
+  qsort(tpoly,size,sizeof(pk_t*),poly_cmp);
  
   /* remove doublons */
   for(i=0;i<size-1;i++){
     if (tpoly[i]==tpoly[i+1]){
       if (i<size-2){
-	memmove(&tpoly[i+1],&tpoly[i+2],(size-i-2)*sizeof(poly_t*));
+	memmove(&tpoly[i+1],&tpoly[i+2],(size-i-2)*sizeof(pk_t*));
       }
       size--;
     }
@@ -628,8 +674,8 @@ poly_t* poly_join_array(ap_manager_t* man, poly_t** po, size_t size)
   for (i=0;i<size;i++)
     poly_dual(tpoly[i]);
 
-  poly =_poly_meet_array(false,pk->funopt->algorithm<0,
-			 man,(poly_t**)tpoly,size);
+  poly = poly_meet_array(false,pk->funopt->algorithm<0,
+			 man,(pk_t**)tpoly,size);
   for(i=0;i<size;i++){
     poly_dual(tpoly[i]);
   }
@@ -644,11 +690,12 @@ poly_t* poly_join_array(ap_manager_t* man, poly_t** po, size_t size)
 
 /* ---------------------------------------------------------------------- */
 /* Factorized version */
-
-void _poly_add_ray_array(bool lazy, 
-			 ap_manager_t* man,
-			 poly_t* po, poly_t* pa, ap_generator0_array_t* array)
+static
+void poly_add_ray_array(bool lazy, 
+			ap_manager_t* man,
+			pk_t* po, pk_t* pa, ap_generator0_array_t* array)
 {
+  bool exact;
   matrix_t* mat;
 
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -674,25 +721,25 @@ void _poly_add_ray_array(bool lazy,
     poly_set(po,pa);
     return;
   }
-  mat = matrix_of_generator_array(pk,array,pa->intdim,pa->realdim);
+  exact = matrix_set_ap_generator0_array(pk,&mat,array,pa->intdim,pa->realdim);
   matrix_sort_rows(pk,mat);
 
   if (!lazy) poly_obtain_satF(pa);
   poly_dual(po);
   if (po!=pa) poly_dual(pa);
-  _poly_meet_matrix(false,lazy,man,po,pa,mat);
+  poly_meet_matrix(false,lazy,man,po,pa,mat);
   poly_dual(po);
   if (po!=pa) poly_dual(pa);
   matrix_free(mat);
-  man->result.flag_exact = tbool_true;
+  man->result.flag_exact = tbool_of_bool(exact);
 }
 
-poly_t* poly_add_ray_array(ap_manager_t* man, bool destructive, poly_t* pa, ap_generator0_array_t* array)
+pk_t* pk_add_ray_array(ap_manager_t* man, bool destructive, pk_t* pa, ap_generator0_array_t* array)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_ADD_RAY_ARRAY);
-  poly_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
-  _poly_add_ray_array(pk->funopt->algorithm<0,
-		      man,po,pa,array);
+  pk_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
+  poly_add_ray_array(pk->funopt->algorithm<0,
+		     man,po,pa,array);
   return po;
 }
 

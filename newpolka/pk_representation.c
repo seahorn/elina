@@ -10,11 +10,43 @@
 #include "pk_satmat.h"
 #include "pk_matrix.h"
 #include "pk_cherni.h"
-#include "pk_int.h"
+#include "pk.h"
 #include "pk_user.h"
 #include "pk_representation.h"
 #include "pk_extract.h"
 #include "pk_constructor.h"
+
+/* ********************************************************************** */
+/* D. Conversions */
+/* ********************************************************************** */
+
+pk_t* pk_of_abstract0(ap_abstract0_t* abstract)
+{
+  ap_manager_t* man = abstract->man;
+  if (strncmp(man->library,"polka",5)!=0){
+    ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
+			       AP_FUNID_UNKNOWN,
+			       "pk_of_abstract0: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPolka polyhedra");
+    return NULL;
+  }
+  return (pk_t*)abstract->value;
+}
+
+ap_abstract0_t* pk_to_abstract0(ap_manager_t* man, pk_t* poly)
+{
+  if (strncmp(man->library,"polka",5)!=0){
+    ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
+			       AP_FUNID_UNKNOWN,
+			       "pk_to_abstract0: attempt to extract a NewPolka polyhedra from an abstract value which is not a wrapper around a NewPolka polyhedra");
+    return ap_abstract0_top(man,poly->intdim,poly->realdim);
+  }
+  else {
+    ap_abstract0_t* res = malloc(sizeof(ap_abstract0_t));
+    res->man = man;
+    res->value = poly;
+    return res;
+  }
+}
 
 /* ********************************************************************** */
 /* I. Memory */
@@ -23,9 +55,9 @@
 /* This internal function allocates a polyhedron and fills its records
    with null values. */
 
-poly_t* poly_alloc(size_t intdim, size_t realdim)
+pk_t* poly_alloc(size_t intdim, size_t realdim)
 {
-  poly_t* po = (poly_t*)malloc(sizeof(poly_t));
+  pk_t* po = (pk_t*)malloc(sizeof(pk_t));
   po->C = NULL;
   po->F = NULL;
   po->satC = NULL;
@@ -39,7 +71,7 @@ poly_t* poly_alloc(size_t intdim, size_t realdim)
 }
 
 /* Clearing a polyhedron */
-void poly_clear(poly_t* po)
+void poly_clear(pk_t* po)
 {
   if (po->C) matrix_free(po->C);
   if (po->F) matrix_free(po->F);
@@ -55,7 +87,7 @@ void poly_clear(poly_t* po)
 }
 
 /* Assignement with GMP semantics */
-void poly_set(poly_t* pa, poly_t* pb)
+void poly_set(pk_t* pa, pk_t* pb)
 {
   if (pa!=pb){
     poly_clear(pa);
@@ -73,9 +105,9 @@ void poly_set(poly_t* pa, poly_t* pb)
 }
 
 /* Duplicate (recursively) a polyhedron. */
-poly_t* poly_copy(ap_manager_t* man, poly_t* po)
+pk_t* pk_copy(ap_manager_t* man, pk_t* po)
 {
-  poly_t* npo = poly_alloc(po->intdim,po->realdim);
+  pk_t* npo = poly_alloc(po->intdim,po->realdim);
   npo->C = po->C ? matrix_copy(po->C) : 0;
   npo->F = po->F ? matrix_copy(po->F) : 0;
   npo->satC = po->satC ? satmat_copy(po->satC) : 0;
@@ -88,7 +120,7 @@ poly_t* poly_copy(ap_manager_t* man, poly_t* po)
 
 /* Finalization function for polyhedra, which frees
    recursively the members of the structure. */
-void poly_free(ap_manager_t* man, poly_t* po)
+void pk_free(ap_manager_t* man, pk_t* po)
 {
   poly_clear(po);
   free(po);
@@ -96,7 +128,7 @@ void poly_free(ap_manager_t* man, poly_t* po)
 
 /* Return the abstract size of a polyhedron, which is the number of
    coefficients of its current representation, possibly redundant. */
-size_t poly_size(ap_manager_t* man, poly_t* po)
+size_t pk_size(ap_manager_t* man, pk_t* po)
 {
   size_t s1,s2;
 
@@ -120,7 +152,7 @@ Transmit exception
 */
 
 void poly_chernikova(ap_manager_t* man,
-		     poly_t* po,
+		     pk_t* po,
 		     char* msg)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -136,8 +168,8 @@ void poly_chernikova(ap_manager_t* man,
       cherni_minimize(pk,true,po);
       if (pk->exn) goto poly_chernikova_exit0;
       po->status |=
-	poly_status_conseps |
-	poly_status_consgauss;
+	pk_status_conseps |
+	pk_status_consgauss;
     }
     else {
       po->C = po->F; po->F = NULL;
@@ -145,10 +177,10 @@ void poly_chernikova(ap_manager_t* man,
       cherni_minimize(pk,false,po);
       poly_dual(po);
       if (pk->exn) goto poly_chernikova_exit0;
-      po->status |= poly_status_gengauss;
-      po->status &= ~poly_status_conseps;
+      po->status |= pk_status_gengauss;
+      po->status &= ~pk_status_conseps;
     }
-    po->status &= ~poly_status_minimal;
+    po->status &= ~pk_status_minimal;
   }
   return;
  poly_chernikova_exit0:
@@ -168,7 +200,7 @@ void poly_chernikova(ap_manager_t* man,
    matrices exchanged. */
 
 void poly_chernikova_dual(ap_manager_t* man,
-			  poly_t* po,
+			  pk_t* po,
 			  char* msg,
 			  bool usual)
 {
@@ -184,7 +216,7 @@ void poly_chernikova_dual(ap_manager_t* man,
    constraints. */
 
 void poly_chernikova2(ap_manager_t* man,
-		      poly_t* po,
+		      pk_t* po,
 		      char* msg)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -201,7 +233,7 @@ void poly_chernikova2(ap_manager_t* man,
   if (!poly_is_conseps(pk,po)){
     // Normalize strict constraints of C
     bool change = matrix_normalize_constraint(pk,po->C,po->intdim,po->realdim);
-    po->status |= poly_status_conseps;
+    po->status |= pk_status_conseps;
     // If there were some change, perform a new minimization from normalized C
     if (change){
       if (po->F){ matrix_free(po->F); po->F = NULL; }
@@ -216,7 +248,7 @@ void poly_chernikova2(ap_manager_t* man,
 /* Same as poly_chernikova2, but in addition normalize matrices by Gauss
    elimination and sorting */
 void poly_chernikova3(ap_manager_t* man,
-		      poly_t* po,
+		      pk_t* po,
 		      char* msg)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -226,13 +258,13 @@ void poly_chernikova3(ap_manager_t* man,
 
   if (po->C){
     size_t rank;
-    if (! (po->status & poly_status_consgauss)){
+    if (! (po->status & pk_status_consgauss)){
       rank = cherni_gauss(pk,po->C,po->nbeq);
       assert(rank==po->nbeq);
       cherni_backsubstitute(pk,po->C,rank);
       po->C->_sorted = false;
     }
-    if (! (po->status & poly_status_gengauss)){
+    if (! (po->status & pk_status_gengauss)){
       rank = cherni_gauss(pk,po->F,po->nbline);
       assert(rank==po->nbline);
       cherni_backsubstitute(pk,po->F,rank);
@@ -241,9 +273,9 @@ void poly_chernikova3(ap_manager_t* man,
     poly_obtain_sorted_C(pk,po);
     poly_obtain_sorted_F(pk,po);
     po->status |=
-      poly_status_conseps |
-      poly_status_consgauss |
-      poly_status_gengauss;
+      pk_status_conseps |
+      pk_status_consgauss |
+      pk_status_gengauss;
     assert(poly_check(pk,po));
   }
 }
@@ -256,12 +288,9 @@ void poly_chernikova3(ap_manager_t* man,
    the integer man->option->canonicalize.algorithm is positive,
    normalize equalities and lines, and also strict constraints */
 
-void poly_canonicalize(ap_manager_t* man, poly_t* po)
+void pk_canonicalize(ap_manager_t* man, pk_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_CANONICALIZE);
-
-  if (poly_is_canonical(man,po))
-    return;
 
   if (pk->funopt->algorithm >= 0)
     poly_chernikova3(man,po,NULL);
@@ -278,11 +307,11 @@ void poly_canonicalize(ap_manager_t* man, poly_t* po)
 }
 
 /* Minimize the size of the representation of the polyhedron */
-void poly_minimize(ap_manager_t* man, poly_t* po)
+void pk_minimize(ap_manager_t* man, pk_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MINIMIZE);
 
-  if (po->status != poly_status_minimal || po->C || po->F){
+  if (po->status != pk_status_minimal || po->C || po->F){
     poly_chernikova2(man,po,NULL);
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
@@ -297,15 +326,15 @@ void poly_minimize(ap_manager_t* man, poly_t* po)
 	matrix_free(po->C);
 	po->C = NULL;
 	matrix_minimize(po->F);
-	po->status &= ~poly_status_consgauss;
+	po->status &= ~pk_status_consgauss;
       }
       else {
 	matrix_free(po->F);
 	po->F = NULL;
 	matrix_minimize(po->C);
-	po->status &= ~poly_status_gengauss;
+	po->status &= ~pk_status_gengauss;
       }
-      po->status |= poly_status_minimal;
+      po->status |= pk_status_minimal;
     }
   }
   man->result.flag_exact = man->result.flag_best =
@@ -316,8 +345,8 @@ void poly_minimize(ap_manager_t* man, poly_t* po)
 /* II.3 Approximation */
 /* ====================================================================== */
 
-
-void poly_set_save_C(poly_t* po, poly_t* pa)
+static
+void poly_set_save_C(pk_t* po, pk_t* pa)
 {
   if (po != pa){
     po->F = pa->F ? matrix_copy(pa->F) : NULL;
@@ -333,7 +362,8 @@ void poly_set_save_C(poly_t* po, poly_t* pa)
 /* ---------------------------------------------------------------------- */
 /* Normalize integer constraints.  Return true if there is some change. */
 /* ---------------------------------------------------------------------- */
-bool _poly_approximate_n1(ap_manager_t* man, poly_t* po, poly_t* pa, int algorithm)
+static
+bool poly_approximate_n1(ap_manager_t* man, pk_t* po, pk_t* pa, int algorithm)
 {
   if (po->intdim>0){
     pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -352,8 +382,8 @@ bool _poly_approximate_n1(ap_manager_t* man, poly_t* po, poly_t* pa, int algorit
       {
 	/* Add positivity and strictness that may not be implied any more */
 	size_t nbrows = po->C->nbrows;
-	matrix_realloc_lazy(po->C,nbrows+pk->dec-1);
-	_matrix_fill_constraint_top(pk,po->C,nbrows);
+	matrix_resize_rows_lazy(po->C,nbrows+pk->dec-1);
+	matrix_fill_constraint_top(pk,po->C,nbrows);
       }
       if (po==pa){
 	if (po->F){ matrix_free(po->F); po->F = NULL; }
@@ -376,6 +406,7 @@ bool _poly_approximate_n1(ap_manager_t* man, poly_t* po, poly_t* pa, int algorit
 /* Remove constraints with coefficients of size greater than
    pk->max_coeff_size, if pk->max_coeff_size > 0 */
 /* ---------------------------------------------------------------------- */
+static
 bool matrix_approximate_constraint_1(pk_internal_t* pk, matrix_t* C)
 {
   size_t i,j;
@@ -396,14 +427,14 @@ bool matrix_approximate_constraint_1(pk_internal_t* pk, matrix_t* C)
   if (change){
     /* Add positivity and strictness that may not be implied any more */
     size_t nbrows = C->nbrows;
-    matrix_realloc_lazy(C,nbrows+pk->dec-1);
-    _matrix_fill_constraint_top(pk,C,nbrows);
+    matrix_resize_rows_lazy(C,nbrows+pk->dec-1);
+    matrix_fill_constraint_top(pk,C,nbrows);
     C->_sorted = false;
   }
   return change;
 }
-
-bool _poly_approximate_1(ap_manager_t* man, poly_t* po, poly_t* pa)
+static
+bool poly_approximate_1(ap_manager_t* man, pk_t* po, pk_t* pa)
 {
   bool change;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -438,33 +469,33 @@ bool _poly_approximate_1(ap_manager_t* man, poly_t* po, poly_t* pa)
    3. Add octagonal constraints
 */
 /* ---------------------------------------------------------------------- */
-
-void poly_approximate_123(ap_manager_t* man, poly_t* po, int algorithm)
+static
+void poly_approximate_123(ap_manager_t* man, pk_t* po, int algorithm)
 {
   bool change;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
   
   if (algorithm==1){
-    _poly_approximate_1(man,po,po);
+    poly_approximate_1(man,po,po);
   }
   else {
     size_t nbrows, nbrows2;
     ap_dim_t dim;
     ap_dim_t i,j;
     int sgn, sgny;
-    ap_coeff_t* coeff = NULL;
+    itv_t itv;
 
-    poly_t* pa = poly_alloc(po->intdim,po->realdim);
+    pk_t* pa = poly_alloc(po->intdim,po->realdim);
 
-    change = _poly_approximate_1(man,pa,po);
+    change = poly_approximate_1(man,pa,po);
     if (!change){
-      poly_free(man,pa);
+      pk_free(man,pa);
       return;
     }
     poly_obtain_F(man,po,NULL);
     if (!po->F){
       if (!po->C){
-	poly_free(man,pa);
+	pk_free(man,pa);
 	poly_set_bottom(pk,po);
 	man->result.flag_exact = tbool_true;
 	return;
@@ -478,52 +509,56 @@ void poly_approximate_123(ap_manager_t* man, poly_t* po, int algorithm)
     }
     dim = pa->intdim + pa->realdim;
     nbrows = pa->C->nbrows;
-    coeff = ap_coeff_alloc(AP_COEFF_SCALAR);
-    ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPQ);
+    itv_init(itv);
     if (algorithm>=2){ /* Add interval constraints */
       nbrows2 = 2*dim;
-      matrix_realloc_lazy(pa->C, nbrows + nbrows2);
+      matrix_resize_rows_lazy(pa->C, nbrows + nbrows2);
       pa->C->_sorted = false;
       for (i=0; i<dim;i++){
-	for (sgn=-1; sgn<=1; sgn += 2){
-	  matrix_bound_dimension(pk,
-				 coeff->val.scalar->val.mpq,
-				 i,po->F,
-				 sgn);
-	  
-	  if (!ap_scalar_infty(coeff->val.scalar)){
-	    vector_set_dim_bound(pk, pa->C->p[nbrows], 
-				 i, coeff->val.scalar->val.mpq,
-				 po->intdim, po->realdim, sgn, false);
-	    nbrows++;
-	  }
+	matrix_bound_dimension(pk,itv,i,po->F);
+	if (!bound_infty(itv->inf)){
+	  vector_set_dim_bound(pk, 
+			       pa->C->p[nbrows], 
+			       i, bound_numref(itv->inf),
+			       -1,
+			       po->intdim, po->realdim, false);
+	  nbrows++;
+	}
+	if (!bound_infty(itv->sup)){
+	  vector_set_dim_bound(pk, 
+			       pa->C->p[nbrows], 
+			       i, bound_numref(itv->sup), 
+			       1,
+			       po->intdim, po->realdim, false);
+	  nbrows++;
 	}
       }
-      pa->C->nbrows = nbrows;
     }
+    pa->C->nbrows = nbrows;
     if (algorithm>=3){ /* Add octagonal constraints */
       vector_clear(pk->poly_numintp,po->F->nbcolumns);
       numint_set_int(pk->poly_numintp[0],1);
       for (i=0; i<dim;i++){
 	numint_set_int(pk->poly_numintp[pk->dec+i],1);
 	nbrows2 = 2*(dim-i-1);
-	matrix_realloc_lazy(pa->C, nbrows + nbrows2);
+	matrix_resize_rows_lazy(pa->C, nbrows + nbrows2);
 	for (j=i+1; j<dim;j++){
 	  for (sgny=-1; sgny<=1; sgny += 2){
 	    numint_set_int(pk->poly_numintp[pk->dec+j],sgny);
-	    for (sgn=-1; sgn<=1; sgn += 2){
-	      matrix_bound_linexpr(pk,
-				   coeff->val.scalar->val.mpq,
-				   pk->poly_numintp,
-				   po->F,
-				   sgn);
-	      if (!ap_scalar_infty(coeff->val.scalar)){
-		vector_set_linexpr_bound(pk, pa->C->p[nbrows], 
-					 pk->poly_numintp,
-					 coeff->val.scalar->val.mpq,
-					 po->intdim, po->realdim, sgn, false);
-		nbrows++;
-	      }
+	    matrix_bound_vector(pk,itv,pk->poly_numintp,po->F);
+	    if (!bound_infty(itv->inf)){
+	      vector_set_linexpr_bound(pk, 
+				       pa->C->p[nbrows], pk->poly_numintp,
+				       itv->inf, -1,
+				       po->intdim, po->realdim, false);
+	      nbrows++;
+	    }
+	    if (!bound_infty(itv->sup)){
+	      vector_set_linexpr_bound(pk, 
+				       pa->C->p[nbrows], pk->poly_numintp,
+				       itv->sup, 1,
+				       po->intdim, po->realdim, false);
+	      nbrows++;
 	    }
 	  }
 	  numint_set_int(pk->poly_numintp[pk->dec+j],0);
@@ -532,7 +567,7 @@ void poly_approximate_123(ap_manager_t* man, poly_t* po, int algorithm)
       }
       pa->C->nbrows = nbrows;
     }   
-    ap_coeff_free(coeff);
+    itv_clear(itv);
     poly_clear(po);
     *po = *pa;
     free(pa);
@@ -543,17 +578,14 @@ void poly_approximate_123(ap_manager_t* man, poly_t* po, int algorithm)
 /* ---------------------------------------------------------------------- */
 /* 10. Round constraints with too big coefficients */
 /* ---------------------------------------------------------------------- */
-
+static
 bool matrix_approximate_constraint_10(pk_internal_t* pk, matrix_t* C, matrix_t* F)
 {
   size_t i,j,size;
   bool change,removed;
-  mpq_t mpq;
-  mpz_t mpz;
+  itv_t itv;
 
-  mpz_init(mpz);
-  mpq_init(mpq);
-
+  itv_init(itv);
   change = false;
   i = 0;
   while (i<C->nbrows){
@@ -589,8 +621,8 @@ bool matrix_approximate_constraint_10(pk_internal_t* pk, matrix_t* C, matrix_t* 
 	/* D. Compute new constant coefficient */
 	numint_set_int(C->p[i][0],1);
 	numint_set_int(C->p[i][polka_cst],0);
-	matrix_bound_linexpr(pk,mpq,C->p[i],F,-1);
-	if (mpz_sgn(mpq_denref(mpq))==0){
+	matrix_bound_vector(pk,itv,C->p[i],F);
+	if (bound_infty(itv->inf)){
 	  /* If no bound, we remove the constraint */
 	  C->nbrows--;
 	  matrix_exch_rows(C,i,C->nbrows);
@@ -598,18 +630,12 @@ bool matrix_approximate_constraint_10(pk_internal_t* pk, matrix_t* C, matrix_t* 
 	}
 	else {
 	  /* Otherwise, we round the constant to an integer */
-	  mpz_fdiv_q(mpz,mpq_numref(mpq),mpq_denref(mpq));
-	  mpz_neg(mpz,mpz);
-	  if (mpz_fits_numint(mpz)){
-	    /* If constant fits */
-	    numint_set_mpz(C->p[i][polka_cst],mpz);
-	    vector_normalize(pk,C->p[i],C->nbcolumns);
-	  }
-	  else {
-	    /* Otherwise, we remove the constraint */
-	    C->nbrows--;
-	    matrix_exch_rows(C,i,C->nbrows);
-	  }
+	  bound_neg(itv->inf,itv->inf);
+	  numint_fdiv_q(numrat_numref(bound_numref(itv->inf)),
+			numrat_numref(bound_numref(itv->inf)),
+			numrat_denref(bound_numref(itv->inf)));
+	  numint_neg(C->p[i][polka_cst],numrat_numref(bound_numref(itv->inf)));
+	  vector_normalize(pk,C->p[i],C->nbcolumns);
 	}
       	change = true;
       }
@@ -619,16 +645,15 @@ bool matrix_approximate_constraint_10(pk_internal_t* pk, matrix_t* C, matrix_t* 
   if (change){
     /* Add positivity and strictness that may not be implied any more */
     size_t nbrows = C->nbrows;
-    matrix_realloc_lazy(C,nbrows+pk->dec-1);
-    _matrix_fill_constraint_top(pk,C,nbrows);
+    matrix_resize_rows_lazy(C,nbrows+pk->dec-1);
+    matrix_fill_constraint_top(pk,C,nbrows);
     C->_sorted = false;
   }
-  mpz_clear(mpz);
-  mpq_clear(mpq);
+  itv_clear(itv);
   return change;
 }
-
-void poly_approximate_10(ap_manager_t* man, poly_t* po)
+static
+void poly_approximate_10(ap_manager_t* man, pk_t* po)
 {
   bool change;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -666,10 +691,15 @@ Approximation:
 		 polyhedron)
 
 - algorithm==1: remove constraints with coefficients of size greater than
-	       pk->max_coeff_size/(intdim+realdim)), if pk->max_coeff_size > 0
+	        max_coeff_size, if max_coeff_size > 0
+- algorithm==2: in addition, keep same bounding box (more precise)
+- algorithm==3: in addition, keep same bounding octagon (even more precise)
+
+- algorithm==10: round constraints with too big coefficients, of size greater than
+	         approximate_max_coeff_size, if approximate_max_coeff_size>0
 
 */
-void poly_approximate(ap_manager_t* man, poly_t* po, int algorithm)
+void pk_approximate(ap_manager_t* man, pk_t* po, int algorithm)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_APPROXIMATE);
 
@@ -682,7 +712,7 @@ void poly_approximate(ap_manager_t* man, poly_t* po, int algorithm)
   switch (algorithm){
   case -1:
     if (po->intdim>0)
-      _poly_approximate_n1(man,po,po,algorithm);
+      poly_approximate_n1(man,po,po,algorithm);
     break;
   case 1:
   case 2:
@@ -702,10 +732,10 @@ void poly_approximate(ap_manager_t* man, poly_t* po, int algorithm)
 /* ====================================================================== */
 
 /* Is the polyhedron in a minimal representation ? */
-tbool_t poly_is_minimal(ap_manager_t* man, poly_t* po)
+tbool_t pk_is_minimal(ap_manager_t* man, pk_t* po)
 {
   if ( (!po->C && !po->F) ||
-       (po->status & poly_status_minimal) )
+       (po->status & pk_status_minimal) )
     return tbool_true;
   else if (po->C && po->F)
     return tbool_false;
@@ -715,7 +745,7 @@ tbool_t poly_is_minimal(ap_manager_t* man, poly_t* po)
 
 /* Is the polyhedron in a canonical representation ?
    (depends on the algorithm option of canonicalize) */
-tbool_t poly_is_canonical(ap_manager_t* man, poly_t* po)
+tbool_t pk_is_canonical(ap_manager_t* man, pk_t* po)
 {
   tbool_t res;
 
@@ -726,8 +756,8 @@ tbool_t poly_is_canonical(ap_manager_t* man, poly_t* po)
   else {
     pk_internal_t* pk = (pk_internal_t*)man->internal;
     if (po->C->_sorted && po->F->_sorted &&
-	po->status & poly_status_consgauss &&
-	po->status & poly_status_gengauss &&
+	po->status & pk_status_consgauss &&
+	po->status & pk_status_gengauss &&
 	poly_is_conseps(pk,po))
       res = tbool_true;
     else
@@ -736,7 +766,7 @@ tbool_t poly_is_canonical(ap_manager_t* man, poly_t* po)
   return res;
 }
 
-void poly_obtain_sorted_F(pk_internal_t* pk, poly_t* po)
+void poly_obtain_sorted_F(pk_internal_t* pk, pk_t* po)
 {
   assert (po->F);
 
@@ -756,7 +786,7 @@ void poly_obtain_sorted_F(pk_internal_t* pk, poly_t* po)
   }
 }
 
-void poly_obtain_sorted_C(pk_internal_t* pk, poly_t* po)
+void poly_obtain_sorted_C(pk_internal_t* pk, pk_t* po)
 {
   assert (po->C);
 
@@ -780,8 +810,8 @@ void poly_obtain_sorted_C(pk_internal_t* pk, poly_t* po)
 /* III Printing */
 /* ********************************************************************** */
 
-void poly_fprint(FILE* stream, ap_manager_t* man, poly_t* po,
-		 char** name_of_dim)
+void pk_fprint(FILE* stream, ap_manager_t* man, pk_t* po,
+	       char** name_of_dim)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_FPRINT);
 
@@ -799,23 +829,23 @@ void poly_fprint(FILE* stream, ap_manager_t* man, poly_t* po,
       fprintf(stream,"cannot display due to exception\n");
     }
     else {
-      ap_lincons0_array_t cons = poly_to_lincons_array(man,po);
+      ap_lincons0_array_t cons = pk_to_lincons_array(man,po);
       ap_lincons0_array_fprint(stream,&cons,name_of_dim);
       ap_lincons0_array_clear(&cons);
     }
   }
 }
 
-void poly_fprintdiff(FILE* stream, ap_manager_t* man,
-		     poly_t* po1, poly_t* po2,
-		     char** name_of_dim)
+void pk_fprintdiff(FILE* stream, ap_manager_t* man,
+		   pk_t* po1, pk_t* po2,
+		   char** name_of_dim)
 {
   pk_init_from_manager(man,AP_FUNID_FPRINTDIFF);
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_FPRINTDIFF,NULL);
 }
 
 /* Raw printing function. */
-void poly_fdump(FILE* stream, ap_manager_t* man, poly_t* po)
+void pk_fdump(FILE* stream, ap_manager_t* man, pk_t* po)
 {
   pk_init_from_manager(man,AP_FUNID_FDUMP);
   if (!po->C && !po->F)
@@ -847,7 +877,7 @@ void poly_fdump(FILE* stream, ap_manager_t* man, poly_t* po)
 /* IV. Serialization */
 /* ********************************************************************** */
 
-ap_membuf_t poly_serialize_raw(ap_manager_t* man, poly_t* a)
+ap_membuf_t pk_serialize_raw(ap_manager_t* man, pk_t* a)
 {
   ap_membuf_t membuf;
   pk_init_from_manager(man,AP_FUNID_SERIALIZE_RAW);
@@ -856,7 +886,7 @@ ap_membuf_t poly_serialize_raw(ap_manager_t* man, poly_t* a)
   membuf.size = 0;
   return membuf;
 }
-poly_t* poly_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size)
+pk_t* pk_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size)
 {
   pk_init_from_manager(man,AP_FUNID_DESERIALIZE_RAW);
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_DESERIALIZE_RAW,NULL);
@@ -910,7 +940,7 @@ static bool matrix_check3(pk_internal_t* pk, matrix_t* mat)
 
   res = true;
   for (i=0; i<mat->nbrows-1; i++){
-    if (vector_compare(pk,mat->p[i],mat->p[i+1],mat->nbcolumns)>0){
+    if (matrix_compare_rows(pk,mat,i,i+1)>0){
       res = false;
       break;
     }
@@ -919,7 +949,7 @@ static bool matrix_check3(pk_internal_t* pk, matrix_t* mat)
 }
 
 
-bool poly_check(pk_internal_t* pk, poly_t* po)
+bool poly_check(pk_internal_t* pk, pk_t* po)
 {
   bool res;
   size_t nbdim,nbcols;
@@ -1025,7 +1055,7 @@ bool poly_check(pk_internal_t* pk, poly_t* po)
   return true;
 }
 
-bool poly_check_dual(pk_internal_t* pk, poly_t* po, bool usual)
+bool poly_check_dual(pk_internal_t* pk, pk_t* po, bool usual)
 {
   bool res;
   if (!usual) poly_dual(po);

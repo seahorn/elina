@@ -358,88 +358,6 @@ int vector_compare(pk_internal_t* pk,
   return res;
 }
 
-/* Comparison function, for vectors considered as contraints.
-
-The used order is the lexicographic order, with the exception that the
-constant (and possibly epsilon) coefficient is considered last. As a
-consequence, the equations or lines are classified before the
-inequalities or rays when vectors are rows of a sorted matrix.
-
-The meaning of the returned result res is:
-- <0 : q1 is smaller than q2
-- =0 : they are equal
-- >0: q1 is greater than q2
-- abs()=1: in addition, for constraint, they are parallel.
-
-For two parallel inequalities (equal coefficients apart for the $\xi$ and
-$\epsilon$ dimensions), the defined order $\leq$ corresponds with the
-entailment of constraints (if either pk->strict is true or not): if
-$\vec{a}\leq\vec{b}$, then $\vec{a}\{\geq,>\} 0 \Rightarrow \vec{b}\{\geq,>\}
-0$.
-
-This function uses pk->vector_tmp[0..3] and pk->vector_numintp.
-*/
-
-int vector_compare_constraint(pk_internal_t* pk,
-		   numint_t* q1, numint_t* q2,
-		   size_t size)
-{
-  size_t i;
-  int res=1;
-  int s1,s2;
-
-  assert(pk->dec<=size && size<=pk->maxcols);
-
-  /* bidirectional/unidirectional ? */
-  res = numint_cmp(q1[0],q2[0]);
-  if (res){
-    return (res>0) ? 2 : (-2);
-  }
-  else {
-    /* normal non-constant coefficients */
-    /* compute pgcd q1 */
-    vector_gcd(pk, &q1[pk->dec],size-pk->dec,pk->vector_tmp[1]);
-    /* compute pgcd q2 */
-    vector_gcd(pk, &q2[pk->dec],size-pk->dec,pk->vector_tmp[2]);
-    /* special cases */
-    s1 = numint_sgn(pk->vector_tmp[1]);
-    s2 = numint_sgn(pk->vector_tmp[2]);
-    if (s1==0 && s2==0){
-      numint_set_int(pk->vector_tmp[1],1);
-      numint_set_int(pk->vector_tmp[2],1);
-      goto nextcompare;
-    }
-    if (s1==0)  numint_set_int(pk->vector_tmp[1],1);
-    if (s2==0)  numint_set_int(pk->vector_tmp[2],1);
-    /* comparison */
-    for(i=pk->dec; i<size; i++){
-      numint_divexact(pk->vector_tmp[0],q1[i],pk->vector_tmp[1]);
-      numint_divexact(pk->vector_tmp[3],q2[i],pk->vector_tmp[2]);
-      res = numint_cmp(pk->vector_tmp[0],pk->vector_tmp[3]);
-      if (res){
-	return (res>0) ? 2 : (-2);
-      }
-    }
-  }
- nextcompare:
-  if (polka_cst<size){
-    numint_mul(pk->vector_tmp[0],q1[polka_cst],pk->vector_tmp[2]);
-    numint_mul(pk->vector_tmp[3],q2[polka_cst],pk->vector_tmp[1]);
-    res = numint_cmp(pk->vector_tmp[0],pk->vector_tmp[3]);
-    if (res==0 && pk->strict && polka_eps < size){
-      numint_mul(pk->vector_tmp[0],q1[polka_eps],pk->vector_tmp[2]);
-      numint_mul(pk->vector_tmp[3],q2[polka_eps],pk->vector_tmp[1]);
-      res = numint_cmp(pk->vector_tmp[0],pk->vector_tmp[3]);
-    }
-    if (res){
-      res = (res>0) ? 1 : (-1);
-    }
-    return res;
-  }
-  else
-    return 0;
-}
-
 /* ********************************************************************** */
 /* IV. Combine function */
 /* ********************************************************************** */
@@ -660,22 +578,6 @@ bool vector_is_integer(pk_internal_t* pk,
   size_t i;
   
   for (i=intdim; i<intdim+realdim; i++){
-    if (numint_sgn(vec[pk->dec+i]) != 0){
-      return false;
-    }
-  }
-  return true;
-}
-/* Return true if all dimensions involved in the expression are real
-   dimensions */
-
-bool vector_is_real(pk_internal_t* pk, 
-		       numint_t* vec,
-		       size_t intdim, size_t realdim)
-{
-  size_t i;
-  
-  for (i=0; i<intdim; i++){
     if (numint_sgn(vec[pk->dec+i]) != 0){
       return false;
     }

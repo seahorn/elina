@@ -18,6 +18,7 @@ ICFLAGS = \
 -I$(MPFR_PREFIX)/include \
 -I../apron \
 -I../num \
+-I../itv \
 -I../mlgmpidl \
 -I../mlapronidl \
 -I $(CAMLIDL_PREFIX)/lib/ocaml -I $(CAML_PREFIX)/lib/ocaml
@@ -37,7 +38,12 @@ pk_meetjoin pk_assign pk_project pk_resize pk_expandfold \
 pk_widening pk_closure \
 pkeq
 
-CCSRC = pk_config.h pk_int.h pk.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
+CCSRC = pk_config.h pk.h pkeq.h \
+mf_qsort.h pk_internal.h \
+pk_user.h pk_bit.h pk_satmat.h pk_vector.h pk_matrix.h pk_cherni.h \
+pk_representation.h pk_constructor.h pk_test.h pk_extract.h \
+pk_meetjoin.h pk_assign.h pk_resize.h \
+$(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = pk.h pkeq.h
 CCBIN_TO_INSTALL =
@@ -114,6 +120,9 @@ dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.ml
 # C part
 #-----------------------------------
 
+cxref: $(CCMODULES:%=%.c)
+	cxref -I/usr/include -I/usr/lib/gcc/i386-redhat-linux/4.0.2/include $(ICFLAGS) -DNUM_MPQ -no-comments -xref-func -index-func -html32-src -Otmp $^
+
 libpolkag.a: $(CCMODULES:%=%g.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
@@ -123,14 +132,14 @@ libpolkag_debug.a: $(CCMODULES:%=%g_debug.o)
 	$(RANLIB) $@
 
 %i.o: %.c
-	$(CC) $(CFLAGS) $(ICFLAGS) -DNUMINT_LONGINT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGRAT -c -o $@ $<
 %l.o: %.c
-	$(CC) $(CFLAGS) $(ICFLAGS) -DNUMINT_LONGLONGINT -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
 %g.o: %.c
-	$(CC) $(CFLAGS) $(ICFLAGS) -DNUMINT_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 %g_debug.o: %.c
-	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUMINT_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 #-----------------------------------
 # Caml part
@@ -158,6 +167,7 @@ test.cmo: test.ml
 #---------------------------------------
 # C rules
 #---------------------------------------
+
 
 libpolka_caml.a: polka_caml.o 
 	$(AR) rcs $@ $^

@@ -56,7 +56,7 @@ void satmat_free(satmat_t* sat)
 }
 
 /* Reallocation function, to scale up or to downsize a matrix */
-void satmat_realloc(satmat_t* sat, size_t nbrows)
+void satmat_resize_rows(satmat_t* sat, size_t nbrows)
 {
   size_t i;
 
@@ -77,38 +77,11 @@ void satmat_realloc(satmat_t* sat, size_t nbrows)
 }
 
 /* Reallocation function, to scale up or to downsize a matrix */
-void satmat_realloc2(satmat_t* sat, size_t nbcols)
+void satmat_resize_cols(satmat_t* sat, size_t nbcols)
 {
-  size_t i;
+  size_t i,j;
 
   if (nbcols!=sat->nbcolumns){
-    for (i=0; i<sat->_maxrows; i++){
-      sat->p[i] = bitstring_realloc(sat->p[i],nbcols);
-    }
-    sat->nbcolumns = nbcols;
-  }
-}
-
-/* Create a copy of the matrix of size nbrows (and not
-   _maxrows). Only ``used'' rows are copied. */
-satmat_t* satmat_copy(satmat_t* sat)
-{
-  size_t i,j;
-  satmat_t* nsat = satmat_alloc(sat->nbrows,sat->nbcolumns);
-  for (i=0; i<sat->nbrows; i++){
-    for (j=0; j<sat->nbcolumns; j++){
-      nsat->p[i][j] = sat->p[i][j];
-    }
-  }
-  return nsat;
-}
-
-/* Reallocation function, to scale up or to downsize a matrix */
-void satmat_extend_columns(satmat_t* sat, size_t nbcols)
-{
-  size_t i,j;
-
-  if (nbcols != sat->nbcolumns){
     for (i=0; i<sat->_maxrows; i++){
       sat->p[i] = bitstring_realloc(sat->p[i],nbcols);
       for (j=sat->nbcolumns; j<nbcols; j++){
@@ -121,7 +94,7 @@ void satmat_extend_columns(satmat_t* sat, size_t nbcols)
 
 /* Create a copy of the matrix of size nbrows (and not
    _maxrows) and extends columns. Only ``used'' rows are copied. */
-satmat_t* satmat_copy_extend_columns(satmat_t* sat, size_t nbcols)
+satmat_t* satmat_copy_resize_cols(satmat_t* sat, size_t nbcols)
 {
   size_t i,j;
   satmat_t* nsat;
@@ -134,6 +107,20 @@ satmat_t* satmat_copy_extend_columns(satmat_t* sat, size_t nbcols)
     }
     for (j=sat->nbcolumns; j<nbcols; j++)
       nsat->p[i][j] = 0;
+  }
+  return nsat;
+}
+
+/* Create a copy of the matrix of size nbrows (and not
+   _maxrows). Only ``used'' rows are copied. */
+satmat_t* satmat_copy(satmat_t* sat)
+{
+  size_t i,j;
+  satmat_t* nsat = satmat_alloc(sat->nbrows,sat->nbcolumns);
+  for (i=0; i<sat->nbrows; i++){
+    for (j=0; j<sat->nbcolumns; j++){
+      nsat->p[i][j] = sat->p[i][j];
+    }
   }
   return nsat;
 }

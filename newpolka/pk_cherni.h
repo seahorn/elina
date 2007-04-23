@@ -15,7 +15,7 @@ from one representation to the dual one. */
 #include "pk_vector.h"
 #include "pk_satmat.h"
 #include "pk_matrix.h"
-#include "pk_int.h"
+#include "pk.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,11 +98,11 @@ call to gauss). Then backsubstitution is performed on (minimal) inequalities.
 */
 void cherni_minimize(pk_internal_t* pk,
 		     bool con_to_ray,
-		     poly_t* po);
+		     pk_t* po);
 
 void cherni_add_and_minimize(pk_internal_t* pk,
 			     bool con_to_ray,
-			     poly_t* po,
+			     pk_t* po,
 			     size_t start);
 /* Misc */
 void cherni_buildsatline(pk_internal_t* pk,

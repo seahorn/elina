@@ -9,9 +9,6 @@
 #define _PK_MEETJOIN_H_
 
 #include "pk_config.h"
-#include "pk_vector.h"
-#include "pk_satmat.h"
-#include "pk_matrix.h"
 #include "pk.h"
 
 #ifdef __cplusplus
@@ -44,48 +41,15 @@ extern "C" {
 
    Return true if exception
  */
-bool _poly_meet_matrix(bool meet, bool lazy,
-		       ap_manager_t* man,
-		       poly_t* po, 
-		       poly_t* pa, matrix_t* mat);
+bool poly_meet_matrix(bool meet, bool lazy,
+		      ap_manager_t* man,
+		      pk_t* po, 
+		      pk_t* pa, matrix_t* mat);
 
-/* Meet/Join of two polyhedra */
-void _poly_meet(bool meet,
-		bool lazy,
-		ap_manager_t* man,
-		poly_t* po, poly_t* pa, poly_t* pb);
-/* Meet/Join of an array of polyhedra */
-poly_t* _poly_meet_array(bool meet,
-			 bool lazy,
-			 ap_manager_t* man,
-			 poly_t** po, size_t size);
-
-/* ********************************************************************** */
-/* II. Meet */
-/* ********************************************************************** */
-
-void _poly_meet_lincons_array(bool lazy,
-			      ap_manager_t* man,
-			      poly_t* po, 
-			      poly_t* pa, ap_lincons0_array_t* array);
-poly_t* poly_meet(ap_manager_t* man, bool destructive, poly_t* a1, poly_t* a2);
-poly_t* poly_meet_array(ap_manager_t* man, poly_t** tab, size_t size);
-poly_t* poly_meet_lincons_array(ap_manager_t* man,
-				bool destructive, poly_t* a,
-				ap_lincons0_array_t* array);
-
-/* ********************************************************************** */
-/* II. Join */
-/* ********************************************************************** */
-
-void _poly_add_ray_array(bool lazy, 
-			 ap_manager_t* man,
-			 poly_t* po, poly_t* pa, ap_generator0_array_t* array);
-
-poly_t* poly_join(ap_manager_t* man, bool destructive, poly_t* a1, poly_t* a2);
-poly_t* poly_join_array(ap_manager_t* man, poly_t** po, size_t size);
-poly_t* poly_add_ray_array(ap_manager_t* man, 
-			   bool destructive, poly_t* pa, ap_generator0_array_t* array);
+void poly_meet_lincons_array(bool lazy,
+			     ap_manager_t* man,
+			     pk_t* po, 
+			     pk_t* pa, ap_lincons0_array_t* array);
 
 #ifdef __cplusplus
 }

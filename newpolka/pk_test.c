@@ -9,24 +9,25 @@
 #include "pk_vector.h"
 #include "pk_satmat.h"
 #include "pk_matrix.h"
-#include "pk_int.h"
-#include "pk_user.h"
+#include "pk.h"
 #include "pk_representation.h"
+#include "pk_user.h"
 #include "pk_constructor.h"
+#include "pk_extract.h"
 #include "pk_test.h"
 
 /* ====================================================================== */
 /* Emptiness test */
 /* ====================================================================== */
 
-tbool_t poly_is_bottom(ap_manager_t* man, poly_t* po)
+tbool_t pk_is_bottom(ap_manager_t* man, pk_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_IS_BOTTOM);
   if (!po->C && !po->F)
     return tbool_true;
 
   if (po->F){
-      man->result.flag_exact = man->result.flag_best = 
+      man->result.flag_exact = man->result.flag_best =
 	po->intdim>0 ? tbool_top : tbool_true;
       return tbool_false;
   }
@@ -40,7 +41,7 @@ tbool_t poly_is_bottom(ap_manager_t* man, poly_t* po)
 	pk->exn = AP_EXC_NONE;
 	return tbool_top;
       }
-      man->result.flag_exact = man->result.flag_best = 
+      man->result.flag_exact = man->result.flag_best =
 	po->intdim>0 && po->F ? tbool_top : tbool_true;
       return tbool_of_int(po->F == NULL);
     }
@@ -51,7 +52,7 @@ tbool_t poly_is_bottom(ap_manager_t* man, poly_t* po)
 /* Universe test */
 /* ====================================================================== */
 
-tbool_t poly_is_top(ap_manager_t* man, poly_t* po)
+tbool_t pk_is_top(ap_manager_t* man, pk_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_IS_TOP);
   man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -84,7 +85,6 @@ This enables to test the satisfiability of a strict constraint in non-strict
 mode for the library.
 
 */
-
 bool do_generators_sat_constraint(pk_internal_t* pk, matrix_t* F, numint_t* tab, bool is_strict)
 {
   size_t i;
@@ -119,7 +119,7 @@ bool do_generators_sat_constraint(pk_internal_t* pk, matrix_t* F, numint_t* tab,
 	}
 	else {
 	  /* ray or vertex */
-	  if (is_strict && sign==0 && 
+	  if (is_strict && sign==0 &&
 	      (pk->strict ? numint_sgn(F->p[i][polka_eps])>0 : true))
 	    return false;
 	}
@@ -133,7 +133,7 @@ bool do_generators_sat_constraint(pk_internal_t* pk, matrix_t* F, numint_t* tab,
    result is true if and only if all frames of pa verify the
    constraints of pb. We do not require minimality. */
 
-tbool_t poly_is_leq(ap_manager_t* man, poly_t* pa, poly_t* pb)
+tbool_t pk_is_leq(ap_manager_t* man, pk_t* pa, pk_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_IS_LEQ);
 
@@ -147,24 +147,24 @@ tbool_t poly_is_leq(ap_manager_t* man, poly_t* pa, poly_t* pb)
     return tbool_top;
   }
   if (!pa->F){ /* pa is empty */
-    man->result.flag_exact = man->result.flag_best = tbool_true;  
+    man->result.flag_exact = man->result.flag_best = tbool_true;
     return tbool_true;
   }
   if (pk->funopt->algorithm>0)
     poly_chernikova(man,pb,"of the second argument");
   else
     poly_obtain_C(man,pb,"of the second argument");
-  
+
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     return tbool_top;
   }
   if (!pb->C){/* pb is empty */
-    man->result.flag_exact = man->result.flag_best = tbool_true;  
+    man->result.flag_exact = man->result.flag_best = tbool_true;
     return tbool_false;
   }
-  man->result.flag_exact = man->result.flag_best = 
-    pa->intdim>0 ? tbool_top : tbool_true;  
+  man->result.flag_exact = man->result.flag_best =
+    pa->intdim>0 ? tbool_top : tbool_true;
   /* if both are mininmal, check the dimensions */
   if (pa->C && pa->F && pb->C && pb->F
       && (pa->nbeq < pb->nbeq || pa->nbline > pb->nbline))
@@ -178,7 +178,7 @@ tbool_t poly_is_leq(ap_manager_t* man, poly_t* pa, poly_t* pb)
       bool sat = do_generators_sat_constraint(pk,
 					      pa->F,
 					      pb->C->p[i],
-					      pk->strict && 
+					      pk->strict &&
 					      numint_sgn(pb->C->p[i][polka_eps])<0);
       if (sat==false) return tbool_false;
     }
@@ -190,20 +190,20 @@ tbool_t poly_is_leq(ap_manager_t* man, poly_t* pa, poly_t* pb)
 /* Equality test */
 /* ====================================================================== */
 
-tbool_t poly_is_eq(ap_manager_t* man, poly_t* pa, poly_t* pb)
+tbool_t pk_is_eq(ap_manager_t* man, pk_t* pa, pk_t* pb)
 {
   pk_init_from_manager(man,AP_FUNID_IS_EQ);
 
-  man->result.flag_exact = man->result.flag_best = 
-    pa->intdim>0 ? tbool_top : tbool_true;  
+  man->result.flag_exact = man->result.flag_best =
+    pa->intdim>0 ? tbool_top : tbool_true;
   if (pa->C && pa->F && pb->C && pb->F &&
       (pa->nbeq != pb->nbeq || pa->nbline != pb->nbline) ){
     return tbool_false;
   }
   else {
-    tbool_t res = poly_is_leq(man,pa,pb);
+    tbool_t res = pk_is_leq(man,pa,pb);
     if (res == tbool_true){
-      res = poly_is_leq(man,pb,pa);
+      res = pk_is_leq(man,pb,pa);
     }
     if (res==tbool_true){
       man->result.flag_exact = man->result.flag_best = tbool_true;
@@ -216,8 +216,9 @@ tbool_t poly_is_eq(ap_manager_t* man, poly_t* pa, poly_t* pb)
 /* Satisfiability of a linear constraint */
 /* ====================================================================== */
 
-tbool_t poly_sat_lincons(ap_manager_t* man, poly_t* po, ap_lincons0_t* lincons)
+tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* po, ap_lincons0_t* lincons0)
 {
+  bool exact;
   bool sat;
   size_t dim;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_SAT_LINCONS);
@@ -226,7 +227,7 @@ tbool_t poly_sat_lincons(ap_manager_t* man, poly_t* po, ap_lincons0_t* lincons)
     poly_chernikova(man,po,NULL);
   else
     poly_obtain_F(man,po,NULL);
-  
+
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     return tbool_top;
@@ -235,7 +236,7 @@ tbool_t poly_sat_lincons(ap_manager_t* man, poly_t* po, ap_lincons0_t* lincons)
     man->result.flag_exact = man->result.flag_best = tbool_true;
     return tbool_true;
   }
-  switch (lincons->constyp){
+  switch (lincons0->constyp){
   case AP_CONS_EQ:
   case AP_CONS_SUPEQ:
   case AP_CONS_SUP:
@@ -245,19 +246,35 @@ tbool_t poly_sat_lincons(ap_manager_t* man, poly_t* po, ap_lincons0_t* lincons)
     return tbool_top;
   }
   dim = po->intdim + po->realdim;
-  vector_set_lincons(pk,
-		     pk->poly_numintp,
-		     lincons,
-		     po->intdim, po->realdim, false);
-  sat = do_generators_sat_constraint(pk,po->F,
-				     pk->poly_numintp,
-				     lincons->constyp==AP_CONS_SUP);
-  man->result.flag_exact = man->result.flag_best = 
-    sat ? 
-    tbool_true : 
+
+  if (!ap_linexpr0_is_quasilinear(lincons0->linexpr0)){
+    itv_t* titv = matrix_to_box(pk,po->F);
+    exact = itv_quasilincons_set_ap_lincons0(pk->itv,
+					     &pk->poly_itv_lincons,
+					     titv,
+					     lincons0);
+    itv_array_free(titv,po->intdim+po->realdim);
+  }
+  else {
+    exact = itv_lincons_set_ap_lincons0(pk->itv,
+					&pk->poly_itv_lincons,
+					lincons0);
+  }
+  sat = vector_set_itv_lincons_sat(pk,
+				   pk->poly_numintp,
+				   &pk->poly_itv_lincons,
+				   po->intdim, po->realdim, true);
+  if (sat){
+    sat = do_generators_sat_constraint(pk,po->F,
+				       pk->poly_numintp,
+				       lincons0->constyp==AP_CONS_SUP);
+  }
+  man->result.flag_exact = man->result.flag_best =
+    sat ?
+    tbool_true :
     (
      ( (pk->funopt->flag_exact_wanted || pk->funopt->flag_best_wanted) &&
-       ap_linexpr0_is_real(lincons->linexpr0,po->intdim) ) ?
+       exact && ap_linexpr0_is_real(lincons0->linexpr0,po->intdim) ) ?
      tbool_true :
      tbool_top );
 
@@ -283,7 +300,7 @@ tests if:
 - dim >= bound if sgn<0
 */
 
-bool do_generators_sat_bound(pk_internal_t* pk, matrix_t* F, 
+bool do_generators_sat_bound(pk_internal_t* pk, matrix_t* F,
 			     ap_dim_t dim, ap_scalar_t* scalar,
 			     int sgn)
 {
@@ -323,8 +340,8 @@ bool do_generators_sat_bound(pk_internal_t* pk, matrix_t* F,
   return true;
 }
 
-tbool_t poly_sat_interval(ap_manager_t* man, poly_t* po,
-			  ap_dim_t dim, ap_interval_t* interval)
+tbool_t pk_sat_interval(ap_manager_t* man, pk_t* po,
+			ap_dim_t dim, ap_interval_t* interval)
 {
   bool sat;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_SAT_INTERVAL);
@@ -360,9 +377,9 @@ tbool_t poly_sat_interval(ap_manager_t* man, poly_t* po,
     }
   }
  poly_sat_interval_exit0:
-  man->result.flag_exact = man->result.flag_best = 
+  man->result.flag_exact = man->result.flag_best =
     sat ? tbool_true :
-    (dim < po->intdim ? tbool_top : tbool_true);  
+    (dim < po->intdim ? tbool_top : tbool_true);
   return tbool_of_bool(sat);
 }
 
@@ -370,7 +387,7 @@ tbool_t poly_sat_interval(ap_manager_t* man, poly_t* po,
 /* Is a dimension unconstrained ? */
 /* ====================================================================== */
 
-tbool_t poly_is_dimension_unconstrained(ap_manager_t* man, poly_t* po,
+tbool_t pk_is_dimension_unconstrained(ap_manager_t* man, pk_t* po,
 					ap_dim_t dim)
 {
   size_t i,j;
@@ -393,7 +410,7 @@ tbool_t poly_is_dimension_unconstrained(ap_manager_t* man, poly_t* po,
     return tbool_false;
   }
   if (po->F){
-    /* We test if there exists the line of direction dim */ 
+    /* We test if there exists the line of direction dim */
     poly_chernikova3(man,po,NULL);
     F = po->F;
     res = tbool_false;
@@ -411,7 +428,7 @@ tbool_t poly_is_dimension_unconstrained(ap_manager_t* man, poly_t* po,
     }
   }
   else {
-    /* We test if there exists a constraint with non zero coeff for dim */ 
+    /* We test if there exists a constraint with non zero coeff for dim */
     C = po->C;
     res = tbool_true;
     for (i=0; i<C->nbrows; i++){
@@ -422,6 +439,5 @@ tbool_t poly_is_dimension_unconstrained(ap_manager_t* man, poly_t* po,
     }
   }
   man->result.flag_exact = man->result.flag_best = tbool_true;
-  return res;  
+  return res;
 }
-

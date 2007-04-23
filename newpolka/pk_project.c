@@ -10,23 +10,23 @@
 #include "pk_bit.h"
 #include "pk_satmat.h"
 #include "pk_matrix.h"
-
+#include "pk.h"
 #include "pk_user.h"
-#include "pk_representation.h"
 #include "pk_constructor.h"
 #include "pk_assign.h"
 #include "pk_meetjoin.h"
-#include "pk_project.h"
+#include "pk_representation.h"
 
 
 /* ********************************************************************** */
 /* I. Factorized form */
 /* ********************************************************************** */
 
-void _poly_projectforget_array(bool project,
+static
+void poly_projectforget_array(bool project,
 			       bool lazy,
 			       ap_manager_t* man,	
-			       poly_t* po, poly_t* pa, 
+			       pk_t* po, pk_t* pa, 
 			       ap_dim_t* tdim, size_t size)
 {
   bool res;
@@ -91,7 +91,7 @@ void _poly_projectforget_array(bool project,
     poly_dual(pa);
     if (po!=pa) poly_dual(po);
     if (!lazy) poly_obtain_satC(pa);
-    res = _poly_meet_matrix(false,lazy,man,po,pa,mat);
+    res = poly_meet_matrix(false,lazy,man,po,pa,mat);
     poly_dual(pa);
     if (po!=pa) poly_dual(po);
     matrix_free(mat);
@@ -127,15 +127,15 @@ void _poly_projectforget_array(bool project,
 /* II. Exported functions */
 /* ********************************************************************** */
 
-poly_t* poly_forget_array(ap_manager_t* man, 
-			  bool destructive, poly_t* pa, 
-			  ap_dim_t* tdim, size_t size,
-			  bool project)
+pk_t* pk_forget_array(ap_manager_t* man, 
+		      bool destructive, pk_t* pa, 
+		      ap_dim_t* tdim, size_t size,
+		      bool project)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_FORGET_ARRAY);
-  poly_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
-  _poly_projectforget_array(project,
-			    pk->funopt->algorithm<=0,
-			    man,po,pa,tdim,size);
+  pk_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
+  poly_projectforget_array(project,
+			   pk->funopt->algorithm<=0,
+			   man,po,pa,tdim,size);
   return po;
 }

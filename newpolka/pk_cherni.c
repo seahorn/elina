@@ -129,8 +129,8 @@ void cherni_resize(matrix_t* mat, satmat_t* sat)
   size_t nbrows = mat->nbrows;
   size_t currentsize = mat->_maxrows >= sat->_maxrows ? mat->_maxrows : sat->_maxrows;
   size_t addsize = currentsize < 20 ? 10 : currentsize / 2;
-  matrix_realloc(mat, currentsize+addsize);
-  satmat_realloc(sat, currentsize+addsize);
+  matrix_resize_rows(mat, currentsize+addsize);
+  satmat_resize_rows(sat, currentsize+addsize);
   mat->nbrows = sat->nbrows = nbrows;
   return;
 }
@@ -660,7 +660,7 @@ static inline size_t uint_max(size_t a, size_t b)
 
 void cherni_minimize(pk_internal_t* pk,
 		     bool con_to_ray,
-		     poly_t* po)
+		     pk_t* po)
 {
   size_t i;
   bool special;
@@ -722,8 +722,8 @@ void cherni_minimize(pk_internal_t* pk,
     satmat_free(satC);      
     po->nbeq = cherni_simplify(pk,C,F,po->satF,po->nbline);
     if (F->_maxrows > 3*F->nbrows/2){
-      matrix_realloc(F,F->nbrows);
-      satmat_realloc2(po->satF,bitindex_size(F->nbrows));
+      matrix_resize_rows(F,F->nbrows);
+      satmat_resize_cols(po->satF,bitindex_size(F->nbrows));
     }
   } 
 }
@@ -739,7 +739,7 @@ void cherni_minimize(pk_internal_t* pk,
    
 void cherni_add_and_minimize(pk_internal_t* pk, 
 			     bool con_to_ray,
-			     poly_t* po,
+			     pk_t* po,
 			     size_t start)
 {
   size_t i;
@@ -765,7 +765,7 @@ void cherni_add_and_minimize(pk_internal_t* pk,
   }
 
   /* saturation matrix */
-  satmat_extend_columns(satC, bitindex_size(C->nbrows));
+  satmat_resize_cols(satC, bitindex_size(C->nbrows));
   /* conversion */
   F->_sorted = false;
   pk->exn = AP_EXC_NONE;
@@ -809,8 +809,8 @@ void cherni_add_and_minimize(pk_internal_t* pk,
     po->satC = NULL;
     po->nbeq = cherni_simplify(pk,C,F,po->satF,po->nbline);
     if (F->_maxrows > 3*F->nbrows/2){
-      matrix_realloc(F,F->nbrows);
-      satmat_realloc2(po->satF,bitindex_size(F->nbrows));
+      matrix_resize_rows(F,F->nbrows);
+      satmat_resize_cols(po->satF,bitindex_size(F->nbrows));
     } 
   }
 }

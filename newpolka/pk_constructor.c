@@ -9,10 +9,14 @@
 #include "pk_vector.h"
 #include "pk_satmat.h"
 #include "pk_matrix.h"
-#include "pk_int.h"
+#include "pk.h"
 #include "pk_user.h"
 #include "pk_representation.h"
 #include "pk_constructor.h"
+#include "pk_meetjoin.h"
+
+#include "itv.h"
+#include "itv_linexpr.h"
 
 /* ********************************************************************** */
 /* I. Constructors */
@@ -22,7 +26,7 @@
 /* Empty polyhedron */
 /* ====================================================================== */
 
-void poly_set_bottom(pk_internal_t* pk, poly_t* po)
+void poly_set_bottom(pk_internal_t* pk, pk_t* po)
 {
   if (po->C) matrix_free(po->C);
   if (po->F) matrix_free(po->F);
@@ -30,7 +34,7 @@ void poly_set_bottom(pk_internal_t* pk, poly_t* po)
   if (po->satF) satmat_free(po->satF);
   po->C = po->F = NULL;
   po->satC = po->satF = NULL;
-  po->status = poly_status_minimal;
+  po->status = pk_status_minimal;
   po->nbeq = po->nbline = 0;
 }
 
@@ -39,12 +43,12 @@ The empty polyhedron is just defined by the absence of both
 constraints matrix and frames matrix.
 */
 
-poly_t* poly_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
+pk_t* pk_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
 {
-  poly_t* po = poly_alloc(intdim,realdim);
+  pk_t* po = poly_alloc(intdim,realdim);
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOTTOM);
   pk_internal_realloc_lazy(pk,intdim+realdim);
-  po->status = poly_status_minimal;
+  po->status = pk_status_minimal;
   man->result.flag_exact = man->result.flag_best = tbool_true;
   return po;
 }
@@ -53,7 +57,7 @@ poly_t* poly_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
 /* Universe polyhedron */
 /* ====================================================================== */
 
-void _matrix_fill_constraint_top(pk_internal_t* pk, matrix_t* C, size_t start)
+void matrix_fill_constraint_top(pk_internal_t* pk, matrix_t* C, size_t start)
 {
   if (pk->strict){
     /* constraints epsilon and xi-epsilon*/
@@ -73,7 +77,7 @@ void _matrix_fill_constraint_top(pk_internal_t* pk, matrix_t* C, size_t start)
   }
 }
 
-void poly_set_top(pk_internal_t* pk, poly_t* po)
+void poly_set_top(pk_internal_t* pk, pk_t* po)
 {
   size_t i;
   size_t dim;
@@ -84,9 +88,9 @@ void poly_set_top(pk_internal_t* pk, poly_t* po)
   if (po->satF) satmat_free(po->satF);
 
   po->status =
-    poly_status_conseps |
-    poly_status_consgauss |
-    poly_status_gengauss;
+    pk_status_conseps |
+    pk_status_consgauss |
+    pk_status_gengauss;
 
   dim = po->intdim + po->realdim;
 
@@ -99,7 +103,7 @@ void poly_set_top(pk_internal_t* pk, poly_t* po)
   po->nbline = dim;
 
   /* constraints */
-  _matrix_fill_constraint_top(pk,po->C,0);
+  matrix_fill_constraint_top(pk,po->C,0);
 
   /* generators */
   /* lines $x_i$ */
@@ -126,9 +130,9 @@ void poly_set_top(pk_internal_t* pk, poly_t* po)
   }
 }
 
-poly_t* poly_top(ap_manager_t* man, size_t intdim, size_t realdim)
+pk_t* pk_top(ap_manager_t* man, size_t intdim, size_t realdim)
 {
-  poly_t* po;
+  pk_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_TOP);
   pk_internal_realloc_lazy(pk,intdim+realdim);
 
@@ -143,68 +147,10 @@ poly_t* poly_top(ap_manager_t* man, size_t intdim, size_t realdim)
 /* Hypercube polyhedron */
 /* ====================================================================== */
 
-/* Fills the vector with the constraint:
-   dim <= bound if sgn>0,
-   dim = bound if sgn=0
-   dim >= bound if sgn<0
-
-   Normally returns 0,
-   Returns 1 if equality of an integer dimension with a non-integer numbers
-*/
-
-bool vector_set_dim_bound(pk_internal_t* pk,
-			  numint_t* vec,
-			  ap_dim_t dim,
-			  mpq_t mpq,
-			  size_t intdim, size_t realdim,
-			  int sgn,
-			  bool integer)
-{
-  size_t size;
-  mpq_t bound;
-
-  assert (mpz_sgn(mpq_denref(mpq)));
-
-  size = pk->dec+intdim+realdim;
-
-  mpq_init(bound);
-  if (integer && dim<intdim){
-    if (sgn>0){
-      mpz_fdiv_q(mpq_numref(bound),mpq_numref(mpq),mpq_denref(mpq));
-      mpz_set_ui(mpq_denref(bound),1);
-    }
-    else if (sgn<0){
-      mpz_cdiv_q(mpq_numref(bound),mpq_numref(mpq),mpq_denref(mpq));
-      mpz_set_ui(mpq_denref(bound),1);
-    }
-    else {
-      if (mpz_cmp_ui(mpq_denref(mpq),1)!=0){
-	mpq_clear(bound);
-	return 1;
-      }
-    }
-  } else {
-    mpq_set(bound,mpq);
-  }
-  /* Write the constraint num + den*x >= 0 */
-  vector_clear(vec,size);
-  numint_set_int(vec[0], (sgn ? 1 : 0));
-  numint_set_mpz(vec[polka_cst],mpq_numref(bound));
-  numint_set_mpz(vec[pk->dec+dim],mpq_denref(bound));
-  mpq_clear(bound);
-  /* put the right sign now */
-  if (sgn>0){
-    numint_neg(vec[pk->dec+dim],vec[pk->dec+dim]);
-  } else {
-    numint_neg(vec[polka_cst],vec[polka_cst]);
-  }
-  return 0;
-}
-
 
 /* The matrix is supposed to be big enough */
-
-int _matrix_fill_constraint_box(pk_internal_t* pk,
+static 
+int matrix_fill_constraint_box(pk_internal_t* pk,
 				matrix_t* C, size_t start,
 				ap_interval_t** box,
 				size_t intdim, size_t realdim,
@@ -213,62 +159,56 @@ int _matrix_fill_constraint_box(pk_internal_t* pk,
   size_t k;
   ap_dim_t i;
   bool exc;
-  mpq_t mpq;
-
+  itv_t itv;
   k = start;
-  mpq_init(mpq);
-  for (i=0; i<intdim+realdim; i++){
-    ap_interval_t* itv;
 
-    itv = box[i];
-    if (ap_scalar_equal(itv->inf,itv->sup)){
-      assert(!ap_scalar_infty(itv->inf));
-      ap_mpq_set_scalar(mpq,itv->inf,0);
-      exc = vector_set_dim_bound(pk,C->p[k],(ap_dim_t)i, mpq,
+  itv_init(itv);
+  for (i=0; i<intdim+realdim; i++){
+    itv_set_ap_interval(pk->itv,itv,box[i]);
+    if (itv_is_point(pk->itv,itv)){
+      exc = vector_set_dim_bound(pk,C->p[k],
+				 (ap_dim_t)i, bound_numref(itv->sup), 0,
 				 intdim,realdim,
-				 0,
 				 integer);
       if (exc){
-	mpq_clear(mpq);
+	itv_clear(itv);
 	return -1;
       }
       k++;
     }
     else {
       /* inferior bound */
-      if (!ap_scalar_infty(itv->inf)){
-	ap_mpq_set_scalar(mpq,itv->inf,-1);
-	vector_set_dim_bound(pk,C->p[k],(ap_dim_t)i,mpq,
+      if (!bound_infty(itv->inf)){
+	vector_set_dim_bound(pk,C->p[k],
+			     (ap_dim_t)i, bound_numref(itv->inf), -1,
 			     intdim,realdim,
-			     -1,
 			     integer);
 	k++;
       }
       /* superior bound */
-      if (!ap_scalar_infty(itv->sup)){
-	ap_mpq_set_scalar(mpq,itv->sup,+1);
-	vector_set_dim_bound(pk,C->p[k],(ap_dim_t)i,mpq,
+      if (!bound_infty(itv->sup)){
+	vector_set_dim_bound(pk,C->p[k],
+			     (ap_dim_t)i, bound_numref(itv->sup), 1,
 			     intdim,realdim,
-			     1,
 			     integer);
 	k++;
       }
     }
   }
-  mpq_clear(mpq);
+  itv_clear(itv);
   return (int)k;
 }
 
 /* Abstract an hypercube defined by the array of intervals of size
    intdim+realdim.  */
 
-poly_t* poly_of_box(ap_manager_t* man,
-		    size_t intdim, size_t realdim,
-		    ap_interval_t** array)
+pk_t* pk_of_box(ap_manager_t* man,
+		size_t intdim, size_t realdim,
+		ap_interval_t** array)
 {
   int k;
   size_t dim;
-  poly_t* po;
+  pk_t* po;
 
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_OF_BOX);
   pk_internal_realloc_lazy(pk,intdim+realdim);
@@ -276,15 +216,15 @@ poly_t* poly_of_box(ap_manager_t* man,
   dim = intdim + realdim;
   po = poly_alloc(intdim,realdim);
   po->status =
-    poly_status_conseps |
-    poly_status_minimal;
+    pk_status_conseps |
+    pk_status_minimal;
 
   dim = intdim + realdim;
   po->C = matrix_alloc(pk->dec-1 + 2*dim, pk->dec + dim, false);
 
   /* constraints */
-  _matrix_fill_constraint_top(pk,po->C,0);
-  k = _matrix_fill_constraint_box(pk,po->C,pk->dec-1,array,intdim,realdim,true);
+  matrix_fill_constraint_top(pk,po->C,0);
+  k = matrix_fill_constraint_box(pk,po->C,pk->dec-1,array,intdim,realdim,true);
   if (k==-1){
     matrix_free(po->C);
     po->C = NULL;
@@ -302,102 +242,20 @@ poly_t* poly_of_box(ap_manager_t* man,
 /* Polyhedron from a set of (interval) linear constraints */
 /* ====================================================================== */
 
-/* Fills the vector with the constraint:
-   expr <= bound if sgn>0,
-   expr = bound if sgn=0
-   expr >= bound if sgn<0
-
-   Normally returns 0,
-   Returns 1 if equality with a non-integer numbers (like 2x=1).
-*/
-
-bool vector_set_linexpr_bound(pk_internal_t* pk,
-			      numint_t* vec,
-			      numint_t* vec2,
-			      mpq_t mpq,
-			      size_t intdim, size_t realdim,
-			      int sgn,
-			      bool integer)
-{
-  size_t i;
-  size_t size;
-  numint_t numint,cst;
-
-  assert (mpz_sgn(mpq_denref(mpq)));
-
-  size = pk->dec+intdim+realdim;
-
-  if (vec!=vec2){
-    vector_copy(vec,vec2,size);
-  }
-  numint_init(cst);
-  numint_set_mpz(cst,mpq_numref(mpq));
-  numint_mul(cst,cst,vec[0]);
-  if (mpz_cmp_ui(mpq_denref(mpq),1) != 0){
-    numint_init(numint);
-    numint_set_mpz(numint,mpq_denref(mpq));
-    for (i=0; i<size; i++){
-      numint_mul(vec[i],vec[i],numint);
-    }
-    numint_clear(numint);
-  }
-  numint_sub(vec[polka_cst],vec[polka_cst],cst);
-  numint_clear(cst);
-  if (sgn>0){
-    for (i=1; i<size; i++){
-      numint_neg(vec[i],vec[i]);
-    }
-  }
-  numint_set_int(vec[0], sgn ? 1 : 0);
-  vector_normalize(pk,vec,size);
-  if (integer) vector_normalize_constraint_int(pk,vec,intdim,realdim);
-
-  return false;
-}
-
 /*
 Abstract a convex polyhedra defined by the array of linear constraints.
 */
 
-poly_t* poly_of_lincons_array(ap_manager_t* man,
+pk_t* pk_of_lincons_array(ap_manager_t* man,
 			      size_t intdim, size_t realdim,
-			      ap_lincons0_array_t* cons)
+			      ap_lincons0_array_t* array)
 {
-  size_t i;
-  size_t row, dim;
-  matrix_t* C;
-  poly_t* po;
-
+  pk_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_OF_LINCONS_ARRAY);
   pk_internal_realloc_lazy(pk,intdim+realdim);
-
-  /* initialization */
-  po = poly_alloc(intdim,realdim);
-  po->status =
-    poly_status_conseps;
-  dim = intdim + realdim;
-  C = matrix_alloc(pk->dec-1 + cons->size, pk->dec + dim, false);
-  po->C = C;
-
-  /* constraints */
-  _matrix_fill_constraint_top(pk,C,0);
-  row = pk->dec - 1;
-  dim = intdim + realdim;
-  for (i=0; i<cons->size; i++){
-    switch (cons->p[i].constyp){
-    case AP_CONS_EQ:
-    case AP_CONS_SUPEQ:
-    case AP_CONS_SUP:
-      vector_set_lincons(pk, C->p[row], &cons->p[i], intdim, realdim, true);
-      row++;
-      break;
-    default:
-      break;
-    }
-  }
-  C->nbrows = row;
-  assert(poly_check(pk,po));
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  
+  po = pk_top(man,intdim,realdim);
+  poly_meet_lincons_array(true,man,po,po,array);
   return po;
 }
 
@@ -406,7 +264,7 @@ poly_t* poly_of_lincons_array(ap_manager_t* man,
 /* ********************************************************************** */
 
 /* Return the dimensions of the polyhedra */
-ap_dimension_t poly_dimension(ap_manager_t* man, poly_t* po){
+ap_dimension_t pk_dimension(ap_manager_t* man, pk_t* po){
   ap_dimension_t res;
   res.intdim = po->intdim;
   res.realdim = po->realdim;

@@ -42,8 +42,6 @@ bool vector_normalize_constraint_int(pk_internal_t* pk,
 /* Comparison */
 int vector_compare(pk_internal_t* pk,
 		   numint_t* q1, numint_t* q2, size_t size);
-int vector_compare_constraint(pk_internal_t* pk,
-			      numint_t* q1, numint_t* q2, size_t size);
 
 /* Combination and Algebraic Operations */
 void vector_combine(pk_internal_t* pk,
@@ -70,9 +68,6 @@ bool vector_is_dummy_or_strict_generator(pk_internal_t* pk,
 bool vector_is_integer(pk_internal_t* pk,
 		       numint_t* vec,
 		       size_t intdim, size_t realdim);
-bool vector_is_real(pk_internal_t* pk,
-		    numint_t* vec,
-		    size_t intdim, size_t realdim);
 
 /* Functions meant to be internal */
 numint_t* _vector_alloc_int(size_t size);

@@ -14,55 +14,20 @@
 #include "pk_representation.h"
 #include "pk_extract.h"
 
-/* ====================================================================== */
-/* Auxiliary functions */
-/* ====================================================================== */
-
-/* Comparison of extended GMP rationals where +infty is encoded with 1/0 and
-   -infty with -1/0. */
-
-static inline void mpqi_set_infty(mpq_t a, int sgn)
-{
-  mpz_set_si(mpq_numref(a),sgn);
-  mpz_set_ui(mpq_denref(a),0);
-}
-
-static int mpqi_cmp(mpq_t a, mpq_t b)
-{
-  int infa = mpz_sgn(mpq_denref(a))==0 ? mpz_sgn(mpq_numref(a)) : 0;
-  int infb = mpz_sgn(mpq_denref(b))==0 ? mpz_sgn(mpq_numref(b)) : 0;
-
-  if (infa==infb){
-    if (infa!=0)
-      return 0;
-    else
-      return mpq_cmp(a,b);
-  }
-  else
-    return infa-infb;
-}
-static inline void mpqi_min(mpq_t a, mpq_t b)
-{ if (mpqi_cmp(a,b)>0) mpq_set(a,b); }
-static inline void mpqi_max(mpq_t a, mpq_t b)
-{ if (mpqi_cmp(a,b)<0) mpq_set(a,b); }
-
-/* Bounding the value of a dimension in a matrix of generators.
-   mode == 1: sup bound
-   mode == -1: inf bound
-*/
+/* Bounding the value of a dimension in a matrix of generators. */
 
 void matrix_bound_dimension(pk_internal_t* pk,
-			    mpq_t mpq,
+			    itv_t itv,
 			    ap_dim_t dim,
-			    matrix_t* F,
-			    int mode)
+			    matrix_t* F)
 {
   size_t i, index;
   int sgn;
 
-  assert(mode!=0 && pk->dec+dim<F->nbcolumns);
+  assert(pk->dec+dim<F->nbcolumns);
   
-  mpqi_set_infty(mpq,-mode);
+  bound_set_infty(itv->inf,-1);
+  bound_set_infty(itv->sup,-1);
   index = pk->dec+dim;
   for (i=0; i<F->nbrows; i++){
     if (!pk->strict || numint_sgn(F->p[i][polka_eps])==0){
@@ -70,52 +35,69 @@ void matrix_bound_dimension(pk_internal_t* pk,
       if (numint_sgn(F->p[i][0])==0){
 	/* line: result should be zero */
 	if (sgn){
-	  mpqi_set_infty(mpq,mode);
+	  itv_set_top(itv);
 	  return;
 	}
       }
       else if (numint_sgn(F->p[i][polka_cst])==0){
 	/* ray */
-	if ( (sgn>0 && mode>0) || (sgn<0 && mode<0) ){
-	  mpqi_set_infty(mpq,mode);
-	  return;
+	if (sgn > 0){
+	  bound_set_infty(itv->sup,+1);
+	  if (bound_infty(itv->inf) && bound_sgn(itv->inf)>0)
+	    return;
+	}
+	else if (sgn < 0){
+	  bound_set_infty(itv->inf,+1);
+	  if (bound_infty(itv->sup) && bound_sgn(itv->sup)>0)
+	    return;
 	}
       }
       else {
 	/* point */
-	mpz_set_numint(mpq_numref(pk->vector_mpqp[0]),F->p[i][index]);
-	mpz_set_numint(mpq_denref(pk->vector_mpqp[0]),F->p[i][polka_cst]);
-	mpq_canonicalize(pk->vector_mpqp[0]);
-	if (mode>0)
-	  /* superior bound */
-	  mpqi_max(mpq,pk->vector_mpqp[0]);
-	else
-	  /* inferior bound */
-	  mpqi_min(mpq,pk->vector_mpqp[0]);
-      }
+	numrat_set_numint2(pk->poly_numrat,
+			   F->p[i][index],
+			   F->p[i][polka_cst]);
+	if (bound_cmp_num(itv->sup,pk->poly_numrat)<0){
+	  bound_set_num(itv->sup,pk->poly_numrat);
+	}
+	numrat_neg(pk->poly_numrat,pk->poly_numrat);
+	if (bound_cmp_num(itv->inf,pk->poly_numrat)<0){
+	  bound_set_num(itv->inf,pk->poly_numrat);
+	}
+      }	  
     }
   }
 }
 
+itv_t* matrix_to_box(pk_internal_t* pk,
+		     matrix_t* F)
+{
+  size_t i,dim;
+  itv_t* res;
 
-/* Bounding the value of a linear expression in a matrix of generators.
-   vec is supposed to be of size F->nbcolumns.
+  assert(F && F->nbcolumns>=pk->dec);
+  dim = F->nbcolumns - pk->dec;
+  res = itv_array_alloc(dim);
+  for (i=0;i<dim;i++){
+    matrix_bound_dimension(pk,res[i],i,F);
+  }
+  return res;
+}
 
-   mode == 1: sup bound
-   mode == -1: inf bound
+/* Bounding the value of a linear expression (vector) in a matrix of
+   generators.  vec is supposed to be of size F->nbcolumns.
 */
 
-void matrix_bound_linexpr(pk_internal_t* pk,
-			  mpq_t mpq,
-			  numint_t* vec,
-			  matrix_t* F,
-			  int mode)
+void matrix_bound_vector(pk_internal_t* pk,
+			 itv_t itv,
+			 numint_t* vec,
+			 matrix_t* F)
 {
   size_t i;
   int sgn;
   
-  assert(mode!=0);
-  mpqi_set_infty(mpq,-mode);
+  bound_set_infty(itv->inf,-1);
+  bound_set_infty(itv->sup,-1);
 
   for (i=0; i<F->nbrows; i++){
     if (!pk->strict || numint_sgn(F->p[i][polka_eps])==0 ){
@@ -127,47 +109,157 @@ void matrix_bound_linexpr(pk_internal_t* pk,
       if (numint_sgn(F->p[i][0])==0){
 	/* line: result should be zero */
 	if (sgn){
-	  mpqi_set_infty(mpq,mode);
+	  itv_set_top(itv);
 	  return;
 	}
       }
       else if (numint_sgn(F->p[i][polka_cst])==0){
 	/* ray */
-	if ((sgn>0 && mode>0) || (sgn<0 && mode<0)){
-	  mpqi_set_infty(mpq,mode);
-	  return;
+	if (sgn > 0){
+	  bound_set_infty(itv->sup,+1);
+	  if (bound_infty(itv->inf) && bound_sgn(itv->inf)>0)
+	    return;
+	}
+	else if (sgn < 0){
+	  bound_set_infty(itv->inf,+1);
+	  if (bound_infty(itv->sup) && bound_sgn(itv->sup)>0)
+	    return;
 	}
       }
       else {
 	/* point */
-	mpz_set_numint(mpq_numref(pk->vector_mpqp[0]),pk->poly_prod);
-	mpz_set_numint(mpq_denref(pk->vector_mpqp[0]),F->p[i][polka_cst]);
-	mpq_canonicalize(pk->vector_mpqp[0]);
-	if (mode>0)
-	  /* superior bound */
-	  mpqi_max(mpq,pk->vector_mpqp[0]);
-	else
-	  /* inferior bound */
-	  mpqi_min(mpq,pk->vector_mpqp[0]);
+	numrat_set_numint2(pk->poly_numrat,
+			   pk->poly_prod,
+			   F->p[i][polka_cst]);
+	if (bound_cmp_num(itv->sup,pk->poly_numrat)<0){
+	  bound_set_num(itv->sup,pk->poly_numrat);
+	}
+	numrat_neg(pk->poly_numrat,pk->poly_numrat);
+	if (bound_cmp_num(itv->inf,pk->poly_numrat)<0){
+	  bound_set_num(itv->inf,pk->poly_numrat);
+	}
+      }	  
+    }
+  }
+  if (!bound_infty(itv->inf)){
+    numint_mul(numrat_denref(bound_numref(itv->inf)),
+	       numrat_denref(bound_numref(itv->inf)),
+	       vec[0]);
+    numrat_canonicalize(bound_numref(itv->inf));
+  }
+  if (!bound_infty(itv->sup)){
+    numint_mul(numrat_denref(bound_numref(itv->sup)),
+	       numrat_denref(bound_numref(itv->sup)),
+	       vec[0]);
+    numrat_canonicalize(bound_numref(itv->sup));
+  }
+}
+
+/* Bounding the value of an (interval) linear expression (itv_linexpr) in a
+   generator vector
+*/
+static
+void vector_bound_itv_linexpr(pk_internal_t* pk,
+			      itv_t itv,
+			      itv_linexpr_t* linexpr,
+			      numint_t* vec, size_t size)
+{
+  size_t i,dim;
+  bool *peq;
+  itv_ptr pitv;
+  itv_ptr prod;
+  numrat_t* rat;
+
+  prod = pk->poly_itv;
+  rat = &pk->poly_numrat;
+
+  numrat_set_int(*rat,1);
+  itv_set_zero(itv);
+  itv_linexpr_ForeachLinterm(linexpr,i,dim,pitv,peq){
+    size_t index = pk->dec + dim;
+    if (numint_sgn(vec[index])){
+      numint_set(numrat_numref(*rat),vec[index]);
+      itv_mul_num(prod,pitv,*rat);
+      itv_add(itv,itv,prod);
+    }
+  }
+  if (numint_sgn(vec[polka_cst])){
+    numint_set(numrat_numref(*rat),vec[polka_cst]);
+    itv_div_num(itv,itv,*rat);
+    itv_add(itv,itv,linexpr->cst);
+  }
+  return;
+}
+			      
+/* Bounding the value of an (interval) linear expression (itv_linexpr) in a
+   matrix of generators.
+*/
+static
+void matrix_bound_itv_linexpr(pk_internal_t* pk,
+			      itv_t itv,
+			      itv_linexpr_t* linexpr,
+			      matrix_t* F)
+{
+  size_t i;
+  int sgn;
+  itv_t prod;
+
+  bound_set_infty(itv->inf,-1);
+  bound_set_infty(itv->sup,-1);
+
+  itv_init(prod);
+  for (i=0; i<F->nbrows; i++){
+    if (!pk->strict || numint_sgn(F->p[i][polka_eps])==0 ){
+      vector_bound_itv_linexpr(pk, prod, linexpr, F->p[i], F->nbcolumns);
+      if (numint_sgn(F->p[i][0])==0){
+	/* line: result should be zero */
+	if (!itv_is_zero(prod)){
+	  itv_set_top(itv);
+	  goto _matrix_bound_itv_linexpr_exit;
+	}
+      }
+      else if (numint_sgn(F->p[i][polka_cst])==0){
+	/* ray */
+	if (!itv_is_zero(prod)){
+	  if (bound_sgn(prod->inf)<0){
+	    /* [inf,sup]>0 */
+	    bound_set_infty(itv->sup,+1);
+	    if (bound_infty(itv->inf) && bound_sgn(itv->inf)>0)
+	      goto _matrix_bound_itv_linexpr_exit;
+	  }
+	  else if (bound_sgn(prod->sup)<0){
+	    /* [inf,sup]<0 */
+	    bound_set_infty(itv->inf,+1);
+	    if (bound_infty(itv->sup) && bound_sgn(itv->sup)>0)
+	      goto _matrix_bound_itv_linexpr_exit;
+	  }
+	  else {
+	    itv_set_top(itv);
+	    goto _matrix_bound_itv_linexpr_exit;
+	  }
+	}
+      }
+      else {
+	itv_join(itv,itv,prod);
       }
     }
   }
-  mpz_set_numint(mpq_denref(pk->vector_mpqp[0]),vec[0]);
-  mpz_mul(mpq_denref(mpq),mpq_denref(mpq),mpq_denref(pk->vector_mpqp[0]));
-  mpq_canonicalize(mpq);
+ _matrix_bound_itv_linexpr_exit:
+  itv_clear(prod);
+  return;
 }
-
-
 
 /* ====================================================================== */
 /* Bounding the value of a linear expression in a polyhedra */
 /* ====================================================================== */
 
-ap_interval_t* poly_bound_linexpr(ap_manager_t* man,
-			       poly_t* po,
-			       ap_linexpr0_t* expr)
+ap_interval_t* pk_bound_linexpr(ap_manager_t* man,
+				pk_t* po,
+				ap_linexpr0_t* expr)
 {
+  bool exact;
   ap_interval_t* interval;
+  itv_t itv;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOUND_LINEXPR);
 
   interval = ap_interval_alloc();
@@ -191,27 +283,19 @@ ap_interval_t* poly_bound_linexpr(ap_manager_t* man,
   
   /* we fill the vector with the expression, taking lower bound of the interval
      constant */
-  vector_set_linexpr(pk,pk->poly_numintp,expr,po->intdim+po->realdim,-1);
-  matrix_bound_linexpr(pk,
-		       interval->inf->val.mpq,
-		       pk->poly_numintp,po->F,
-		       -1);
-
-  if (expr->cst.discr == AP_COEFF_INTERVAL){
-    /* We change the expression, taking upper bound of the interval
-       constant  */
-    vector_set_linexpr(pk,pk->poly_numintp,expr,po->intdim+po->realdim,+1);
-  }
-  matrix_bound_linexpr(pk,
-		       interval->sup->val.mpq,
-		       pk->poly_numintp,po->F,
-		       +1);
-
+  exact = itv_linexpr_set_ap_linexpr0(pk->itv,
+				      &pk->poly_itv_linexpr,expr);
+  itv_init(itv);
+  matrix_bound_itv_linexpr(pk,itv,&pk->poly_itv_linexpr,po->F);
+  ap_interval_set_itv(pk->itv,interval,itv);
+  itv_clear(itv);
+  
   man->result.flag_exact = man->result.flag_best = 
     ( (pk->funopt->flag_exact_wanted || pk->funopt->flag_best_wanted) &&
       ap_linexpr0_is_real(expr,po->intdim) ) ? 
-    tbool_true : 
+    tbool_of_bool(exact) : 
     tbool_top;
+  
   return interval;
 }
 
@@ -219,9 +303,9 @@ ap_interval_t* poly_bound_linexpr(ap_manager_t* man,
 /* Bounding the value of a dimension in a polyhedra */
 /* ====================================================================== */
 
-ap_interval_t* poly_bound_dimension(ap_manager_t* man,
-				       poly_t* po,
-				       ap_dim_t dim)
+ap_interval_t* pk_bound_dimension(ap_manager_t* man,
+				  pk_t* po,
+				  ap_dim_t dim)
 {
   ap_interval_t* interval;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOUND_DIMENSION);
@@ -245,17 +329,11 @@ ap_interval_t* poly_bound_dimension(ap_manager_t* man,
     return interval;
   }
 
-  matrix_bound_dimension(pk,
-			 interval->inf->val.mpq,
-			 dim,po->F,
-			 -1);
-  matrix_bound_dimension(pk,
-			 interval->sup->val.mpq,
-			 dim,po->F,
-			 +1);
-
+  matrix_bound_dimension(pk,pk->poly_itv,dim,po->F);
   man->result.flag_exact = man->result.flag_best = 
     dim<po->intdim ? tbool_top : tbool_true;
+
+  ap_interval_set_itv(pk->itv,interval, pk->poly_itv);
   return interval;
 }
 
@@ -264,8 +342,8 @@ ap_interval_t* poly_bound_dimension(ap_manager_t* man,
 /* Converting to a set of constraints */
 /* ====================================================================== */
 
-ap_lincons0_array_t poly_to_lincons_array(ap_manager_t* man,
-				      poly_t* po)
+ap_lincons0_array_t pk_to_lincons_array(ap_manager_t* man,
+					pk_t* po)
 {
   ap_lincons0_array_t array;
   matrix_t* C;
@@ -292,7 +370,7 @@ ap_lincons0_array_t poly_to_lincons_array(ap_manager_t* man,
   for (i=0,k=0; i<C->nbrows; i++){
     if (! vector_is_dummy_constraint(pk,
 				     C->p[i], C->nbcolumns)){
-      array.p[k] = lincons_of_vector(pk, C->p[i], C->nbcolumns);
+      array.p[k] = lincons0_of_vector(pk, C->p[i], C->nbcolumns);
       k++;
     }
   }
@@ -304,8 +382,8 @@ ap_lincons0_array_t poly_to_lincons_array(ap_manager_t* man,
 /* Converting to a box */
 /* ====================================================================== */
 
-ap_interval_t** poly_to_box(ap_manager_t* man,
-			       poly_t* po)
+ap_interval_t** pk_to_box(ap_manager_t* man,
+			  pk_t* po)
 {
   ap_interval_t** interval;
   size_t i,dim;
@@ -329,7 +407,7 @@ ap_interval_t** poly_to_box(ap_manager_t* man,
   }
   interval = malloc(dim*sizeof(ap_interval_t*));
   for (i=0; i<dim; i++){
-    interval[i] = poly_bound_dimension(man,po,i);
+    interval[i] = pk_bound_dimension(man,po,i);
   }
   man->result.flag_exact = man->result.flag_best = tbool_true;
   return interval;
@@ -342,8 +420,8 @@ ap_interval_t** poly_to_box(ap_manager_t* man,
 /* The function returns the set of generators for the topological closure of
    the polyhedron. */
 
-ap_generator0_array_t poly_to_generator_array(ap_manager_t* man,
-					   poly_t* po)
+ap_generator0_array_t pk_to_generator_array(ap_manager_t* man,
+					    pk_t* po)
 {
   ap_generator0_array_t array;
   matrix_t* F;
@@ -369,7 +447,7 @@ ap_generator0_array_t poly_to_generator_array(ap_manager_t* man,
   for (i=0,k=0; i<F->nbrows; i++){
     if (! vector_is_dummy_or_strict_generator(pk,
 					      F->p[i], F->nbcolumns)){
-      array.p[k] = generator_of_vector(pk, F->p[i], F->nbcolumns);
+      array.p[k] = generator0_of_vector(pk, F->p[i], F->nbcolumns);
       k++;
     }
   }

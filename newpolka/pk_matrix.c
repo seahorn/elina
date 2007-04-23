@@ -54,7 +54,7 @@ matrix_t* matrix_alloc(size_t nbrows, size_t nbcols, bool s)
 }
 
 /* Reallocation function, to scale up or to downsize a matrix */
-void matrix_realloc(matrix_t* mat, size_t nbrows)
+void matrix_resize_rows(matrix_t* mat, size_t nbrows)
 {
   size_t i;
 
@@ -78,10 +78,10 @@ void matrix_realloc(matrix_t* mat, size_t nbrows)
 }
 
 /* Ensures a minimum size */
-void matrix_realloc_lazy(matrix_t* mat, size_t nbrows)
+void matrix_resize_rows_lazy(matrix_t* mat, size_t nbrows)
 {
   if (nbrows>mat->_maxrows)
-    matrix_realloc(mat,nbrows);
+    matrix_resize_rows(mat,nbrows);
   else {
     mat->_sorted = mat->_sorted && nbrows<mat->nbrows;
     mat->nbrows = nbrows;
@@ -91,7 +91,7 @@ void matrix_realloc_lazy(matrix_t* mat, size_t nbrows)
 /* Minimization */
 void matrix_minimize(matrix_t* mat)
 {
-  matrix_realloc(mat,mat->nbrows);
+  matrix_resize_rows(mat,mat->nbrows);
 }
 
 /* Deallocation function. */
@@ -368,7 +368,7 @@ void matrix_append_with(matrix_t* mat, matrix_t* cmat)
   assert (mat->nbcolumns == cmat->nbcolumns);
   
   nbrows = mat->nbrows;
-  matrix_realloc_lazy(mat,nbrows+cmat->nbrows);
+  matrix_resize_rows_lazy(mat,nbrows+cmat->nbrows);
   for (i=0;i<cmat->nbrows; i++){
     for (l=0; l<cmat->nbcolumns; l++)
       numint_set(mat->p[nbrows+i][l],cmat->p[i][l]);
@@ -387,7 +387,7 @@ void matrix_revappend_with(matrix_t* mat, matrix_t* cmat)
 
   assert(mat->nbcolumns == cmat->nbcolumns);
   nbrows = mat->nbrows;
-  matrix_realloc_lazy(mat,nbrows+cmat->nbrows);
+  matrix_resize_rows_lazy(mat,nbrows+cmat->nbrows);
   for (i=nbrows-1; i>=0; i--){
     /* exchanging rows i and i+cmat->nbrows */
     numint_t* q = mat->p[i+cmat->nbrows];
@@ -484,7 +484,7 @@ void matrix_merge_sort_with(pk_internal_t* pk,
 
   nbrowsa = mata->nbrows;
   nbcols = mata->nbcolumns;
-  matrix_realloc_lazy(mata, nbrowsa + matb->nbrows);
+  matrix_resize_rows_lazy(mata, nbrowsa + matb->nbrows);
   
   /* one adds the coefficients of matb to mata */
   for (i=0; i<matb->nbrows; i++){

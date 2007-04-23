@@ -239,8 +239,12 @@ saturation matrices that are available.
 @item bottom,top                @tab      @tab Return canonical form.
 
 @item
-@item of_box, of_lincons_array  @tab      @tab Return constraints.
+@item of_box                    @tab      @tab Return constraints.
 
+@item
+@item of_lincons_array          @tab      @tab Return constraints.
+@item                           @tab >=0  @tab Take into account interval-linear constraints, after having minimized the quasi-linear constraints
+@item                           @tab <0  @tab Ignore interval-linear constraints
 @item
 @item dimension                 @tab      @tab
 

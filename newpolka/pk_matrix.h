@@ -50,8 +50,8 @@ static inline bool matrix_is_sorted(matrix_t* mat)
 
 /* Basic Operations */
 matrix_t* matrix_alloc(size_t nbrows, size_t nbcols, bool s);
-void      matrix_realloc(matrix_t* mat, size_t nbrows);
-void      matrix_realloc_lazy(matrix_t* mat, size_t nbrows);
+void      matrix_resize_rows(matrix_t* mat, size_t nbrows);
+void      matrix_resize_rows_lazy(matrix_t* mat, size_t nbrows);
 void      matrix_minimize(matrix_t* mat);
 void      matrix_free(matrix_t* mat);
 void      matrix_clear(matrix_t* mat);
@@ -64,6 +64,8 @@ void matrix_normalize_row(pk_internal_t* pk,
 			  matrix_t* mat, size_t l);
 void matrix_combine_rows(pk_internal_t* pk,
 			 matrix_t* mat, size_t l1, size_t l2, size_t l3, size_t k);
+int matrix_compare_rows(pk_internal_t* pk,
+			matrix_t* mat, size_t l1, size_t l2);
 void matrix_exch_rows(matrix_t* mat, size_t l1, size_t l2);
 void matrix_move_rows(matrix_t* mat, size_t destrow, size_t orgrow, size_t size);
 
