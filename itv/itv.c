@@ -83,51 +83,48 @@ bool ITVFUN(canonicalize)(itv_internal_t* intern,
    - an itv and a num or a bound, 
 */
 
-void ITVFUN(mul_bound)(itv_internal_t* intern,
-		       itv_t a, itv_t b, bound_t c)
+void ITVFUN(mul_num)(itv_t a, itv_t b, num_t c)
 {
-  assert (c!=a->inf && c!=a->sup && c!=b->inf && c!=b->sup);
-  if (bound_sgn(c)>=0){
-    bound_mul(a->sup,b->sup,c);
-    bound_mul(a->inf,b->inf,c);
-  }
-  else {
-    if (a!=b){
-      bound_mul(a->sup,b->inf,c);
-      bound_mul(a->inf,b->sup,c);
-      bound_neg(a->sup,a->sup);
-      bound_neg(a->inf,a->inf);
-    }
-    else {
-      bound_neg(intern->muldiv_bound,a->sup);
-      bound_mul(a->sup,a->inf,c);
-      bound_neg(a->sup,a->sup);
-      bound_mul(a->inf,intern->muldiv_bound,c);
-    }
+  bound_mul_num(a->sup,b->sup,c);
+  bound_mul_num(a->inf,b->inf,c);
+  if (num_sgn(c)<0){
+    bound_swap(a->inf,a->sup);
+    bound_neg(a->sup,a->sup);
+    bound_neg(a->inf,a->inf);
   }
 }
 
-void ITVFUN(div_bound)(itv_internal_t* intern,
-		       itv_t a, itv_t b, bound_t c)
+void ITVFUN(mul_bound)(itv_t a, itv_t b, bound_t c)
 {
   assert (c!=a->inf && c!=a->sup && c!=b->inf && c!=b->sup);
-  if (bound_sgn(c)>0){
-    bound_div(a->sup,b->sup,c);
-    bound_div(a->inf,b->inf,c);
+  bound_mul(a->sup,b->sup,c);
+  bound_mul(a->inf,b->inf,c);
+  if (bound_sgn(c)<0){
+    bound_swap(a->inf,a->sup);
+    bound_neg(a->sup,a->sup);
+    bound_neg(a->inf,a->inf);
   }
-  else {
-    if (a!=b){
-      bound_div(a->sup,b->inf,c);
-      bound_div(a->inf,b->sup,c);
-      bound_neg(a->sup,a->sup);
-      bound_neg(a->inf,a->inf);
-    }
-    else {
-      bound_neg(intern->muldiv_bound,a->sup);
-      bound_div(a->sup,a->inf,c);
-      bound_neg(a->sup,a->sup);
-      bound_div(a->inf,intern->muldiv_bound,c);
-    }
+}
+
+void ITVFUN(div_num)(itv_t a, itv_t b, num_t c)
+{
+  bound_div_num(a->sup,b->sup,c);
+  bound_div_num(a->inf,b->inf,c);
+  if (num_sgn(c)<0){
+    bound_swap(a->inf,a->sup);
+    bound_neg(a->sup,a->sup);
+    bound_neg(a->inf,a->inf);
+  }
+}
+void ITVFUN(div_bound)(itv_t a, itv_t b, bound_t c)
+{
+  assert (c!=a->inf && c!=a->sup && c!=b->inf && c!=b->sup);
+  bound_div(a->sup,b->sup,c);
+  bound_div(a->inf,b->inf,c);
+  if (bound_sgn(c)<0){
+    bound_swap(a->inf,a->sup);
+    bound_neg(a->sup,a->sup);
+    bound_neg(a->inf,a->inf);
   }
 }
 void ITVFUN(sub)(itv_t a, itv_t b, itv_t c)
@@ -415,7 +412,7 @@ void ITVFUN(div)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c)
   }
   else if (bound_sgn(b->inf)==0 && bound_sgn(b->sup)==0){
     /* b is [0,0] */
-    bound_set(a,b);
+    itv_set(a,b);
   }
   else {
     itv_set_top(a);

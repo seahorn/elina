@@ -91,11 +91,13 @@ static inline void itv_init_array(itv_t* a, size_t size);
 static inline void itv_init_set(itv_t a, itv_t b);
 static inline void itv_clear(itv_t a);
 static inline void itv_clear_array(itv_t* a, size_t size);
+static inline itv_t* itv_array_alloc(size_t size);
 static inline void itv_array_free(itv_t* a, size_t size);
 
 /* Assignement */
 static inline void itv_set(itv_t a, itv_t b);
 static inline void itv_set_num(itv_t a, num_t b);
+static inline void itv_set_zero(itv_t a);
 static inline void itv_set_bottom(itv_t a);
 static inline void itv_set_top(itv_t a);
 static inline void itv_swap(itv_t a, itv_t b);
@@ -113,6 +115,8 @@ static inline bool itv_is_bottom(itv_internal_t* intern, itv_t a);
   /* Return true iff the interval is resp. [-oo,+oo] or empty */
 static inline bool itv_is_point(itv_internal_t* intern, itv_t a);
   /* Return true iff the interval is a single point */
+static inline bool itv_is_zero(itv_t a);
+  /* Return true iff the interval is a single zero point */
 static inline bool itv_is_leq(itv_t a, itv_t b);
   /* Inclusion test */
 static inline bool itv_is_eq(itv_t a, itv_t b);
@@ -135,11 +139,12 @@ static inline void itv_mul(itv_internal_t* intern,
 			   itv_t a, itv_t b, itv_t c);
 static inline void itv_div(itv_internal_t* intern,
 			   itv_t a, itv_t b, itv_t c);
-static inline void itv_add_bound(itv_t a, itv_t b, bound_t c);
-static inline void itv_mul_bound(itv_internal_t* intern,
-				 itv_t a, itv_t b, bound_t c);
-static inline void itv_div_bound(itv_internal_t* intern,
-				 itv_t a, itv_t b, bound_t c);
+static inline void itv_add_num(itv_t a, itv_t b, num_t c);
+static inline void itv_sub_num(itv_t a, itv_t b, num_t c);
+static inline void itv_mul_num(itv_t a, itv_t b, num_t c);
+static inline void itv_div_num(itv_t a, itv_t b, num_t c);
+static inline void itv_mul_bound(itv_t a, itv_t b, bound_t c);
+static inline void itv_div_bound(itv_t a, itv_t b, bound_t c);
   
 
 /* Printing */
@@ -193,17 +198,22 @@ static inline bool itv_canonicalize(itv_internal_t* intern,
 			       itv_t a, bool integer)
 { return ITVFUN(canonicalize)(intern,a,integer); }
 
-void ITVFUN(mul_bound)(itv_internal_t* intern,
-		       itv_t a, itv_t b, bound_t c);
-static inline void itv_mul_bound(itv_internal_t* intern,
-				 itv_t a, itv_t b, bound_t c)
-{ ITVFUN(mul_bound)(intern,a,b,c); }
+void ITVFUN(mul_num)(itv_t a, itv_t b, num_t c);
+static inline void itv_mul_num(itv_t a, itv_t b, num_t c)
+{ ITVFUN(mul_num)(a,b,c); }
 
-void ITVFUN(div_bound)(itv_internal_t* intern,
-		       itv_t a, itv_t b, bound_t c);
-static inline void itv_div_bound(itv_internal_t* intern,
-			    itv_t a, itv_t b, bound_t c)
-{ ITVFUN(div_bound)(intern,a,b,c); }
+void ITVFUN(div_num)(itv_t a, itv_t b, num_t c);
+static inline void itv_div_num(itv_t a, itv_t b, num_t c)
+{ ITVFUN(div_num)(a,b,c); }
+
+void ITVFUN(mul_bound)(itv_t a, itv_t b, bound_t c);
+static inline void itv_mul_bound(itv_t a, itv_t b, bound_t c)
+{ ITVFUN(mul_bound)(a,b,c); }
+
+  void ITVFUN(div_bound)(itv_t a, itv_t b, bound_t c);
+static inline void itv_div_bound(itv_t a, itv_t b, bound_t c)
+{ ITVFUN(div_bound)(a,b,c); }
+
 
 void ITVFUN(sub)(itv_t a, itv_t b, itv_t c);
 static inline void itv_sub(itv_t a, itv_t b, itv_t c)
@@ -286,6 +296,12 @@ static inline void itv_clear_array(itv_t* a, size_t size)
   size_t i;
   for (i=0; i<size; i++) itv_clear(a[i]);
 #endif
+}
+static inline itv_t* itv_array_alloc(size_t size)
+{
+  itv_t* res = (itv_t*)malloc(size*sizeof(itv_t));
+  itv_init_array(res,size);
+  return res;
 }    
 static inline void itv_array_free(itv_t* a, size_t size)
 {
@@ -302,6 +318,11 @@ static inline void itv_set_num(itv_t a, num_t b)
 {
   bound_set_num(a->sup,b);
   bound_neg(a->inf,a->sup);
+}
+static inline void itv_set_zero(itv_t a)
+{
+  bound_set_int(a->inf,0);
+  bound_set_int(a->sup,0);
 }
 static inline void itv_set_bottom(itv_t a)
 {
@@ -332,6 +353,10 @@ static inline bool itv_is_point(itv_internal_t* intern, itv_t a)
   }
   else
     return false;
+}
+static inline bool itv_is_zero(itv_t a)
+{
+  return bound_sgn(a->inf)==0 && bound_sgn(a->sup)==0;
 }
 static inline bool itv_is_leq(itv_t a, itv_t b)
 {
@@ -374,16 +399,18 @@ static inline void itv_add(itv_t a, itv_t b, itv_t c)
   bound_add(a->sup,b->sup,c->sup);
   bound_add(a->inf,b->inf,c->inf);
 }
-static inline void itv_add_bound(itv_t a, itv_t b, bound_t c)
+static inline void itv_add_num(itv_t a, itv_t b, num_t c)
 {
-  bound_add(a->sup,b->sup,c);
-  bound_sub(a->inf,b->inf,c);
+  bound_add_num(a->sup,b->sup,c);
+  bound_sub_num(a->inf,b->inf,c);
 }
-static inline void itv_sub_bound(itv_t a, itv_t b, bound_t c)
+static inline void itv_sub_num(itv_t a, itv_t b, num_t c)
 {
-  bound_sub(a->sup,b->sup,c);
-  bound_add(a->inf,b->inf,c);
+  bound_sub_num(a->sup,b->sup,c);
+  bound_add_num(a->inf,b->inf,c);
 }
+
+
 static inline void itv_print(itv_t itv)
 { itv_fprint(stdout,itv); }
 

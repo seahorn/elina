@@ -47,14 +47,14 @@ typedef struct itv_lincons_t {
    - pequality indicates if the interval is actually a point
 
 */
-#define itv_linexpr_ForeachLinterm(_p_e, _p_i, _p_d, _p_itv, _p_equality)	\
-  for ((_p_i)=0; \
-       (_p_i)<(_p_e)->size ? \
-	  ((_p_d) = (_p_e)->linterm[i].dim, \
-	   (_p_itv) = (_p_e)->linterm[i].itv, \
-	   (_p_equality) = &(_p_e)->linterm[i].equality, \
-	   true) : \
-	 false; \
+#define itv_linexpr_ForeachLinterm(_p_e, _p_i, _p_d, _p_itv, _p_equality) \
+  for ((_p_i)=0;							\
+       (_p_i)<(_p_e)->size ?						\
+	 (((_p_d) = (_p_e)->linterm[i].dim),				\
+	  ((_p_itv) = (_p_e)->linterm[i].itv),				\
+	  ((_p_equality) = &((_p_e)->linterm[i].equality)),		\
+	  ((_p_d)!=AP_DIM_MAX)) :					\
+	 false;								\
        (_p_i)++)
 
 
@@ -67,17 +67,22 @@ static inline void itv_lincons_clear(itv_lincons_t* cons);
 
 static inline bool itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
 					       itv_linexpr_t* expr, 
+					       itv_t* p,
 					       ap_linexpr0_t* linexpr0);
   /* Convert a ap_linexpr0_t into a itv_linexpr_t
-
-     Return true if the conversion is exact */
-
+     Return true if the conversion is exact
+     If p==NULL, no linearization,
+     If p!=NULL, transformation into a quasilinear expression
+  */
 static inline bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
-					       itv_lincons_t* cons, 
-					       ap_lincons0_t* lincons0);
-  /* Convert a ap_lincons0_t into a itv_lincons_t 
-
-     Return true if the conversion is exact */
+					       itv_lincons_t* lincons,
+					       itv_t* p,
+					       ap_lincons0_t* cons);
+  /* Convert a ap_lincons0_t into a itv_lincons_t
+     Return true if the conversion is exact
+     If p==NULL, no linearization,
+     If p!=NULL, transformation into a quasilinear expression
+  */
 
 static inline void itv_eval_itv_linexpr(itv_internal_t* intern,
 					itv_t itv,
@@ -126,18 +131,24 @@ void itv_lincons_clear(itv_lincons_t* cons)
 }
 
 bool ITVFUN(linexpr_set_ap_linexpr0)(itv_internal_t* intern,
-				     itv_linexpr_t* expr, ap_linexpr0_t* linexpr0);
+				     itv_linexpr_t* expr, 
+				     itv_t* p,
+				     ap_linexpr0_t* linexpr0);
 static inline bool itv_linexpr_set_ap_linexpr0(itv_internal_t* intern,
 					       itv_linexpr_t* expr, 
+					       itv_t* p,
 					       ap_linexpr0_t* linexpr0)
-{ return ITVFUN(linexpr_set_ap_linexpr0)(intern,expr,linexpr0); }
+{ return ITVFUN(linexpr_set_ap_linexpr0)(intern,expr,p,linexpr0); }
 
 bool ITVFUN(lincons_set_ap_lincons0)(itv_internal_t* intern,
-				     itv_lincons_t* cons, ap_lincons0_t* lincons0);
+				     itv_lincons_t* cons, 
+				     itv_t* p,
+				     ap_lincons0_t* lincons0);
 static inline bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
 					       itv_lincons_t* cons, 
+					       itv_t* p,
 					       ap_lincons0_t* lincons0)
-{ return ITVFUN(lincons_set_ap_lincons0)(intern,cons,lincons0); }
+{ return ITVFUN(lincons_set_ap_lincons0)(intern,cons,p,lincons0); }
 
 void ITVFUN(eval_itv_linexpr)(itv_internal_t* intern,
 			      itv_t itv,
@@ -158,17 +169,6 @@ static inline bool itv_eval_ap_linexpr0(itv_internal_t* intern,
 					itv_t* p,
 					ap_linexpr0_t* expr)
 { return ITVFUN(eval_ap_linexpr0)(intern,itv,p,expr); }
-
-bool ITVFUN(quasilinexpr_of_ap_linexpr0)(itv_internal_t* intern,
-					 itv_linexpr_t* linexpr,
-					 itv_t* p,
-					 ap_linexpr0_t* expr);
-
-static inline bool itv_quasilinexpr_of_ap_linexpr0(itv_internal_t* intern,
-						   itv_linexpr_t* linexpr,
-						   itv_t* p,
-						   ap_linexpr0_t* expr)
-{ return ITVFUN(quasilinexpr_of_ap_linexpr0)(intern,linexpr,p,expr); }
 
 #ifdef __cplusplus
 }
