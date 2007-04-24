@@ -51,9 +51,7 @@ void box_approximate(ap_manager_t* man, box_t* a, int algorithm);
   /* Perform some transformation on the itv value, guided by the 
      field algorithm. 
 
-     The transformation may lose information.  The argument "algorithm"
-     overrides the field algorithm of the structure of type foption_t
-     associated to box_approximate (commodity feature). */
+     The transformation may lose information. */
 
 tbool_t box_is_minimal(ap_manager_t* man, box_t* a);
 tbool_t box_is_canonical(ap_manager_t* man, box_t* a);

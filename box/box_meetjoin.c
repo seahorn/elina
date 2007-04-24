@@ -397,7 +397,7 @@ void box_meet_lincons_array_internal(box_internal_t* intern,
       if (array->p[i].constyp==AP_CONS_EQ ||
 	  array->p[i].constyp==AP_CONS_SUPEQ ||
 	  array->p[i].constyp==AP_CONS_SUP){
-	itv_lincons_set_ap_lincons0(intern->itv,&cons,&array->p[i]);
+	itv_lincons_set_ap_lincons0(intern->itv,&cons,NULL,&array->p[i]);
 	change = 
 	  box_meet_lincons_internal(intern,a,&cons)
 	  ||

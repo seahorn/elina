@@ -26,10 +26,7 @@ void box_init(box_t* a)
   size_t nbdims = a->intdim + a->realdim;
   if (nbdims>0){
     assert(a->p==NULL);
-    a->p = malloc( nbdims*sizeof(itv_t) );
-    for(i=0;i<nbdims; i++){
-      itv_init(a->p[i]);
-    }
+    a->p = itv_array_alloc(nbdims);
   }
 }
 
