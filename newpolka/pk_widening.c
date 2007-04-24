@@ -240,6 +240,7 @@ pk_t* pk_widening_threshold(ap_manager_t* man,
       if (ap_linexpr0_is_quasilinear(array->p[i].linexpr0)){
 	itv_lincons_set_ap_lincons0(pk->itv,
 				    &pk->poly_itv_lincons,
+				    NULL,
 				    &array->p[i]);
 	nb = vector_set_itv_lincons(pk,
 				    &pk->poly_numintp,
@@ -247,10 +248,10 @@ pk_t* pk_widening_threshold(ap_manager_t* man,
 				    pa->intdim,pa->realdim,true);
 	assert(nb<=1);
 	if (nb==1 && 
-	    do_generators_sat_constraint(pk,pb->F,
-					 pk->poly_numintp,
-					 pk->strict && 
-					 numint_sgn(mat->p[i][polka_eps])<0))
+	    do_generators_sat_vector(pk,pb->F,
+				     pk->poly_numintp,
+				     pk->strict && 
+				     numint_sgn(mat->p[i][polka_eps])<0))
 	  {
 	    /* if the constraint is satisfied by pb, add it */
 	    vector_copy(po->C->p[nbrows],mat->p[i],mat->nbcolumns);

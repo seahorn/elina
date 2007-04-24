@@ -13,6 +13,7 @@
 #include "pk_representation.h"
 #include "pk_user.h"
 #include "pk_constructor.h"
+#include "pk_extract.h"
 #include "pk_resize.h"
 #include "pk_meetjoin.h"
 #include "pk_assign.h"
@@ -433,13 +434,14 @@ void vector_invert_expr(pk_internal_t* pk,
 }
 
 /* ====================================================================== */
-/* Building a relation from a parallel assignement */
+/* Building a matrix of constraints from a parallel assignement */
 /* ====================================================================== */
 static
-matrix_t* matrix_relation_of_tdimexpr(pk_internal_t* pk,
-				      size_t intdim, size_t realdim,
-				      ap_dim_t* tdim, ap_linexpr0_t** texpr,
-				      ap_dimchange_t* dimchange)
+matrix_t* matrix_relation_of_assign_array(pk_internal_t* pk,
+					  size_t intdim, size_t realdim,
+					  itv_t* titv,
+					  ap_dim_t* tdim, ap_linexpr0_t** texpr,
+					  ap_dimchange_t* dimchange)
 {
   size_t size;
   matrix_t* matrel;
@@ -462,16 +464,16 @@ matrix_t* matrix_relation_of_tdimexpr(pk_internal_t* pk,
     expr = ap_linexpr0_add_dimensions(texpr[i],dimchange);
     dimp = tdim[i]<dimchange->intdim ? intdim+i : intdim+realdim+i;
     ap_linexpr0_set_coeff_scalar_int(expr, dimp, -1);
-    
     itv_linexpr_set_ap_linexpr0(pk->itv,
 				&pk->poly_itv_lincons.linexpr,
-				texpr[i]);
+				titv,
+				expr);
     pk->poly_itv_lincons.constyp = AP_CONS_EQ;
     num_set_int(pk->poly_itv_lincons.num,0);
-
     row += vector_set_itv_lincons(pk,&matrel->p[row],
 				  &pk->poly_itv_lincons,
 				  nintdim,nrealdim,true);
+    ap_linexpr0_free(expr);
   }
   matrel->nbrows = row;
   matrix_sort_rows(pk,matrel);
@@ -485,13 +487,12 @@ matrix_t* matrix_relation_of_tdimexpr(pk_internal_t* pk,
 /* ====================================================================== */
 /* Assignement/Substitution by several *deterministic* linear expressions */
 /* ====================================================================== */
-
-pk_t* poly_asssub_linear_linexpr_array(bool assign,
-				       ap_manager_t* man,
-				       bool destructive,
-				       pk_t* pa,
-				       ap_dim_t* tdim, ap_linexpr0_t** texpr, 
-				       size_t size)
+pk_t* poly_asssub_linexpr_array_det(bool assign,
+				    ap_manager_t* man,
+				    bool destructive,
+				    pk_t* pa,
+				    ap_dim_t* tdim, ap_linexpr0_t** texpr, 
+				    size_t size)
 {
   size_t i;
   ap_dim_t* tdim2;
@@ -511,7 +512,7 @@ pk_t* poly_asssub_linear_linexpr_array(bool assign,
     pk->exn = AP_EXC_NONE;
     man->result.flag_best = man->result.flag_exact = tbool_false;
     poly_set_top(pk,po);
-    goto _poly_asssub_linear_linexpr_array_exit;
+    goto _poly_asssub_linexpr_array_det_exit;
   }
   /* Return empty if empty */
   if (!pa->C && !pa->F){
@@ -526,6 +527,7 @@ pk_t* poly_asssub_linear_linexpr_array(bool assign,
     tvec[i] = vector_alloc(nbcols);
     itv_linexpr_set_ap_linexpr0(pk->itv,
 				&pk->poly_itv_linexpr,
+				NULL,
 				texpr[i]);
     vector_set_itv_linexpr(pk,
 			   tvec[i],
@@ -554,7 +556,7 @@ pk_t* poly_asssub_linear_linexpr_array(bool assign,
   }
   po->F = mat;
   po->status = 0;
- _poly_asssub_linear_linexpr_array_exit:
+ _poly_asssub_linexpr_array_det_exit:
   if (!assign){
     poly_dual(pa);
     if (!destructive) poly_dual(po);
@@ -570,21 +572,23 @@ pk_t* poly_asssub_linear_linexpr_array(bool assign,
 /* DISTINGUER l'addition de dimensions entières ou réelles ! */
 
 static
-pk_t* poly_asssub_quasilinear_linexpr_array(bool assign,
-					    ap_manager_t* man,
-					    bool destructive,
-					    pk_t* pa,
-					    ap_dim_t* tdim, ap_linexpr0_t** texpr,
-					    size_t intdimsup,
-					    size_t realdimsup)
+pk_t* poly_asssub_linexpr_array_nondet(bool assign,
+				       ap_manager_t* man,
+				       bool destructive,
+				       pk_t* pa,
+				       ap_dim_t* tdim, ap_linexpr0_t** texpr,
+				       size_t intdimsup,
+				       size_t realdimsup,
+				       pk_t* pb)
 {
   bool res;
   size_t size;
   size_t i;
-  matrix_t* matrel;
+  matrix_t* matrel = NULL;
   ap_dimperm_t permutation;
   pk_t* po;
   ap_dimchange_t dimchange;
+  itv_t* titv;
 
   pk_internal_t* pk = (pk_internal_t*)man->internal;
   size = intdimsup+realdimsup;
@@ -627,13 +631,29 @@ pk_t* poly_asssub_quasilinear_linexpr_array(bool assign,
   /* Permute unprimed and primed dimensions if !assign */
   if (!assign){
     po = pk_permute_dimensions(man,true,po,&permutation);
+    if (pb){
+      pk_t* pc = pk_add_dimensions(man,false,pb,&dimchange,false);
+      poly_meet(true,false,man,po,po,pc);
+      pk_free(man,pc);
+      if (!po->C && !po->F){
+	po->intdim -= intdimsup;
+	po->realdim -= realdimsup;
+	man->result.flag_best = man->result.flag_exact = tbool_true;
+	poly_set_bottom(pk,po);
+	goto _poly_asssub_quasilinear_linexpr_array_exit;
+      }
+    }
   }
+  /* Extract bounding box */
+  titv = matrix_to_box(pk,po->F);
   /* Perform intersection of po with matrel */
-  matrel = matrix_relation_of_tdimexpr(pk,
-				       po->intdim-intdimsup,
-				       po->realdim-realdimsup,
-				       tdim,texpr,
-				       &dimchange);
+  matrel = matrix_relation_of_assign_array(pk,
+					   po->intdim-intdimsup,
+					   po->realdim-realdimsup,
+					   titv,
+					   tdim,texpr,
+					   &dimchange);
+  itv_array_free(titv,po->intdim+po->realdim);
   poly_obtain_satC(po);
   res = poly_meet_matrix(true,false,man,po,po,matrel);
   if (res){
@@ -658,10 +678,13 @@ pk_t* poly_asssub_quasilinear_linexpr_array(bool assign,
   /* Remove extra dimensions */
   ap_dimchange_add_invert(&dimchange);
   po = pk_remove_dimensions(man,true,po,&dimchange);
+  if (assign){
+    poly_meet(true,false,man,po,po,pb);
+  }
  _poly_asssub_quasilinear_linexpr_array_exit:
   ap_dimperm_clear(&permutation);
   ap_dimchange_clear(&dimchange);
-  matrix_free(matrel);
+  if (matrel) matrix_free(matrel);
   return po;
 }
 
@@ -676,11 +699,12 @@ pk_t* poly_asssub_linexpr_array(bool assign,
 				pk_t* pa,
 				ap_dim_t* tdim,
 				ap_linexpr0_t** texpr,
-				size_t size)
+				size_t size,
+				pk_t* pb)
 {
   size_t i;
   size_t intdimsup,realdimsup;
-  bool linear;
+  bool det;
   pk_t* po;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
@@ -704,19 +728,23 @@ pk_t* poly_asssub_linexpr_array(bool assign,
     return destructive ? pa : pk_bottom(man,pa->intdim,pa->realdim);
   }
   /* Choose the right technique */
-  linear = true;
+  det = true;
   intdimsup = realdimsup = 0;
   for (i=0; i<size; i++){
-    linear = linear && (texpr[i]->cst.discr==AP_COEFF_SCALAR);
+    det = det && ap_linexpr0_is_linear(texpr[i]);
     if (tdim[i]<pa->intdim) intdimsup++;
     else realdimsup++;
   }
-  if (linear){
-    po = poly_asssub_linear_linexpr_array(assign,man,destructive,pa,tdim,texpr,size);
+  if (det){
+    po = poly_asssub_linexpr_array_det(assign,man,destructive,pa,tdim,texpr,size);
+    if (pb){
+      poly_meet(true,lazy,man,po,po,pb);
+    }
   } else {
-    po = poly_asssub_quasilinear_linexpr_array(assign,man,destructive,pa,
-					       tdim,texpr,
-					       intdimsup,realdimsup);
+    po = poly_asssub_linexpr_array_nondet(assign,man,destructive,pa,
+					  tdim,texpr,
+					  intdimsup,realdimsup,
+					  pb);
   }
   /* Minimize the result if option say so */
   if (!lazy){
@@ -724,7 +752,7 @@ pk_t* poly_asssub_linexpr_array(bool assign,
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
       man->result.flag_best = man->result.flag_exact = tbool_false;
-      poly_set_top(pk,po);
+      if (pb) poly_set(po,pb); else poly_set_top(pk,po);
       return po;
     }
   }
@@ -755,12 +783,11 @@ pk_t* poly_asssub_linexpr_array(bool assign,
 /* Assignement/Substitution by a *deterministic* linear expression */
 /* ====================================================================== */
 
-
-pk_t* poly_asssub_linear_linexpr(bool assign,
-				 ap_manager_t* man,
-				 bool destructive,
-				 pk_t* pa,
-				 ap_dim_t dim, ap_linexpr0_t* linexpr0)
+pk_t* poly_asssub_linexpr_det(bool assign,
+			      ap_manager_t* man,
+			      bool destructive,
+			      pk_t* pa,
+			      ap_dim_t dim, ap_linexpr0_t* linexpr0)
 {
   int sgn;
   pk_t* po;
@@ -773,6 +800,7 @@ pk_t* poly_asssub_linear_linexpr(bool assign,
   /* Convert linear expression */
   itv_linexpr_set_ap_linexpr0(pk->itv,
 			      &pk->poly_itv_linexpr,
+			      NULL,
 			      linexpr0);
   vector_set_itv_linexpr(pk,
 			 pk->poly_numintp,
@@ -843,7 +871,8 @@ pk_t* poly_asssub_linexpr(bool assign,
 			  ap_manager_t* man,
 			  bool destructive,
 			  pk_t* pa,
-			  ap_dim_t dim, ap_linexpr0_t* linexpr)
+			  ap_dim_t dim, ap_linexpr0_t* linexpr,
+			  pk_t* pb)
 {
   pk_t* po;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -869,12 +898,13 @@ pk_t* poly_asssub_linexpr(bool assign,
     return destructive ? pa : pk_bottom(man,pa->intdim,pa->realdim);
   }
   /* Choose the right technique */
-  switch (linexpr->cst.discr){
-  case AP_COEFF_SCALAR:
-    po = poly_asssub_linear_linexpr(assign,man,destructive,pa,dim,linexpr);
-    break;
-  case AP_COEFF_INTERVAL:
-    {
+  if (ap_linexpr0_is_linear(linexpr)){
+    po = poly_asssub_linexpr_det(assign,man,destructive,pa,dim,linexpr);
+    if (pb){
+      poly_meet(true,lazy,man,po,po,pb);
+    }
+  }
+  else {
       ap_dim_t tdim[1];
       ap_linexpr0_t* texpr[1];
       size_t intdimsup, realdimsup;
@@ -883,14 +913,11 @@ pk_t* poly_asssub_linexpr(bool assign,
       texpr[0] = linexpr;
       intdimsup = dim < pa->intdim ? 1 : 0;
       realdimsup = dim < pa->intdim ? 0 : 1;
-      po = poly_asssub_quasilinear_linexpr_array(assign,man,
-						 destructive,pa,
-						 tdim,texpr,
-						 intdimsup,realdimsup);
-    }
-    break;
-  default:
-    abort();
+      po = poly_asssub_linexpr_array_nondet(assign,man,
+					    destructive,pa,
+					    tdim,texpr,
+					    intdimsup,realdimsup,
+					    pb);
   }
   /* Minimize the result if option say so */
   if (!lazy){
@@ -898,7 +925,7 @@ pk_t* poly_asssub_linexpr(bool assign,
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
       man->result.flag_best = man->result.flag_exact = tbool_false;
-      poly_set_top(pk,po);
+      if (pb) poly_set(po,pb); else poly_set_top(pk,po);
       return po;
     }
   }
@@ -929,10 +956,7 @@ pk_t* pk_assign_linexpr(ap_manager_t* man,
   pk_t* po;
   po = poly_asssub_linexpr(true,
 			   pk->funopt->algorithm<=0,
-			   man,destructive,pa,dim,linexpr);
-  if (pb!=NULL){
-    po = pk_meet(man,true,po,pb);
-  }
+			   man,destructive,pa,dim,linexpr,pb);
   return po;
 }
 
@@ -947,10 +971,7 @@ pk_t* pk_assign_linexpr_array(ap_manager_t* man,
   pk_t* po;
   po = poly_asssub_linexpr_array(true,
 				 pk->funopt->algorithm<=0,
-				 man,destructive,pa,tdim,texpr,size);
-  if (pb!=NULL){
-    po = pk_meet(man,true,po,pb);
-  }
+				 man,destructive,pa,tdim,texpr,size,pb);
   return po;
 }
 
@@ -963,10 +984,7 @@ pk_t* pk_substitute_linexpr(ap_manager_t* man,
   pk_t* po;
   po = poly_asssub_linexpr(false,
 			   pk->funopt->algorithm<=0,
-			   man,destructive,pa,dim,linexpr);
-  if (pb!=NULL){
-    po = pk_meet(man,true,po,pb);
-  }
+			   man,destructive,pa,dim,linexpr,pb);
   return po;
 }
 
@@ -981,9 +999,6 @@ pk_t* pk_substitute_linexpr_array(ap_manager_t* man,
   pk_t* po;
   po = poly_asssub_linexpr_array(false,
 				 pk->funopt->algorithm<=0,
-				 man,destructive,pa,tdim,texpr,size);
-  if (pb!=NULL){
-    po = pk_meet(man,true,po,pb);
-  }
+				 man,destructive,pa,tdim,texpr,size,pb);
   return po;
 }

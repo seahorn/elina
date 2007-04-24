@@ -24,9 +24,9 @@ constraint is considered as strict only if the is_strict paramater telles so.
 This enables to test the satisfiability of a strict constraint in non-strict
 mode for the library.
 */
-bool do_generators_sat_constraint(pk_internal_t* pk,
-				  matrix_t* F,
-				  numint_t* tab, bool is_strict);
+bool do_generators_sat_vector(pk_internal_t* pk,
+			      matrix_t* F,
+			      numint_t* tab, bool is_strict);
 
 #ifdef __cplusplus
 }

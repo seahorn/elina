@@ -15,6 +15,7 @@
 extern "C" {
 #endif
 
+/* Bounding by a itv box a matrix of generators. */
 itv_t* matrix_to_box(pk_internal_t* pk, matrix_t* F);
 
 /* Bounding the value of a dimension in a matrix of generators.

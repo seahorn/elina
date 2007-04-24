@@ -226,9 +226,11 @@ pkeq_t* pkeq_of_lincons_array(ap_manager_t* man,
     /* constraints */
     row = 0;
     for (i=0; i<cons->size; i++){
-      if (cons->p[i].constyp == AP_CONS_EQ){
+      if (cons->p[i].constyp == AP_CONS_EQ && 
+	  ap_linexpr0_is_linear(cons->p[i].linexpr0)){
 	itv_lincons_set_ap_lincons0(pk->itv,
 				    &pk->poly_itv_lincons,
+				    NULL,
 				    &cons->p[i]);
 	row += vector_set_itv_lincons(pk,
 				      &C->p[row],
@@ -381,7 +383,7 @@ pkeq_t* equality_asssub_linexpr(bool assign,
   switch (linexpr->cst.discr){
   case AP_COEFF_SCALAR:
     {
-      po = poly_asssub_linear_linexpr(assign,man,destructive,pa,dim,linexpr);
+      po = poly_asssub_linexpr_det(assign,man,destructive,pa,dim,linexpr);
       poly_chernikova(man,po,"of the result");
       if (pk->exn) goto _equality_asssub_linexpr_error;
       equality_reduce(man,po);
@@ -485,7 +487,7 @@ pkeq_t* equality_asssub_linexpr_array(bool assign,
     }
   }
   if (sizep>0){
-    po = poly_asssub_linear_linexpr_array(assign,man,destructive,pa,tdimp,texprp,sizep);
+    po = poly_asssub_linexpr_array_det(assign,man,destructive,pa,tdimp,texprp,sizep);
     poly_chernikova(man,po,"of the result");
     if (pk->exn) goto _equality_asssub_linexpr_array_error;
     equality_reduce(man,po);

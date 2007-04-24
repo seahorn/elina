@@ -58,9 +58,13 @@ bool poly_meet_matrix(bool meet,
 
   assert(mat->_sorted);
 
-  man->result.flag_best = meet ? tbool_true : (pa->intdim>0 ? tbool_top : tbool_true);
+  man->result.flag_best = meet ? 
+    tbool_true : 
+    (pa->intdim>0 ? tbool_top : tbool_true);
+
   man->result.flag_exact = meet ? tbool_true : tbool_top;
 
+  /* lazy behaviour */
   if (lazy){
     poly_obtain_sorted_C(pk,pa);
     if (po != pa){
@@ -185,7 +189,6 @@ bool poly_meet_particularcases(bool meet, bool lazy,
   return false;
 }
 
-static
 void poly_meet(bool meet,
 	       bool lazy,
 	       ap_manager_t* man,
@@ -512,51 +515,14 @@ pk_t* pk_meet_array(ap_manager_t* man,
 /* ====================================================================== */
 /* II.2 Meet with (array of) linear constraint(s) */
 /* ====================================================================== */
-static
-void poly_meet_ap_intlincons0_array(ap_manager_t* man,
-				    pk_t* po,
-				    ap_lincons0_array_t* array,
-				    size_t* tab, size_t size)
-{
-  pk_internal_t* pk = (pk_internal_t*)man->internal;
-  matrix_t* C;
-  size_t nbrows;
-  itv_t* titv;
-  matrix_t* mat;
-  
-  poly_chernikova(man,po,NULL);
-  if (pk->exn){
-    pk->exn = AP_EXC_NONE;
-    man->result.flag_exact = man->result.flag_best = tbool_false;
-    return;
-  }
-  if (po->F==NULL)
-    return;
-  
-  titv = matrix_to_box(pk,po->F);
-  C = po->C;
-  nbrows = C->nbrows;
-  matrix_set_ap_intlincons0_array(pk,
-				  &mat,titv,
-				  array,tab,size,
-				  po->intdim,po->realdim,true);
-  matrix_sort_rows(pk,mat);
-  poly_obtain_satC(po);
-  poly_meet_matrix(true,false,man,po,po,mat);
-  matrix_free(mat);
-  if (pk->exn){
-    pk->exn = AP_EXC_NONE;
-    man->result.flag_exact = man->result.flag_best = tbool_false;
-  }
-}
 
 /* ---------------------------------------------------------------------- */
 /* Factorized version */
 
 void poly_meet_lincons_array(bool lazy,
-			      ap_manager_t* man,
-			      pk_t* po, pk_t* pa, 
-			      ap_lincons0_array_t* array)
+			     ap_manager_t* man,
+			     pk_t* po, pk_t* pa, 
+			     ap_lincons0_array_t* array)
 {
   matrix_t* mat;
   size_t* tab;
@@ -574,10 +540,8 @@ void poly_meet_lincons_array(bool lazy,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     if (!pa->C){
-      pk_t* po2 = pk_of_lincons_array(man,pa->intdim,pa->realdim,array);
       man->result.flag_best = man->result.flag_exact = tbool_false;
-      poly_set(po,po2);
-      free(po2);
+      poly_set_top(pk,po);
       return;
     }
   }
@@ -590,16 +554,53 @@ void poly_meet_lincons_array(bool lazy,
 			       &mat,&tab,&size,
 			       array,
 			       pa->intdim,pa->realdim, true);
+  if (lazy && tab!=NULL){
+    lazy = false;
+    poly_chernikova(man,pa,"of the argument");
+     if (pk->exn){
+       pk->exn = AP_EXC_NONE;
+       if (!pa->C){
+	 man->result.flag_best = man->result.flag_exact = tbool_false;
+	 poly_set_top(pk,po);
+	 return;
+       }
+     }
+  }
   matrix_sort_rows(pk,mat);
   if (!lazy) poly_obtain_satC(pa);
   poly_meet_matrix(true,lazy,man,po,pa,mat);
-  if (tab!=NULL){
-    poly_meet_ap_intlincons0_array(man,
-				   po,
-				   array,tab,size);
-    free(tab);
-  }
   matrix_free(mat);
+  if (pk->exn){
+    pk->exn = AP_EXC_NONE;
+    man->result.flag_exact = man->result.flag_best = tbool_false;
+    if (tab) free(tab);
+    return;
+  }
+  if (tab!=NULL){
+    itv_t* titv;
+    if (!po->F){
+      assert (!po->C);
+      man->result.flag_exact = man->result.flag_best = tbool_true;
+      if (tab) free(tab);
+      return;
+    }
+    titv = matrix_to_box(pk,po->F);
+    matrix_set_ap_intlincons0_array(pk,
+				    &mat,titv,
+				    array,tab,size,
+				    po->intdim,po->realdim,true);
+    itv_array_free(titv,po->intdim+po->realdim);
+    free(tab);
+    matrix_sort_rows(pk,mat);
+    poly_obtain_satC(po);
+    poly_meet_matrix(true,false,man,po,po,mat);
+    matrix_free(mat);
+    if (pk->exn){
+      pk->exn = AP_EXC_NONE;
+      man->result.flag_exact = man->result.flag_best = tbool_true;
+      return;
+    }
+  }
 }
 
 pk_t* pk_meet_lincons_array(ap_manager_t* man, bool destructive, pk_t* pa, ap_lincons0_array_t* array)

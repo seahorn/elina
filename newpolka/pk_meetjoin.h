@@ -51,6 +51,11 @@ void poly_meet_lincons_array(bool lazy,
 			     pk_t* po, 
 			     pk_t* pa, ap_lincons0_array_t* array);
 
+void poly_meet(bool meet,
+	       bool lazy,
+	       ap_manager_t* man,
+	       pk_t* po, pk_t* pa, pk_t* pb);
+
 #ifdef __cplusplus
 }
 #endif

@@ -247,8 +247,8 @@ Abstract a convex polyhedra defined by the array of linear constraints.
 */
 
 pk_t* pk_of_lincons_array(ap_manager_t* man,
-			      size_t intdim, size_t realdim,
-			      ap_lincons0_array_t* array)
+			  size_t intdim, size_t realdim,
+			  ap_lincons0_array_t* array)
 {
   pk_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_OF_LINCONS_ARRAY);

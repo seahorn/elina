@@ -33,7 +33,7 @@ OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
 CCMODULES = \
 mf_qsort \
 pk_user pk_internal pk_bit pk_satmat pk_vector pk_matrix pk_cherni \
-pk_representation pk_constructor pk_test pk_extract \
+pk_representation pk_approximate pk_constructor pk_test pk_extract \
 pk_meetjoin pk_assign pk_project pk_resize pk_expandfold \
 pk_widening pk_closure \
 pkeq

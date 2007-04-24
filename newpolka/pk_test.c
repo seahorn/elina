@@ -85,7 +85,7 @@ This enables to test the satisfiability of a strict constraint in non-strict
 mode for the library.
 
 */
-bool do_generators_sat_constraint(pk_internal_t* pk, matrix_t* F, numint_t* tab, bool is_strict)
+bool do_generators_sat_vector(pk_internal_t* pk, matrix_t* F, numint_t* tab, bool is_strict)
 {
   size_t i;
 
@@ -175,11 +175,11 @@ tbool_t pk_is_leq(ap_manager_t* man, pk_t* pa, pk_t* pb)
     /* does the frames of pa satisfy constraints of pb ? */
     size_t i;
     for (i=0; i<pb->C->nbrows; i++){
-      bool sat = do_generators_sat_constraint(pk,
-					      pa->F,
-					      pb->C->p[i],
-					      pk->strict &&
-					      numint_sgn(pb->C->p[i][polka_eps])<0);
+      bool sat = do_generators_sat_vector(pk,
+					  pa->F,
+					  pb->C->p[i],
+					  pk->strict &&
+					  numint_sgn(pb->C->p[i][polka_eps])<0);
       if (sat==false) return tbool_false;
     }
     return tbool_true;
@@ -249,7 +249,7 @@ tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* po, ap_lincons0_t* lincons0)
 
   if (!ap_linexpr0_is_quasilinear(lincons0->linexpr0)){
     itv_t* titv = matrix_to_box(pk,po->F);
-    exact = itv_quasilincons_set_ap_lincons0(pk->itv,
+    exact = itv_lincons_set_ap_lincons0(pk->itv,
 					     &pk->poly_itv_lincons,
 					     titv,
 					     lincons0);
@@ -258,6 +258,7 @@ tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* po, ap_lincons0_t* lincons0)
   else {
     exact = itv_lincons_set_ap_lincons0(pk->itv,
 					&pk->poly_itv_lincons,
+					NULL,
 					lincons0);
   }
   sat = vector_set_itv_lincons_sat(pk,
@@ -265,9 +266,9 @@ tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* po, ap_lincons0_t* lincons0)
 				   &pk->poly_itv_lincons,
 				   po->intdim, po->realdim, true);
   if (sat){
-    sat = do_generators_sat_constraint(pk,po->F,
-				       pk->poly_numintp,
-				       lincons0->constyp==AP_CONS_SUP);
+    sat = do_generators_sat_vector(pk,po->F,
+				   pk->poly_numintp,
+				   lincons0->constyp==AP_CONS_SUP);
   }
   man->result.flag_exact = man->result.flag_best =
     sat ?
@@ -297,19 +298,17 @@ Assume coeff is not an infinite number.
 tests if:
 - dim <= bound if sgn>0
 - dim = bound if sgn=0
-- dim >= bound if sgn<0
+- dim >= -bound if sgn<0
 */
 
 bool do_generators_sat_bound(pk_internal_t* pk, matrix_t* F,
-			     ap_dim_t dim, ap_scalar_t* scalar,
+			     ap_dim_t dim, numrat_t bound,
 			     int sgn)
 {
-  size_t index;
-  size_t i;
+  size_t i,index;
   int sgn2;
 
   index  = pk->dec + dim;
-  ap_mpq_set_scalar(pk->vector_mpqp[0],scalar,0);
   for (i=0; i<F->nbrows; i++){
     sgn2 = numint_sgn(F->p[i][index]);
     if (numint_sgn(F->p[i][0])==0){
@@ -323,16 +322,17 @@ bool do_generators_sat_bound(pk_internal_t* pk, matrix_t* F,
     }
     else {
       /* vertex */
-      mpz_set_numint(mpq_numref(pk->vector_mpqp[1]), F->p[i][index]);
-      mpz_set_numint(mpq_denref(pk->vector_mpqp[1]), F->p[i][polka_cst]);
-      mpq_canonicalize(pk->vector_mpqp[1]);
+      numrat_set_numint2(pk->poly_numrat,
+			 F->p[i][index],
+			 F->p[i][polka_cst]);
       if (sgn==0){
-	if (!mpq_equal(pk->vector_mpqp[1],pk->vector_mpqp[0]))
+	if (!numrat_equal(pk->poly_numrat,bound))
 	  return false;
       }
       else {
-	sgn2 = mpq_cmp(pk->vector_mpqp[1],pk->vector_mpqp[0]);
-	if ( (sgn>0 && sgn2>0) || (sgn<0 && sgn2<0) )
+	if (sgn<0) numrat_neg(pk->poly_numrat,pk->poly_numrat);
+	sgn2 = numrat_cmp(pk->poly_numrat,bound);
+	if (sgn2>0)
 	  return false;
       }
     }
@@ -359,21 +359,22 @@ tbool_t pk_sat_interval(ap_manager_t* man, pk_t* po,
     man->result.flag_exact = man->result.flag_best = tbool_true;
     return tbool_true;
   }
-  if (ap_scalar_equal(interval->inf,interval->sup)){
+  itv_set_ap_interval(pk->itv,
+		      pk->poly_itv, interval);
+  if (itv_is_point(pk->itv, pk->poly_itv)){
     /* interval is a point */
-    assert(!ap_scalar_infty(interval->inf));
-    sat = do_generators_sat_bound(pk,po->F,dim,interval->inf,0);
+    sat = do_generators_sat_bound(pk,po->F,dim,pk->poly_itv->sup,0);
   }
   else {
     sat = true;
     /* inferior bound */
-    if (!ap_scalar_infty(interval->inf)){
-      sat = do_generators_sat_bound(pk,po->F,dim,interval->inf,-1);
+    if (!bound_infty(pk->poly_itv->inf)){
+      sat = do_generators_sat_bound(pk,po->F,dim,pk->poly_itv->inf,-1);
       if (!sat) goto poly_sat_interval_exit0;
     }
     /* superior bound */
-    if (!ap_scalar_infty(interval->sup)){
-      sat = do_generators_sat_bound(pk,po->F,dim,interval->sup,1);
+    if (!bound_infty(pk->poly_itv->sup)){
+      sat = do_generators_sat_bound(pk,po->F,dim,pk->poly_itv->sup,1);
     }
   }
  poly_sat_interval_exit0:

@@ -15,19 +15,18 @@
 extern "C" {
 #endif
 
-pk_t* poly_asssub_linear_linexpr(bool assign,
-				 ap_manager_t* man,
-				 bool destructive,
-				 pk_t* pa,
-				 ap_dim_t dim, ap_linexpr0_t* linexpr);
+pk_t* poly_asssub_linexpr_det(bool assign,
+			      ap_manager_t* man,
+			      bool destructive,
+			      pk_t* pa,
+			      ap_dim_t dim, ap_linexpr0_t* linexpr);
 
-pk_t* poly_asssub_linear_linexpr_array(bool assign,
-				       ap_manager_t* man,
-				       bool destructive,
-				       pk_t* pa,
-				       ap_dim_t* tdim, ap_linexpr0_t** texpr, 
-				       size_t size);
-
+pk_t* poly_asssub_linexpr_array_det(bool assign,
+				    ap_manager_t* man,
+				    bool destructive,
+				    pk_t* pa,
+				    ap_dim_t* tdim, ap_linexpr0_t** texpr, 
+				    size_t size);
 
 #ifdef __cplusplus
 }
