@@ -417,16 +417,21 @@ tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a,
 {
   man->result.flag_exact = man->result.flag_best = tbool_top;
   try {
-    Constraint c = Constraint::zero_dim_positivity();
-    /* may throw cannot_convert, which will be caught by CATCH_WITH_VAL */
-    /* also, we allow strict constraint even if a->strict=false */
-    bool inexact = ap_ppl_of_lincons(c,lincons,true);
-    if (a->p->relation_with(c) == Poly_Con_Relation::is_included()) {
-      if (inexact) return tbool_top; /* we could check !lincons & try to return tbool_false */
+    if (a->p->is_empty()){
       return tbool_true;
     }
-    if (a->intdim) return tbool_top;
-    return tbool_false;
+    else {
+      Constraint c = Constraint::zero_dim_positivity();
+      /* may throw cannot_convert, which will be caught by CATCH_WITH_VAL */
+      /* also, we allow strict constraint even if a->strict=false */
+      bool inexact = ap_ppl_of_lincons(c,lincons,true);
+      if (a->p->relation_with(c) == Poly_Con_Relation::is_included()) {
+	if (inexact) return tbool_top; /* we could check !lincons & try to return tbool_false */
+	return tbool_true;
+      }
+      if (a->intdim) return tbool_top;
+      return tbool_false;
+    }
   }
   CATCH_WITH_VAL(AP_FUNID_SAT_LINCONS,tbool_top);
 }
@@ -472,8 +477,13 @@ tbool_t ap_ppl_poly_is_dimension_unconstrained(ap_manager_t* man,
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
-    Generator g = Generator::line(Variable(dim));
-    return a->p->relation_with(g) == Poly_Gen_Relation::subsumes() ? tbool_true : tbool_false;
+    if (a->p->is_empty()){
+      return tbool_false;
+    }
+    else {
+      Generator g = Generator::line(Variable(dim));
+      return a->p->relation_with(g) == Poly_Gen_Relation::subsumes() ? tbool_true : tbool_false;
+    }
   }
   CATCH_WITH_VAL(AP_FUNID_IS_DIMENSION_UNCONSTRAINED,tbool_top);
 }
@@ -671,9 +681,11 @@ PPL_Poly* ap_ppl_poly_add_ray_array(ap_manager_t* man,
     a->intdim ? tbool_top : tbool_true;
   try {
     PPL_Poly* r = destructive ? a : new PPL_Poly(*a);
-    Generator_System c;
-    ap_ppl_of_generator_array(c,array);
-    r->p->add_recycled_generators(c);
+    if (!r->p->is_empty()){
+      Generator_System c;
+      ap_ppl_of_generator_array(c,array);
+      r->p->add_recycled_generators(c);
+    }
     return r;
   }
   CATCH_WITH_POLY(AP_FUNID_ADD_RAY_ARRAY,a);
@@ -830,11 +842,13 @@ PPL_Poly* ap_ppl_poly_forget_array(ap_manager_t* man,
     a->intdim ? tbool_top : tbool_true;
   try {
     PPL_Poly* r = destructive ? a : new PPL_Poly(*a);
-    for (size_t i=0;i<size;i++)
-      r->p->add_generator(Generator::line(Variable(tdim[i])));
-    if (project) {
+    if (!r->p->is_empty()){
       for (size_t i=0;i<size;i++)
-	r->p->add_constraint(Variable(tdim[i])==0);
+	r->p->add_generator(Generator::line(Variable(tdim[i])));
+      if (project) {
+	for (size_t i=0;i<size;i++)
+	  r->p->add_constraint(Variable(tdim[i])==0);
+      }
     }
     return r;
   }
