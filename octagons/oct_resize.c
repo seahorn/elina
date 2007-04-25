@@ -286,9 +286,8 @@ oct_t* oct_expand(ap_manager_t* man,
     }
   }
   
-  /*  exact and respects closure */
-  if (a->closed) r = oct_set_mat(pr,a,NULL,mm,destructive);
-  else r = oct_set_mat(pr,a,mm,NULL,destructive);
+  /*  exact, generally not closed */
+  r = oct_set_mat(pr,a,mm,NULL,destructive);
   r->dim += n;
   if (dim<a->intdim) r->intdim += n;
   return r;
