@@ -505,38 +505,17 @@ static inline void bounds_mul(bound_t r_inf, bound_t r_sup,
 			      bound_t b_inf, bound_t b_sup,
 			      bound_t tmp[8])
 {
-  /* TODO: optimize for the numerical types that do not need special
-     handling for 0 * oo (mpq ?)
-  */
-  
-  int a_sup_0 = bound_sgn(a_sup);
-  int b_sup_0 = bound_sgn(b_sup);
-  int a_inf_0 = bound_sgn(a_inf);
-  int b_inf_0 = bound_sgn(b_inf);
+  bound_mul(tmp[0],a_sup,b_sup);
+  bound_neg(tmp[4],a_sup); bound_mul(tmp[4],tmp[4],b_sup);
 
-  if (a_sup_0 && b_sup_0) {
-    bound_mul(tmp[0],a_sup,b_sup);
-    bound_neg(tmp[4],a_sup); bound_mul(tmp[4],tmp[4],b_sup);
-  } 
-  else { bound_set_int(tmp[0],0); bound_set_int(tmp[4],0); }
+  bound_mul(tmp[1],a_inf,b_inf);
+  bound_neg(tmp[5],a_inf);  bound_mul(tmp[5],tmp[5],b_inf);
 
-  if (a_inf_0 && b_inf_0) {
-    bound_mul(tmp[1],a_inf,b_inf);
-    bound_neg(tmp[5],a_inf);  bound_mul(tmp[5],tmp[5],b_inf);
-  }
-  else { bound_set_int(tmp[1],0); bound_set_int(tmp[5],0); }
+  bound_mul(tmp[6],a_sup,b_inf);
+  bound_neg(tmp[2],a_sup);  bound_mul(tmp[2],tmp[2],b_inf);
 
-  if (a_sup_0 && b_inf_0) {
-    bound_mul(tmp[6],a_sup,b_inf);
-    bound_neg(tmp[2],a_sup);  bound_mul(tmp[2],tmp[2],b_inf);
-  }
-  else { bound_set_int(tmp[2],0); bound_set_int(tmp[6],0); }
-
-  if (a_inf_0 && b_sup_0) {
-    bound_mul(tmp[7],a_inf,b_sup);
-    bound_neg(tmp[3],a_inf);  bound_mul(tmp[3],tmp[3],b_sup);
-  }
-  else { bound_set_int(tmp[3],0); bound_set_int(tmp[7],0); }
+  bound_mul(tmp[7],a_inf,b_sup);
+  bound_neg(tmp[3],a_inf);  bound_mul(tmp[3],tmp[3],b_sup);
 
   bound_max(r_sup,tmp[0],tmp[1]);
   bound_max(r_sup,r_sup,tmp[2]);
