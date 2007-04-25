@@ -16,7 +16,7 @@ Please read the COPYING file packaged in the distribution.
 <style>
 <!--
 h1 { text-align: center; color: #46c; background: #ddf; margin-bottom: 1em; }
-code { color: #f00; }
+code { color: #d03; font-size:110%; }
 -->
 </style>
 </head>
@@ -49,7 +49,7 @@ code { color: #f00; }
 <p>
 The <a href="http://apron.cri.ensmp.fr//">APRON</a> project provides a
 common interface for various numerical abstract domains with various
-expressibility and cost versus precision trade-offs.
+expressiveness and cost versus precision trade-offs.
 This document describes the octagon domain implementation available
 within APRON.
 The octagon domain allows manipulating and representing conjunction
@@ -114,7 +114,7 @@ distinguished using a two-letter suffix:
 <ul>
 <li> <code>Z</code> for positive and negative integers,
 <li> <code>Q</code> for rationals,
-<li> <code>R</code> for reals;
+<li> <code>F</code> for reals;
 </ul>
 <li> a small letter denoting the computer representation used internally:
 <ul> 
@@ -143,7 +143,7 @@ using numbers in <code>Z</code>,
 <li> <code>GMP</code> types are much slower than native types.
 </ul>
 For best precision, the <code>Qg</code> combination is recommended.
-For a fast and versatile yet sound analysis, the <code>Rd</code> 
+For a fast and versatile yet sound analysis, the <code>Fd</code> 
 combination is recommended.
 
 <p>
@@ -254,7 +254,7 @@ It always return <code>tbool_top</code>.
 When <code>algorithm</code> is set to a strictly negative value, the
 octagon has an integer dimension, the <code>Qg</code> underlying domain is 
 selected, or the conversion from user-specified <code>scalar_t</code> types
-to internal types resulted in an overapproximation, the predicate is sound
+to internal types resulted in an over-approximation, the predicate is sound
 but not exact: it is a <i>semi-test</i>.
 That is, it mainly returns either
 <code>tbool_true</code> or <code>tbool_top</code>.
@@ -394,9 +394,6 @@ The distribution provides a fully automatic test suite with
 It compares the result of all transfer functions in the octagon and polyhedron
 domains, checking for soundness, best-precision and exactness properties.
 
-<p>
-<u>NOTE:</u> 
-currently, the test results are only meaningful for the Qg numeric type.
 
 
 <h2><a name="low">Low-level Access</a></h2>
@@ -421,23 +418,35 @@ Direct access to private fields is not recommended.
 <h2><a name="ocaml">Access to the Library from OCaml</a></h2>
 
 <p>
-Your OCaml program must be linked with the following modules:
+Your OCaml program must be linked with the following modules, in order:
 <ul>
-<li> the GMP library <code>gmp.cmxa</code>
+<li> the GMP OCaml wrapper: <code>gmp.cmxa</code>
 (or <code>gmp.cma</code> for byte-code);
-<li> the APRON library <code>apron.cmx</code>
-(or <code>apron.cmo</code> for byte-code);
-<li> the chosen octagon module, <i>e.g.</i>, <code>octQg.cmxa</code>
-(or <code>octQg.cma</code> for byte-code);
-<li> the standard bigarray library <code>bigarray.cmxa</code>
-(or <code>bigarray.cma</code> for byte-code).
+<li> the APRON OCaml wrapper: <code>apron.cmxa</code>
+(or <code>apron.cma</code> for byte-code);
+<li> the octagon OCaml wrapper: <code>oct.cmxa</code>
+(or <code>oct.cma</code> for byte-code);
+<li> the C octagon library for the chosen numerical type, <i>e.g.</i>,
+<code>-cclib -loctQg</code>;
+<li> the C apron library: <code>-cclib -lapron</code>.
 </ul>
 You may need the specify the include path with <code>-I</code>, depending
 on your installation.
-Also, when linking byte-code, do not forget the <code>-custom</code> option.
 
 <p>
-The octagon library provides an <code>Oct</code> OCaml module.
+Examples:
+<ul>
+<li>
+<code>ocamlc -I $HOME/lib gmp.cma apron.cma oct.cma mltest.ml -cclib -loctQg -cclib -lapron</code>
+<li>
+<code>ocamlopt -I $HOME/lib gmp.cmxa apron.cmxa oct.cmxa mltest.ml -cclib -loctQg -cclib -lapron</code>
+</ul>
+
+
+<p>
+The octagon library provides an <code>Oct</code> OCaml module
+There is no numeric suffix here: the OCaml wrapper is independent from the
+chosen numerical type.
 The <code>Oct.manager_alloc</code> function returns a new manager that can 
 then be used with the standard <code>Apron.Abstract0</code> module provided by 
 APRON.

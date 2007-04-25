@@ -137,7 +137,7 @@ How to compile the library:
 
 "make rebuild" will generate some .ml, .mli, .c source files from the .idl
 files (and some sed scripts). This is only needed if you check-out from SVN as
-the generated files are provided in tarballs (to ease installtion).
+the generated files are provided in tarballs (to ease installation).
 
 The library to link with is called oct.cma, for byte-code, and oct.cmxa 
 for native code. The corresponding module is called Oct.
