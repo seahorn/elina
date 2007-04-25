@@ -97,7 +97,7 @@ uninstall:
 
 distclean: uninstall
 
-dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) apron_ppl.idl sedscript_caml
+dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) apron_ppl.idl sedscript_caml ppl_caml.c ppl.ml ppl.mli
 	(cd ..; tar zcvf ppl.tgz $(^:%=ppl/%))
 
 #---------------------------------------
