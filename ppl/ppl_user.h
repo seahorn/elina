@@ -23,6 +23,12 @@
 using namespace std;
 using namespace Parma_Polyhedra_Library;
 
+/* Internal structure in managers */
+typedef struct ppl_internal_t {
+  bool strict; /* strict or loose mode for polyhedra */
+  struct itv_internal_t* itv; /* Used for linearisation */ 
+} ppl_internal_t;
+
 /* inidicates that a an object cannot be exactly converted into another one
    should be caught in transfer functions
 */
@@ -88,8 +94,10 @@ extern ap_generator0_array_t ap_ppl_to_generator_array(const Generator_System& c
 extern ap_generator0_array_t ap_ppl_to_generator_array(const Grid_Generator_System& c);
 extern ap_generator0_array_t ap_ppl_generator_universe(size_t dim);
 extern ap_interval_t** ap_ppl_box_universe(ap_interval_t** i,size_t nb);
+
 extern void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,ap_linexpr0_t* c);
-extern bool ap_ppl_of_lincons(Constraint& r,ap_lincons0_t* c,bool allow_strict);
+
+extern bool ap_ppl_of_lincons(void* internal, Constraint& r, PPL_Poly& abs, ap_lincons0_t* c,bool allow_strict);
 extern bool ap_ppl_of_lincons(Congruence& r,ap_lincons0_t* c);
 extern bool ap_ppl_of_lincons_array(Constraint_System& r,ap_lincons0_array_t* a,bool allow_strict);
 extern bool ap_ppl_of_lincons_array(Congruence_System& r,ap_lincons0_array_t* a);
