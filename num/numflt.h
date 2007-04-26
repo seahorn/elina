@@ -16,6 +16,10 @@
 #error "HERE"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
    NUMINT_DOUBLE and NUMFLT_LONGDOUBLE also define
 
@@ -157,5 +161,9 @@ static inline bool ap_scalar_set_numflt(ap_scalar_t* a, numflt_t b)
   ap_scalar_reinit(a,AP_SCALAR_DOUBLE);
   return double_set_numflt(&a->val.dbl,b);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

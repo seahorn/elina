@@ -18,6 +18,10 @@
 
 #include "num_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Require C99 compliant compiler */
 
 typedef mpz_t numint_t;
@@ -265,5 +269,9 @@ static inline size_t numint_deserialize(numint_t dst, const void* src)
 /* not the exact size of serialized data, but a sound overapproximation */
 static inline size_t numint_serialized_size(numint_t a) 
 { return mpz_sizeinbase(a,2)/8+5+sizeof(mp_limb_t); }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

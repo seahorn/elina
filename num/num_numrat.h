@@ -23,6 +23,11 @@
 #endif
 
 #include "numrat.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef numrat_t num_t;
 
 #define NUM_NUMRAT
@@ -208,5 +213,9 @@ static inline size_t num_deserialize(num_t dst, const void* src)
 
 static inline size_t num_serialized_size(num_t a)
 { return numrat_serialized_size(a); }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

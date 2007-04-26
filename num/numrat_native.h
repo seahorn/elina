@@ -26,6 +26,10 @@
 #error "HERE"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct _rat_t {
   numint_t n; /* numerator */
   numint_t d; /* denominator, >=0 */
@@ -391,5 +395,9 @@ static inline size_t numrat_serialized_size(numrat_t a)
   return numint_serialized_size(numrat_numref(a)) +
          numint_serialized_size(numrat_denref(a));
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

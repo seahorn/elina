@@ -20,6 +20,10 @@
 #error "HERE"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
    NUMINT_LONGINT and NUMINT_LONGLONGINT also define
 
@@ -163,5 +167,9 @@ static inline bool ap_scalar_set_numint(ap_scalar_t* a, numint_t b)
   ap_scalar_reinit(a,AP_SCALAR_MPQ);
   return mpq_set_numint(a->val.mpq,b);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

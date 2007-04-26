@@ -24,6 +24,10 @@
 #error "HERE"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef mpq_t numrat_t;
 
 
@@ -300,5 +304,9 @@ static inline size_t numrat_serialized_size(numrat_t a)
     (mpz_sizeinbase(mpq_numref(a),2)+mpz_sizeinbase(mpq_denref(a),2))/8+
     9+2*sizeof(mp_limb_t);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

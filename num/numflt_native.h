@@ -17,6 +17,10 @@
 #include "ap_scalar.h"
 #include "num_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(NUMFLT_DOUBLE)
 typedef double numflt_native;
 #define NUMFLT_ZERO 0.0
@@ -304,5 +308,9 @@ static inline size_t numflt_deserialize(numflt_t dst, const void* src)
 
 static inline size_t numflt_serialized_size(numflt_t a)
 { return sizeof(numflt_t); }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

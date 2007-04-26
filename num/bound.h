@@ -10,10 +10,12 @@
 #endif
 
 #include <stdio.h>
-
 #include "ap_scalar.h"
-
 #include "bound_def.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 static inline bool bound_infty(bound_t a);
 /*
@@ -134,5 +136,9 @@ static inline size_t bound_serialized_size(bound_t a);
 static inline size_t bound_serialize_array(void* dst, bound_t* src, size_t size);
 static inline size_t bound_deserialize_array(bound_t* dst, const void* src, size_t size);
 static inline size_t bound_serialized_size_array(bound_t* src, size_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

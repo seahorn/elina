@@ -26,6 +26,10 @@
 #error "HERE"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Parameter: one of the following macros should be defined:
    NUM_LONGINT,
    NUM_LONGLONGINT,
@@ -206,5 +210,9 @@ static inline size_t num_serialized_size_array(num_t* src, size_t size)
     n += num_serialized_size(src[i]);
   return n;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

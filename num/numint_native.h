@@ -18,6 +18,10 @@
 #include "num_config.h"
 /* Require C99 compliant compiler */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(NUMINT_LONGINT)
 typedef long int numint_native;
 #define NUMINT_ZERO 0L
@@ -400,5 +404,9 @@ static inline size_t numint_deserialize(numint_t dst, const void* src)
 
 static inline size_t numint_serialized_size(numint_t a)
 { return sizeof(numint_t); }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

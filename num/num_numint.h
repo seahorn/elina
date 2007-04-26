@@ -23,6 +23,11 @@
 #endif
 
 #include "numint.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef numint_t num_t;
 
 #define NUM_NUMINT
@@ -212,5 +217,9 @@ static inline size_t num_deserialize(num_t dst, const void* src)
 
 static inline size_t num_serialized_size(num_t a)
 { return numint_serialized_size(a); }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

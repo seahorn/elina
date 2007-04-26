@@ -22,6 +22,11 @@
 #error "HERE"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* ====================================================================== */
 /* Assignement */
 /* ====================================================================== */
@@ -162,5 +167,9 @@ static inline bool ap_scalar_set_numrat(ap_scalar_t* a, numrat_t b)
   ap_scalar_reinit(a,AP_SCALAR_MPQ);
   return mpq_set_numrat(a->val.mpq,b);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -11,6 +11,10 @@
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(NUM_MAX) || defined(NUM_NUMRAT)
 
 typedef num_t bound_t;
@@ -556,5 +560,9 @@ static inline size_t bound_serialized_size_array(bound_t* src, size_t size)
     n += bound_serialized_size(src[i]);
   return n;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
