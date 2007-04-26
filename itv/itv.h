@@ -145,7 +145,7 @@ static inline void itv_mul_num(itv_t a, itv_t b, num_t c);
 static inline void itv_div_num(itv_t a, itv_t b, num_t c);
 static inline void itv_mul_bound(itv_t a, itv_t b, bound_t c);
 static inline void itv_div_bound(itv_t a, itv_t b, bound_t c);
-  
+
 
 /* Printing */
 static inline int itv_snprint(char* s, size_t size, itv_t a);
@@ -171,6 +171,14 @@ static inline bool ap_interval_set_itv(itv_internal_t* intern,
 static inline bool ap_coeff_set_itv(itv_internal_t* intern,
 				    ap_coeff_t* a, itv_t b);
   /* Convert a itv_t into a ap_coeff_t */
+
+static inline bool itv_array_set_ap_interval_array(itv_internal_t* intern,
+						   itv_t** ptitv,
+						   ap_interval_t** array,
+						   size_t size);
+  /* Convert an array of ap_interval_t into an array of itv_t.
+     The paramater ptitv is a result parameter.
+     The result is to be found in *ptitv */
 
 /* ********************************************************************** */
 /* Definition of inline functions */
@@ -269,6 +277,15 @@ static inline bool ap_coeff_set_itv(itv_internal_t* intern,
 				    ap_coeff_t* a, itv_t b)
 { return ITVAPFUN(ap_coeff_set_itv)(intern,a,b); }
 
+bool ITVFUN(array_set_ap_interval_array)(itv_internal_t* intern,
+					 itv_t** ptitv,
+					 ap_interval_t** array,
+					 size_t size);
+static inline bool itv_array_set_ap_interval_array(itv_internal_t* intern,
+						   itv_t** ptitv,
+						   ap_interval_t** array,
+						   size_t size)
+{ return ITVFUN(array_set_ap_interval_array)(intern,ptitv,array,size); }
 
 static inline void itv_init(itv_t a)
 {
@@ -279,7 +296,7 @@ static inline void itv_init_array(itv_t* a, size_t size)
 {
   size_t i;
   for (i=0; i<size; i++) itv_init(a[i]);
-}    
+}
 static inline void itv_init_set(itv_t a, itv_t b)
 {
   bound_init_set(a->inf,b->inf);
@@ -302,7 +319,7 @@ static inline itv_t* itv_array_alloc(size_t size)
   itv_t* res = (itv_t*)malloc(size*sizeof(itv_t));
   itv_init_array(res,size);
   return res;
-}    
+}
 static inline void itv_array_free(itv_t* a, size_t size)
 {
   itv_clear_array(a,size);
@@ -338,8 +355,8 @@ static inline void itv_swap(itv_t a, itv_t b)
 { itv_t t; *t=*a;*a=*b;*b=*t; }
 
 static inline bool itv_is_top(itv_t a)
-{ 
-  return bound_infty(a->inf) && bound_infty(a->sup); 
+{
+  return bound_infty(a->inf) && bound_infty(a->sup);
 }
 static inline bool itv_is_bottom(itv_internal_t* intern, itv_t a)
 {
@@ -388,7 +405,7 @@ static inline void bound_widening(bound_t a, bound_t b, bound_t c)
     bound_set(a,b);
   }
 }
-static inline void itv_widening(itv_t a, 
+static inline void itv_widening(itv_t a,
 				itv_t b, itv_t c)
 {
   bound_widening(a->sup,b->sup,c->sup);

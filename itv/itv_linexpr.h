@@ -84,6 +84,21 @@ static inline bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
      If p!=NULL, transformation into a quasilinear expression
   */
 
+static inline bool itv_ap_linexpr0_set_ap_linexpr0(itv_internal_t* intern,
+						   ap_linexpr0_t* rlinexpr0, 
+						   itv_t* p,
+						   ap_linexpr0_t* linexpr0);
+  /* Linearize an ap_linexpr0 using the array of itv_t,
+     by converting them first to itv types, and then back to ap_linexpr0.
+  */
+static inline bool itv_ap_lincons0_set_ap_lincons0(itv_internal_t* intern,
+						   ap_lincons0_t* rlincons0, 
+						   itv_t* p,
+						   ap_lincons0_t* lincons0);
+  /* Linearize an ap_lincons0 using the array of itv_t,
+     by converting them first to itv types, and then back to ap_lincons0.
+  */
+
 static inline void itv_eval_itv_linexpr(itv_internal_t* intern,
 					itv_t itv,
 					itv_t* p,
@@ -149,6 +164,26 @@ static inline bool itv_lincons_set_ap_lincons0(itv_internal_t* intern,
 					       itv_t* p,
 					       ap_lincons0_t* lincons0)
 { return ITVFUN(lincons_set_ap_lincons0)(intern,cons,p,lincons0); }
+
+bool ITVFUN(ap_linexpr0_set_ap_linexpr0)(itv_internal_t* intern,
+					 ap_linexpr0_t* rlinexpr0, 
+					 itv_t* p,
+					 ap_linexpr0_t* linexpr0);
+static inline bool itv_ap_linexpr0_set_ap_linexpr0(itv_internal_t* intern,
+						   ap_linexpr0_t* rlinexpr0, 
+						   itv_t* p,
+						   ap_linexpr0_t* linexpr0)
+{ return ITVFUN(ap_linexpr0_set_ap_linexpr0)(intern,rlinexpr0,p,linexpr0); }
+
+bool ITVFUN(ap_lincons0_set_ap_lincons0)(itv_internal_t* intern,
+					 ap_lincons0_t* rlincons0, 
+					 itv_t* p,
+					 ap_lincons0_t* lincons0);
+static inline bool itv_ap_lincons0_set_ap_lincons0(itv_internal_t* intern,
+						   ap_lincons0_t* rlincons0, 
+						   itv_t* p,
+						   ap_lincons0_t* lincons0)
+{ return ITVFUN(ap_lincons0_set_ap_lincons0)(intern,rlincons0,p,lincons0); }
 
 void ITVFUN(eval_itv_linexpr)(itv_internal_t* intern,
 			      itv_t itv,

@@ -542,4 +542,21 @@ bool ITVAPFUN(ap_coeff_set_itv)(itv_internal_t* intern,
     return ap_interval_set_itv(intern,a->val.interval,b);
   }
 }
+bool ITVFUN(array_set_ap_interval_array)(itv_internal_t* intern,
+					 itv_t** ptitv,
+					 ap_interval_t** array,
+					 size_t size)
+{
+  bool exact, res;
+  itv_t* titv;
+  size_t i;
 
+  titv = itv_array_alloc(size);
+  res = true;
+  for (i=0; i<size; i++){
+    exact = itv_set_ap_interval(intern,titv[i],array[i]);
+    res = res && exact;
+  }
+  *ptitv = titv;
+  return res;
+}
