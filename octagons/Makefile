@@ -30,7 +30,7 @@ SHARED = gcc -shared
 #---------------------------------------
 
 # Use ICFLAGS to specify machine-independent compilation flags.
-ICFLAGS = -g \
+ICFLAGS = \
 -I../newpolka \
 -I../mlgmpidl \
 -I$(MPFR_PREFIX)/include \
