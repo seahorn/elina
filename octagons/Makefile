@@ -30,7 +30,7 @@ SHARED = gcc -shared
 #---------------------------------------
 
 # Use ICFLAGS to specify machine-independent compilation flags.
-ICFLAGS = \
+ICFLAGS = -g \
 -I../newpolka \
 -I../mlgmpidl \
 -I$(MPFR_PREFIX)/include \
@@ -38,6 +38,7 @@ ICFLAGS = \
 -I../apron \
 -I../mlapronidl \
 -I../num \
+-I../itv \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
 
 # Caml
@@ -159,6 +160,7 @@ octtest%: liboct%.a oct_test%.o
 	-L. -loct$* \
 	-L../newpolka -lpolkag_debug \
 	-L../apron -lapron \
+	-L../itv -litvmpq \
 	-L$(MPFR_PREFIX)/lib -lmpfr \
 	-L$(GMP_PREFIX)/lib -lgmp \
 	-lm

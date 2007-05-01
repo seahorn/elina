@@ -485,10 +485,11 @@ oct_t* oct_meet_lincons_array(ap_manager_t* man,
     bool exact, respect_closure;
     size_t i;
     bound_t* m = a->closed ? a->closed : a->m;
-    if (!destructive) m = hmat_copy(pr,m,a->dim);
 
     /* can / should we try to respect closure */
     respect_closure = (m==a->closed) && (pr->funopt->algorithm>=0);
+
+    if (!destructive) m = hmat_copy(pr,m,a->dim);
 
     /* go */
     if (hmat_add_lincons(pr,m,a->dim,array,&exact,&respect_closure)) {
@@ -564,16 +565,15 @@ static void hmat_assign(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
 
   if (u.type==ZERO ) {
     /* X <- [-a,b], non-invertible */
-
     if (*respect_closure) {
       /* 'respect closure' version */
       for (k=0;k<2*d;k++) {
-	bound_div_2(m[matpos(k^1,k)],pr->tmp[2]);
+	bound_div_2(pr->tmp[2],m[matpos(k^1,k)]);
 	bound_add(m[matpos(2*d,k)],pr->tmp[2],pr->tmp[0]);
 	bound_add(m[matpos(2*d+1,k)],pr->tmp[2],pr->tmp[1]);
       }
       for (k=2*d+2;k<2*dim;k++) {
-	bound_div_2(m[matpos(k,k^1)],pr->tmp[2]);
+	bound_div_2(pr->tmp[2],m[matpos(k,k^1)]);
 	bound_add(m[matpos(k,2*d)],pr->tmp[2],pr->tmp[1]);
 	bound_add(m[matpos(k,2*d+1)],pr->tmp[2],pr->tmp[0]);
       }
@@ -589,11 +589,12 @@ static void hmat_assign(oct_internal_t* pr, uexpr u, bound_t* m, size_t dim,
 
   else if (u.type==UNARY && u.i!=d) {
     /* X <- c_i X_i + [-a,b], X_i!=X, non-invertible */
-    /* always respect closure */
     hmat_forget_var(m,dim,d);
     i = 2*u.i + (u.coef_i==1 ? 0 : 1);
     bound_set(m[matpos2(2*d,i)],pr->tmp[0]);
     bound_set(m[matpos2(i,2*d)],pr->tmp[1]);
+    if (*respect_closure)
+      hmat_close_incremental(m,dim,d);
   }
 
   else if (u.type==UNARY && u.coef_i==-1) {
@@ -862,7 +863,7 @@ oct_t* oct_assign_linexpr(ap_manager_t* man,
   bound_t* m;
   bool respect_closure;
   arg_assert(d<a->dim,return NULL;);
-  
+
   if (dest && !dest->closed && !dest->m)
     /* definitively empty due to dest*/
     return oct_set_mat(pr,a,NULL,NULL,destructive);
@@ -872,10 +873,11 @@ oct_t* oct_assign_linexpr(ap_manager_t* man,
     oct_cache_closure(pr,a);
   m = a->closed ? a->closed : a->m;
   if (!m) return oct_set_mat(pr,a,NULL,NULL,destructive); /* empty */
-  if (!destructive) m = hmat_copy(pr,m,a->dim);
 
   /* can / should we try to respect the closure */
   respect_closure = (m==a->closed) && (pr->funopt->algorithm>=0) && (!dest);
+
+  if (!destructive) m = hmat_copy(pr,m,a->dim);
 
   /* go */
   hmat_assign(pr,u,m,a->dim,d,&respect_closure);
@@ -893,7 +895,7 @@ oct_t* oct_assign_linexpr(ap_manager_t* man,
     for (i=0;i<matsize(a->dim);i++)
       bound_min(m[i],m[i],m2[i]);
   }
-
+  
   if (respect_closure) return oct_set_mat(pr,a,NULL,m,destructive);
   else return oct_set_mat(pr,a,m,NULL,destructive);
 }
@@ -920,10 +922,11 @@ oct_t* oct_substitute_linexpr(ap_manager_t* man,
     oct_cache_closure(pr,a);
   m = a->closed ? a->closed : a->m;
   if (!m) return oct_set_mat(pr,a,NULL,NULL,destructive); /* empty */
-  if (!destructive) m = hmat_copy(pr,m,a->dim);
 
   /* can / should we try to respect the closure */
   respect_closure = (m==a->closed) && (pr->funopt->algorithm>=0) && (!dest);
+ 
+  if (!destructive) m = hmat_copy(pr,m,a->dim);
 
   /* go */
   if (hmat_subst(pr,u,m,a->dim,d,(bound_t*)m2,&respect_closure)) {
