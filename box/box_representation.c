@@ -24,16 +24,16 @@ void box_init(box_t* a)
 {
   size_t i;
   size_t nbdims = a->intdim + a->realdim;
-  if (nbdims>0){
-    assert(a->p==NULL);
-    a->p = itv_array_alloc(nbdims);
-  }
+  assert(a->p==NULL);
+  a->p = itv_array_alloc(nbdims+1); 
+  /* Add an unused dimension to differentiate
+     empty and top values in dimension 0+0 */
 }
 
 void box_set_bottom(box_t* a)
 {
   if (a->p){
-    itv_array_free(a->p,a->intdim+a->realdim);
+    itv_array_free(a->p,a->intdim+a->realdim+1);
     a->p = NULL;
   }
 }
@@ -44,13 +44,11 @@ void box_set_top(box_t* a)
   size_t nbdims;
   
   nbdims = a->intdim + a->realdim;
-  if (nbdims>0){
-    if (a->p==NULL){
-      box_init(a);
-    };
-    for (i=0; i<nbdims; i++){
-      itv_set_top(a->p[i]);
-    }
+  if (a->p==NULL){
+    box_init(a);
+  };
+  for (i=0; i<nbdims; i++){
+    itv_set_top(a->p[i]);
   }
 }
 
@@ -84,10 +82,13 @@ box_t* box_copy(ap_manager_t* man, box_t* a)
 
   box_t* b = box_alloc(a->intdim,a->realdim);
   if (a->p){
-    b->p = malloc(nbdims*sizeof(itv_t));
+    b->p = malloc((nbdims+1)*sizeof(itv_t));
     for (i=0; i<nbdims; i++){
       itv_init_set(b->p[i],a->p[i]);
     }
+    itv_init(b->p[nbdims]);  
+    /* Add an unused dimension to differentiate
+       empty and top values in dimension 0+0 */ 
   }
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
@@ -98,7 +99,7 @@ box_t* box_copy(ap_manager_t* man, box_t* a)
 void box_free(ap_manager_t* man, box_t* a)
 {
   if (a->p){
-    itv_array_free(a->p,a->intdim+a->realdim);
+    itv_array_free(a->p,a->intdim+a->realdim+1);
     a->p = NULL;
   }
   free(a);

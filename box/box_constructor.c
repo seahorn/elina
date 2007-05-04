@@ -96,7 +96,7 @@ tbool_t box_is_bottom(ap_manager_t* man, box_t* a)
 {
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
-  return tbool_of_bool(a->p==NULL && a->intdim + a->realdim>0);
+  return tbool_of_bool(a->p==NULL);
 }
 
 tbool_t box_is_top(ap_manager_t* man, box_t* a)
@@ -107,9 +107,6 @@ tbool_t box_is_top(ap_manager_t* man, box_t* a)
 
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
-  if (nbdims==0)
-    return tbool_true;
-
   if (a->p==NULL)
     return tbool_false;
 
@@ -175,7 +172,7 @@ tbool_t box_is_eq(ap_manager_t* man, box_t* a, box_t* b)
 
 tbool_t box_is_dimension_unconstrained(ap_manager_t* man, box_t* a, ap_dim_t dim)
 {
-  return (itv_is_top(a->p[dim])) ? tbool_true : tbool_false;
+  return (a->p && itv_is_top(a->p[dim])) ? tbool_true : tbool_false;
 }
 
 /* is the dimension included in the interval in the abstract value ? */

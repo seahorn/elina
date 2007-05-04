@@ -23,8 +23,8 @@ box_t* box_add_dimensions(ap_manager_t* man,
   }
   size = res->intdim+res->realdim;
   dimsup = dimchange->intdim+dimchange->realdim;
-  res->p = realloc(res->p,(size+dimsup)*sizeof(itv_t));
-  for (i=(int)size;i<(int)(size+dimsup);i++){
+  res->p = realloc(res->p,(size+dimsup+1)*sizeof(itv_t));
+  for (i=(int)size;i<(int)(size+dimsup+1);i++){
     itv_init(res->p[i]);
   }
   k = dimsup;
@@ -73,10 +73,11 @@ box_t* box_remove_dimensions(ap_manager_t* man,
     }
     itv_set(res->p[i],a->p[i+k]);
   }
-  for (i=size-dimsup;i<size;i++){
+  itv_set_zero(res->p[size-dimsup]);
+  for (i=size-dimsup+1;i<size+1;i++){
     itv_clear(res->p[i]);
   }
-  res->p = realloc(res->p,(size-dimsup)*sizeof(itv_t));
+  res->p = realloc(res->p,(size-dimsup+1)*sizeof(itv_t));
  box_remove_dimensions_exit:
   res->intdim = a->intdim-dimchange->intdim;
   res->realdim = a->realdim-dimchange->realdim;
