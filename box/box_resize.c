@@ -73,7 +73,7 @@ box_t* box_remove_dimensions(ap_manager_t* man,
     }
     itv_set(res->p[i],a->p[i+k]);
   }
-  itv_set_zero(res->p[size-dimsup]);
+  itv_set_int(res->p[size-dimsup],0);
   for (i=size-dimsup+1;i<size+1;i++){
     itv_clear(res->p[i]);
   }
