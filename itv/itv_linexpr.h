@@ -6,6 +6,7 @@
 #define _ITV_LINEXPR_H_
 
 #include "itv.h"
+#include "ap_expr0.h"
 
 #ifdef __cplusplus
 extern "C" {

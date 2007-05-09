@@ -49,6 +49,54 @@ void ITVFUN(internal_free)(itv_internal_t* intern)
 }
 
 /* ********************************************************************** */
+/* Code versions of pure inline functions */
+/* ********************************************************************** */
+
+void ITVFUN(init)(itv_t a)
+{ itv_init(a); }
+void ITVFUN(init_array)(itv_t* a, size_t size)
+{ itv_init_array(a,size); }
+void ITVFUN(init_set)(itv_t a, itv_t b)
+{ itv_init_set(a,b); }
+void ITVFUN(clear)(itv_t a)
+{ itv_clear(a); }
+itv_t* ITVFUN(array_alloc)(size_t size)
+{ return itv_array_alloc(size); }
+void ITVFUN(array_free)(itv_t* a, size_t size)
+{ itv_array_free(a,size); }
+void ITVFUN(set)(itv_t a, itv_t b)
+{ itv_set(a,b); }
+void ITVFUN(set_int)(itv_t a, long int b)
+{ itv_set_int(a,b); }
+void ITVFUN(set_bottom)(itv_t a)
+{ itv_set_bottom(a); }
+void ITVFUN(set_top)(itv_t a)
+{ itv_set_top(a); }
+void ITVFUN(swap)(itv_t a, itv_t b)
+{ itv_swap(a,b); }
+bool ITVFUN(is_top)(itv_t a)
+{ return itv_is_top(a); }
+bool ITVFUN(is_bottom)(itv_internal_t* intern, itv_t a)
+{ return itv_is_bottom(intern,a); }
+bool ITVFUN(is_point)(itv_internal_t* intern, itv_t a)
+{ return itv_is_point(intern,a); }
+bool ITVFUN(is_zero)(itv_t a)
+{ return itv_is_zero(a); }
+bool ITVFUN(is_leq)(itv_t a,itv_t b)
+{ return itv_is_leq(a,b); }
+bool ITVFUN(is_eq)(itv_t a,itv_t b)
+{ return itv_is_eq(a,b); }
+void ITVFUN(meet)(itv_internal_t* intern, itv_t a, itv_t b,itv_t c)
+{ itv_meet(intern,a,b,c); }
+void ITVFUN(join)(itv_t a, itv_t b,itv_t c)
+{ itv_join(a,b,c); }
+void ITVFUN(widening)(itv_t a, itv_t b,itv_t c)
+{ itv_widening(a,b,c); }
+void ITVFUN(add)(itv_t a, itv_t b,itv_t c)
+{ itv_add(a,b,c); }
+
+
+/* ********************************************************************** */
 /* Normalization and tests */
 /* ********************************************************************** */
 

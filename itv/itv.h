@@ -9,7 +9,7 @@
 #include "num.h"
 #include "bound.h"
 #include "itv_config.h"
-#include "ap_global0.h"
+#include "ap_coeff.h"
 
 #if defined(NUM_LONGINT)
 #define NUM_SUFFIX li
@@ -47,12 +47,12 @@ extern "C" {
 /* Be cautious: interval [a,b] is represented by [-a,b].  This is because
    bound quantities are always rounded toward +infty */
 
-struct itv_t {
+typedef struct __itv_struct {
   bound_t inf; /* negation of the inf bound */
   bound_t sup; /* sup bound */
-};
-typedef struct itv_t itv_t[1];
-typedef struct itv_t* itv_ptr;
+} __itv_struct;
+typedef __itv_struct itv_t[1];
+typedef __itv_struct* itv_ptr;
 
 
 /* Workspace to avoid temporary allocation and deallocation when num_t and
@@ -97,7 +97,7 @@ static inline void itv_array_free(itv_t* a, size_t size);
 /* Assignement */
 static inline void itv_set(itv_t a, itv_t b);
 static inline void itv_set_num(itv_t a, num_t b);
-static inline void itv_set_zero(itv_t a);
+static inline void itv_set_int(itv_t a, long int b);
 static inline void itv_set_bottom(itv_t a);
 static inline void itv_set_top(itv_t a);
 static inline void itv_swap(itv_t a, itv_t b);
@@ -336,10 +336,10 @@ static inline void itv_set_num(itv_t a, num_t b)
   bound_set_num(a->sup,b);
   bound_neg(a->inf,a->sup);
 }
-static inline void itv_set_zero(itv_t a)
+  static inline void itv_set_int(itv_t a, long int b)
 {
-  bound_set_int(a->inf,0);
-  bound_set_int(a->sup,0);
+  bound_set_int(a->inf,b);
+  bound_set_int(a->sup,b);
 }
 static inline void itv_set_bottom(itv_t a)
 {

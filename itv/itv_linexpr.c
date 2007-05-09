@@ -58,11 +58,6 @@ bool ITVFUN(linexpr_set_ap_linexpr0)(itv_internal_t* intern,
   if (size>expr->size){
     itv_linexpr_reinit(expr,size);
   }
-  else {
-    for (i=size; i<expr->size; i++){
-      expr->linterm[i].dim = AP_DIM_MAX;
-    }
-  }
   exact = itv_set_ap_coeff(intern, expr->cst, &linexpr0->cst);
   expr->equality = exact && linexpr0->cst.discr==AP_COEFF_SCALAR;
   res = exact;
@@ -134,10 +129,34 @@ bool ITVFUN(linexpr_set_ap_linexpr0)(itv_internal_t* intern,
       }
     }
   }
+  itv_linexpr_reinit(expr,k);
   return res;
 }
 
+bool ITVFUN(ap_linexpr0_set_ap_linexpr0)(itv_internal_t* intern,
+					 ap_linexpr0_t* rlinexpr0,
+					 itv_t* p,
+					 ap_linexpr0_t* linexpr0)
+{
+  bool exact = true;
+  itv_linexpr_t linexpr;
+  bool* peq;
+  itv_ptr pitv;
+  size_t i;
+  ap_dim_t dim;
 
+  itv_linexpr_init(&linexpr,0);
+  exact = itv_linexpr_set_ap_linexpr0(intern,&linexpr,p,linexpr0) && exact;
+  ap_linexpr0_realloc(rlinexpr0,linexpr.size);
+  assert(rlinexpr0->discr==AP_LINEXPR_SPARSE);
+  exact = ap_coeff_set_itv(intern,&rlinexpr0->cst,linexpr.cst) && exact;
+  itv_linexpr_ForeachLinterm(&linexpr,i,dim,pitv,peq){
+    rlinexpr0->p.linterm[i].dim = dim;
+    exact = ap_coeff_set_itv(intern,&rlinexpr0->p.linterm[i].coeff,pitv) && exact;
+  }
+  itv_linexpr_clear(&linexpr);
+  return exact;
+}
 bool ITVFUN(lincons_set_ap_lincons0)(itv_internal_t* intern,
 				     itv_lincons_t* cons, 
 				     itv_t* p,
