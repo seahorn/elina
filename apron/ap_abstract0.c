@@ -1252,6 +1252,12 @@ ap_abstract0_t* ap_abstract0_fold(ap_manager_t* man,
   if (ap_abstract0_checkman1(AP_FUNID_FOLD,man,a) &&
       size>0 &&
       ap_abstract0_check_dim_array(AP_FUNID_FOLD,man,dimension,tdim,size)){
+    /* Check also that the array is sorted */
+    size_t i;
+    for (i=1;i<size; i++){
+      if (tdim[i-1]>=tdim[i]) goto _ap_abstract0_fold_exc;
+    }
+    /* OK now */
     void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_FOLD];
     void* valueold = a->value;
     void* value = ptr(man,destructive,a->value,tdim,size);
@@ -1265,6 +1271,7 @@ ap_abstract0_t* ap_abstract0_fold(ap_manager_t* man,
     return ap_abstract0_cons(man,value);
   }
   else {
+  _ap_abstract0_fold_exc:
     if (destructive) _ap_abstract0_free(a);
     return ap_abstract0_top(man,
 			    dimension.intdim - ( (size>0 && tdim[0]<dimension.intdim) ? (size-1) : 0),

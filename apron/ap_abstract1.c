@@ -1054,6 +1054,12 @@ ap_abstract1_t ap_abstract1_expand(ap_manager_t* man,
   return res;
 }
 
+static int compar_dim(const void* a, const void* b)
+{
+  ap_dim_t* pa = (ap_dim_t*)a;
+  ap_dim_t* pb = (ap_dim_t*)b;
+  return (*pa)>(*pb) ? 1 : (-1);
+}  
 ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
 				 bool destructive, ap_abstract1_t* a,
 				 ap_var_t* tvar, size_t size)
@@ -1104,6 +1110,8 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
       goto ap_abstract1_fold_exit;
     }
   }
+  /* Sort the array */
+  qsort(&tdim[0],size,sizeof(ap_dim_t),&compar_dim);
   /* Perform the operation */
   value = ap_abstract0_fold(man,destructive,a->abstract0,tdim,size);
   free(tdim);

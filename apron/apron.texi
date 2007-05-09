@@ -3754,9 +3754,9 @@ dimensions.
 @end deftypefun
 
 @deftypefun ap_abstract0_t* ap_abstract0_fold (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_dim_t* @var{tdim}, size_t @var{size})
-Fold the dimensions in the array @var{tdim} of size @var{size}>=1
-and put the result in the first dimension in the array. The other
-dimensions of the array are then removed.
+Fold the dimensions in the array @var{tdim} of size @var{size}>=1 and
+put the result in the first dimension in the array @emph{assumed to be
+sorted}. The other dimensions of the array are then removed.
 @end deftypefun
 
 @c -------------------------------------------------------------------
