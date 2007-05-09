@@ -109,6 +109,19 @@ ap_lincons0_array_t ap_lincons0_array_make(size_t size)
   }
   return array;
 }
+void ap_lincons0_array_resize(ap_lincons0_array_t* array, size_t size)
+{
+  size_t i;
+  for (i=size; i<array->size; i++){
+    ap_lincons0_clear(&array->p[i]);
+  }
+  array->p = (ap_lincons0_t*)realloc(array->p,size*sizeof(ap_lincons0_t));
+   for (i=array->size; i<size; i++){
+    array->p[i].linexpr0 = NULL;
+    array->p[i].scalar = NULL;
+  }
+   array->size = size;
+}
 
 void ap_lincons0_array_clear(ap_lincons0_array_t* array)
 {
@@ -139,6 +152,31 @@ void ap_lincons0_array_fprint(FILE* stream,
       fprintf(stream,"\n");
     }
   }
+}
+
+bool ap_lincons0_array_is_quasilinear(ap_lincons0_array_t* array)
+{
+  size_t i;
+  bool res = true;
+  for (i=0; i<array->size; i++){
+    if (!ap_linexpr0_is_quasilinear(array->p[i].linexpr0)){
+      res = false;
+      break;
+    }
+  }
+  return res;
+}
+bool ap_lincons0_array_is_linear(ap_lincons0_array_t* array)
+{
+  size_t i;
+  bool res = true;
+  for (i=0; i<array->size; i++){
+    if (!ap_linexpr0_is_linear(array->p[i].linexpr0)){
+      res = false;
+      break;
+    }
+  }
+  return res;
 }
 
 /* ====================================================================== */

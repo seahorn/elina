@@ -113,6 +113,11 @@ ap_lincons0_array_t ap_lincons0_array_make(size_t size);
   /* Allocate an array of size constraints.
      The constraints are initialized with NULL pointers, */
 
+void ap_lincons0_array_resize(ap_lincons0_array_t* array, size_t size);
+  /* Resize an array of size constraints.
+     New constraints are initialized with NULL pointers,
+     Removed constraints with non-NULL pointers are deallocated */
+
 void ap_lincons0_array_clear(ap_lincons0_array_t* array);
   /* Clear the constraints of the array, and then the array itself */
 
@@ -120,6 +125,10 @@ void ap_lincons0_array_fprint(FILE* stream,
 			      ap_lincons0_array_t* ap_lincons0_array,
 			      char** name_of_dim);
   /* Printing */
+
+bool ap_lincons0_array_is_linear(ap_lincons0_array_t* array);
+bool ap_lincons0_array_is_quasilinear(ap_lincons0_array_t* array);
+  /* Are all the expressions involved linear (resp. quasilinear) */
 
 /* ====================================================================== */
 /* II.1 Change of dimensions and permutations */
