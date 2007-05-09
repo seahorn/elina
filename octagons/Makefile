@@ -212,10 +212,10 @@ mlFd: ml octtopFd octrunFd
 mlFl: ml octtopFl octrunFl
 
 octtop%: oct.cma liboct_caml.a liboct%.a
-	$(OCAMLMKTOP) $(OCAMLFLAGS) $(OCAMLINC) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
+	$(OCAMLMKTOP) $(OCAMLFLAGS) $(OCAMLINC) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L../itv
 
 octrun%: oct.cma liboct_caml.a
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt -L. -cclib -loct$* -ccopt -L../mlgmpidl -ccopt -L../mlapronidl -ccopt -L../apron -ccopt -L../itv
 
 oct.cma: oct.cmi oct.cmo liboct_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -custom -a -o $@ \

@@ -1056,9 +1056,9 @@ ap_abstract1_t ap_abstract1_expand(ap_manager_t* man,
 
 static int compar_dim(const void* a, const void* b)
 {
-  ap_dim_t* pa = (ap_dim_t*)a;
-  ap_dim_t* pb = (ap_dim_t*)b;
-  return (*pa)>(*pb) ? 1 : (-1);
+  int va = *((ap_dim_t*)a);
+  int vb = *((ap_dim_t*)b);
+  return (va-vb);
 }  
 ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
 				 bool destructive, ap_abstract1_t* a,
@@ -1070,6 +1070,7 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
   size_t i;
   ap_dim_t dim;
   ap_abstract0_t* value;
+  ap_dimperm_t perm;
 
   if (size==0){
     ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,AP_FUNID_FOLD,
@@ -1110,10 +1111,55 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
       goto ap_abstract1_fold_exit;
     }
   }
-  /* Sort the array */
-  qsort(&tdim[0],size,sizeof(ap_dim_t),&compar_dim);
+  /* Sort the array of dimensions */
+  qsort(tdim,size,sizeof(ap_dim_t),compar_dim);
+  /* Compute the permutation for "exchanging" dim and tdim[0] if necessary  */
+  if (dim!=tdim[0]){
+    /* We have the following situation 
+
+    Initially:
+    env: A B C D E F G
+    dim: 0 1 2 3 4 5 6
+    gen: a b c d e f g
+    We fold with F,B,D, translated to [5,1,3] and reordered to [1,3,5]
+    env: A C E F G
+    dim: 0 1 2 3 4
+    gen: a b c e g
+         a d c e g
+         a f c e g
+    We need now to apply the permutation
+    rank: 0 1 2 3 4
+    perm: 0 2 3 1 4
+    
+    var: Y Z Q
+    dim: 0 1 2
+    gen: b a e
+         b c e
+         b d e
+
+    So we have to perform a to the right between dim[0] and dim-(rank of dim in
+    tdim)
+    */
+    /* look for the position of dim in tdim array */
+    void* p = bsearch(&dim,&tdim[1],size-1,sizeof(ap_dim_t),compar_dim);
+    assert(p>=(void*)(&tdim[1]));
+    size_t index = (p-(void*)tdim)/sizeof(ap_dim_t);
+    /* compute permutation */
+    ap_dimperm_init(&perm, nenv->intdim+nenv->realdim);
+    ap_dimperm_set_id(&perm);
+    for (size_t rank=tdim[0]; rank<dim-index; rank++){
+      perm.dim[rank] = rank+1;
+    }
+    perm.dim[dim-index] = tdim[0];
+  }
+  
   /* Perform the operation */
   value = ap_abstract0_fold(man,destructive,a->abstract0,tdim,size);
+  /* Apply the permutation if necessary */
+  if (dim!=tdim[0]){
+    value = ap_abstract0_permute_dimensions(man,true,value,&perm);
+    ap_dimperm_clear(&perm);
+  }
   free(tdim);
   res = ap_abstract1_consres2(destructive, a, value, nenv);
   return res;
