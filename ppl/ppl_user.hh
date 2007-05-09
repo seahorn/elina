@@ -17,11 +17,25 @@
 
 /* APRON includes */
 #include "apron_ppl.h"
+#include "ppl_poly.hh"
+
+#define NUM_MPQ
+#include "num.h"
+#include "numint.h"
+#include "numrat.h"
+#include "bound.h"
+#include "itv.h"
+#include "itv_linexpr.h"
 
 /* PPL includes */
 #include "ppl.hh"
+/*
 using namespace std;
 using namespace Parma_Polyhedra_Library;
+*/
+/* ********************************************************************** */
+/* Types and exceptions */
+/* ********************************************************************** */
 
 /* Internal structure in managers */
 typedef struct ppl_internal_t {
@@ -29,7 +43,10 @@ typedef struct ppl_internal_t {
   struct itv_internal_t* itv; /* Used for linearisation */ 
 } ppl_internal_t;
 
-/* inidicates that a an object cannot be exactly converted into another one
+extern "C" ppl_internal_t* ap_ppl_internal_alloc(bool strict);
+extern "C" void ap_ppl_internal_free(void*);
+
+/* Indicates that a an object cannot be exactly converted into another one
    should be caught in transfer functions
 */
 class cannot_convert: public exception {
@@ -38,11 +55,16 @@ public:
 };
 
 
+/* ********************************************************************** */
+/* Number conversions */
+/* ********************************************************************** */
+
 /* GMP => scalar (exact) */
 static inline void ap_ppl_mpz_to_scalar(ap_scalar_t* s, const mpz_class& i)
 {
   ap_scalar_reinit(s,AP_SCALAR_MPQ);
-  mpq_set_num(s->val.mpq,i.get_mpz_t());
+  mpz_set(mpq_numref(s->val.mpq), i.get_mpz_t());
+  mpz_set_ui(mpq_denref(s->val.mpq), 1);
 }
 
 /* GMP / GMP => scalar (exact) */
@@ -50,8 +72,9 @@ static inline void ap_ppl_mpz2_to_scalar(ap_scalar_t* s,
 					 const mpz_class& n, const mpz_class& d)
 {
   ap_scalar_reinit(s,AP_SCALAR_MPQ);
-  mpq_set_num(s->val.mpq,n.get_mpz_t());
-  mpq_set_den(s->val.mpq,d.get_mpz_t());
+  mpz_set(mpq_numref(s->val.mpq), n.get_mpz_t());
+  mpz_set(mpq_denref(s->val.mpq), d.get_mpz_t());
+  mpq_canonicalize(s->val.mpq);
 }
 
 /* coeff => GMP */
@@ -81,9 +104,15 @@ static inline void ap_ppl_mpq_of_coef(mpq_class& res, const ap_coeff_t coef)
   }
 }
 
+
+/* ********************************************************************** */
+/* Conversions from PPL to APRON */
+/* ********************************************************************** */
+
 /* some of these may raise cannot_convert */
 /* returned booleans are true when inexact */
 /* reference booleans are set to true when inexact, left unchanged otherwise */
+
 extern ap_lincons0_t ap_ppl_to_lincons(const Constraint& c);
 extern ap_lincons0_t ap_ppl_to_lincons(const Congruence& c);
 extern ap_lincons0_array_t ap_ppl_to_lincons_array(const Constraint_System& c);
@@ -93,20 +122,37 @@ extern ap_generator0_t ap_ppl_to_generator(const Grid_Generator& c);
 extern ap_generator0_array_t ap_ppl_to_generator_array(const Generator_System& c, bool& exact);
 extern ap_generator0_array_t ap_ppl_to_generator_array(const Grid_Generator_System& c);
 extern ap_generator0_array_t ap_ppl_generator_universe(size_t dim);
-extern ap_interval_t** ap_ppl_box_universe(ap_interval_t** i,size_t nb);
+extern void ap_ppl_box_universe(ap_interval_t** i,size_t nb);
 
-extern void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,ap_linexpr0_t* c);
+/* ********************************************************************** */
+/* Conversions from APRON to PPL */
+/* ********************************************************************** */
 
-extern bool ap_ppl_of_lincons(void* internal, Constraint& r, PPL_Poly& abs, ap_lincons0_t* c,bool allow_strict);
-extern bool ap_ppl_of_lincons(Congruence& r,ap_lincons0_t* c);
-extern bool ap_ppl_of_lincons_array(Constraint_System& r,ap_lincons0_array_t* a,bool allow_strict);
-extern bool ap_ppl_of_lincons_array(Congruence_System& r,ap_lincons0_array_t* a);
-extern bool ap_ppl_of_generator(Generator& r,ap_generator0_t* c);
-extern bool ap_ppl_of_generator(Grid_Generator& r,ap_generator0_t* c);
-extern bool ap_ppl_of_generator_array(Generator_System& r,ap_generator0_array_t* a);
-extern bool ap_ppl_of_generator_array(Grid_Generator_System& r,ap_generator0_array_t* a);
+/* some of these may raise cannot_convert */
+/* returned booleans are true when exact */
+/* reference booleans are set to true when exact, false otherwise */
+
+/* Generators */
+extern bool ap_ppl_of_generator(itv_internal_t* intern, Generator& r,ap_generator0_t* c);
+extern bool ap_ppl_of_generator(itv_internal_t* intern, Grid_Generator& r,ap_generator0_t* c);
+extern bool ap_ppl_of_generator_array(itv_internal_t* intern, Generator_System& r,ap_generator0_array_t* a);
+extern bool ap_ppl_of_generator_array(itv_internal_t* intern, Grid_Generator_System& r,ap_generator0_array_t* a);
+
+/* Boxes */ 
 extern bool ap_ppl_of_box(Constraint_System& r,size_t nb, ap_interval_t** a);
 extern bool ap_ppl_of_box(Congruence_System& r,size_t nb, ap_interval_t** a);
+
+/* Linear expressions */
+extern void ap_ppl_of_linexpr(itv_internal_t* intern,
+			      Linear_Expression& r, mpz_class& den,
+			      ap_linexpr0_t* c,
+			      int mode);
+
+/* Linear constraints */
+extern bool ap_ppl_of_lincons(itv_internal_t* intern, Constraint& r, PPL_Poly& abs, ap_lincons0_t* c,bool allow_strict);
+extern bool ap_ppl_of_lincons(itv_internal_t* intern, Congruence& r,ap_lincons0_t* c);
+extern bool ap_ppl_of_lincons_array(itv_internal_t* intern, Constraint_System& r,ap_lincons0_array_t* a,bool allow_strict);
+extern bool ap_ppl_of_lincons_array(itv_internal_t* intern, Congruence_System& r,ap_lincons0_array_t* a);
 
 static ap_abstract0_t* ap_ppl_make_abstract0(ap_manager_t* man, void* v)
 {

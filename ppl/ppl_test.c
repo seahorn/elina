@@ -658,6 +658,7 @@ void test_assign(void)
     size_t p = rand() % dim;
     ap_abstract0_t* pka,*pkr, *ppla,*pplr;
     ap_linexpr0_t* l = random_linexpr(dim);
+    
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
     pkr = ap_abstract0_assign_linexpr(pk,false,pka,p,l,NULL);
@@ -798,8 +799,8 @@ void test_widen(void)
 int main(void)
 {
   int i, strict;
-  srand(time(NULL));
-
+  //  srand(time(NULL));
+  srand(0);
   intdim = 0;
   /*for (intdim=1;intdim<2;intdim++) {*/
 

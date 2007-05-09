@@ -17,11 +17,24 @@
 
 #include <assert.h>
 #include <stdexcept>
-#include "ppl_user.h"
+#include "ppl_user.hh"
 
-/* ====================================================================== */
+extern "C" ppl_internal_t* ap_ppl_internal_alloc(bool strict)
+{
+  ppl_internal_t* intern = (ppl_internal_t*)malloc(sizeof(ppl_internal_t));
+  intern->strict = strict;
+  intern->itv = itv_internal_alloc();
+  return intern;
+}
+extern "C" void ap_ppl_internal_free(void* internal)
+{
+  ppl_internal_t* intern = (ppl_internal_t*)internal;
+  itv_internal_free(intern->itv);
+  free(intern);
+}
+/* ********************************************************************** */
 /* Conversions from PPL to APRON */
-/* ====================================================================== */
+/* ********************************************************************** */
 
 /* Constraint => ap_lincons0_t (exact) */
 ap_lincons0_t ap_ppl_to_lincons(const Constraint& c)
@@ -104,14 +117,20 @@ ap_lincons0_array_t ap_ppl_to_lincons_array(const Congruence_System& c)
   return a;
 }
 
+
+/* ====================================================================== */
+/* Generators */
+/* ====================================================================== */
+
 /* Generator => ap_generator0_t (may set inexact to true) */
-ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& inexact)
+ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& exact)
 {
   ap_gentyp_t t;
   ap_linexpr0_t* e;
   int i, n = c.space_dimension();
   e = ap_linexpr0_alloc(AP_LINEXPR_DENSE,n);
   assert(e);
+  exact = true;
   ap_linexpr0_set_cst_scalar_int(e,0);
   if (c.is_ray() || c.is_line()) {
     /* ray or line: no divisor */
@@ -122,34 +141,30 @@ ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& inexact)
   else {
     /* point or closure point: has divisor */
     const mpz_class& div = c.divisor();
-    if (c.is_closure_point()) inexact = true;
+    if (c.is_closure_point()) exact = false;
     for (i=0;i<n;i++)
       ap_ppl_mpz2_to_scalar(e->p.coeff[i].val.scalar,c.coefficient(Variable(i)),div);
     return ap_generator0_make(AP_GEN_VERTEX,e);
   }
 }
 
-/* ====================================================================== */
-/* Conversions from APRON to PPL */
-/* ====================================================================== */
-
-/* ---------------------------------------------------------------------- */
-/* Generators */
-/* ---------------------------------------------------------------------- */
-
 /* Generator_System => ap_generator0_array_t (may set inexact to true) */
 ap_generator0_array_t ap_ppl_to_generator_array(const Generator_System& c,
-						bool& inexact)
+						bool& exact)
 {
   ap_generator0_array_t a;
   Generator_System::const_iterator i, end = c.end();
   int k;
+  bool exact2;
+  exact = true;
   /* first, compute system size */
   for (i=c.begin(),k=0;i!=end;i++,k++);
   a = ap_generator0_array_make(k);
   /* then, convert generators */
-  for (i=c.begin(),k=0;i!=end;i++,k++)
-    a.p[k] = ap_ppl_to_generator(*i,inexact);
+  for (i=c.begin(),k=0;i!=end;i++,k++){
+    a.p[k] = ap_ppl_to_generator(*i,exact2);
+    exact = exact && exact2;
+  }
   return a;
 }
 
@@ -209,22 +224,25 @@ ap_generator0_array_t ap_ppl_generator_universe(size_t dim)
   return ar;  
 }
 
-/* ---------------------------------------------------------------------- */
+/* ********************************************************************** */
+/* Conversions from APRON to PPL */
+/* ********************************************************************** */
+
+/* ====================================================================== */
 /* Boxes */
-/* ---------------------------------------------------------------------- */
+/* ====================================================================== */
 
 /* whole universe as a box */
-ap_interval_t** ap_ppl_box_universe(ap_interval_t** i,size_t nb)
+void ap_ppl_box_universe(ap_interval_t** i,size_t nb)
 {
   for (size_t j=0;j<nb;j++)
     ap_interval_set_top(i[j]);
-  return i;
 }
 
-/* ap_interval_t box => Constraint_System (return inexact) */
+/* ap_interval_t box => Constraint_System (return exact) */
 bool ap_ppl_of_box(Constraint_System& r,size_t nb, ap_interval_t** a)
 {
-  bool inexact = false;
+  bool exact = true;
   size_t i;
   mpq_class temp;
   r.clear();
@@ -232,41 +250,41 @@ bool ap_ppl_of_box(Constraint_System& r,size_t nb, ap_interval_t** a)
     /* inf */
     switch (ap_scalar_infty(a[i]->inf)) {
     case 0:
-      inexact =	
-	ap_mpq_set_scalar(temp.get_mpq_t(),a[i]->inf,GMP_RNDD) || inexact;
+      exact =	
+	ap_mpq_set_scalar(temp.get_mpq_t(),a[i]->inf,GMP_RNDD) && exact;
       r.insert( Constraint( temp.get_den() * Variable(i) >= temp.get_num() ));
       break;
     case -1:
       break;
     case 1:
       r = Constraint_System::zero_dim_empty();
-      return false;
+      return true;
     default: 
       assert(0);
     }
     /* sup */
     switch (ap_scalar_infty(a[i]->sup)) {
     case 0:
-      inexact = 
-	ap_mpq_set_scalar(temp.get_mpq_t(),a[i]->sup,GMP_RNDU) || inexact;
+      exact = 
+	ap_mpq_set_scalar(temp.get_mpq_t(),a[i]->sup,GMP_RNDU) && exact;
       r.insert( Constraint( temp.get_den() * Variable(i) <= temp.get_num() ));
       break;
     case 1:
       break;
     case -1:
       r = Constraint_System::zero_dim_empty();
-      return false;
+      return true;
     default: 
       assert(0);
     }
   }
-  return inexact;
+  return exact;
 }
 
-/* ap_interval_t box => Congruence_System (return inexact) */
+/* ap_interval_t box => Congruence_System (return exact) */
 bool ap_ppl_of_box(Congruence_System& r,size_t nb, ap_interval_t** a)
 {
-  bool inexact = false;
+  bool exact = true;
   size_t i;
   mpq_class temp;
   r.clear();
@@ -276,77 +294,109 @@ bool ap_ppl_of_box(Congruence_System& r,size_t nb, ap_interval_t** a)
     /* unsatisfiable */
     if (inf==1 || sup==-1) {
       r = Congruence_System::zero_dim_empty();
-      return false;
+      return true;
     }
     /* no-singleton */
     if (inf || sup || 
 	!ap_scalar_equal(a[i]->inf,a[i]->sup) ||
 	ap_mpq_set_scalar(temp.get_mpq_t(),a[i]->inf,GMP_RNDD)) {
-      inexact = true;
+      exact = false;
     }
     /* singleton */
     else r.insert(Constraint(Variable(i)==temp));
   }
-  return inexact;
+  return exact;
 }
 
-/* ---------------------------------------------------------------------- */
+/* ====================================================================== */
 /* Linear expressions */
-/* ---------------------------------------------------------------------- */
+/* ====================================================================== */
 
-/* ap_linexpr0_t => Linear_Expression (may raise cannot_convert) */
-/* NOTE: we perform each converson twice; could be optimized */
-void ap_ppl_of_linexpr(Linear_Expression& r,mpz_class& den,ap_linexpr0_t* c)
+/* Assume a quasilinear expressions,
+   with the selected bound of constant coefficient differetn from +oo
+*/
+static
+void ap_ppl_of_itv_linexpr(Linear_Expression& r,
+			   mpz_class& den,
+			   itv_linexpr_t* linexpr,
+			   int mode)
 {
   mpq_class temp;
-  ap_ppl_mpq_of_coef(temp,c->cst);
-  den = temp.get_den();
+  size_t i;
+  ap_dim_t dim;
+  itv_ptr pitv;
+  bool* peq;
+  
+  mpz_set_ui(den.get_mpz_t(),1);
+  if (mode>0){
+    assert (!bound_infty(linexpr->cst->sup));
+    if (bound_sgn(linexpr->cst->sup))
+      mpz_set(den.get_mpz_t(),numrat_denref(bound_numref(linexpr->cst->sup)));
+  } 
+  else if (mode < 0){
+    assert (!bound_infty(linexpr->cst->inf));
+    if (bound_sgn(linexpr->cst->inf))
+      mpz_neg(den.get_mpz_t(),numrat_denref(bound_numref(linexpr->cst->inf)));
+  } 
+  else {
+    assert(0);
+  }
   r = Linear_Expression::zero();
-  if (c->discr==AP_LINEXPR_DENSE) {
-    /* compute lcm of denominators in den */
-    for (size_t i=0;i<c->size;i++) {
-      ap_ppl_mpq_of_coef(temp,c->p.coeff[i]);
-      mpz_lcm(den.get_mpz_t(),den.get_mpz_t(),temp.get_den().get_mpz_t());
-    }
-    /* add variable coefficients * den */
-    for (size_t i=0;i<c->size;i++) {
-      ap_ppl_mpq_of_coef(temp,c->p.coeff[i]);
-      temp *= den;
-      r += Variable(i) * temp.get_num();
-    }
+  /* compute lcm of denominators in den */
+  itv_linexpr_ForeachLinterm(linexpr,i,dim,pitv,peq){
+    assert(*peq);
+    mpz_lcm(den.get_mpz_t(),den.get_mpz_t(),numrat_denref(bound_numref(pitv->sup)));
   }
-  else  {
-    /* compute lcm of denominators in den */
-    for (size_t i=0;i<c->size;i++) {
-      ap_ppl_mpq_of_coef(temp,c->p.linterm[i].coeff);
-      mpz_lcm(den.get_mpz_t(),den.get_mpz_t(),temp.get_den().get_mpz_t());
-    }
-    /* add variable coefficients * den */
-    for (size_t i=0;i<c->size;i++) {
-      ap_ppl_mpq_of_coef(temp,c->p.linterm[i].coeff);
-      temp *= den;
-      r += Variable(c->p.linterm[i].dim) * temp.get_num();
-    }
-  }
+  /* add variable coefficients * den */
+  itv_linexpr_ForeachLinterm(linexpr,i,dim,pitv,peq){
+    mpq_set(temp.get_mpq_t(),bound_numref(pitv->sup));
+    temp *= den;
+    r += Variable(dim) * temp.get_num();
+  }  
   /* add constant coefficient * den */
-  ap_ppl_mpq_of_coef(temp,c->cst);
+  if (mode>0){
+    mpq_set(temp.get_mpq_t(),bound_numref(linexpr->cst->sup));
+  } else {
+     mpq_neg(temp.get_mpq_t(),bound_numref(linexpr->cst->inf));
+  }
   temp *= den;
   r += temp.get_num();
 }
 
-/* ap_lincons0_t => Constraint (may raise cannot_convert, return inexact) */
+/* ap_linexpr0_t => ppl */
+/* linearize if titv!=NULL */
+void ap_ppl_of_linexpr(itv_internal_t* intern,
+		       Linear_Expression& r,
+		       mpz_class& den,
+		       ap_linexpr0_t* c, 
+		       int mode)
+{
+  itv_linexpr_t linexpr;
+
+  itv_linexpr_init(&linexpr,0);
+  itv_linexpr_set_ap_linexpr0(intern,&linexpr,NULL,c);
+  ap_ppl_of_itv_linexpr(r,den,&linexpr,mode);
+  itv_linexpr_clear(&linexpr);
+}
+
+/* ====================================================================== */
+/* Constraints */
+/* ====================================================================== */
+
+/* ap_lincons0_t => Constraint (may raise cannot_convert, return exact) */
 /* congruences are overapproximated as linear equalities */
-bool ap_ppl_of_lincons(Constraint& r,ap_lincons0_t* c,bool allow_strict)
+bool ap_ppl_of_lincons(itv_internal_t* intern,
+		       Constraint& r,ap_lincons0_t* c,bool allow_strict)
 {
   Linear_Expression l;
   mpz_class den;
-  ap_ppl_of_linexpr(l,den,c->linexpr0);
+  ap_ppl_of_linexpr(intern,l,den,c->linexpr0,1);
   switch (c->constyp) {
-  case AP_CONS_SUPEQ: r = ( l >= 0 ); return false;
-  case AP_CONS_EQ:    r = ( l == 0 ); return false;
+  case AP_CONS_SUPEQ: r = ( l >= 0 ); return true;
+  case AP_CONS_EQ:    r = ( l == 0 ); return true;
   case AP_CONS_SUP:   
-    if (allow_strict) { r = ( l > 0 ); return false; }
-    else { r = (l >= 0); return true; }
+    if (allow_strict) { r = ( l > 0 ); return true; }
+    else { r = (l >= 0); return false; }
   case AP_CONS_EQMOD:
   case AP_CONS_DISEQ: 
     throw cannot_convert();
@@ -355,17 +405,26 @@ bool ap_ppl_of_lincons(Constraint& r,ap_lincons0_t* c,bool allow_strict)
   }
 }
 
-/* ap_lincons0_t => Congruence (may raise cannot_convert, return inexact) */
-bool ap_ppl_of_lincons(Congruence& r,ap_lincons0_t* c)
+/* ap_lincons0_t => Congruence (may raise cannot_convert, return exact) */
+bool ap_ppl_of_lincons(itv_internal_t* intern,
+		       Congruence& r,ap_lincons0_t* c)
 {
   Linear_Expression l;
   mpz_class den;
-  ap_ppl_of_linexpr(l,den,c->linexpr0);
+  if (!ap_linexpr0_is_linear(c->linexpr0)){
+    throw cannot_convert();
+  }
+  if (ap_lincons0_is_unsat(c)){
+    l = Linear_Expression::zero();
+    r = (l %= 1) / 0;
+    return true;
+  } 
+  ap_ppl_of_linexpr(intern,l,den,c->linexpr0,1);
   switch (c->constyp) {
   case AP_CONS_SUPEQ: 
   case AP_CONS_SUP:  
   case AP_CONS_DISEQ: throw cannot_convert();
-  case AP_CONS_EQ:    r = ( l %= 0 ) / 0; return false;
+  case AP_CONS_EQ:    r = ( l %= 0 ) / 0; return true;
   case AP_CONS_EQMOD:
     {
       mpq_class mod;
@@ -373,11 +432,11 @@ bool ap_ppl_of_lincons(Congruence& r,ap_lincons0_t* c)
 	  ap_scalar_infty(c->scalar) || 
 	  ap_mpq_set_scalar(mod.get_mpq_t(),c->scalar,GMP_RNDU)) {
 	r = ( l %= 0 ) / 0; 
-	return true;
+	return false;
       }
       else {
 	r = ( l * mod.get_den() %= 0) / mod.get_num();
-	return false;
+	return true;
       }
     }
   default: 
@@ -386,53 +445,60 @@ bool ap_ppl_of_lincons(Congruence& r,ap_lincons0_t* c)
 }
 
 /* ap_lincons0_array_t => Constraint_System 
-   returns true if inexact (some constraint was dropped or approximated) */
-bool ap_ppl_of_lincons_array(Constraint_System& r,ap_lincons0_array_t* a,bool allow_strict)
+   returns true if exact (some constraint was dropped or approximated) */
+bool ap_ppl_of_lincons_array(itv_internal_t* intern,
+			     Constraint_System& r,ap_lincons0_array_t* a,bool allow_strict)
 {
-  bool inexact = false;
+  bool exact = true;
   size_t i;
   Constraint c = Constraint::zero_dim_positivity();
   r.clear();
   for (i=0;i<a->size;i++) {
     try {
-      inexact = ap_ppl_of_lincons(c,&a->p[i],allow_strict) || inexact;
+      exact = ap_ppl_of_lincons(intern,c,&a->p[i],allow_strict) && exact;
       r.insert(c);
     }
-    catch (cannot_convert w) { inexact = true; }
+    catch (cannot_convert w) { exact = false; }
   }
-  return inexact;
+  return exact;
 }
 
 /* ap_lincons0_array_t => Congruence_System 
    returns true if inexact (some constraint was dropped or approximated) */
-bool ap_ppl_of_lincons_array(Congruence_System& r,ap_lincons0_array_t* a)
+bool ap_ppl_of_lincons_array(itv_internal_t* intern,
+			     Congruence_System& r,ap_lincons0_array_t* a)
 {
-  bool inexact = false;
+  bool exact = true;
   size_t i;
   Congruence c = Congruence::zero_dim_false();
   r.clear();
   for (i=0;i<a->size;i++) {
     try {
-      inexact = ap_ppl_of_lincons(c,&a->p[i]) || inexact;
+      exact = ap_ppl_of_lincons(intern,c,&a->p[i]) && exact;
       r.insert(c);
     }
-    catch (cannot_convert w) { inexact = true; }
+    catch (cannot_convert w) { exact = false; }
   }
-  return inexact;
+  return exact;
 }
 
 /* ap_generator0_t => Generator (may raise cannot_convert, or return true) */
-bool ap_ppl_of_generator(Generator& r,ap_generator0_t* c)
+bool ap_ppl_of_generator(itv_internal_t* intern,
+			 Generator& r, ap_generator0_t* c)
 {
   Linear_Expression l;
   mpz_class den;
-  ap_ppl_of_linexpr(l,den,c->linexpr0);
+
+  if (!ap_linexpr0_is_linear(c->linexpr0)){
+    throw cannot_convert();
+  }
+  ap_ppl_of_linexpr(intern,l,den,c->linexpr0,1);
   switch (c->gentyp) {
-  case AP_GEN_VERTEX:  r = Generator::point(l,den); return false;
-  case AP_GEN_RAY:     r = Generator::ray(l);       return false;
-  case AP_GEN_LINE:    r = Generator::line(l);      return false;
-  case AP_GEN_RAYMOD:  r = Generator::ray(l);       return true;
-  case AP_GEN_LINEMOD: r = Generator::line(l);      return true;
+  case AP_GEN_VERTEX:  r = Generator::point(l,den); return true;
+  case AP_GEN_RAY:     r = Generator::ray(l);       return true;
+  case AP_GEN_LINE:    r = Generator::line(l);      return true;
+  case AP_GEN_RAYMOD:  r = Generator::ray(l);       return false;
+  case AP_GEN_LINEMOD: r = Generator::line(l);      return false;
   default: 
     throw invalid_argument("Generator type in ap_ppl_of_generator");
   }
@@ -464,35 +530,40 @@ bool ap_ppl_ap_generator0_select(ap_generator0_t* g)
 }
 
 /* ap_generator0_array_t => Generator_System 
-   (may raise cannot_convert, or return true)
+   (may raise cannot_convert, or return false)
 */
-bool ap_ppl_of_generator_array(Generator_System& r,ap_generator0_array_t* a)
+bool ap_ppl_of_generator_array(itv_internal_t* intern,
+			       Generator_System& r, ap_generator0_array_t* a)
 {
-  bool inexact = false;
+  bool exact = true;
   size_t i;
   Generator c = Generator::zero_dim_point();
   r.clear();
   for (i=0;i<a->size;i++) {
     if (ap_ppl_ap_generator0_select(&a->p[i])){
-      inexact = ap_ppl_of_generator(c,&a->p[i]) || inexact;
+      exact = ap_ppl_of_generator(intern,c,&a->p[i]) && exact;
       r.insert(c);
     }
   }
-  return inexact;
+  return exact;
 }
 
 /* ap_generator0_t => Grid_Generator (may raise cannot_convert, or return true) */
-bool ap_ppl_of_generator(Grid_Generator& r,ap_generator0_t* c)
+bool ap_ppl_of_generator(itv_internal_t* intern,
+			 Grid_Generator& r, ap_generator0_t* c)
 {
   Linear_Expression l;
   mpz_class den;
-  ap_ppl_of_linexpr(l,den,c->linexpr0);
+  if (!ap_linexpr0_is_linear(c->linexpr0)){
+    throw cannot_convert();
+  }
+  ap_ppl_of_linexpr(intern,l,den,c->linexpr0,1);
   switch (c->gentyp) {
-  case AP_GEN_VERTEX:  r = Grid_Generator::point(l,den);     return false;
-  case AP_GEN_RAY:     r = Grid_Generator::line(l);          return true;
+  case AP_GEN_VERTEX:  r = Grid_Generator::point(l,den);     return true;
+  case AP_GEN_RAY:     r = Grid_Generator::line(l);          return false;
   case AP_GEN_LINE:    r = Grid_Generator::line(l);          return true;
-  case AP_GEN_RAYMOD:  r = Grid_Generator::parameter(l,den); return true;
-  case AP_GEN_LINEMOD: r = Grid_Generator::parameter(l,den); return false;
+  case AP_GEN_RAYMOD:  r = Grid_Generator::parameter(l,den); return false;
+  case AP_GEN_LINEMOD: r = Grid_Generator::parameter(l,den); return true;
   default: 
     throw invalid_argument("Generator type in ap_ppl_of_generator");
   }
@@ -501,17 +572,18 @@ bool ap_ppl_of_generator(Grid_Generator& r,ap_generator0_t* c)
 /* ap_generator0_array_t => Grid_Generator_System 
    (may raise cannot_convert, or return true)
 */
-bool ap_ppl_of_generator_array(Grid_Generator_System& r,ap_generator0_array_t* a)
+bool ap_ppl_of_generator_array(itv_internal_t* intern,
+			       Grid_Generator_System& r,ap_generator0_array_t* a)
 {
-  bool inexact = false;
+  bool exact = true;
   size_t i;
   Grid_Generator c = Grid_Generator::point();
   r.clear();
   for (i=0;i<a->size;i++) {
     if (ap_ppl_ap_generator0_select(&a->p[i])){
-      inexact = ap_ppl_of_generator(c,&a->p[i]) || inexact;
+      exact = ap_ppl_of_generator(intern,c,&a->p[i]) && exact;
       r.insert(c);
     }
   }
-  return inexact;
+  return exact;
 }

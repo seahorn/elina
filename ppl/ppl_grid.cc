@@ -15,51 +15,66 @@
  */
 
 #include <assert.h>
+#include "ap_generic.h"
 #include "apron_ppl.h"
-#include "ppl_user.h"
+#include "ppl_grid.hh"
+#include "ppl_user.hh"
 
 #include <ppl.hh>
 using namespace std;
 using namespace Parma_Polyhedra_Library;
 
+
+/* ********************************************************************** */
+/* General stuff */
+/* ********************************************************************** */
+
+/* ====================================================================== */
+/* Manager */
+/* ====================================================================== */
+
+static inline ppl_internal_t* get_internal(ap_manager_t* man)
+{
+  return (ppl_internal_t*)man->internal;
+}
+
+/* ====================================================================== */
+/* PPL_Grid */
+/* ====================================================================== */
+
 /* wrapper: adds initdim info */
 /* grids are always "reduced" wrt intdim: we keep mod 1 constraints for integer variables */
-class PPL_Grid {
 
- public:
-  Grid* p;
-  size_t intdim;
-
-  PPL_Grid(const PPL_Grid& x) : p(new Grid(*x.p)), intdim(x.intdim) {}
+PPL_Grid::PPL_Grid(const PPL_Grid& x) : p(new Grid(*x.p)), intdim(x.intdim) {}
    
-  PPL_Grid(size_t intdim,size_t realdim,Degenerate_Element kind)
-    : intdim(intdim)
-  {
-    try { 
-      p = new Grid(intdim+realdim,kind); 
-      if (kind!=EMPTY) reduce();
-    }
-    catch (std::logic_error e) { intdim = 0; p = new Grid(1,kind); }
+PPL_Grid::PPL_Grid(size_t intdim,size_t realdim,Degenerate_Element kind)
+  : intdim(intdim)
+{
+  try { 
+    p = new Grid(intdim+realdim,kind); 
+    if (kind!=EMPTY) reduce();
   }
+  catch (std::logic_error e) { intdim = 0; p = new Grid(1,kind); }
+}
 
-  /* enforce integer constraints */
-  void reduce() 
-  {
-    for (size_t i=0;i<intdim;i++)
-      p->add_congruence((Variable(i) %=0) / 1);
-  }
+/* enforce integer constraints */
+void PPL_Grid::reduce() 
+{
+  for (size_t i=0;i<intdim;i++)
+    p->add_congruence((Variable(i) %=0) / 1);
+}
 
-  void forget_dim(size_t dim)
-  {
-    if (intdim>dim) p->add_generator(Grid_Generator::parameter(Variable(dim)));
-    else p->add_generator(Grid_Generator::line(Variable(dim)));
-  }
+void PPL_Grid::forget_dim(size_t dim)
+{
+  if (intdim>dim) p->add_generator(Grid_Generator::parameter(Variable(dim)));
+  else p->add_generator(Grid_Generator::line(Variable(dim)));
+}
 
-  ~PPL_Grid() { delete p; }
-};
+PPL_Grid::~PPL_Grid() { delete p; }
 
-
-/* error handlers */
+/* ====================================================================== */
+/* Error Handlers */
+/* ====================================================================== */
 
 /* returns a grid, of specified size if possible */
 #define CATCH_WITH_DIM(funid,intdim,realdim)				\
@@ -106,6 +121,15 @@ class PPL_Grid {
     fprintf(stream,"!exception!");					\
   }
 
+
+/* ********************************************************************** */
+/* I. General management */
+/* ********************************************************************** */
+
+/* ============================================================ */
+/* I.1 Memory */
+/* ============================================================ */
+
 extern "C"
 PPL_Grid* ap_ppl_grid_copy(ap_manager_t* man, PPL_Grid* a)
 {
@@ -136,6 +160,10 @@ size_t ap_ppl_grid_size(ap_manager_t* man, PPL_Grid* a)
   CATCH_WITH_VAL(AP_FUNID_ASIZE,0);
 }
 
+/* ============================================================ */
+/* I.2 Control of internal representation */
+/* ============================================================ */
+
 extern "C" 
 void ap_ppl_grid_minimize(ap_manager_t* man, PPL_Grid* a)
 {
@@ -154,15 +182,27 @@ void ap_ppl_grid_minimize(ap_manager_t* man, PPL_Grid* a)
 extern "C" 
 void ap_ppl_grid_canonicalize(ap_manager_t* man, PPL_Grid* a)
 {
-  ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_CANONICALIZE,"not implemented");
+  man->result.flag_exact = man->result.flag_best = tbool_true;
+  try {
+    /* re-add integer constraints (should not be needed except after a widening) */
+    ((PPL_Grid*)a)->reduce();
+    /* the calls force in-place minimisation */
+    (void)a->p->minimized_congruences();
+    (void)a->p->minimized_generators();
+  }
+  CATCH_WITH_VOID(AP_FUNID_CANONICALIZE);
 }
 
-/* NOT IMPLEMENTED! */
 extern "C" 
 void ap_ppl_grid_approximate(ap_manager_t* man, PPL_Grid* a, int algorithm)
 {
-  ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_APPROXIMATE,"not implemented");
+  man->result.flag_exact = man->result.flag_best = tbool_true;
+  return;
 }
+
+/* ============================================================ */
+/* I.3 Printing */
+/* ============================================================ */
 
 extern "C" 
 void ap_ppl_grid_fprint(FILE* stream,
@@ -172,9 +212,16 @@ void ap_ppl_grid_fprint(FILE* stream,
 {
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
-    ap_lincons0_array_t ar = ap_ppl_to_lincons_array(a->p->minimized_congruences());
-    ap_lincons0_array_fprint(stream,&ar,name_of_dim);
-    ap_lincons0_array_clear(&ar);
+    if (a->p->is_empty()){
+      ap_dimension_t dim = ap_ppl_grid_dimension(man,a);
+      fprintf(stream,"empty grid of dim (%lu,%lu)\n",
+	      (unsigned long)dim.intdim,(unsigned long)dim.realdim);
+    }
+    else {
+      ap_lincons0_array_t ar = ap_ppl_to_lincons_array(a->p->minimized_congruences());
+      ap_lincons0_array_fprint(stream,&ar,name_of_dim);
+      ap_lincons0_array_clear(&ar);
+    }
   }
   CATCH_WITH_MSG(AP_FUNID_FPRINT);
 }
@@ -186,7 +233,6 @@ void ap_ppl_grid_fprintdiff(FILE* stream,
 			     PPL_Grid* a1, PPL_Grid* a2,
 			     char** name_of_dim)
 {
-  fprintf(stream,"not implemented");
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_FPRINTDIFF,"not implemented");
 }
 
@@ -210,6 +256,10 @@ void ap_ppl_grid_fdump(FILE* stream, ap_manager_t* man, PPL_Grid* a)
   CATCH_WITH_MSG(AP_FUNID_FPRINTDIFF);
 }
 
+/* ============================================================ */
+/* I.4 Serialization */
+/* ============================================================ */
+
 /* NOT IMPLEMENTED! */
 extern "C" 
 ap_membuf_t ap_ppl_grid_serialize_raw(ap_manager_t* man, PPL_Grid* a)
@@ -228,6 +278,10 @@ PPL_Grid* ap_ppl_grid_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size
   ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,AP_FUNID_DESERIALIZE_RAW,"not implemented");
   return NULL;
 }
+
+/* ********************************************************************** */
+/* II. Constructor, accessors, tests and property extraction */
+/* ********************************************************************** */
 
 extern "C" 
 PPL_Grid* ap_ppl_grid_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
@@ -271,17 +325,22 @@ PPL_Grid* ap_ppl_grid_of_lincons_array(ap_manager_t* man,
 				       size_t intdim, size_t realdim,
 				       ap_lincons0_array_t* array)
 {
+  ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
     PPL_Grid* r = new PPL_Grid(intdim,realdim,UNIVERSE);
     Congruence_System c;
-    if (ap_ppl_of_lincons_array(c,array))
+    if (!ap_ppl_of_lincons_array(intern->itv,c,array))
       man->result.flag_exact = man->result.flag_best = tbool_top;
     r->p->add_congruences(c);
     return r;
   }
   CATCH_WITH_DIM(AP_FUNID_OF_LINCONS_ARRAY,intdim,realdim);
 }
+
+/* ============================================================ */
+/* II.2 Accessors */
+/* ============================================================ */
 
 extern "C" 
 ap_dimension_t ap_ppl_grid_dimension(ap_manager_t* man, PPL_Grid* a)
@@ -295,6 +354,10 @@ ap_dimension_t ap_ppl_grid_dimension(ap_manager_t* man, PPL_Grid* a)
   }
   CATCH_WITH_VAL(AP_FUNID_DIMENSION,d);
 }
+
+/* ============================================================ */
+/* II.3 Tests */
+/* ============================================================ */
 
 extern "C" 
 tbool_t ap_ppl_grid_is_bottom(ap_manager_t* man, PPL_Grid* a)
@@ -342,16 +405,22 @@ extern "C"
 tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, PPL_Grid* a, 
 				ap_lincons0_t* lincons)
 {
+  ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_top;
   try {
-    Congruence c = Congruence::zero_dim_false();
-    /* may throw cannot_convert, which will be caught by CATCH_WITH_VAL */
-    bool inexact = ap_ppl_of_lincons(c,lincons);
-    if (a->p->relation_with(c) == Poly_Con_Relation::is_included()) {
-      if (inexact) return tbool_top;
+    if (a->p->is_empty()){
       return tbool_true;
     }
-    return tbool_false;
+    else {
+      Congruence c = Congruence::zero_dim_false();
+      /* may throw cannot_convert, which will be caught by CATCH_WITH_VAL */
+      bool exact = ap_ppl_of_lincons(intern->itv,c,lincons);
+      if (a->p->relation_with(c) == Poly_Con_Relation::is_included()) {
+	if (!exact) return tbool_top;
+	return tbool_true;
+      }
+      return tbool_false;
+    }
   }
   CATCH_WITH_VAL(AP_FUNID_SAT_LINCONS,tbool_top);
 }
@@ -402,11 +471,16 @@ tbool_t ap_ppl_grid_is_dimension_unconstrained(ap_manager_t* man,
   CATCH_WITH_VAL(AP_FUNID_IS_DIMENSION_UNCONSTRAINED,tbool_top);
 }
 
+/* ============================================================ */
+/* II.4 Extraction of properties */
+/* ============================================================ */
+
 extern "C" 
 ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
 					 PPL_Grid* a, 
 					 ap_linexpr0_t* expr)
 {
+  ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_true;
   ap_interval_t* r = ap_interval_alloc();
   try {
@@ -420,8 +494,12 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
       Linear_Expression l;
       mpz_class den;
       bool ok;
+      bool exact = true;
       /* may throw cannot_convert, which will be caught by CATCH_WITH_VAL */
-      ap_ppl_of_linexpr(l,den,expr);
+      if (!ap_linexpr0_is_quasilinear(expr)){
+	throw cannot_convert();
+      }
+      ap_ppl_of_linexpr(intern->itv,l,den,expr,1);
       /* sup bound */
       if (a->p->maximize(l,sup_n,sup_d,ok)) {
 	sup_d *= den;
@@ -429,6 +507,10 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
       }
       else ap_scalar_set_infty(r->sup,1);
       /* inf bound */
+      bool linear = ap_linexpr0_is_linear(expr);
+      if (!linear){
+	ap_ppl_of_linexpr(intern->itv,l,den,expr,-1);
+      }
       if (a->p->minimize(l,inf_n,inf_d,ok)) {
 	inf_d *= den;
 	ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
@@ -472,17 +554,21 @@ ap_interval_t** ap_ppl_grid_to_box(ap_manager_t* man, PPL_Grid* a)
   size_t dim = a->p->space_dimension();
   ap_interval_t** in = ap_interval_array_alloc(dim);
   try {
-    if (a->p->is_empty())
+    if (a->p->is_empty()){
       /* empty */
-      for (size_t i=0;i<dim;i++)
+      for (size_t i=0;i<dim;i++){
 	ap_interval_set_bottom(in[i]);
-    else
+      }
+    }
+    else {
       /* not empty */
-      for (size_t i=0;i<dim;i++)
+      for (size_t i=0;i<dim;i++){
 	ap_ppl_grid_bound_dim(in[i],a,i);
+      }
+    }
     return in;
   }
-  CATCH_WITH_VAL(AP_FUNID_TO_BOX,ap_ppl_box_universe(in,dim));
+  CATCH_WITH_VAL(AP_FUNID_TO_BOX,(ap_ppl_box_universe(in,dim),in));
 }
 
 extern "C" 
@@ -495,6 +581,14 @@ ap_generator0_array_t ap_ppl_grid_to_generator_array(ap_manager_t* man,
   }
   CATCH_WITH_VAL(AP_FUNID_TO_GENERATOR_ARRAY,ap_ppl_generator_universe(a->p->space_dimension()));
 }
+
+/* ********************************************************************** */
+/* III. Operations */
+/* ********************************************************************** */
+
+/* ============================================================ */
+/* III.1 Meet and Join */
+/* ============================================================ */
 
 extern "C" 
 PPL_Grid* ap_ppl_grid_meet(ap_manager_t* man, bool destructive, 
@@ -562,13 +656,15 @@ PPL_Grid* ap_ppl_grid_meet_lincons_array(ap_manager_t* man,
 					 PPL_Grid* a,
 					 ap_lincons0_array_t* array)
 {
+  ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
     Congruence_System c;
-    if (ap_ppl_of_lincons_array(c,array))
+    if (ap_ppl_of_lincons_array(intern->itv,c,array))
       man->result.flag_exact = man->result.flag_best = tbool_top;
     r->p->add_recycled_congruences(c);
+    r->reduce();
     return r;
   }
   CATCH_WITH_GRID(AP_FUNID_MEET_LINCONS_ARRAY,a);
@@ -580,17 +676,24 @@ PPL_Grid* ap_ppl_grid_add_ray_array(ap_manager_t* man,
 				    PPL_Grid* a,
 				    ap_generator0_array_t* array)
 {
+  ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
-    Grid_Generator_System c;
-    ap_ppl_of_generator_array(c,array);
-    r->p->add_recycled_generators(c);
-    r->reduce();
+    if (!a->p->is_empty()){
+      Grid_Generator_System c;
+      ap_ppl_of_generator_array(intern->itv,c,array);
+      r->p->add_recycled_generators(c);
+      r->reduce();
+    }
     return r;
   }
   CATCH_WITH_GRID(AP_FUNID_ADD_RAY_ARRAY,a);
 }
+
+/* ============================================================ */
+/* III.2 Assignement and Substitutions */
+/* ============================================================ */
 
 extern "C" 
 PPL_Grid* ap_ppl_grid_assign_linexpr(ap_manager_t* man,
@@ -599,19 +702,26 @@ PPL_Grid* ap_ppl_grid_assign_linexpr(ap_manager_t* man,
 				     ap_dim_t dim, ap_linexpr0_t* expr,
 				     PPL_Grid* dest)
 {
+  bool exact;
+  ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
     PPL_Grid* r = destructive ? org : new PPL_Grid(*org);
     try {
       Linear_Expression e;
       mpz_class den;
-      ap_ppl_of_linexpr(e,den,expr);
+      if (!ap_linexpr0_is_linear(expr)){
+	throw cannot_convert();
+      }
+      ap_ppl_of_linexpr(intern->itv,e,den,expr,1);
       r->p->affine_image(Variable(dim),e,den);
       r->reduce();
     }
     catch (cannot_convert x) {
       /* defaults to forget */
       r->forget_dim(dim);
+      if (dim<r->intdim)
+	r->reduce();
       man->result.flag_exact = man->result.flag_best = tbool_top;
     }
     if (dest) r->p->intersection_assign(*dest->p);
@@ -628,19 +738,26 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr(ap_manager_t* man,
 					 ap_linexpr0_t* expr,
 					 PPL_Grid* dest)
 {
+  bool exact;
+  ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
     PPL_Grid* r = destructive ? org : new PPL_Grid(*org);
     try {
       Linear_Expression e;
       mpz_class den;
-      ap_ppl_of_linexpr(e,den,expr);
+      if (!ap_linexpr0_is_linear(expr)){
+	throw cannot_convert();
+      }
+      ap_ppl_of_linexpr(intern->itv,e,den,expr,1);
       r->p->affine_preimage(Variable(dim),e,den);
       r->reduce();
     }
     catch (cannot_convert x) {
       /* defaults to forget */
       r->forget_dim(dim);
+      if (dim<r->intdim)
+	r->reduce();
       man->result.flag_exact = man->result.flag_best = tbool_top;
     }
     if (dest) r->p->intersection_assign(*dest->p);
@@ -649,7 +766,7 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr(ap_manager_t* man,
   CATCH_WITH_GRID(AP_FUNID_SUBSTITUTE_LINEXPR,org);
 }
 
-extern "C" 
+extern "C"
 PPL_Grid* ap_ppl_grid_assign_linexpr_array(ap_manager_t* man,
 					   bool destructive,
 					   PPL_Grid* org,
@@ -658,40 +775,24 @@ PPL_Grid* ap_ppl_grid_assign_linexpr_array(ap_manager_t* man,
 					   size_t size,
 					   PPL_Grid* dest)
 {
-  man->result.flag_exact = man->result.flag_best = 
-    org->intdim ? tbool_top : tbool_true;
-  try {
-    int dim = org->p->space_dimension();
-    Linear_Expression e;
-    mpz_class den;
-    PPL_Grid* r = destructive ? org : new PPL_Grid(*org);
-    /* create temp */
-    r->p->add_space_dimensions_and_embed(size);
-    /* assign expression to temp */
-    for (size_t i=0;i<size;i++) {
-      try {
-	ap_ppl_of_linexpr(e,den,texpr[i]);
-	r->p->affine_image(Variable(dim+i),e,den);
-      } 
-      catch (cannot_convert x) {
-	/* defaults to forget (nothing to do, actually) */
-	man->result.flag_exact = man->result.flag_best = tbool_top;
-      }
+  size_t i;
+  bool exact = true;
+  for (i=0;i<size;i++){
+    if (!ap_linexpr0_is_linear(texpr[i])){
+      exact = false;
+      break;
     }
-    /* copy temp back to original */
-    for (size_t i=0;i<size;i++)
-      r->p->affine_image(Variable(tdim[i]),Linear_Expression(Variable(dim+i)));
-    /* remove temp */
-    r->p->remove_higher_space_dimensions(dim);
-    /* intersect */
-    r->reduce();
-    if (dest) r->p->intersection_assign(*dest->p);
-    return r;
   }
-  CATCH_WITH_GRID(AP_FUNID_ASSIGN_LINEXPR_ARRAY,org);
-}
+  man->result.flag_exact = man->result.flag_best =
+    (!exact || org->intdim) ? tbool_top : tbool_true;
 
-extern "C" 
+  PPL_Grid* r = (PPL_Grid*)ap_generic_assign_linexpr_array(man, destructive, 
+							   org,
+							   tdim,texpr,size,
+							   dest);
+  return r;
+}
+extern "C"
 PPL_Grid* ap_ppl_grid_substitute_linexpr_array(ap_manager_t* man,
 					       bool destructive,
 					       PPL_Grid* org,
@@ -700,39 +801,22 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr_array(ap_manager_t* man,
 					       size_t size,
 					       PPL_Grid* dest)
 {
-  man->result.flag_exact = man->result.flag_best = 
-    org->intdim ? tbool_top : tbool_true;
-  try {
-    int dim = org->p->space_dimension();
-    Linear_Expression e;
-    mpz_class den;
-    PPL_Grid* r = destructive ? org : new PPL_Grid(*org);
-    /* create temp */
-    r->p->add_space_dimensions_and_embed(size);
-    /* susbstitute org with temp variables */
-    for (size_t i=0;i<size;i++)
-      r->p->affine_preimage(Variable(tdim[i]),Linear_Expression(Variable(dim+i)));
-    /* perform substitutions */
-    for (size_t i=0;i<size;i++) {
-      try {
-	ap_ppl_of_linexpr(e,den,texpr[i]);
-	r->p->affine_preimage(Variable(dim+i),e,den);
-      }
-      catch (cannot_convert x) {
-	/* defaults to forget (nothing to do, actually) */
-	man->result.flag_exact = man->result.flag_best = tbool_top;
-      }
+  size_t i;
+  bool exact = true;
+  for (i=0;i<size;i++){
+    if (!ap_linexpr0_is_linear(texpr[i])){
+      exact = false;
+      break;
     }
-    /* remove temp */
-    r->p->remove_higher_space_dimensions(dim);
-    /* intersect */
-    r->reduce();
-    if (dest) r->p->intersection_assign(*dest->p);
-    return r;
   }
-  CATCH_WITH_GRID(AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,org);
+  man->result.flag_exact = man->result.flag_best =
+    (!exact || org->intdim) ? tbool_top : tbool_true;
+  PPL_Grid* r = (PPL_Grid*)ap_generic_substitute_linexpr_array(man, destructive, 
+							       org,
+							       tdim,texpr,size,
+							       dest);
+  return r;
 }
-
   
 extern "C" 
 PPL_Grid* ap_ppl_grid_forget_array(ap_manager_t* man,
@@ -744,11 +828,13 @@ PPL_Grid* ap_ppl_grid_forget_array(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = tbool_true;
   try {
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
-    for (size_t i=0;i<size;i++)
-      r->forget_dim(tdim[i]);
-    if (project) {
+    if (!a->p->is_empty()){
       for (size_t i=0;i<size;i++)
-	r->p->add_constraint(Variable(tdim[i])==0);
+	r->forget_dim(tdim[i]);
+      if (project) {
+	for (size_t i=0;i<size;i++)
+	  r->p->add_constraint(Variable(tdim[i])==0);
+      }
     }
     return r;
   }
@@ -922,11 +1008,12 @@ PPL_Grid* ap_ppl_grid_widening_threshold(ap_manager_t* man,
 					 PPL_Grid* a2,
 					 ap_lincons0_array_t* array)
 {
+  ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_top;
   try {
     Congruence_System c;
     /* when a1->strict=false, c will not contain any strict constraint */
-    ap_ppl_of_lincons_array(c,array);
+    ap_ppl_of_lincons_array(intern->itv,c,array);
     PPL_Grid* r = new PPL_Grid(*a2);
     r->p->limited_extrapolation_assign(*a1->p,c);
     return r;
@@ -960,23 +1047,21 @@ PPL_Grid* ap_ppl_grid_closure(ap_manager_t* man, bool destructive, PPL_Grid* a)
 }
 
 
-
-
 /* ********************************************************************** */
 /* Managers */
 /* ********************************************************************** */
 
-extern "C" void ap_ppl_grid_internal_free(void* internal)
-{
-}
-
 extern "C" ap_manager_t* ap_ppl_grid_manager_alloc(void)
 {
   int i;
+  ppl_internal_t* ppl;
   ap_manager_t* man;
 
-  man = ap_manager_alloc("PPL::Grid", PPL_VERSION, 
-			 NULL, &ap_ppl_grid_internal_free);
+  ppl = ap_ppl_internal_alloc(false);
+  man = ap_manager_alloc("PPL::Grid", 
+			 PPL_VERSION, 
+			 ppl, 
+			 &ap_ppl_internal_free);
   assert(man);
 
   man->funptr[AP_FUNID_COPY] = (void*)ap_ppl_grid_copy;

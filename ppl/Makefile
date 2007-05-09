@@ -37,6 +37,7 @@ ICFLAGS = \
 -I../apron \
 -I../mlapronidl \
 -I../num \
+-I../itv \
 -I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include \
 -I$(PPL_PREFIX)/include \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
@@ -47,6 +48,7 @@ ICXXFLAGS = \
 -I../apron \
 -I../mlapronidl \
 -I../num \
+-I../itv \
 -I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include \
 -I$(PPL_PREFIX)/include \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
@@ -121,8 +123,8 @@ apron_ppl_test: libapron_ppl_debug.a ppl_test_debug.o
 	$(CXX) $(CXXFLAGS) -o $@ ppl_test_debug.o \
 	-L. -lapron_ppl_debug \
 	-L../newpolka -L$(POLKA_PREFIX)/lib -lpolkag_debug \
-	-L../itv -L$(ITV_PREFIX)/lib -litvmpq_debug \
 	-L../apron -L$(APRON_PREFIX)/lib -lapron \
+	-L../itv -L$(ITV_PREFIX)/lib -litvmpq_debug -litvdbl_debug \
 	-L$(PPL_PREFIX)/lib -lppl \
 	-L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib -lgmpxx -lmpfr -lgmp -lm
 
@@ -147,12 +149,12 @@ ml: ppl.cma ppl.cmxa ppltop pplrun
 ppltop: ppl.cma libppl_caml.a libapron_ppl.a
 	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -cc $(CXX) -custom \
 	bigarray.cma gmp.cma apron.cma ppl.cma \
-	-ccopt "-L. -L../apron -L../mlgmpidl -L../mlapronidl"
+	-ccopt "-L. -L../apron  -L../itv -L../mlgmpidl -L../mlapronidl"
 
 pplrun: ppl.cma libppl_caml.a
 	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime -cc $(CXX) \
 	bigarray.cma gmp.cma apron.cma ppl.cma \
-	-ccopt "-L.  -L../apron -L../mlgmpidl -L../mlapronidl"
+	-ccopt "-L.  -L../apron -L../itv -L../mlgmpidl -L../mlapronidl"
 
 ppl.cma: ppl.cmi ppl.cmo libppl_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ \
