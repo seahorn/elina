@@ -37,7 +37,7 @@ ap_generic_of_lincons_array(ap_manager_t* man,
   void* (*meet_lincons_array)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_LINCONS_ARRAY];
 
   void* res;
-  
+
   res = top(man,intdim,realdim);
   res = meet_lincons_array(man,true,res,array);
   return res;
@@ -241,7 +241,7 @@ ap_generic_asssub_linexpr_array(bool assign,
   abs2 = meet_lincons_array(man,true,abs2,&array);
   exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
   best =  (best==tbool_true ? man->result.flag_best : tbool_top);
-  
+
   /* 9. Permute unprimed and primed dimensions if assign */
   if (assign){
     abs2 = permute_dimensions(man,true,abs2,&permutation);
@@ -326,13 +326,3 @@ ap_generic_substitute_linexpr_array(ap_manager_t* man,
 					 abs, tdim, texpr, size,
 					 dest);
 }
-
-/* ********************************************************************** */
-/* Interval linear related operations */
-/* ********************************************************************** */
-
-/* Evaluate a interval linear expression on the abstract
-   value such as to transform it into a quasilinear expression.
-   
-   This implies calls to ap_abstract0_bound_dimension.
-*/

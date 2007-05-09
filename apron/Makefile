@@ -32,7 +32,8 @@ ap_manager.h ap_abstract0.h ap_generic.h \
 ap_var.h ap_environment.h \
 ap_linexpr1.h ap_lincons1.h ap_generator1.h ap_expr1.h \
 ap_abstract1.h \
-ap_global0.h ap_global1.h
+ap_global0.h ap_global1.h \
+ap_linearize.h
 
 C_FILES = \
 ap_scalar.c ap_interval.c ap_coeff.c ap_dimension.c \
@@ -40,7 +41,8 @@ ap_linexpr0.c ap_lincons0.c ap_generator0.c \
 ap_manager.c ap_abstract0.c ap_generic.c \
 ap_var.c ap_environment.c \
 ap_linexpr1.c ap_lincons1.c ap_generator1.c \
-ap_abstract1.c
+ap_abstract1.c \
+ap_linearize.c
 
 #---------------------------------------
 # Rules
@@ -116,7 +118,7 @@ libapron_debug.a: $(C_FILES:%.c=%_debug.o)
 
 dep: $(H_FILES)
 	for i in $(C_FILES); do			\
-		cpp -MM $$i;			\
+		cpp $(ICFLAGS) -MM $$i;			\
 	done
 
 #--------------------------------------------------------------
@@ -140,37 +142,70 @@ dep: $(H_FILES)
 #---------------------------------------
 
 ap_scalar.o: ap_scalar.c ap_scalar.h ap_config.h
-ap_interval.o: ap_interval.c ap_interval.h ap_config.h ap_scalar.h
-ap_coeff.o: ap_coeff.c ap_coeff.h ap_config.h ap_scalar.h ap_interval.h
+ap_interval.o: ap_interval.c ap_interval.h \
+  ap_config.h \
+  ap_scalar.h /scratch/home/bjeannet/pkg/mpfr/linux386/include/mpfr.h
+ap_coeff.o: ap_coeff.c ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h
 ap_dimension.o: ap_dimension.c ap_dimension.h
-ap_linexpr0.o: ap_linexpr0.c ap_linexpr0.h ap_coeff.h ap_config.h \
-  ap_scalar.h ap_interval.h ap_dimension.h
-ap_lincons0.o: ap_lincons0.c ap_lincons0.h ap_coeff.h ap_config.h \
-  ap_scalar.h ap_interval.h ap_linexpr0.h ap_dimension.h
-ap_generator0.o: ap_generator0.c ap_generator0.h ap_coeff.h ap_config.h \
-  ap_scalar.h ap_interval.h ap_linexpr0.h ap_dimension.h
-ap_manager.o: ap_manager.c ap_manager.h ap_coeff.h ap_config.h \
-  ap_scalar.h ap_interval.h
+ap_linexpr0.o: ap_linexpr0.c ap_linexpr0.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_dimension.h
+ap_lincons0.o: ap_lincons0.c ap_lincons0.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_linexpr0.h ap_dimension.h
+ap_generator0.o: ap_generator0.c ap_generator0.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_linexpr0.h ap_dimension.h
+ap_manager.o: ap_manager.c ap_manager.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h
 ap_abstract0.o: ap_abstract0.c ap_abstract0.h ap_manager.h ap_coeff.h \
-  ap_config.h ap_scalar.h ap_interval.h ap_expr0.h ap_linexpr0.h \
-  ap_dimension.h ap_lincons0.h ap_generator0.h
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_expr0.h ap_linexpr0.h ap_dimension.h ap_lincons0.h \
+  ap_generator0.h
 ap_generic.o: ap_generic.c ap_generic.h ap_manager.h ap_coeff.h \
-  ap_config.h ap_scalar.h ap_interval.h ap_expr0.h ap_linexpr0.h \
-  ap_dimension.h ap_lincons0.h ap_generator0.h ap_abstract0.h
-aap_var.o: ap_var.c ap_manager.h ap_coeff.h ap_config.h ap_scalar.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_expr0.h ap_linexpr0.h ap_dimension.h ap_lincons0.h \
+  ap_generator0.h ap_abstract0.h
+ap_var.o: ap_var.c ap_manager.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
   ap_interval.h ap_var.h
-ap_environment.o: ap_environment.c ap_manager.h ap_coeff.h ap_config.h \
-  ap_scalar.h ap_interval.h ap_environment.h ap_dimension.h ap_var.h
-ap_linexpr1.o: ap_linexpr1.c ap_linexpr1.h ap_coeff.h ap_config.h \
-  ap_scalar.h ap_interval.h ap_environment.h ap_dimension.h ap_var.h \
-  ap_linexpr0.h
-ap_lincons1.o: ap_lincons1.c ap_lincons1.h ap_coeff.h ap_config.h \
-  ap_scalar.h ap_interval.h ap_environment.h ap_dimension.h ap_var.h \
-  ap_lincons0.h ap_linexpr0.h ap_linexpr1.h
-ap_generator1.o: ap_generator1.c ap_generator1.h ap_coeff.h ap_config.h \
-  ap_scalar.h ap_interval.h ap_environment.h ap_dimension.h ap_var.h \
-  ap_generator0.h ap_linexpr0.h ap_linexpr1.h
-ap_abstract1.o: ap_abstract1.c ap_coeff.h ap_config.h ap_scalar.h \
+ap_environment.o: ap_environment.c ap_manager.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_environment.h ap_dimension.h ap_var.h
+ap_linexpr1.o: ap_linexpr1.c ap_linexpr1.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_environment.h ap_dimension.h ap_var.h ap_linexpr0.h
+ap_lincons1.o: ap_lincons1.c ap_lincons1.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_environment.h ap_dimension.h ap_var.h ap_lincons0.h \
+  ap_linexpr0.h ap_linexpr1.h
+ap_generator1.o: ap_generator1.c ap_generator1.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_environment.h ap_dimension.h ap_var.h ap_generator0.h \
+  ap_linexpr0.h ap_linexpr1.h
+ap_abstract1.o: ap_abstract1.c ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
   ap_interval.h ap_manager.h ap_abstract0.h ap_expr0.h ap_linexpr0.h \
   ap_dimension.h ap_lincons0.h ap_generator0.h ap_expr1.h ap_linexpr1.h \
   ap_environment.h ap_var.h ap_lincons1.h ap_generator1.h ap_abstract1.h
+ap_linearize.o: ap_linearize.c ap_linearize.h ap_manager.h ap_coeff.h \
+  ap_config.h \
+  ap_scalar.h \
+  ap_interval.h ap_expr0.h ap_linexpr0.h ap_dimension.h ap_lincons0.h \
+  ap_generator0.h ap_abstract0.h

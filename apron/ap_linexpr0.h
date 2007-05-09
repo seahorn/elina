@@ -202,7 +202,7 @@ typedef enum ap_coefftag_t {
   AP_CST_I_DOUBLE,   /* waiting for 2 double objects */
   AP_END
 } ap_coefftag_t;
- 
+
 bool ap_linexpr0_set_list_generic(ap_coeff_t* (*get_pcoeff)(void* expr, bool cst, va_list* va),
 				  void* expr, va_list* va);
 
@@ -243,7 +243,7 @@ bool ap_linexpr0_set_list(ap_linexpr0_t* expr, ...);
 void ap_linexpr0_add_dimensions_with(ap_linexpr0_t* expr,
 				  ap_dimchange_t* dimchange);
 ap_linexpr0_t* ap_linexpr0_add_dimensions(ap_linexpr0_t* expr,
-				    ap_dimchange_t* dimchange);
+					  ap_dimchange_t* dimchange);
 
 /* These two functions apply the given permutation to the dimensions. If dense
    representation, the size of the permutation should be expr->size. If sparse

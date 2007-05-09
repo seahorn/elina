@@ -1,5 +1,5 @@
 /* ************************************************************************* */
-/* linexpr0.c: linear expressions */
+/* ap_linexpr0.c: linear expressions */
 /* ************************************************************************* */
 
 /* This file is part of the APRON Library, released under LGPL license.  Please
