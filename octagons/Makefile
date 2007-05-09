@@ -159,6 +159,7 @@ octtest%: liboct%.a oct_test%.o
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -o $@ oct_test$*.o \
 	-L. -loct$* \
 	-L../newpolka -lpolkag_debug \
+	-L../itv -litvmpq_debug \
 	-L../apron -lapron \
 	-L../itv -litvmpq \
 	-L$(MPFR_PREFIX)/lib -lmpfr \
