@@ -21,6 +21,8 @@ void pk_internal_init(pk_internal_t* pk, size_t maxdims)
 {
   size_t i;
 
+  pk->exn = AP_EXC_NONE;
+
   pk->maxdims = maxdims;
   pk->maxcols = maxdims+3;
   

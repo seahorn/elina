@@ -21,38 +21,6 @@
 /* ********************************************************************** */
 
 /*
-If diff is positive, adds diff dimensions at the end of
-q1 and puts the result in q2; If diff is negative,
-deletes the -diff last dimensions of q1 and puts the
-result in q2. q2 is supposed to have a sufficient size.
-*/
-static
-void vector_resize_dimensions(numint_t* q2,
-			      numint_t* q1, size_t size,
-			      int diff)
-{
-  size_t i;
-  if (q2 != q1){
-    if (diff > 0){
-      vector_copy(q2,q1,size);
-      for (i=size; i<size+diff; i++){
-	numint_set_int(q2[i],0);
-      }
-    }
-    else {
-      vector_copy(q2,q1,size+diff);
-    }
-  }
-  else {
-    if (diff>0){
-      for (i=size; i<size+diff; i++){
-	numint_set_int(q2[i],0);
-      }
-    }
-  }
-}
-
-/*
   Apply the
   permutation permutation. The result is stored in newq. The array
   permutation is supposed to be of size size-pk->dec.
@@ -198,7 +166,7 @@ matrix_t* matrix_remove_dimensions(pk_internal_t* pk,
 			     mat->p[i],
 			     mat->nbcolumns,
 			     dimchange);
-    vector_normalize(pk,nmat->p[i],nmat->nbcolumns);
+    vector_normalize(pk,nmat->p[i],mat->nbcolumns-dimsup);
   }
   if (destructive){
     matrix_resize_diffcols(nmat, -(int)dimsup);

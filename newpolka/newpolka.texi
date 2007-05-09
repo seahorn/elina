@@ -264,7 +264,10 @@ saturation matrices that are available.
 @item is_eq                     @tab      @tab Require canonical form for both arguments.
 
 @item
-@item sat_interval, sat_lincons, is_dimension_unconstrained, bound_dimension, bound_linexpr
+@item is_dimension_unconstrained @tab     @tab Require canonical form
+
+@item
+@item sat_interval, sat_lincons, bound_dimension, bound_linexpr
 @tab <=0  @tab Require generators.
 @item
 @tab >0   @tab Require canonical form.

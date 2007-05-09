@@ -87,7 +87,7 @@ size_t pk_get_approximate_max_coeff_size(pk_internal_t* pk);
 
 pk_t* pk_of_abstract0(ap_abstract0_t* abstract);
   /* Extract from an abstract value the underlying NewPolka polyhedron.  There
-     is no copy, so only one of the two objects should be freed. */
+     is no copy, and only the argument should be freed. */
 
 ap_abstract0_t* pk_to_abstract0(ap_manager_t* man, pk_t* poly);
   /* Create an abstract value from the manager and the underlying NewPolka
@@ -177,7 +177,9 @@ void pk_fprintdiff(FILE* stream,
 		     char** name_of_dim);
   /* Print the difference between a1 (old value) and a2 (new value),
      using function name_of_dim to name dimensions.
-     The meaning of difference is library dependent. */
+     The meaning of difference is library dependent. 
+
+     Not implemented */
 
 void pk_fdump(FILE* stream, ap_manager_t* man, pk_t* a);
   /* Dump the internal representation of an abstract value,
@@ -192,11 +194,13 @@ ap_membuf_t pk_serialize_raw(ap_manager_t* man, pk_t* a);
 /* Allocate a memory buffer (with malloc), output the abstract value in raw
    binary format to it and return a pointer on the memory buffer and the size
    of bytes written.  It is the user responsability to free the memory
-   afterwards (with free). */
+   afterwards (with free). 
+   Not implemented */
 
 pk_t* pk_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size);
 /* Return the abstract value read in raw binary format from the input stream
-   and store in size the number of bytes read */
+   and store in size the number of bytes read 
+   Not implemented */
 
 /* ********************************************************************** */
 /* II. Constructor, accessors, tests and property extraction */
@@ -348,9 +352,7 @@ pk_t* pk_join(ap_manager_t* man, bool destructive, pk_t* a1, pk_t* a2);
 
 pk_t* pk_meet_array(ap_manager_t* man, pk_t** tab, size_t size);
 pk_t* pk_join_array(ap_manager_t* man, pk_t** tab, size_t size);
-  /* Meet and Join of an array of abstract values.
-     Raises an [[exc_invalid_argument]] exception if [[size==0]]
-     (no way to define the dimensionality of the result in such a case */
+  /* Meet and Join of a non empty array of abstract values. */
 
 pk_t* pk_meet_lincons_array(ap_manager_t* man,
 			    bool destructive, pk_t* a,

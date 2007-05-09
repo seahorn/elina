@@ -678,7 +678,7 @@ pk_t* poly_asssub_linexpr_array_nondet(bool assign,
   /* Remove extra dimensions */
   ap_dimchange_add_invert(&dimchange);
   po = pk_remove_dimensions(man,true,po,&dimchange);
-  if (assign){
+  if (assign && pb){
     poly_meet(true,false,man,po,po,pb);
   }
  _poly_asssub_quasilinear_linexpr_array_exit:

@@ -69,7 +69,7 @@ bool vector_set_dim_bound(pk_internal_t* pk,
   numint_set(vec[pk->dec+dim],numrat_denref(bound));
   numrat_clear(bound);
   /* put the right sign now */
-  if (mode>0){
+  if (mode>=0){
     numint_neg(vec[pk->dec+dim],vec[pk->dec+dim]);
   } 
   return true;
@@ -112,7 +112,7 @@ bool vector_set_linexpr_bound(pk_internal_t* pk,
   }
   numint_init(cst);
   numint_mul(cst,numrat_numref(numrat),vec[0]);
-  if (mode>0){
+  if (mode>=0){
     numint_sub(vec[polka_cst],vec[polka_cst],cst);
     for (i=pk->dec; i<size; i++){
       numint_neg(vec[i],vec[i]);
@@ -378,6 +378,18 @@ bool matrix_append_ap_lincons0_array(pk_internal_t* pk,
   j = nbrows;
   k = 0;
   for (i=0; i<array->size; i++){
+    if (ap_lincons0_is_unsat(&array->p[i])){
+      if (tab){ 
+	free(tab); tab=NULL; 
+	k=0;
+      }
+      vector_clear(mat->p[0],mat->nbcolumns);
+      numint_set_int(mat->p[0][0],1);
+      numint_set_int(mat->p[0][polka_cst],-1);
+      j = 1;
+      res = true;
+      break;
+    }
     switch (array->p[i].constyp){
     case AP_CONS_EQ:
     case AP_CONS_SUPEQ:
@@ -406,11 +418,14 @@ bool matrix_append_ap_lincons0_array(pk_internal_t* pk,
     }
   }
   mat->nbrows = j;
-  tab = (size_t*)realloc(tab,k*sizeof(size_t));
+  if (tab){
+    tab = (size_t*)realloc(tab,k*sizeof(size_t));
+  }
   *tabindex = tab;
   *size = k;
   return res;
 }
+
 bool matrix_set_ap_lincons0_array(pk_internal_t* pk,
 				  matrix_t** mat,
 				  size_t** tabindex, size_t* size,

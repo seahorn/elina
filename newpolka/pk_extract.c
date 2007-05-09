@@ -174,7 +174,7 @@ void vector_bound_itv_linexpr(pk_internal_t* pk,
   rat = &pk->poly_numrat;
 
   numrat_set_int(*rat,1);
-  itv_set_zero(itv);
+  itv_set_int(itv,0);
   itv_linexpr_ForeachLinterm(linexpr,i,dim,pitv,peq){
     size_t index = pk->dec + dim;
     if (numint_sgn(vec[index])){

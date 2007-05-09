@@ -149,7 +149,7 @@ pkeq_t* pkeq_of_box(ap_manager_t* man,
   size_t row,dim;
   pkeq_t* po;
   itv_t itv;
-  bool exc;
+  bool ok;
 
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_OF_BOX);
   pk_internal_realloc_lazy(pk,intdim+realdim);
@@ -165,15 +165,15 @@ pkeq_t* pkeq_of_box(ap_manager_t* man,
   /* constraints */
   row = 0;
   itv_init(itv);
-  exc = false;
+  ok = false;
   for (i=0; i<dim; i++){
     itv_set_ap_interval(pk->itv,itv,array[i]);
     if (itv_is_point(pk->itv,itv)){
-      exc = vector_set_dim_bound(pk,po->C->p[row],
+      ok = vector_set_dim_bound(pk,po->C->p[row],
 				 (ap_dim_t)i, bound_numref(itv->sup), 0,
 				 intdim,realdim,
 				 true);
-      if (exc){
+      if (!ok){
 	matrix_free(po->C);
 	po->C = NULL;
 	return po;
@@ -214,34 +214,36 @@ pkeq_t* pkeq_of_lincons_array(ap_manager_t* man,
     equality_reduce(man,po);
     return po;
   }
-  else {
-    /* initialization */
-    po = poly_alloc(intdim,realdim);
-    po->status =
-      pk_status_conseps;
-    dim = intdim + realdim;
-    C = matrix_alloc(pk->dec-1 + cons->size, pk->dec + dim, false);
-    po->C = C;
-
-    /* constraints */
-    row = 0;
-    for (i=0; i<cons->size; i++){
-      if (cons->p[i].constyp == AP_CONS_EQ && 
-	  ap_linexpr0_is_linear(cons->p[i].linexpr0)){
-	itv_lincons_set_ap_lincons0(pk->itv,
-				    &pk->poly_itv_lincons,
-				    NULL,
-				    &cons->p[i]);
-	row += vector_set_itv_lincons(pk,
-				      &C->p[row],
-				      &pk->poly_itv_lincons,
-				      intdim, realdim, true);
-      }
+  /* initialization */
+  po = poly_alloc(intdim,realdim);
+  po->status =
+    pk_status_conseps;
+  dim = intdim + realdim;
+  C = matrix_alloc(pk->dec-1 + cons->size, pk->dec + dim, false);
+  
+  /* constraints */
+  row = 0;
+  for (i=0; i<cons->size; i++){
+    if (ap_lincons0_is_unsat(&cons->p[i])){
+      matrix_free(C);
+      return po;
     }
-    matrix_fill_constraint_top(pk,C,row);
-    C->nbrows = row + pk->dec-1;
-    matrix_reduce(C);
+    if (cons->p[i].constyp == AP_CONS_EQ && 
+	ap_linexpr0_is_linear(cons->p[i].linexpr0)){
+      itv_lincons_set_ap_lincons0(pk->itv,
+				  &pk->poly_itv_lincons,
+				  NULL,
+				  &cons->p[i]);
+      row += vector_set_itv_lincons(pk,
+				    &C->p[row],
+				    &pk->poly_itv_lincons,
+				    intdim, realdim, true);
+    }
   }
+  matrix_fill_constraint_top(pk,C,row);
+  C->nbrows = row + pk->dec-1;
+  matrix_reduce(C);
+  po->C = C;
   poly_chernikova(man,po,"of the result");
   assert(equality_check(pk,po));
   return po;

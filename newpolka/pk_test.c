@@ -397,46 +397,28 @@ tbool_t pk_is_dimension_unconstrained(ap_manager_t* man, pk_t* po,
   matrix_t* C;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_SAT_INTERVAL);
 
-  if (pk->funopt->algorithm>0)
-    poly_chernikova(man,po,NULL);
-  else
-    poly_obtain_C(man,po,NULL);
-
+  poly_chernikova3(man,po,NULL);
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     return tbool_top;
   }
-  if (!po->C){ /* po is empty */
+  if (!po->F){ /* po is empty */
     man->result.flag_exact = man->result.flag_best = tbool_true;
     return tbool_false;
   }
-  if (po->F){
-    /* We test if there exists the line of direction dim */
-    poly_chernikova3(man,po,NULL);
-    F = po->F;
-    res = tbool_false;
-    for (i=0; i<po->nbline; i++){
-      if (numint_sgn(F->p[i][pk->dec+dim])){
-	res = tbool_true;
-	for(j=0; j<F->nbcolumns; j++){
-	  if (j!=pk->dec+dim && numint_sgn(F->p[i][j])){
-	    res = tbool_false;
-	    break;
-	  }
+  /* We test if there exists the line of direction dim */
+  F = po->F;
+  res = tbool_false;
+  for (i=0; i<po->nbline; i++){
+    if (numint_sgn(F->p[i][pk->dec+dim])){
+      res = tbool_true;
+      for(j=pk->dec; j<F->nbcolumns; j++){
+	if (j!=pk->dec+dim && numint_sgn(F->p[i][j])){
+	  res = tbool_false;
+	  break;
 	}
-	break;
       }
-    }
-  }
-  else {
-    /* We test if there exists a constraint with non zero coeff for dim */
-    C = po->C;
-    res = tbool_true;
-    for (i=0; i<C->nbrows; i++){
-      if (numint_sgn(C->p[i][pk->dec+dim])){
-	res = tbool_false;
-	break;
-      }
+      break;
     }
   }
   man->result.flag_exact = man->result.flag_best = tbool_true;
