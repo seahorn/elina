@@ -101,18 +101,6 @@ ap_generic_substitute_linexpr_array(ap_manager_t* man,
      operations.
   */
 
-ap_linexpr0_t*
-ap_generic_quasilinear_of_intervallinear(ap_manager_t* man,
-					 void* a,
-					 ap_linexpr0_t* expr);
-  /* Evaluate a interval linear expression on the abstract
-     value such as to transform it into a quasilinear expression.
-
-     This implies calls to ap_abstract0_bound_dimension.
-
-     NOT YET IMPLEMENTED */
-
-
 #ifdef __cplusplus
 }
 #endif
