@@ -9,7 +9,7 @@
  *
  */
 
-/* This file is part of the APRON Library, released under LGPL license.  
+/* This file is part of the APRON Library, released under LGPL license.
    Please read the COPYING file packaged in the distribution.
 */
 
@@ -120,42 +120,42 @@ ap_abstract0_t* random_abstract_std(ap_manager_t* man, int dim)
 {
   int i;
   ap_abstract0_t* p;
-  ap_interval_t** t; 
+  ap_interval_t** t;
   ap_generator0_array_t ar;
 
   int vdim,rdim;
-  
+
   vdim = (dim * 90) / 100;
   rdim = dim-vdim;
-  
+
   t = ap_interval_array_alloc(dim);
   if (vdim==0){
     /* creating an abstract value with the origin */
     for (i=0;i<dim;i++)
       ap_interval_set_int(t[i],0,0);
-    
-    p = intdim ? 
+
+    p = intdim ?
       ap_abstract0_of_box(man,dim/2,dim-dim/2,t) :
       ap_abstract0_of_box(man,0,dim,t);
   }
   else {
     /* creating an abstract value with a random vertex */
     random_vertex(t,dim);
-    p = intdim ? 
+    p = intdim ?
       ap_abstract0_of_box(man,dim/2,dim-dim/2,t) :
       ap_abstract0_of_box(man,0,dim,t);
     /* adding other vertices */
     for (i=1; i<vdim; i++){
       ap_abstract0_t* tmp;
       random_vertex(t,dim);
-      tmp = intdim ? 
+      tmp = intdim ?
 	ap_abstract0_of_box(man,dim/2,dim-dim/2,t) :
 	ap_abstract0_of_box(man,0,dim,t);
       p = ap_abstract0_join(man,true,p,tmp);
       ap_abstract0_free(tmp->man,tmp);
     }
   }
-  
+
   /* adding rays */
   ar = ap_generator0_array_make(rdim);
   for (i=0;i<rdim;i++)
@@ -181,10 +181,10 @@ ap_abstract0_t* random_abstract_eq(ap_manager_t* man, int dim)
   ap_lincons0_array_t ar;
 
   /* creating a top abstract value */
-  p = intdim ? 
+  p = intdim ?
     ap_abstract0_top(man,dim/2,dim-dim/2) :
     ap_abstract0_top(man,0,dim);
-  
+
   ar = ap_lincons0_array_make(dim/RATIOEQ);
   for (i=0;i<dim/RATIOEQ;i++)
     ar.p[i] = random_constraint(dim,AP_CONS_EQ);
@@ -204,10 +204,10 @@ ap_abstract0_t* random_abstract_eqmod(ap_manager_t* man, int dim)
   ap_lincons0_array_t ar;
 
   /* creating a top abstract value */
-  p = intdim ? 
+  p = intdim ?
     ap_abstract0_top(man,dim/2,dim-dim/2) :
     ap_abstract0_top(man,0,dim);
-  
+
   ar = ap_lincons0_array_make(dim/RATIOEQ);
   for (i=0;i<dim/RATIOEQ;i++){
     ap_constyp_t constyp = (rand() % RATIOEQMOD == 0) ? AP_CONS_EQMOD : AP_CONS_EQ;
@@ -223,13 +223,14 @@ ap_abstract0_t* random_abstract_eqmod(ap_manager_t* man, int dim)
 /* convert to specified manager */
 ap_abstract0_t* convert(ap_manager_t* man, ap_abstract0_t* a)
 {
+  ap_abstract0_t* res;
   ap_lincons0_array_t l;
   ap_dimension_t d = ap_abstract0_dimension(a->man,a);
   if (a->man==man) return a;
   l = ap_abstract0_to_lincons_array(a->man,a);
-  a = ap_abstract0_of_lincons_array(man,d.intdim,d.realdim,&l);
+  res = ap_abstract0_of_lincons_array(man,d.intdim,d.realdim,&l);
   ap_lincons0_array_clear(&l);
-  return a;
+  return res;
 }
 
 /* generate a pair of related abstract values */
@@ -251,7 +252,7 @@ void random_abstract2_inv(ap_manager_t* man1,/* assumed to be the most precise *
 }
 
 
-/* comparison 
+/* comparison
 
 The first abstract value is supposed to be defined on a more precise abstract
 domain than the second one. Hence we convert a2 to the first abstract domain
@@ -299,7 +300,7 @@ int error_ = 0;
     for (i_=0;i_<N;i_++) {						\
       printf("%s%s",b1_,b2_);						\
       fflush(stdout);
-      
+
 #define RESULT(c) b1_[i_+2]=c
 
 #define ERROR(msg)					\
@@ -327,7 +328,7 @@ void test_conv(void)
     ap_abstract0_t* rough1 = convert(manrough,prec0);
     ap_abstract0_t* prec1 = convert(manprec,rough1);
     RESULT('*');
-    if (is_eq(rough0,rough1)!=tbool_true || 
+    if (is_eq(rough0,rough1)!=tbool_true ||
 	is_eq(prec0,prec1)!=tbool_true ||
 	is_leq(prec0,rough0)!=tbool_true) {
       ERROR("different results");
@@ -398,7 +399,7 @@ void test_meet(void)
     RESULT('*');
     if (is_leq(precr,roughr)!=tbool_true) {
       ERROR("different results");
-      print_abstract("rough0",rough0); print_abstract("rough1",rough1); 
+      print_abstract("rough0",rough0); print_abstract("rough1",rough1);
       print_abstract("roughr",roughr); print_abstract("precr",precr);
     }
     ap_abstract0_free(manrough,rough0); ap_abstract0_free(manrough,rough1); ap_abstract0_free(manrough,roughr);
@@ -612,7 +613,7 @@ void test_add_lincons(void)
 {
   printf("\nadd lincons\n");
   LOOP {
-    size_t i, dim = 6, nb = 4;
+    size_t i, dim = 6, nb = 3;
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_lincons0_array_t ar = ap_lincons0_array_make(nb);
     random_abstract2(manprec,manrough,dim,&preca,&rougha);
@@ -627,7 +628,8 @@ void test_add_lincons(void)
     if (is_leq(precr,roughr)!=tbool_true) {
       ERROR("different results");
       ap_lincons0_array_fprint(stderr,&ar,NULL);
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+      print_abstract("rougha",rougha); print_abstract("preca",preca);
+      print_abstract("roughr",roughr); print_abstract("precr",precr);
     }
     ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
     ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
@@ -701,11 +703,13 @@ void test_vbound(void)
       ap_interval_t* roughi,*preci;
       roughd = ap_abstract0_is_dimension_unconstrained(manrough,rougha,i);
       precd = ap_abstract0_is_dimension_unconstrained(manprec,preca,i);
+
       roughi = ap_abstract0_bound_dimension(manrough,rougha,i);
       preci = ap_abstract0_bound_dimension(manprec,preca,i);
       if (roughd!=precd || ap_interval_cmp(roughi,preci)) {
 	ERROR("different results");
 	print_abstract("rougha",rougha);
+	print_abstract("preca",preca);
 	fprintf(stderr,"roughi[%i]=",(int)i); ap_interval_fprint(stderr,roughi);
 	fprintf(stderr," preci[%i]=",(int)i); ap_interval_fprint(stderr,preci);
 	fprintf(stderr," roughd=%i precd=%i\n",roughd,precd);
@@ -757,7 +761,7 @@ void test_csat(void)
     roughs = ap_abstract0_sat_lincons(manrough,rougha,&l);
     precs = ap_abstract0_sat_lincons(manprec,preca,&l);
     RESULT('*');
-    if ((roughs==tbool_true && roughs!=precs) || 
+    if ((roughs==tbool_true && roughs!=precs) ||
 	 (precs==tbool_true && roughs!=precs)) {
       ERROR("different results");
       print_abstract("rougha",rougha);print_abstract("preca",preca);
@@ -817,12 +821,12 @@ void test_assign(void)
   } ENDLOOP;
 }
 
-/* #define NB 2 */
+#define NB 2
 void test_par_assign(void)
 {
   printf("\nparallel assign\n");
   LOOP {
-    size_t i, dim = 7;
+    size_t i, dim = 3;
     size_t p = rand() % dim;
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_dim_t d[NB];
@@ -837,10 +841,10 @@ void test_par_assign(void)
     precr = ap_abstract0_assign_linexpr_array(manprec,false,preca,d,(ap_linexpr0_t**)l,NB,NULL);
     RESULT('*');
     if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results"); 
+      ERROR("different results");
       for (i=0;i<NB;i++) {
-	fprintf(stderr,"x%i <- ",d[i]); 
-	ap_linexpr0_fprint(stderr,l[i],NULL); 
+	fprintf(stderr,"x%i <- ",d[i]);
+	ap_linexpr0_fprint(stderr,l[i],NULL);
 	fprintf(stderr,"\n");
       }
       print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("preca",preca); print_abstract("precr",precr);
@@ -893,10 +897,10 @@ void test_par_subst(void)
     precr = ap_abstract0_substitute_linexpr_array(manprec,false,preca,d,(ap_linexpr0_t**)l,NB,NULL);
     RESULT('*');
     if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results"); 
+      ERROR("different results");
       for (i=0;i<NB;i++) {
-	fprintf(stderr,"x%i -> ",d[i]); 
-	ap_linexpr0_fprint(stderr,l[i],NULL); 
+	fprintf(stderr,"x%i -> ",d[i]);
+	ap_linexpr0_fprint(stderr,l[i],NULL);
 	fprintf(stderr,"\n");
       }
       print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
@@ -934,7 +938,7 @@ void test_widen(void)
 
 /* Main test function */
 /* Depends on global variables manprec,manrough,intdim */
-void test(ap_manager_t* man1, /* the most precise */ 
+void test(ap_manager_t* man1, /* the most precise */
 	  ap_manager_t* man2 /* the less precise */
 	  )
 {
@@ -991,7 +995,7 @@ int main(int argc, char** argv)
   else if (argc==2){
     unsigned int seed = atoi(argv[1]);
     srand(seed);
-  }   
+  }
   else {
     fprintf(stderr,"usage: %s [<seed>]\n",argv[0]);
     exit(1);
@@ -1012,23 +1016,37 @@ int main(int argc, char** argv)
   random_abstract = &random_abstract_std;
   for (i=0; i<1; i++){
     random_abstract2 = i==0 ? &random_abstract2_std : &random_abstract2_inv;
-    //test(manpkl,manbox);
-    //test(manpks,manbox);
+
+    // box/polyhedra
+    /*
+    test(manpkl,manbox);
+    test(manpks,manbox);
     test(manppll,manbox);
     test(manppls,manbox);
+
+    // polyhedra/polyhedra (same library)
     test(manpks,manpkl); test(manpkl,manpks);
     test(manppls,manppll); test(manppll,manppls);
-    test(manppll,manpkl); test(manpkl,manppll);
-    test(manppls,manpks); test(manpks,manppls);
-    //  test(manoct,manbox);
-    //  test(manpkl,manoct);
-    //  test(manpks,manoct);
-    //  test(manppll,manoct);
-    //  test(manppls,manoct);
+    // Polka polyhedra/PPL polyhedra
+    test(manppll,manpkl);
+    */
+    test(manpkl,manppll);
+    test(manppls,manpks);
+    test(manpks,manppls);
+    // Grid/Equalities
+    test(manpplgrid,manpkeq);
     random_abstract = &random_abstract_eq;
     test(manpplgrid,manpkeq);
     random_abstract = &random_abstract_eqmod;
     test(manpplgrid,manpkeq);
+
+    // Oct/Box and Oct/Poly
+    random_abstract = &random_abstract_std;
+    test(manoct,manbox);
+    test(manpkl,manoct);
+    test(manpks,manoct);
+    test(manppll,manoct);
+    test(manppls,manoct);
   }
 
 

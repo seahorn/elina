@@ -33,8 +33,8 @@ command line in your Makefile.
 You should also link your object files with the @sc{NewPolka} library
 to produce an executable, by adding something like
 @samp{-L$(APRON_PREFIX)/lib -lpolkag} in the command line in your
-Makefile (followed by the standard @samp{-lapron -L$(MPFR_PREFIX)/lib
--lmpfr -L$(GMP_PREFIX)/lib -lgmp}).
+Makefile (followed by the standard @samp{-lapron -litvmpq -litvdbl
+-L$(MPFR_PREFIX)/lib -lmpfr -L$(GMP_PREFIX)/lib -lgmp}).
 
 There are actually several variants of the library:
 @table @file

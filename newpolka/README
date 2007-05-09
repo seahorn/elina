@@ -18,6 +18,7 @@ For the C interface:
 
 GMP library (tested with version 4.0 and up)
 NUM "library" (a set of header files)
+ITV library
 APRON library
 
 For the OCaml interface, in addition:
@@ -46,6 +47,8 @@ indicates the underlying representation of integers.
 
 For use via APRON, the include files to consider is pk.h
 
+When linking, requires resp. libitvlr.a (i), libitvllr.a (l), libitvmpq.a (g)
+plus libraries required by APRON.
 
 2. OCaml Library
 ----------------

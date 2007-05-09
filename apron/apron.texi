@@ -243,29 +243,34 @@ libraries you want to use it via APRON (for instance, @file{box.h},
 @file{pk.h}, @file{apron_ppl.h}).
 
 All programs using APRON must link against the @file{libapron},
-@file{libmpfr} and @file{libgmp} libraries, and the underlying
-libraries you want to use it via APRON:
+@file{libitvmpq}, @file{libitvdbl.a} (these two are required by
+functions in @file{ap_linearize}), @file{libmpfr} and @file{libgmp}
+libraries, and the underlying libraries you want to use it via APRON:
 @enumerate
 @item
 If some file @file{test.c} uses the POLKA library via APRON, the
-compilation command should look like @samp{gcc -I$MPFR/include
--I$GMP/include -I$APRON/include -L$MPFR/lib -L$GMP/lib -L$APRON/lib -o
-test test.c -lpolkag -lapron -lmpfr -lgmp}, assuming that the POLKA
-library is used in its 'g' version (internal number representation is
-GMP integer) and resides in @file{$APRON/include} and
-@file{$APRON/lib} directories.
+compilation command should look like @samp{gcc -I$ITV/include
+-I$MPFR/include -I$GMP/include -I$APRON/include -L$ITV/lib -L$MPFR/lib
+-L$GMP/lib -L$APRON/lib -o test test.c -lpolkag -lapron -litvmpq.a
+-ltivdbl.a -lmpfr -lgmp}, assuming that the POLKA library is used in
+its 'g' version (internal number representation is GMP integer) and
+resides in @file{$APRON/include} and @file{$APRON/lib} directories.
 
 The @file{libpolkag.a} library is of course needed, @file{libapron.a}
 contains all the code common to all APRON library (manipulation of
-expressions, environments, ...), last the libraries @code{libmpfr.a}
-and @code{libgmp.a} are required both by @sc{NewPolka} and @sc{APRON}.
+expressions, environments, ...), @file{libitvmpq.a} and
+@file{libitvdbl.a} are required when the underlying library uses the
+(quasi)linearisation facilities of APRON, last the libraries
+@code{libmpfr.a} and @code{libgmp.a} are required both by
+@sc{NewPolka}, @sc{APRON} and @sc{ITV}.
 @item
 If some file @file{test.c} uses the PPL library via APRON, the
-compilation command should look like @samp{g++ -I$MPFR/include
--I$GMP/include -I$APRON/include -I$PPL/include -L$MPFR/lib -L$GMP/lib
--L$APRON/lib -L$PPL/lib -o test test.c -lapron_ppl -lppl -lgmpxx -lapron
--lmpfr -lgmp}, assuming that PPL resides in $PPL and PPL APRON
-interface in @file{$APRON/include} and @file{$APRON/lib} directories.
+compilation command should look like @samp{g++ -I$ITV/include
+-I$MPFR/include -I$GMP/include -I$APRON/include -I$PPL/include
+-L$ITV/lib -L$MPFR/lib -L$GMP/lib -L$APRON/lib -L$PPL/lib -o test
+test.c -lapron_ppl -lppl -lgmpxx -lapron -litvmpq.a -litvdbl.a -lmpfr
+-lgmp}, assuming that PPL resides in $PPL and PPL APRON interface in
+@file{$APRON/include} and @file{$APRON/lib} directories.
 
 Notice that the PPL library (@file{libppl.a}) is a C++ library, you
 need to use @samp{g++} instead of @samp{gcc} for linking. You also

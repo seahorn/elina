@@ -12,6 +12,7 @@ This package is a wrapper for the the Parma Polyhedra Library.
 
 Requirements:
 - APRON
+- ITV
 - PPL library version 0.9, with GMP support
 - GMPXX (normally installed with GMP)
 - for apron_ppl_test: NewPolka APRON module
@@ -47,15 +48,13 @@ What is provided:
   comparing the result of PPL and NewPolka on random polyhedra
 
 Limitations:
-- Polyhedra are experimental but tested
-- GRIDS ARE UNTESTED AND MAY NOT WORK
+- Polyhedra and grids are experimental but tested
 - semantics of assign and subst on grids with integer variables is not
   fully aggreed upon and may change
 - no support for other domains in PPL (BD_Shape, Powerset)
 - only PPL 0.9 was tested, other PPL version might not work
-- not implemented: canonicalize, approximate, fprintfdiff, (de)serialize_raw
+- not implemented: fprintfdiff, (de)serialize_raw
 - precision could be improved for:
-  . intervals in linear functions
   . sat_lincons
 
 How to install:

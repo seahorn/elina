@@ -38,11 +38,11 @@ C: ctest1q
 
 %q: %.o
 	$(CXX) $(CFLAGS) $(ICFLAGS) $(LCFLAGS) -o $@  $< \
-	-lapron_ppl -lppl -lgmpxx -lpolkag -loctQg -lboxmpq -litvmpq -lapron -lmpfr -lgmp
+	-lapron_ppl -lppl -lgmpxx -lpolkag -loctQg -lboxmpq -lapron -litvmpq -litvdbl -lmpfr -lgmp
 
 %q_debug: %_debug.o
 	$(CXX) $(CFLAGS_DEBUG) $(ICFLAGS) $(LCFLAGS) -o $@  $< \
-	-lapron_ppl_debug -lppl -lgmpxx -lpolkag_debug -loctQg_debug -lboxmpq_debug -litvmpq_debug -lapron_debug -lmpfr -lgmp
+	-lapron_ppl_debug -lppl -lgmpxx -lpolkag_debug -loctQg_debug -lboxmpq_debug -lapron_debug -litvmpq_debug -litvdbl_debug -lmpfr -lgmp
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(ICFLAGS) -c -o $@ $<

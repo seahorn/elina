@@ -108,7 +108,7 @@ libraries can be disabled by the option '-noautolink' supported by
 both 'ocamlc' and 'ocamlopt' commands. For instance, the command
 for native-code compilation can alternatively looks like:
 
-ocamlopt -I $APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -polka_caml -lboxmpq -lbox_caml -lapron_caml -lapron -lgmp_caml -LGMP/lib -lgmp" 
+ocamlopt -I $APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -polka_caml -lboxmpq -lbox_caml -lapron_caml -lapron -litvmpq -litvdbl -lgmp_caml -LGMP/lib -lgmp" 
 
 The option '-verbose' helps to understand what is happening in
 case of problem.

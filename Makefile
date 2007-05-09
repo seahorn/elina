@@ -1,4 +1,3 @@
-
 include Makefile.config
 
 LCFLAGS = \
@@ -19,10 +18,10 @@ OCAMLLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS)" \
 bigarray.cma gmp.cma apron.cma box.cma oct.cma polka.cma \
 $(OCAMLLDFLAGS_PPL) \
--cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg_debug -lbox_caml -lboxmpq_debug -litvmpq_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl" 
+-cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg_debug -lbox_caml -lboxmpq_debug -lapron_caml_debug -lapron_debug -litvmpq_debug -litvdbl_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
 
 ifdef HAS_OCAML
-all: c ml aprontop apronrun 
+all: c ml aprontop apronrun
 else
 all: c
 endif

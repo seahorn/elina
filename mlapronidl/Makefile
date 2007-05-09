@@ -114,12 +114,14 @@ libapron_caml_debug.a: $(CCMODULES:%=%_debug.o)
 apron.cma: apron.cmo libapron_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ apron.cmo \
 	-ccopt "-L$(APRON_PREFIX)/lib -L$(MLAPRONIDL_PREFIX)/lib" \
-	-cclib "-lapron_caml" -cclib "-lapron"
+	-cclib "-lapron_caml" -cclib "-lapron" \
+	-ccopt "-L$(ITV_PREFIX)/lib" -cclib "-litvmpq -litvdbl"
 
 apron.cmxa: apron.cmx libapron_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -for-pack Apron -a -o $@ apron.cmx \
 	-ccopt "-L$(APRON_PREFIX)/lib -L$(MLAPRONIDL_PREFIX)/lib" \
-	-cclib "-lapron_caml" -cclib "-lapron"
+	-cclib "-lapron_caml" -cclib "-lapron" \
+	-ccopt "-L$(ITV_PREFIX)/lib" -cclib "-litvmpq -litvdbl"
 	$(RANLIB) apron.a
 
 apron.cmo apron.cmi: $(MLOBJ) $(MLINT)

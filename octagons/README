@@ -41,8 +41,9 @@ C LIBRARY
 =========
 
 Requirements:
- * the APRON library (including the apron and num modules)
- * the GMP library
+ * the APRON library 
+ * the ITV and NUM libraries 
+ * the MPFR and GMP libraries
 
 Provided libraries.
 Several versions of the octagon domain are provided, based on different 
@@ -119,8 +120,8 @@ OCAML LIBRARY
 
 Requirements:
  * OCaml 3.09
- * the GMP library
- * the APRON library (including the apron, num, mlgmpidl, and mlapronidl
+ * the GMP and MPFR libraries
+ * the APRON library (including the apron, num, itv, mlgmpidl, and mlapronidl
    modules)
 
 How to compile the library:

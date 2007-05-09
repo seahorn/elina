@@ -10,6 +10,7 @@ Source for APRON commoninterface files.
   To compile and/or to generate the doc, you need:
   * the NOWEB litterate programming tools
   * the GMP library, for multiprecision arithmetic
+  * the ITV library (mpq and dbl versions, required by ap_linearize)
 
   You need to generate a Makefile.config file from the
   Makefile.config.model in the parent directory of this file.
@@ -48,9 +49,16 @@ Header files associated to C files and considered as modules:
   ap_lincons1.h   : (interval) linear constraints, level 1
   ap_generator1.h : generators, level 1
   ap_abstract1.h  : abstract values, level 1
+  ap_generic.h    : generic functions for library adaptors/implementors
+  ap_linearize.h  : generic functions for (quasi)linearisation of interval
+                    expressions
+
 Additional header files:
   ap_config.h  : miscellaneous stuff (booleans, ...)
   ap_expr0.h   : expressions, constraints, .. at level 0
   ap_expr1.h   : expressions, constraints, .. at level 1
   ap_global0.h : all stuff relevant for level 0
   ap_global1.h : all stuff relevant for level 1
+
+* When linking objects against APRON, APRON requires:
+  libitvmpq(.a), libitvdbl(.a), libmpfr(.a) and libgmp(.a) libraries.
