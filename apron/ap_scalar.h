@@ -146,6 +146,7 @@ long ap_scalar_hash(ap_scalar_t* a);
 static inline
 void ap_scalar_init(ap_scalar_t* scalar, ap_scalar_discr_t d)
 {
+  scalar->discr = d;
   switch(d){
   case AP_SCALAR_MPQ:
     scalar->val.mpq = (mpq_ptr)malloc(sizeof(mpq_t));
