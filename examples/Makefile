@@ -2,6 +2,7 @@ include ../Makefile.config
 
 ICFLAGS = \
 -I$(GMP_PREFIX)/include \
+-I$(MPFR_PREFIX)/include \
 -I$(APRON_PREFIX)/include \
 -Wall -Wstrict-prototypes -Wimplicit-function-declaration \
 -std=c99
@@ -36,7 +37,7 @@ all: C ml
 C: example1g
 
 %g: %g.o
-	$(CC) $(CFLAGS) $(ICFLAGS) $(LCFLAGS) -o $@  $< -lpolkag_debug -lapron_debug -lmpfr -lgmp 
+	$(CXX) $(CXXFLAGS) $(ICFLAGS) $(LCFLAGS) -o $@  $< -lapron_ppl_debug -lppl -lgmpxx -lpolkag_debug -loctQg_debug -lboxmpq_debug -lapron_debug -litvmpq_debug -litvdbl_debug -lmpfr -lgmp 
 
 %g.o: %.c
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -c -o $@ $<

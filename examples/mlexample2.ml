@@ -9,10 +9,10 @@ aprontop -I $APRON_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cma";;
+#load "box.cma";;
+#load "oct.cma";;
 #load "polka.cma";;
-#load "polkaeq.cma";;
-#load "box.cma"
-#load "oct.cma"
+#load "ppl.cma";;
 
 #install_printer Apron.Linexpr1.print;;
 #install_printer Apron.Lincons1.print;;
@@ -34,13 +34,19 @@ open Mpqf;;
 open Format;;
 
 let print_array = Abstract0.print_array;;
-
 let lincons1_array_print fmt x =
   Lincons1.array_print fmt x
 ;;
 let generator1_array_print fmt x =
   Generator1.array_print fmt x
 ;;
+
+let manpk = Polka.manager_alloc_strict();;
+let manbox = Box.manager_alloc ();;
+let manoct = Oct.manager_alloc ();;
+let manppl = Ppl.manager_alloc_strict();;
+let mangrid = Ppl.manager_alloc_grid ();;
+let maneq = Polka.manager_alloc_equalities ();;
 
 let var_x = Var.of_string "x";;
 let var_y = Var.of_string "y";;
@@ -189,14 +195,9 @@ let ex2 (man:'a Manager.t) =
   abs3
 ;;
 
-let manpk = Polka.manager_alloc_strict ();;
-let manbox = Box.manager_alloc ();;
-let manoct = Oct.manager_alloc ();;
-
 let abs1 = ex1 manpk;;
-
-let abs2 = ex1 manbox;;
-
+let abs2 = ex1 manppl;;
 let abs3 = ex1 manoct;;
-
-let abs4 = ex2 manpk;;
+let abs4 = ex1 manbox;;
+let abs5 = ex1 maneq;;
+let abs6 = ex1 mangrid;;

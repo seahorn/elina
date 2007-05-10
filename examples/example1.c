@@ -7,16 +7,23 @@
 #include "ap_global0.h"
 #include "ap_global1.h"
 
+#include "box.h"
+#include "oct.h"
 #include "pk.h"
 #include "pkeq.h"
-
+#include "apron_ppl.h"
 
 void ex1(ap_manager_t* man)
 {
+  printf("******************************\n");
+  printf("ex1\n");
+  printf("Library %s, version %s\n",man->library,man->version);
+  printf("******************************\n");
+
   ap_var_t name_of_dim[6] = {    
     "x","y","z","u","w","v"
   };
-  ap_environment_t* env = ap_environment_alloc(NULL,0,name_of_dim,6);
+  ap_environment_t* env = ap_environment_alloc(&name_of_dim[0],3,&name_of_dim[3],3);
 
   /* =================================================================== */
   /* Creation of polyhedra 
@@ -187,13 +194,17 @@ void ex1(ap_manager_t* man)
 
 void ex2(ap_manager_t* man)
 {
+  printf("******************************\n");
+  printf("ex2\n");
+  printf("Library %s, version %s\n",man->library,man->version);
+  printf("******************************\n");
   ap_var_t name_of_dim[6] = {    
     "x","y","z","u","w","v"
   };
   ap_var_t tab[2] = {    
     "x","y"
   };
-  ap_environment_t* env = ap_environment_alloc(NULL,0,name_of_dim,6);
+  ap_environment_t* env = ap_environment_alloc(&name_of_dim[0],3,&name_of_dim[3],3);
 
   /* =================================================================== */
   /* Creation of polyhedra 
@@ -265,23 +276,27 @@ void ex2(ap_manager_t* man)
 
 void ex3(ap_manager_t* man)
 {
+  printf("******************************\n");
+  printf("ex3\n");
+  printf("Library %s, version %s\n",man->library,man->version);
+  printf("******************************\n");
   ap_var_t name_of_dim[6] = {    
     "x","y","z","u","w","v"
   };
   ap_var_t tab[2] = {    
     "x","y"
   };
-  ap_environment_t* env = ap_environment_alloc(NULL,0,name_of_dim,6);
+  ap_environment_t* env = ap_environment_alloc(&name_of_dim[0],6,NULL,0);
   /* =================================================================== */
   /* Creation of polyhedra 
      -39x + 40y = 0
-     -6x - 20z + 85 = 0
-     -6x - 20y + 85 >= 0 
+     -3x - 10z + 43 = 0
+     -6x - 20y + 86 >= 0 
   */
   /* =================================================================== */
 
   /* 0. Create the array */
-  ap_lincons1_array_t array = ap_lincons1_array_make(env,3);
+  ap_lincons1_array_t array = ap_lincons1_array_make(env,1);
 
   /* 1.a Creation of constraint -39x + 40y = 0 */
   ap_linexpr1_t expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
@@ -298,21 +313,34 @@ void ex3(ap_manager_t* man)
   ap_lincons1_array_set(&array,0,&cons);
     /* Now cons is memory-managed by array */ 
 
-  /* 2.a Creation of an inequality constraint -6x - 20z + 85 = 0 */
+  ap_abstract1_t abs = ap_abstract1_of_lincons_array(man,env,&array);
+  fprintf(stdout,"Abstract value:\n");
+  ap_abstract1_fprint(stdout,man,&abs);
+  ap_generator1_array_t garray = ap_abstract1_to_generator_array(man,&abs);
+  ap_generator1_array_fprint(stdout,&garray);
+  ap_generator1_array_clear(&garray);
+
+  /* 2.a Creation of an equality constraint -3x - 10z + 43 = 0 */
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
   cons = ap_lincons1_make(AP_CONS_EQ,&expr,NULL);
     /* The old cons is not lost, because it is stored in the array.
        It would be an error to clear it (same for expr). */
   /* 2.b Fill the constraint */ 
   ap_lincons1_set_list(&cons,
-		       AP_COEFF_S_INT,-6,"x",
-		       AP_COEFF_S_INT,-20,"z",
-		       AP_CST_S_INT,85,
+		       AP_COEFF_S_INT,-3,"x",
+		       AP_COEFF_S_INT,-10,"z",
+		       AP_CST_S_INT,43,
 		       AP_END);
   /* 2.c Put in the array */
-  ap_lincons1_array_set(&array,2,&cons);
+  ap_lincons1_array_set(&array,0,&cons);
 
-  /* 3.a Creation of an inequality constraint -6x - 20y + 85 >= 0 */
+  fprintf(stdout,"Adding constraints:\n");
+  ap_lincons1_array_fprint(stdout,&array);  
+  abs = ap_abstract1_meet_lincons_array(man,true,&abs,&array);
+  fprintf(stdout,"Abstract value:\n");
+  ap_abstract1_fprint(stdout,man,&abs);
+
+  /* 3.a Creation of an inequality constraint -6x - 20y + 86 >= 0 */
   expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
   cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
     /* The old cons is not lost, because it is stored in the array.
@@ -321,14 +349,16 @@ void ex3(ap_manager_t* man)
   ap_lincons1_set_list(&cons,
 		       AP_COEFF_S_INT,-6,"x",
 		       AP_COEFF_S_INT,-20,"y",
-		       AP_CST_S_INT,85,
+		       AP_CST_S_INT,86,
 		       AP_END);
   /* 2.c Put in the array */
-  ap_lincons1_array_set(&array,1,&cons);
-
-  ap_abstract1_t abs = ap_abstract1_of_lincons_array(man,env,&array);
+  ap_lincons1_array_set(&array,0,&cons);
+  fprintf(stdout,"Adding constraints:\n");
+  ap_lincons1_array_fprint(stdout,&array);  
+  abs = ap_abstract1_meet_lincons_array(man,true,&abs,&array);
   fprintf(stdout,"Abstract value:\n");
   ap_abstract1_fprint(stdout,man,&abs);
+
   ap_lincons1_array_clear(&array);
 
      
@@ -337,7 +367,7 @@ void ex3(ap_manager_t* man)
      -39x + 40u = 0
      u = y
      v = x+z
-     -6v - 14z + 85 = 0 
+     -6v - 14z + 86 = 0 
   */
   /* =================================================================== */
 
@@ -383,7 +413,7 @@ void ex3(ap_manager_t* man)
   ap_lincons1_set_list(&cons,
 		       AP_COEFF_S_INT,-6,"v",
 		       AP_COEFF_S_INT,-14,"z",
-		       AP_CST_S_INT,85,
+		       AP_CST_S_INT,86,
 		       AP_END);
   ap_lincons1_array_set(&array,3,&cons);
 
@@ -415,14 +445,37 @@ void ex3(ap_manager_t* man)
 
 int main()
 {
-  ap_manager_t* man = pk_manager_alloc(true);
+  ap_manager_t* man;
+
+  man = box_manager_alloc();
   ex1(man);
   ex2(man);
   ap_manager_free(man);
 
-  man = pkeq_manager_alloc();
-  ex3(man);
+  man = oct_manager_alloc();
+  ex1(man);
   ex2(man);
   ap_manager_free(man);
+
+  man = pk_manager_alloc(true);
+  ex1(man);
+  ex2(man);
+  ex3(man);
+  ap_manager_free(man);
   
+  man = ap_ppl_poly_manager_alloc(true);
+  ex1(man);
+  ex2(man);
+  ex3(man);
+  ap_manager_free(man);
+  
+  man = pkeq_manager_alloc();
+  ex2(man);
+  ex3(man);
+  ap_manager_free(man);
+  
+  man = ap_ppl_grid_manager_alloc();
+  ex2(man);
+  ex3(man);
+  ap_manager_free(man);
 }
