@@ -1,8 +1,8 @@
 Version 0.9.6
 
 OCaml interface
-- Allocation of managers in PPL aligned to corresponding functions
-  in NewPolka (minor modification)
+- PPL module
+- Parsing extended for congruence equalities and congruence generators.
 
 General:
 - Addition of PPL *convex polyhedra* and *linear congruences*
