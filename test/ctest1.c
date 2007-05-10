@@ -1,11 +1,9 @@
 /*
- * ppl_test.c
+ * ctest1.c
  *
- * Unit testing. Compares NewPolka & PPL implementations.
+ * Unit testing. Compares domains & implementations.
  *
- * APRON Library /  PPL library wrapper
- *
- * Copyright (C) Antoine Mine' 2006
+ * Copyright (C) Antoine Mine' 2006, bertrand Jeannet' 2007
  *
  */
 
@@ -1012,13 +1010,12 @@ int main(int argc, char** argv)
 
   /* First serie */
   intdim = 0;
-  random_linexpr = &random_linexpr_inter;
+  random_linexpr = &random_linexpr_std;
   random_abstract = &random_abstract_std;
   for (i=0; i<1; i++){
     random_abstract2 = i==0 ? &random_abstract2_std : &random_abstract2_inv;
 
     // box/polyhedra
-    /*
     test(manpkl,manbox);
     test(manpks,manbox);
     test(manppll,manbox);
@@ -1029,7 +1026,6 @@ int main(int argc, char** argv)
     test(manppls,manppll); test(manppll,manppls);
     // Polka polyhedra/PPL polyhedra
     test(manppll,manpkl);
-    */
     test(manpkl,manppll);
     test(manppls,manpks);
     test(manpks,manppls);

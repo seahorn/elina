@@ -63,7 +63,7 @@ OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
 
 CXXSOURCES = ppl_user.cc ppl_poly.cc ppl_grid.cc
 CSOURCES = ppl_test.c
-CCINC = ppl_user.h apron_ppl.h
+CCINC = ppl_user.hh ppl_poly.hh ppl_grid.hh apron_ppl.h
 
 #---------------------------------------
 # Rules
@@ -99,7 +99,7 @@ uninstall:
 
 distclean: uninstall
 
-dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) apron_ppl.idl sedscript_caml ppl_caml.c ppl.ml ppl.mli
+dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) ppl.idl sedscript_caml ppl_caml.c ppl.ml ppl.mli
 	(cd ..; tar zcvf ppl.tgz $(^:%=ppl/%))
 
 #---------------------------------------

@@ -1,3 +1,20 @@
+Version 0.9.6
+
+OCaml interface
+- Allocation of managers in PPL aligned to corresponding functions
+  in NewPolka (minor modification)
+
+General:
+- Addition of PPL *convex polyhedra* and *linear congruences*
+  (grids) abstract domains
+- Some internal reorganisation
+  apron/ap_linearize module added
+- Full support for interval linear expressions and linearisation to
+  (quasi-)linear expressions in NewPolka and PPL libraries.  Well
+  tested for quasilinear expressions, not yet for full interval
+  linear expressions.
+- Many bugs corrected.
+
 Version 0.9.5
 
 OCaml interface

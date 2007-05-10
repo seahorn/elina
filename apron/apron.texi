@@ -67,17 +67,17 @@ numerical variables.
 @end ifnothtml
 
 @menu
-* Copying::                     
-* Introduction to APRON::       
-* APRON Rationale and Functionalities::  
-* APRON Guidelines::            
-* Managers and Abstract Domains::  
-* Scalars & Intervals & Coefficients::  
-* Level 1 of the interface::    
-* Level 0 of the interface::    
-* Functions for implementors::  
-* Examples::                    
-* Appendices::                  
+* Copying::
+* Introduction to APRON::
+* APRON Rationale and Functionalities::
+* APRON Guidelines::
+* Managers and Abstract Domains::
+* Scalars & Intervals & Coefficients::
+* Level 1 of the interface::
+* Level 0 of the interface::
+* Functions for implementors::
+* Examples::
+* Appendices::
 @end menu
 
 @c *******************************************************************
@@ -118,7 +118,7 @@ octahedra, convex polyhedra, polynomial equalities, polynomial
 inequalities. Although they offer a kernel of common functionalities,
 their API may differ greatly, and some functionalities may lack in some
 libraries. The aim of the APRON library is to offer a common interface to these
-libraries. Such a standardized interface offers several advantages: it allows 
+libraries. Such a standardized interface offers several advantages: it allows
 @itemize
 @item to easily
 substitute a library/abstract domain by another in the same analysis
@@ -134,23 +134,23 @@ to make easier the combination of abstract domains: the abstract
 domains to be combined are used through the same interface, as the
 resulting combination;
 @end itemize
- 
+
 @subsubheading As a user, why should I use APRON ?
 @enumerate
-@item 
+@item
 it makes very easy to switch the abstract domain (for numerical
 variables) in use in an analyzer;
-@item 
+@item
 it already offers the most used abstract domains, ranging from
 intervals, octagons, convex polyhedra to linear congruences;
-@item 
+@item
 its interface should satisfy most needs, as it already satisfies the
 members of the APRON project working in different contexts
 (verification of high-level specifications/programs with exact
 arithmetics for INRIA \& Verimag, static analysis of runtime errors
 with floating-point arithmetics for ENS Paris, automatic
 parallelization of programs for ENSMP).
-@item 
+@item
 the interface, at the level 1, already provides slightly higher-level
 functionalities than most existing and publicy available abstract
 domains libraries (with the manipulation of environments); this
@@ -163,7 +163,7 @@ floating-point arithmetic layer.
 @enumerate
 @item to incite existing users of the APRON interface to try your library;
 @item to make your users, including yourself, benefit from previous points 1 and 4;
-@item 
+@item
 to not waste your time implementing environments, variables renaming,
 OCaml interfaces, and so on; the effort to connect your library to the
 interface should at minimum be counterbalanced by such gains;
@@ -197,10 +197,10 @@ interface should at minimum be counterbalanced by such gains;
 @chapter APRON Guidelines
 @c *******************************************************************
 @menu
-* Installing APRON::            
-* C Programming Guidelines::    
-* OCaml Programming Guidelines::  
-* MakingLibrary::         How to make an existing library conformant to APRON ?           
+* Installing APRON::
+* C Programming Guidelines::
+* OCaml Programming Guidelines::
+* MakingLibrary::         How to make an existing library conformant to APRON ?
 @end menu
 
 @c *******************************************************************
@@ -219,11 +219,11 @@ and @file{../Makefile} files.
 @c -------------------------------------------------------------------
 
 @menu
-* C Headers and Libraries::     
-* C Naming conventions::        
-* Allocating managers and setting options::  
-* Sequel of the small example::  
-* Typing issue in C::           
+* C Headers and Libraries::
+* C Naming conventions::
+* Allocating managers and setting options::
+* Sequel of the small example::
+* Typing issue in C::
 @end menu
 
 @node C Headers and Libraries, C Naming conventions, C Programming Guidelines, C Programming Guidelines
@@ -295,9 +295,9 @@ objects of type @code{ap_typ_t} are usually prefixed with
 Given an object of datatype @code{ap_typ_t*}, two kinds of allocation/deallocation pairs of functions may be defined:
 
 @enumerate
-@item 
+@item
 variable declaration: @code{ap_typ_t obj;}
-@itemize 
+@itemize
 @item Initialization:
 @code{void typ_init(ap_typ_t* arg, ...)} or @code{ap_typ_t ap_typ_make(...)}
 @item Finalization:
@@ -311,7 +311,7 @@ to by fields of the object @code{*arg}, but do not attempt to
 deallocate the memory pointed by @var{arg}.
 @item
 variable declaration: @code{ap_typ_t* obj;}
-@itemize 
+@itemize
 @item Allocation
 @code{ap_typ_t* ap_typ_alloc(...)}
 @item Deallocation
@@ -338,7 +338,7 @@ following example:
 
 /* Allocating a Polka manager, for polyhedra with strict constraints */
 manager_t* man = pk_manager_alloc(true);
-/* Setting options offered by the common interface, 
+/* Setting options offered by the common interface,
    but with meaning possibly specific to the library */
 manager_set_abort_if_exception(man,EXC_OVERFLOW,true);
 @{
@@ -371,7 +371,7 @@ An environment can be created as follows:
 
 @smallexample
 /* Create an environment with 6 real variables */
-ap_var_t name_of_dim[6] = @{    
+ap_var_t name_of_dim[6] = @{
   "x","y","z","u","w","v"
 @};
 ap_environment_t* env = ap_environment_alloc(NULL,0,name_of_dim,6);
@@ -388,27 +388,27 @@ ap_lincons1_array_t array = ap_lincons1_array_make(env,2);
 /* 1.a Creation of an inequality constraint */
 ap_linexpr1_t expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,1);
 ap_lincons1_t cons = ap_lincons1_make(AP_CONS_SUP,&expr,NULL);
-    /* Now expr is memory-managed by cons */ 
-/* 1.b Fill the constraint */ 
+    /* Now expr is memory-managed by cons */
+/* 1.b Fill the constraint */
 ap_lincons1_set_list(&cons,
-                     AP_COEFF_S_INT,"x",
-                     AP_CST_S_FRAC,1,2,
-                     AP_END);
+		     AP_COEFF_S_INT,"x",
+		     AP_CST_S_FRAC,1,2,
+		     AP_END);
 /* 1.c Put in the array */
 ap_lincons1_array_set(&array,0,&cons);
-    /* Now cons is memory-managed by array */ 
+    /* Now cons is memory-managed by array */
 
 /* 2.a Creation of an inequality constraint */
 expr = ap_linexpr1_make(env,AP_LINEXPR_SPARSE,2);
 cons = ap_lincons1_make(AP_CONS_SUPEQ,&expr,NULL);
     /* The old cons is not lost, because it is stored in the array.
        It would be an error to clear it (same for expr). */
-/* 2.b Fill the constraint */ 
+/* 2.b Fill the constraint */
 ap_lincons1_set_list(&cons,
-                     AP_COEFF_S_INT,1,"x",
-                     AP_COEFF_S_INT,1,"y",
-                     AP_COEFF_S_INT,1,"z",
-                     AP_END);
+		     AP_COEFF_S_INT,1,"x",
+		     AP_COEFF_S_INT,1,"y",
+		     AP_COEFF_S_INT,1,"z",
+		     AP_END);
 /* 2.c Put in the array */
 ap_lincons1_array_set(&array,1,&cons);
 @end smallexample
@@ -418,7 +418,7 @@ Last we can build an abstract value.
 @smallexample
 /* Creation of an abstract value defined by the array of constraints */
 ap_abstract1_t abs = ap_abstract1_of_lincons_array(man,env,&array);
-  
+
 fprintf(stdout,"Abstract value:\n");
 ap_abstract1_fprint(stdout,man,&abs);
 @end smallexample
@@ -466,9 +466,9 @@ directly the problem, if functions of the interface are methods of
 the manager; one would have:
 
 @example
-ap_manager_t* manpk = pk_manager_alloc(true); 
+ap_manager_t* manpk = pk_manager_alloc(true);
   /* manager for Polka, effective type pk_manager_t* */
-ap_manager_t* manoct = oct_manager_alloc();   
+ap_manager_t* manoct = oct_manager_alloc();
   /* manager for octagon, effective type oct_manager_t* */
 
 ap_abstract0_t* abs1 = manpk->abstract_top(3,3);
@@ -476,7 +476,7 @@ ap_abstract0_t* abs1 = manpk->abstract_top(3,3);
 ap_abstract0_t* abs2 = manoct->abstract_top(3,3);
   /* effective type: oct_t */
 tbool_t tb = manoct->abstract0_is_eq(abs1,abs2);
-  /* No static typing possible: 
+  /* No static typing possible:
      manpk->abstract0_is_eq and manoct->abstract0_is_eq should have the same
      signature (otherwise one cannot interchange manpk and manoct in the code),
      which means that abs1 and abs2 are supposed to be of type abstract0_t* */
@@ -547,7 +547,7 @@ manager_t* pk_manager_alloc(
 @example
 @{
   pk_internal_t* pk = pk_internal_alloc(strict); /* allocation */
-  pk_set_approximate_max_coeff_size(pk, 1); 
+  pk_set_approximate_max_coeff_size(pk, 1);
     /* initialization of specific functions
        (not offered in the common interface) */
 @}
@@ -555,7 +555,7 @@ manager_t* pk_manager_alloc(
 @item Allocation of the manager itself:
 @example
   manager_t* man = ap_manager_alloc("polka","2.0",
-                                    pk, (void (*)(void*))pk_internal_free);
+				    pk, (void (*)(void*))pk_internal_free);
 @end example
 We provide resp. name, version, internal specific manager, and the
 function to free it.
@@ -564,10 +564,10 @@ The function @code{manager_alloc} sets the options of the
 common interface to their default value (see documentation).
 @item Initialization of the ``virtual'' table: we need to connect
   the generic functions of the interface (eg, @code{abstract_meet},
-  \ldots) to the actual functions of the library.  
+  \ldots) to the actual functions of the library.
 @example
   funptr = man->funptr;
-  
+
   funptr[fun_minimize] = &poly_minimize;
   funptr[fun_canonicalize] = &poly_canonicalize;
   funptr[fun_approximate] = &poly_approximate;
@@ -883,7 +883,7 @@ on a typical 32 bits computer.
 | double | mpq_t* |  8     | ap_scalar_t* | 4
 |-----------------|        |--------------|
 
-                ap_coeff_t             8
+		ap_coeff_t             8
      |-------------------------------|
      |        ap_coeff_discr         | 4
      |-------------------------------|
@@ -1395,9 +1395,9 @@ we sum up the involved types below.
 |-------|            |-------|   |----------------------|
 | void* | by default | char* |   | ap_var_t* var_of_dim |
 |-------|            |-------|   | size_t    intdim     |
-                                 | size_t    realdim    |
-                                 | size_t    count      |
-                                 |----------------------|
+				 | size_t    realdim    |
+				 | size_t    count      |
+				 |----------------------|
    ap_linexpr1_t
 |-------------------|
 | ap_linexpr0_t*    |
@@ -1460,7 +1460,7 @@ typedef struct ap_var_operations_t @{
   ap_var_t (*copy)(ap_var_t var);           /* Duplication function */
   void (*free)(ap_var_t var);               /* Deallocation function */
   char* (*to_string)(ap_var_t var); /* Conversion to a dynamically allocated string,
-                                       which should be deallocated with free after use */
+				       which should be deallocated with free after use */
 @} ap_var_operations_t;
 @end example
 Datatype for defining the operations on ``variables''.
@@ -1783,11 +1783,11 @@ returns NULL for one of the variables involved.
 Here is a typical example, in the case where @code{ap_var_t} is actually @code{char*} (the default):
 @example
 ap_linexpr1_set_list(e,
-                     AP_COEFF_S_INT, 3, "x",
-                     AP_COEFF_S_FRAC, 3,2, "y",
-                     AP_COEFF_S_DOUBLE, 4.1, "z",
-                     AP_CST_I_DOUBLE, -2.4, 3.6,
-                     AP_END); /* Do not forget the last tatg ! */
+		     AP_COEFF_S_INT, 3, "x",
+		     AP_COEFF_S_FRAC, 3,2, "y",
+		     AP_COEFF_S_DOUBLE, 4.1, "z",
+		     AP_CST_I_DOUBLE, -2.4, 3.6,
+		     AP_END); /* Do not forget the last tatg ! */
 @end example
 which transforms an null expression into @code{3 x + 3/2 y + 4.1 z + [-2.4,3.6]}
 and is equivalent to:
@@ -1865,11 +1865,11 @@ components. Creating the constraint @code{[1,2]x + 5/2 y >=0} and then
 freeing it can be done with
 @example
 ap_lincons1_t cons = ap_lincons1_make(AP_CONS_SUPEQ,
-                                      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2));
+				      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2));
 ap_lincons1_set_list(&cons,
-                     AP_COEFF_I_INT, 1,2, "x",
-                     AP_COEFF_S_FRAC, 5,2, "y",
-                     AP_END);
+		     AP_COEFF_I_INT, 1,2, "x",
+		     AP_COEFF_S_FRAC, 5,2, "y",
+		     AP_END);
 ap_lincons1_clear(&cons);
 @end example
 @end deftp
@@ -2054,11 +2054,11 @@ typedef struct ap_generator1_t @{
 Generators are meant to be manipulated freely via their components. Creating the ray generator @code{x+2/3y} and then freeing it can be done with
 @example
 ap_generator1_t gen = ap_generator1_make(AP_GEN_RAY,
-                                      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2));
+				      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2));
 ap_generator1_set_list(&gen,
-                     AP_COEFF_S_INT, 1, "x",
-                     AP_COEFF_S_FRAC, 2,3, "y",
-                     AP_END);
+		     AP_COEFF_S_INT, 1, "x",
+		     AP_COEFF_S_FRAC, 2,3, "y",
+		     AP_END);
 ap_generator1_clear(&gen);
 @end example
 @end deftp
@@ -2667,7 +2667,7 @@ below.
 |--------------|   |----------------|
 | unsigned int |   | size_t intdim  |
 |--------------|   | size_t realdim |
-                   |----------------|
+		   |----------------|
 
   ap_dimchange_t      ap_dimperm_t
 |----------------|   |-----------|
@@ -2676,7 +2676,7 @@ below.
 | size_t realdim |   |-----------|
 |----------------|
 
-        ap_linexpr0_t              ap_linterm_t
+	ap_linexpr0_t              ap_linterm_t
 |-----------------------------|   |------------|
 |      ap_coeff_t       cst   |   | ap_dim_t   |
 |      ap_linexpr_discr discr |   | ap_coeff_t |
@@ -2685,12 +2685,12 @@ below.
 | ap_coeff_t* | ap_linterm_t* |
 |-----------------------------|
 
-   ap_lincons0_t         ap_generator0_t    
-|------------------|   |----------------|   
-| ap_linexpr0_t*   |   | ap_linexpr0_t* | 
-| ap_constyp_t     |   | ap_gentyp_t    |  
-| ap_scalar_t* mod |   |----------------|   
-|------------------|  
+   ap_lincons0_t         ap_generator0_t
+|------------------|   |----------------|
+| ap_linexpr0_t*   |   | ap_linexpr0_t* |
+| ap_constyp_t     |   | ap_gentyp_t    |
+| ap_scalar_t* mod |   |----------------|
+|------------------|
 
  ap_abstract0_t
 |---------------|
@@ -3038,11 +3038,11 @@ returns NULL for one of the dimensions involved.
 Here is a typical example:
 @example
 ap_linexpr0_set_list(e,
-                     AP_COEFF_S_INT, 3, 0,
-                     AP_COEFF_S_FRAC, 3,2, 1,
-                     AP_COEFF_S_DOUBLE, 4.1, 2,
-                     AP_CST_I_DOUBLE, -2.4, 3.6,
-                     AP_END); /* Do not forget the last tatg ! */
+		     AP_COEFF_S_INT, 3, 0,
+		     AP_COEFF_S_FRAC, 3,2, 1,
+		     AP_COEFF_S_DOUBLE, 4.1, 2,
+		     AP_CST_I_DOUBLE, -2.4, 3.6,
+		     AP_END); /* Do not forget the last tatg ! */
 @end example
 which transforms an null expression into @code{3 x0 + 3/2 x1 + 4.1 x2 + [-2.4,3.6]}
 and is equivalent to:
@@ -3139,7 +3139,9 @@ Use the (partial order) comparison function on coefficients
 typedef enum ap_constyp_t @{
   AP_CONS_EQ,    /* equality constraint */
   AP_CONS_SUPEQ, /* >= constraint */
-  AP_CONS_SUP    /* > constraint */
+  AP_CONS_SUP,   /* > constraint */
+  AP_CONS_EQMOD, /* congruence equality constraint */
+  AP_CONS_DISEQ  /* disequality constraint */
 @} ap_constyp_t;
 @end example
 Datatype for type of constraints.
@@ -3150,6 +3152,10 @@ Datatype for type of constraints.
 typedef struct ap_lincons0_t @{
   ap_linexpr0_t* linexpr0;   /* expression */
   ap_constyp_t constyp;      /* type of constraint */
+  ap_scalar_t* scalar;       /* maybe NULL.
+
+				For EQMOD constraint, indicates the
+				modulo */
 @} ap_lincons0_t;
 @end example
 Datatype for constraints.
@@ -3157,11 +3163,11 @@ Datatype for constraints.
 Constraints are meant to be manipulated freely via their components. Creating the constraint @code{[1,2]x0 + 5/2x1 >=0} and then freeing it can be done with
 @example
 ap_lincons0_t cons = ap_lincons0_make(AP_CONS_SUPEQ,
-                                      ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2));
+				      ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2));
 ap_linexpr0_set_list(cons.linexpr0,
-                     AP_COEFF_I_INT, 1,2, 0,
-                     AP_COEFF_S_FRAC, 5,2, 1,
-                     AP_END);
+		     AP_COEFF_I_INT, 1,2, 0,
+		     AP_COEFF_S_FRAC, 5,2, 1,
+		     AP_END);
 ap_lincons0_clear(&cons);
 @end example
 @end deftp
@@ -3288,7 +3294,9 @@ functions for linear constraints.
 typedef enum ap_gentyp_t @{
   AP_GEN_LINE,
   AP_GEN_RAY,
-  AP_GEN_VERTEX
+  AP_GEN_VERTEX,
+  AP_GEN_LINEMOD,
+  AP_GEN_RAYMOD
 @} ap_gentyp_t;
 @end example
 Datatype for type of generators.
@@ -3810,15 +3818,16 @@ constraints in @var{array} that are satisfied by both @var{a1} and
 @c *******************************************************************
 
 The signatures of the functions described in this chapter are
-provided by the file @file{ap_generic.h}.
+provided by the files @file{ap_generic.h} and
+@file{ap_linearize.h}.
 
 @menu
 * Generic implementations::
-* Useful functions::
+* Linearization functions::
 @end menu
 
 @c ===================================================================
-@node Generic implementations, Useful functions, Functions for implementors, Functions for implementors
+@node Generic implementations, Linearization functions, Functions for implementors, Functions for implementors
 @section Generic implementations of functions of the API
 @c ===================================================================
 
@@ -3871,17 +3880,41 @@ It relies on: @code{is_bottom}, @code{ copy}, @code{ dimension},
 @end deftypefun
 
 @c ===================================================================
-@node Useful functions,  , Generic implementations, Functions for implementors
-@section Useful functions
+@node Linearization functions,  , Generic implementations, Functions for implementors
+@section Linearization functions
 @c ===================================================================
 
-@deftypefun ap_linexpr0_t* ap_abstract0_quasilinear_of_intervallinear (ap_manager_t* @var{man}, void* @var{a}, ap_linexpr0_t* @var{expr})
-Evaluate the interval linear expression @var{expr} on the abstract
-value @var{a} and approximate it by a quasilinear expression.
+The following functions use the given abstract value for
+transforming interval linear expressions (resp. constraints,
+arrays of expressions, arrays od constraints) in quasilinear
+corresponding objects.
 
-This implies calls to @code{ap_abstract0_bound_dimension}.
+They use to_box and dimension (and is_bottom if NDEBUG is undefined) generic
+functions.
+@itemize
+@item 
+@var{discr} allows to choose the type of scalars used for computations
+and for the result.
+@item 
+@var{pexact} is a pointer to a Boolean, which is set to true if
+all the conversions and computations were exact.
+@end itemize
+   
+Calling ap_linearize_tlinexpr0 is more efficient than calling N
+times ap_linearize_linexpr0 because the conversion of abstrat
+value to bounding boxes is done only once, as well as other
+internal allocations.
+
+@deftypefun ap_linexpr0_t* ap_quasilinearize_linexpr0 (ap_manager_t* @var{man}, void* @var{abs}, ap_linexpr0_t* @var{linexpr0}, ap_scalar_discr_t @var{discr}, bool* @var{pexact})
+@deftypefunx ap_lincons0_t ap_quasilinearize_lincons0 (ap_manager_t* @var{man}, void* @var{abs}, ap_lincons0_t* @var{lincons0}, ap_scalar_discr_t @var{discr}, bool* @var{pexact})
+@deftypefunx ap_linexpr0_t** ap_quasilinearize_tlinexpr0 (ap_manager_t* @var{man}, void* @var{abs}, ap_linexpr0_t** @var{tlinexpr0}, size_t @var{size}, ap_scalar_discr_t @var{discr}, bool* @var{pexact})
+@deftypefunx ap_lincons0_array_t ap_quasilinearize_lincons0_array (ap_manager_t* @var{man}, void* @var{abs}, ap_lincons0_array_t* @var{array}, ap_scalar_discr_t @var{discr}, bool* @var{pexact}, bool @var{convert}, bool @var{linearize})
+If @var{linearize} is true, also translates quasilinear
+constraints into linear constraints for @code{>0,>=0,=0}
+constraint types. If @var{convert} is true, the scalars in the
+result are guaranteed to be of type @var{discr}. Otherwise, some
+constraints may simply be copied from the input to the output.
 @end deftypefun
-
 
 @c *******************************************************************
 @node Examples, Appendices, Functions for implementors, Top

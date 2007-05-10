@@ -129,7 +129,7 @@ endif
 
 PKGNAME  = apron-0.9.6
 PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model Changes
-PKGDIRS  = apron num itv octagons box newpolka mlgmpidl mlapronidl examples
+PKGDIRS  = apron num itv octagons box newpolka ppl mlgmpidl mlapronidl examples test
 
 dist:
 	$(MAKE) all
