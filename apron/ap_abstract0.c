@@ -1252,10 +1252,24 @@ ap_abstract0_t* ap_abstract0_fold(ap_manager_t* man,
   if (ap_abstract0_checkman1(AP_FUNID_FOLD,man,a) &&
       size>0 &&
       ap_abstract0_check_dim_array(AP_FUNID_FOLD,man,dimension,tdim,size)){
-    /* Check also that the array is sorted */
+    /* Check also that the array is sorted and contans only integer or real
+       dimensions */
     size_t i;
     for (i=1;i<size; i++){
-      if (tdim[i-1]>=tdim[i]) goto _ap_abstract0_fold_exc;
+      if (tdim[i-1]>=tdim[i]){
+	ap_manager_raise_exception(man,
+				   AP_EXC_INVALID_ARGUMENT,
+				   AP_FUNID_FOLD,
+				   "The array of dimension is not sorted");
+	goto _ap_abstract0_fold_exc;
+      }
+    }
+    if (tdim[0]<dimension.intdim && tdim[size-1]>=dimension.intdim){
+      ap_manager_raise_exception(man,
+				 AP_EXC_INVALID_ARGUMENT,
+				 AP_FUNID_FOLD,
+				 "Mixed integer and real dimensions in the array");
+      goto _ap_abstract0_fold_exc;
     }
     /* OK now */
     void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_FOLD];

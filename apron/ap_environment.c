@@ -235,6 +235,12 @@ static env_t env_remove(env_t* env, ap_var_t* var_of_dim, size_t size)
     }
     free(var_of_dim2);
   }
+  else {
+    /* Perform just a copy */
+    for (i=0;i<env->size; i++){
+      nenv.var_of_dim[i] = ap_var_operations->copy(env->var_of_dim[i]);
+    }
+  }
   return nenv;
 }
 
