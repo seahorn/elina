@@ -143,8 +143,7 @@ dep: $(H_FILES)
 
 ap_scalar.o: ap_scalar.c ap_scalar.h ap_config.h
 ap_interval.o: ap_interval.c ap_interval.h \
-  ap_config.h \
-  ap_scalar.h /scratch/home/bjeannet/pkg/mpfr/linux386/include/mpfr.h
+  ap_config.h 
 ap_coeff.o: ap_coeff.c ap_coeff.h \
   ap_config.h \
   ap_scalar.h \
