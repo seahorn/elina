@@ -168,6 +168,7 @@ static inline bool itv_set_ap_coeff(itv_internal_t* intern,
 static inline bool ap_interval_set_itv(itv_internal_t* intern,
 				       ap_interval_t* a, itv_t b);
   /* Convert a itv_t into a ap_interval_t */
+
 static inline bool ap_coeff_set_itv(itv_internal_t* intern,
 				    ap_coeff_t* a, itv_t b);
   /* Convert a itv_t into a ap_coeff_t */
@@ -336,9 +337,9 @@ static inline void itv_set_num(itv_t a, num_t b)
   bound_set_num(a->sup,b);
   bound_neg(a->inf,a->sup);
 }
-  static inline void itv_set_int(itv_t a, long int b)
+static inline void itv_set_int(itv_t a, long int b)
 {
-  bound_set_int(a->inf,b);
+  bound_set_int(a->inf,-b);
   bound_set_int(a->sup,b);
 }
 static inline void itv_set_bottom(itv_t a)

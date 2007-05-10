@@ -4,6 +4,10 @@
 
 #include "itv_linexpr.h"
 
+/* ********************************************************************** */
+/* I. Constructor and Destructor */
+/* ********************************************************************** */
+
 void ITVFUN(linexpr_init)(itv_linexpr_t* expr, size_t size)
 {
   expr->linterm = NULL;
@@ -40,6 +44,11 @@ void ITVFUN(linexpr_clear)(itv_linexpr_t* expr)
   }
   itv_clear(expr->cst);
 }
+
+/* ********************************************************************** */
+/* II. Conversions from and to APRON datatypes */
+/* ********************************************************************** */
+
 bool ITVFUN(linexpr_set_ap_linexpr0)(itv_internal_t* intern,
 				     itv_linexpr_t* expr,
 				     itv_t* p,
@@ -67,11 +76,13 @@ bool ITVFUN(linexpr_set_ap_linexpr0)(itv_internal_t* intern,
       exact = itv_set_ap_coeff(intern,
 			       expr->linterm[k].itv,
 			       coeff);
-      eq = exact && coeff->discr==AP_COEFF_SCALAR;
-      res = res && exact;
-      expr->linterm[k].equality = eq;
-      expr->linterm[k].dim = dim;
-      k++;
+      if (!itv_is_zero(expr->linterm[k].itv)){
+	eq = exact && coeff->discr==AP_COEFF_SCALAR;
+	res = res && exact;
+	expr->linterm[k].equality = eq;
+	expr->linterm[k].dim = dim;
+	k++;
+      }
     }
     else {
       exact = itv_set_ap_coeff(intern,
@@ -177,6 +188,10 @@ bool ITVFUN(lincons_set_ap_lincons0)(itv_internal_t* intern,
   }
 }
 
+/* ********************************************************************** */
+/* III. Evaluation of expressions  */
+/* ********************************************************************** */
+
 /* Evaluate an interval linear expression */
 void ITVFUN(eval_itv_linexpr)(itv_internal_t* intern,
 			      itv_t itv,
@@ -252,3 +267,115 @@ bool ITVFUN(eval_ap_linexpr0)(itv_internal_t* intern,
   return res;
 }
 
+/* ********************************************************************** */
+/* IV. Arithmetic */
+/* ********************************************************************** */
+
+void ITVFUN(linexpr_neg)(itv_linexpr_t* expr)
+{
+  size_t i;
+  ap_dim_t dim;
+  bool* peq;
+  itv_ptr pitv;
+
+  itv_neg(expr->cst,expr->cst);
+  itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq){
+    itv_neg(pitv,pitv);
+  }
+  return;
+}
+void ITVFUN(linexpr_scale)(itv_internal_t* intern,
+			   itv_linexpr_t* expr, itv_t coeff)
+{
+  size_t i;
+  ap_dim_t dim;
+  bool* peq;
+  itv_ptr pitv;
+
+  if (itv_is_zero(coeff)){
+    itv_set(expr->cst,coeff);
+    itv_linexpr_reinit(expr,0);
+    return;
+  }  
+  itv_mul(intern,expr->cst,expr->cst,coeff);
+  if (itv_is_top(expr->cst)){
+    itv_linexpr_reinit(expr,0);
+    return;
+  }
+  else {
+    itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq){
+      itv_mul(intern,pitv,pitv,coeff);
+    }
+  }
+  return;
+}
+void ITVFUN(linexpr_div)(itv_internal_t* intern,
+			 itv_linexpr_t* expr, itv_t coeff)
+{
+  size_t i;
+  ap_dim_t dim;
+  bool* peq;
+  itv_ptr pitv;
+
+  itv_div(intern,expr->cst,expr->cst,coeff);
+  itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq){
+    itv_div(intern,pitv,pitv,coeff);
+  }
+  return;
+}
+
+itv_linexpr_t ITVFUN(linexpr_add)(itv_internal_t* intern,
+				  itv_linexpr_t* exprA,
+				  itv_linexpr_t* exprB)
+{
+  size_t i,j,k;
+  itv_linexpr_t res;
+  bool endA,endB;
+
+  itv_linexpr_init(&res,exprA->size+exprB->size);
+  i = j = k = 0;
+  endA = endB = false;
+  itv_add(res.cst,exprA->cst,exprB->cst);
+  if (itv_is_top(res.cst))
+    goto _itv_linexpr_add_return;
+  while (true){
+    endA = endA || (i==exprA->size) || exprA->linterm[i].dim == AP_DIM_MAX;
+    endB = endB || (j==exprB->size) || exprB->linterm[j].dim == AP_DIM_MAX;
+    if (endA && endB) 
+      break;
+    if (endA || exprB->linterm[i].dim < exprA->linterm[i].dim){
+      itv_set(res.linterm[k].itv, exprB->linterm[j].itv);
+      res.linterm[k].equality = exprB->linterm[j].equality;
+      res.linterm[k].dim = exprB->linterm[j].dim;
+      k++; j++;
+    }
+    else if (endB || exprA->linterm[i].dim < exprB->linterm[j].dim){
+      itv_set(res.linterm[k].itv, exprA->linterm[i].itv);
+      res.linterm[k].equality = exprA->linterm[i].equality;
+      res.linterm[k].dim = exprA->linterm[i].dim;
+      k++; i++;
+    }
+    else {
+      itv_add(res.linterm[k].itv, exprA->linterm[i].itv,exprB->linterm[j].itv);
+      res.linterm[k].equality = itv_is_point(intern,res.linterm[k].itv);
+      res.linterm[k].dim = exprA->linterm[i].dim;
+      if (!itv_is_zero(res.linterm[k].itv)){
+	k++;
+      }
+      i++; j++;
+    }
+  }
+ _itv_linexpr_add_return:
+  itv_linexpr_reinit(&res,k);
+  return res;
+}
+itv_linexpr_t ITVFUN(linexpr_sub)(itv_internal_t* intern,
+				  itv_linexpr_t* exprA,
+				  itv_linexpr_t* exprB)
+{
+  itv_linexpr_t res;
+  itv_linexpr_neg(exprB);
+  res = itv_linexpr_add(intern,exprA,exprB);
+  itv_linexpr_neg(exprB);
+  return res;
+}
