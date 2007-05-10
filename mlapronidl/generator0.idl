@@ -13,6 +13,8 @@ quote(C, "\n\
 #define LINE AP_GEN_LINE \n\
 #define RAY AP_GEN_RAY \n\
 #define VERTEX AP_GEN_VERTEX \n\
+#define LINEMOD AP_GEN_LINEMOD \n\
+#define RAYMOD AP_GEN_RAYMOD \n\
 ")
 
 import "scalar.idl";
@@ -24,7 +26,9 @@ import "linexpr0.idl";
 enum gentyp {
   LINE,
   RAY,
-  VERTEX
+  VERTEX,
+  LINEMOD,
+  RAYMOD
 };
 struct ap_generator0_t {
   [mlname(mutable_linexpr0)] ap_linexpr0_ptr linexpr0; /* constant coefficient ignored */
@@ -55,6 +59,8 @@ let string_of_typ = function\n\
 | LINE -> \"LIN\"\n\
 | RAY -> \"RAY\"\n\
 | VERTEX -> \"VTX\"\n\
+| LINEMOD -> \"LINMOD\"\n\
+| RAYMOD -> \"RAYMOD\"\n\
 \n\
 let print assoc fmt gen = \n\
   Format.fprintf fmt \"%s:\" (string_of_typ gen.gentyp);\n\

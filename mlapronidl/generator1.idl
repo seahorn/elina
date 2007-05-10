@@ -33,6 +33,8 @@ type typ = Generator0.typ = \n\
   | LINE\n\
   | RAY\n\
   | VERTEX\n\
+  | LINEMOD\n\
+  | RAYMOD\n\
 ")
 
 quote(MLI,"\n\
