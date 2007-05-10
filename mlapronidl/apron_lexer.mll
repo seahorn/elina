@@ -19,9 +19,12 @@ rule lex = parse
 | "]"    { TK_RBRACKET }
 | ";"    { TK_SEMICOLON }
 
+| "mod"  { TK_MOD }
 | "V:"   { TK_VERTEX }
 | "R:"   { TK_RAY }
 | "L:"   { TK_LINE }
+| "RM:"  { TK_RAYMOD }
+| "LM:"  { TK_LINEMOD }
 
 (* Arithmetic operations *)
 | "+"   { TK_ADD }

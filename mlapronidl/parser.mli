@@ -11,9 +11,9 @@
   generators. The allowed syntax is simple (no parenthesis) but supports
   interval expressions.
 
-  [cons ::= expr ('>' | '>=' | '=' | '!=' | '=' | '<=' | '<') expr]
+  [cons ::= expr ('>' | '>=' | '=' | '!=' | '=' | '<=' | '<') expr | expr = expr 'mod' scalar]
 
-  [gen ::= ('V:' | 'R:' | 'L:') expr]
+  [gen ::= ('V:' | 'R:' | 'L:' | 'RM:' | 'LM:') expr]
 
   [expr ::= expr '+' term | expr '-' term | term] 
   

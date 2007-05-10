@@ -17,11 +17,11 @@ let rec neg acc = function
 
 %token TK_EOF
 
-%token TK_VERTEX TK_RAY TK_LINE
+%token TK_VERTEX TK_RAY TK_LINE TK_RAYMOD TK_LINEMOD
 
 %token TK_MUL TK_ADD TK_SUB TK_DIV
 
-%token TK_SUPEG TK_INFEG TK_SUP TK_INF TK_EG TK_DISEG
+%token TK_SUPEG TK_INFEG TK_SUP TK_INF TK_EG TK_DISEG TK_MOD
 
 %token TK_LBRACKET TK_RBRACKET TK_SEMICOLON
 
@@ -42,6 +42,7 @@ let rec neg acc = function
 
 lincons:
   linexpr0 TK_EG linexpr0 TK_EOF { (Lincons0.EQ, neg $1 $3) }
+| linexpr0 TK_EG linexpr0 TK_MOD scalar0 TK_EOF { (Lincons0.EQMOD($5), neg $1 $3) }
 | linexpr0 TK_DISEG linexpr0 TK_EOF { failwith "!= not yet supported" }
 | linexpr0 TK_SUP linexpr0 TK_EOF { (Lincons0.SUP, neg $1 $3) }
 | linexpr0 TK_SUPEG linexpr0 TK_EOF { (Lincons0.SUPEQ, neg $1 $3) }
@@ -52,6 +53,8 @@ generator:
   TK_VERTEX linexpr0 TK_EOF { (Generator0.VERTEX,$2) }
 | TK_RAY linexpr0 TK_EOF { (Generator0.RAY,$2) }
 | TK_LINE linexpr0 TK_EOF { (Generator0.LINE,$2) }
+| TK_RAYMOD linexpr0 TK_EOF { (Generator0.RAYMOD,$2) }
+| TK_LINEMOD linexpr0 TK_EOF { (Generator0.LINEMOD,$2) }
 
 linexpr:
   linexpr0 TK_EOF { $1 }
