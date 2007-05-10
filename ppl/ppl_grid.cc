@@ -61,13 +61,13 @@ PPL_Grid::PPL_Grid(size_t intdim,size_t realdim,Degenerate_Element kind)
 void PPL_Grid::reduce() 
 {
   for (size_t i=0;i<intdim;i++)
-    p->add_congruence((Variable(i) %=0) / 1);
+    p->add_congruence_and_minimize((Variable(i) %=0) / 1);
 }
 
 void PPL_Grid::forget_dim(size_t dim)
 {
-  if (intdim>dim) p->add_generator(Grid_Generator::parameter(Variable(dim)));
-  else p->add_generator(Grid_Generator::line(Variable(dim)));
+  if (intdim>dim) p->add_generator_and_minimize(Grid_Generator::parameter(Variable(dim)));
+  else p->add_generator_and_minimize(Grid_Generator::line(Variable(dim)));
 }
 
 PPL_Grid::~PPL_Grid() { delete p; }
@@ -314,7 +314,7 @@ PPL_Grid* ap_ppl_grid_of_box(ap_manager_t* man,
     Congruence_System c;
     if (ap_ppl_of_box(c,intdim+realdim,tinterval))
       man->result.flag_exact = man->result.flag_best = tbool_top;
-    r->p->add_congruences(c);
+    r->p->add_recycled_congruences_and_minimize(c);
     return r;
   }
   CATCH_WITH_DIM(AP_FUNID_OF_BOX,intdim,realdim);
@@ -332,7 +332,7 @@ PPL_Grid* ap_ppl_grid_of_lincons_array(ap_manager_t* man,
     Congruence_System c;
     if (!ap_ppl_of_lincons_array(intern->itv,c,array))
       man->result.flag_exact = man->result.flag_best = tbool_top;
-    r->p->add_congruences(c);
+    r->p->add_recycled_congruences_and_minimize(c);
     return r;
   }
   CATCH_WITH_DIM(AP_FUNID_OF_LINCONS_ARRAY,intdim,realdim);
@@ -663,7 +663,7 @@ PPL_Grid* ap_ppl_grid_meet_lincons_array(ap_manager_t* man,
     Congruence_System c;
     if (ap_ppl_of_lincons_array(intern->itv,c,array))
       man->result.flag_exact = man->result.flag_best = tbool_top;
-    r->p->add_recycled_congruences(c);
+    r->p->add_recycled_congruences_and_minimize(c);
     r->reduce();
     return r;
   }
@@ -683,7 +683,7 @@ PPL_Grid* ap_ppl_grid_add_ray_array(ap_manager_t* man,
     if (!a->p->is_empty()){
       Grid_Generator_System c;
       ap_ppl_of_generator_array(intern->itv,c,array);
-      r->p->add_recycled_generators(c);
+      r->p->add_recycled_generators_and_minimize(c);
       r->reduce();
     }
     return r;
@@ -833,7 +833,7 @@ PPL_Grid* ap_ppl_grid_forget_array(ap_manager_t* man,
 	r->forget_dim(tdim[i]);
       if (project) {
 	for (size_t i=0;i<size;i++)
-	  r->p->add_constraint(Variable(tdim[i])==0);
+	  r->p->add_constraint_and_minimize(Variable(tdim[i])==0);
       }
     }
     return r;
