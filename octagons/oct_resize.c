@@ -176,7 +176,7 @@ oct_t* oct_remove_dimensions(ap_manager_t* man,
   else {
     /* check */
     for (i=0;i<nb;i++) {
-      arg_assert(i+dimchange->dim[i]<=a->dim,return NULL;);
+      arg_assert(dimchange->dim[i]<a->dim,return NULL;);
       arg_assert(!i || dimchange->dim[i-1]<dimchange->dim[i],return NULL;);
     }
 
