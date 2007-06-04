@@ -1,4 +1,3 @@
-
 include ../Makefile.config
 
 #---------------------------------------
@@ -33,7 +32,7 @@ ap_var.h ap_environment.h \
 ap_linexpr1.h ap_lincons1.h ap_generator1.h ap_expr1.h \
 ap_abstract1.h \
 ap_global0.h ap_global1.h \
-ap_linearize.h
+ap_linearize.h ap_linearize_aux.h
 
 C_FILES = \
 ap_scalar.c ap_interval.c ap_coeff.c ap_dimension.c \
@@ -43,6 +42,10 @@ ap_var.c ap_environment.c \
 ap_linexpr1.c ap_lincons1.c ap_generator1.c \
 ap_abstract1.c \
 ap_linearize.c
+
+C_FILES_AUX = ap_linearize_aux.c ap_texpr0_aux.c
+H_FILES_AUX = ap_linearize_aux.h ap_texpr0_aux.h
+CH_FILES_AUX = $(H_FILES_AUX) $(C_FILES_AUX)
 
 #---------------------------------------
 # Rules
@@ -54,10 +57,10 @@ all: libapron.a libapron_debug.a
 # Misc rules
 #---------------------------------------
 
-tar: $(H_FILES) $(C_FILES) apron.texi Makefile COPYING README
+tar: $(H_FILES) $(C_FILES) $(CH_FILES_AUX) apron.texi Makefile COPYING README
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
-dist: $(H_FILES) $(C_FILES) apron.texi Makefile COPYING README apron.info apron.dvi html
+dist: $(H_FILES) $(C_FILES) $(CH_FILES_AUX) apron.texi Makefile COPYING README apron.info apron.dvi html
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
 clean:
@@ -107,10 +110,10 @@ html: apron.texi apron_ppl.texi newpolka.texi box.texi
 # C rules
 #---------------------------------------
 
-libapron.a: $(C_FILES:%.c=%.o)
+libapron.a: $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%_mpq.o) $(C_FILES_AUX:%.c=%_dbl.o) 
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
-libapron_debug.a: $(C_FILES:%.c=%_debug.o)
+libapron_debug.a: $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%_mpq_debug.o) $(C_FILES_AUX:%.c=%_dbl_debug.o) 
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
@@ -131,11 +134,22 @@ dep: $(H_FILES)
 # C generic rules
 #---------------------------------------
 
-%.o: %.c %.h 
+%.o: %.c %.h
 	$(CC) $(CFLAGS) $(ICFLAGS) -c $<
+
+%_mpq.o: %.c %.h
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -I../num -I../itv -I. -c $< -o $@
+
+%_dbl.o: %.c %.h
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -I../num -I../itv -I. -c $< -o $@
 
 %_debug.o: %.c %.h
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -c -o $@ $<
+
+%_mpq_debug.o: %.c %.h
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPQ -I../num -I../itv -I. -c -o $@ $< -o $@
+%_dbl_debug.o: %.c %.h
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_DOUBLE -I../num -I../itv -I. -c -o $@ $< -o $@
 
 #---------------------------------------
 # dependencies (generated with make dep)
@@ -143,7 +157,7 @@ dep: $(H_FILES)
 
 ap_scalar.o: ap_scalar.c ap_scalar.h ap_config.h
 ap_interval.o: ap_interval.c ap_interval.h \
-  ap_config.h 
+  ap_config.h
 ap_coeff.o: ap_coeff.c ap_coeff.h \
   ap_config.h \
   ap_scalar.h \

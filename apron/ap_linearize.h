@@ -66,8 +66,10 @@ ap_lincons0_array_t ap_quasilinearize_lincons0_array(ap_manager_t* man,
 						     bool convert,
 						     bool linearize);
 
-void ap_linearize_lincons0_array(ap_manager_t* man,
-				 ap_lincons0_array_t* array);
+
+/* For internal use by ap_linearize_aux */
+void ap_linearize_quasilincons0(ap_lincons0_array_t* array, size_t* pindex, 
+				ap_lincons0_t* cons);
 
 #ifdef __cplusplus
 }
