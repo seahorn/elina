@@ -31,14 +31,10 @@
 #error "HERE"
 #endif
 
-/* ITVFUN(add) expands to itvmpq_add, or itvli_add, ... */
-#define ITVFUN3(SUFFIX,NAME) itv ## SUFFIX ## _ ## NAME
+/* ITVFUN(itv_add) expands to itv_add_mpq, or itv_add_dbl, ... */
+#define ITVFUN3(NAME,SUFFIX) NAME ## _ ## SUFFIX
 #define ITVFUN2(x,y) ITVFUN3(x,y)
-#define ITVFUN(x) ITVFUN2(NUM_SUFFIX,x)
-/* ITVAPFUN(ap_coeff_set_itv) expands to ap_coeff_set_itvmpq */
-#define ITVAPFUN3(SUFFIX,NAME) NAME ## SUFFIX
-#define ITVAPFUN2(x,y) ITVAPFUN3(x,y)
-#define ITVAPFUN(x) ITVAPFUN2(NUM_SUFFIX,x)
+#define ITVFUN(x) ITVFUN2(x,NUM_SUFFIX)
 
 #ifdef __cplusplus
 extern "C" {
@@ -185,108 +181,110 @@ static inline bool itv_array_set_ap_interval_array(itv_internal_t* intern,
 /* Definition of inline functions */
 /* ********************************************************************** */
 
-void ITVFUN(internal_init)(itv_internal_t* intern);
+void ITVFUN(itv_internal_init)(itv_internal_t* intern);
+void ITVFUN(itv_internal_clear)(itv_internal_t* intern);
+itv_internal_t* ITVFUN(itv_internal_alloc)(void);
+void ITVFUN(itv_internal_free)(itv_internal_t* intern);
+bool ITVFUN(itv_canonicalize)(itv_internal_t* intern,
+			      itv_t a, bool integer);
+void ITVFUN(itv_mul_num)(itv_t a, itv_t b, num_t c);
+void ITVFUN(itv_div_num)(itv_t a, itv_t b, num_t c);
+void ITVFUN(itv_div_num)(itv_t a, itv_t b, num_t c);
+void ITVFUN(itv_mul_bound)(itv_t a, itv_t b, bound_t c);
+void ITVFUN(itv_div_bound)(itv_t a, itv_t b, bound_t c);
+void ITVFUN(itv_sub)(itv_t a, itv_t b, itv_t c);
+void ITVFUN(itv_neg)(itv_t a, itv_t b);
+void ITVFUN(itv_mul)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
+void ITVFUN(itv_div)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
+void ITVFUN(itv_fprint)(FILE* stream, itv_t a);
+int ITVFUN(itv_snprint)(char* s, size_t size, itv_t a);
+
+bool ITVFUN(itv_set_ap_scalar)(itv_internal_t* intern,
+			       itv_t a, ap_scalar_t* b);
+bool ITVFUN(itv_set_ap_interval)(itv_internal_t* intern,
+				 itv_t a, ap_interval_t* b);
+bool ITVFUN(itv_set_ap_coeff)(itv_internal_t* intern,
+			      itv_t itv, ap_coeff_t* coeff);
+bool ITVFUN(ap_interval_set_itv)(itv_internal_t* intern,
+				 ap_interval_t* a, itv_t b);
+bool ITVFUN(ap_coeff_set_itv)(itv_internal_t* intern,
+				ap_coeff_t* a, itv_t b);
+bool ITVFUN(itv_array_set_ap_interval_array)(itv_internal_t* intern,
+					     itv_t** ptitv,
+					     ap_interval_t** array,
+					     size_t size);
+
 static inline void itv_internal_init(itv_internal_t* intern)
-{ ITVFUN(internal_init)(intern); }
+{ ITVFUN(itv_internal_init)(intern); }
 
-void ITVFUN(internal_clear)(itv_internal_t* intern);
 static inline void itv_internal_clear(itv_internal_t* intern)
-{ ITVFUN(internal_clear)(intern); }
+{ ITVFUN(itv_internal_clear)(intern); }
 
-itv_internal_t* ITVFUN(internal_alloc)(void);
 static inline itv_internal_t* itv_internal_alloc(void)
-{ return ITVFUN(internal_alloc)(); }
+{ return ITVFUN(itv_internal_alloc)(); }
 
-void ITVFUN(internal_free)(itv_internal_t* intern);
 static inline void itv_internal_free(itv_internal_t* intern)
-{ ITVFUN(internal_free)(intern); }
+{ ITVFUN(itv_internal_free)(intern); }
 
-bool ITVFUN(canonicalize)(itv_internal_t* intern,
-			  itv_t a, bool integer);
 static inline bool itv_canonicalize(itv_internal_t* intern,
 			       itv_t a, bool integer)
-{ return ITVFUN(canonicalize)(intern,a,integer); }
+{ return ITVFUN(itv_canonicalize)(intern,a,integer); }
 
-void ITVFUN(mul_num)(itv_t a, itv_t b, num_t c);
 static inline void itv_mul_num(itv_t a, itv_t b, num_t c)
-{ ITVFUN(mul_num)(a,b,c); }
+{ ITVFUN(itv_mul_num)(a,b,c); }
 
-void ITVFUN(div_num)(itv_t a, itv_t b, num_t c);
 static inline void itv_div_num(itv_t a, itv_t b, num_t c)
-{ ITVFUN(div_num)(a,b,c); }
+{ ITVFUN(itv_div_num)(a,b,c); }
 
-void ITVFUN(mul_bound)(itv_t a, itv_t b, bound_t c);
 static inline void itv_mul_bound(itv_t a, itv_t b, bound_t c)
-{ ITVFUN(mul_bound)(a,b,c); }
+{ ITVFUN(itv_mul_bound)(a,b,c); }
 
-  void ITVFUN(div_bound)(itv_t a, itv_t b, bound_t c);
 static inline void itv_div_bound(itv_t a, itv_t b, bound_t c)
-{ ITVFUN(div_bound)(a,b,c); }
+{ ITVFUN(itv_div_bound)(a,b,c); }
 
-
-void ITVFUN(sub)(itv_t a, itv_t b, itv_t c);
 static inline void itv_sub(itv_t a, itv_t b, itv_t c)
-{ ITVFUN(sub)(a,b,c); }
+{ ITVFUN(itv_sub)(a,b,c); }
 
-void ITVFUN(neg)(itv_t a, itv_t b);
 static inline void itv_neg(itv_t a, itv_t b)
-{ ITVFUN(neg)(a,b); }
+{ ITVFUN(itv_neg)(a,b); }
 
-void ITVFUN(mul)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
 static inline void itv_mul(itv_internal_t* intern, itv_t a, itv_t b, itv_t c)
-{ ITVFUN(mul)(intern,a,b,c); }
+{ ITVFUN(itv_mul)(intern,a,b,c); }
 
-void ITVFUN(div)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
 static inline void itv_div(itv_internal_t* intern, itv_t a, itv_t b, itv_t c)
-{ ITVFUN(div)(intern,a,b,c); }
+{ ITVFUN(itv_div)(intern,a,b,c); }
 
-void ITVFUN(fprint)(FILE* stream, itv_t a);
 static inline void itv_fprint(FILE* stream, itv_t a)
-{ ITVFUN(fprint)(stream,a); }
+{ ITVFUN(itv_fprint)(stream,a); }
 
-int ITVFUN(snprint)(char* s, size_t size, itv_t a);
 static inline int itv_snprint(char* s, size_t size, itv_t a)
-{ return ITVFUN(snprint)(s,size,a); }
+{ return ITVFUN(itv_snprint)(s,size,a); }
 
-bool ITVFUN(set_ap_scalar)(itv_internal_t* intern,
-			   itv_t a, ap_scalar_t* b);
 static inline bool itv_set_ap_scalar(itv_internal_t* intern,
 				itv_t a, ap_scalar_t* b)
-{ return ITVFUN(set_ap_scalar)(intern,a,b); }
+{ return ITVFUN(itv_set_ap_scalar)(intern,a,b); }
 
-bool ITVFUN(set_ap_interval)(itv_internal_t* intern,
-			     itv_t a, ap_interval_t* b);
 static inline bool itv_set_ap_interval(itv_internal_t* intern,
 				  itv_t a, ap_interval_t* b)
-{ return ITVFUN(set_ap_interval)(intern,a,b); }
+{ return ITVFUN(itv_set_ap_interval)(intern,a,b); }
 
-bool ITVFUN(set_ap_coeff)(itv_internal_t* intern,
-			  itv_t itv, ap_coeff_t* coeff);
 static inline bool itv_set_ap_coeff(itv_internal_t* intern,
 			       itv_t itv, ap_coeff_t* coeff)
-{ return ITVFUN(set_ap_coeff)(intern,itv,coeff); }
+{ return ITVFUN(itv_set_ap_coeff)(intern,itv,coeff); }
 
-bool ITVAPFUN(ap_interval_set_itv)(itv_internal_t* intern,
-				   ap_interval_t* a, itv_t b);
 static inline bool ap_interval_set_itv(itv_internal_t* intern,
 				       ap_interval_t* a, itv_t b)
-{ return ITVAPFUN(ap_interval_set_itv)(intern,a,b); }
+{ return ITVFUN(ap_interval_set_itv)(intern,a,b); }
 
-bool ITVAPFUN(ap_coeff_set_itv)(itv_internal_t* intern,
-				ap_coeff_t* a, itv_t b);
 static inline bool ap_coeff_set_itv(itv_internal_t* intern,
 				    ap_coeff_t* a, itv_t b)
-{ return ITVAPFUN(ap_coeff_set_itv)(intern,a,b); }
+{ return ITVFUN(ap_coeff_set_itv)(intern,a,b); }
 
-bool ITVFUN(array_set_ap_interval_array)(itv_internal_t* intern,
-					 itv_t** ptitv,
-					 ap_interval_t** array,
-					 size_t size);
 static inline bool itv_array_set_ap_interval_array(itv_internal_t* intern,
 						   itv_t** ptitv,
 						   ap_interval_t** array,
 						   size_t size)
-{ return ITVFUN(array_set_ap_interval_array)(intern,ptitv,array,size); }
+{ return ITVFUN(itv_array_set_ap_interval_array)(intern,ptitv,array,size); }
 
 static inline void itv_init(itv_t a)
 {
