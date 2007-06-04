@@ -204,10 +204,10 @@ bool box_meet_lincons_internal(box_internal_t* intern,
     equality = *peq;
     *peq = true;
     /* 2. evaluate e' */
-    itv_eval_itv_linexpr(intern->itv,
-			 intern->meet_lincons_internal_itv3,
-			 (itv_t*)a->p,
-			 expr);
+    itv_eval_linexpr(intern->itv,
+		     intern->meet_lincons_internal_itv3,
+		     (itv_t*)a->p,
+		     expr);
     change = false;
     if (!itv_is_top(intern->meet_lincons_internal_itv3)){
       if (equality){
@@ -397,7 +397,7 @@ void box_meet_lincons_array_internal(box_internal_t* intern,
       if (array->p[i].constyp==AP_CONS_EQ ||
 	  array->p[i].constyp==AP_CONS_SUPEQ ||
 	  array->p[i].constyp==AP_CONS_SUP){
-	itv_lincons_set_ap_lincons0(intern->itv,&cons,NULL,&array->p[i]);
+	itv_lincons_set_ap_lincons0(intern->itv,&cons,&array->p[i]);
 	change = 
 	  box_meet_lincons_internal(intern,a,&cons)
 	  ||

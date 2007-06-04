@@ -374,7 +374,7 @@ void ap_ppl_of_linexpr(itv_internal_t* intern,
   itv_linexpr_t linexpr;
 
   itv_linexpr_init(&linexpr,0);
-  itv_linexpr_set_ap_linexpr0(intern,&linexpr,NULL,c);
+  itv_linexpr_set_ap_linexpr0(intern,&linexpr,c);
   ap_ppl_of_itv_linexpr(r,den,&linexpr,mode);
   itv_linexpr_clear(&linexpr);
 }

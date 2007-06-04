@@ -466,8 +466,10 @@ matrix_t* matrix_relation_of_assign_array(pk_internal_t* pk,
     ap_linexpr0_set_coeff_scalar_int(expr, dimp, -1);
     itv_linexpr_set_ap_linexpr0(pk->itv,
 				&pk->poly_itv_lincons.linexpr,
-				titv,
 				expr);
+    if (titv){
+      itv_linexpr_quasilinearize(pk->itv,&pk->poly_itv_lincons.linexpr,titv);
+    }
     pk->poly_itv_lincons.constyp = AP_CONS_EQ;
     num_set_int(pk->poly_itv_lincons.num,0);
     row += vector_set_itv_lincons(pk,&matrel->p[row],
@@ -527,7 +529,6 @@ pk_t* poly_asssub_linexpr_array_det(bool assign,
     tvec[i] = vector_alloc(nbcols);
     itv_linexpr_set_ap_linexpr0(pk->itv,
 				&pk->poly_itv_linexpr,
-				NULL,
 				texpr[i]);
     vector_set_itv_linexpr(pk,
 			   tvec[i],
@@ -800,7 +801,6 @@ pk_t* poly_asssub_linexpr_det(bool assign,
   /* Convert linear expression */
   itv_linexpr_set_ap_linexpr0(pk->itv,
 			      &pk->poly_itv_linexpr,
-			      NULL,
 			      linexpr0);
   vector_set_itv_linexpr(pk,
 			 pk->poly_numintp,

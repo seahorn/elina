@@ -232,7 +232,6 @@ pkeq_t* pkeq_of_lincons_array(ap_manager_t* man,
 	ap_linexpr0_is_linear(cons->p[i].linexpr0)){
       itv_lincons_set_ap_lincons0(pk->itv,
 				  &pk->poly_itv_lincons,
-				  NULL,
 				  &cons->p[i]);
       row += vector_set_itv_lincons(pk,
 				    &C->p[row],

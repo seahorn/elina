@@ -285,7 +285,7 @@ ap_interval_t* pk_bound_linexpr(ap_manager_t* man,
      constant */
   exact = itv_linexpr_set_ap_linexpr0(pk->itv,
 				      &pk->poly_itv_linexpr,
-				      NULL,expr);
+				      expr);
   itv_init(itv);
   matrix_bound_itv_linexpr(pk,itv,&pk->poly_itv_linexpr,po->F);
   ap_interval_set_itv(pk->itv,interval,itv);

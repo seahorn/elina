@@ -306,7 +306,6 @@ bool vector_set_ap_generator0(pk_internal_t* pk,
   assert(gen->gentyp != AP_GEN_VERTEX);
   itv_linexpr_set_ap_linexpr0(pk->itv, 
 			      &pk->poly_itv_linexpr,
-			      NULL,
 			      gen->linexpr0);
   vector_set_itv_linexpr(pk, vec, &pk->poly_itv_linexpr, intdim+realdim, +1);
 
@@ -397,7 +396,6 @@ bool matrix_append_ap_lincons0_array(pk_internal_t* pk,
       if (ap_linexpr0_is_quasilinear(array->p[i].linexpr0)){
 	exact = itv_lincons_set_ap_lincons0(pk->itv,
 					    &pk->poly_itv_lincons,
-					    NULL,
 					    &array->p[i]);
 	res = res && exact;
 	j += vector_set_itv_lincons(pk,
@@ -450,26 +448,27 @@ bool matrix_append_ap_intlincons0_array(pk_internal_t* pk,
 					size_t intdim, size_t realdim,
 					bool integer)
 {
-  bool exact,res;
+  bool exact;
   size_t nbrows,i,j;
 
   nbrows = mat->nbrows;
   matrix_resize_rows_lazy(mat,nbrows+2*array->size);
-  res = true;
+  exact = true;
   j = nbrows;
   for (i=0; i<size; i++){
     size_t index = tab[i];
     
     exact = itv_lincons_set_ap_lincons0(pk->itv,
 					&pk->poly_itv_lincons,
-					titv,
-					&array->p[index]);
-    res = res && exact;
+					&array->p[index])
+      && exact;
+    exact = itv_lincons_quasilinearize(pk->itv,&pk->poly_itv_lincons,titv)
+      && exact;
     j += vector_set_itv_lincons(pk,&mat->p[j],&pk->poly_itv_lincons,
 				intdim,realdim,integer);
   }
   mat->nbrows = j;
-  return res;
+  return exact;
 }
 				 
 bool matrix_set_ap_intlincons0_array(pk_internal_t* pk,

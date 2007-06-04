@@ -240,7 +240,6 @@ pk_t* pk_widening_threshold(ap_manager_t* man,
       if (ap_linexpr0_is_quasilinear(array->p[i].linexpr0)){
 	itv_lincons_set_ap_lincons0(pk->itv,
 				    &pk->poly_itv_lincons,
-				    NULL,
 				    &array->p[i]);
 	nb = vector_set_itv_lincons(pk,
 				    &pk->poly_numintp,

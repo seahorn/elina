@@ -251,14 +251,16 @@ tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* po, ap_lincons0_t* lincons0)
     itv_t* titv = matrix_to_box(pk,po->F);
     exact = itv_lincons_set_ap_lincons0(pk->itv,
 					     &pk->poly_itv_lincons,
-					     titv,
-					     lincons0);
+					lincons0);
+    exact = itv_lincons_quasilinearize(pk->itv,
+				       &pk->poly_itv_lincons,
+				       titv)
+      && exact;
     itv_array_free(titv,po->intdim+po->realdim);
   }
   else {
     exact = itv_lincons_set_ap_lincons0(pk->itv,
 					&pk->poly_itv_lincons,
-					NULL,
 					lincons0);
   }
   sat = vector_set_itv_lincons_sat(pk,

@@ -167,6 +167,7 @@ ppl.cmxa: ppl.cmi ppl.cmx libppl_caml.a
 	ppl.cmx \
 	-ccopt "-L$(PPL_PREFIX)/lib" \
 	-cclib "-lppl_caml -lapron_ppl -lppl -lgmpxx"
+	$(RANLIB) ppl.a
 
 libppl_caml.a: ppl_caml.o
 	$(AR) rcs $@ $^

@@ -153,6 +153,7 @@ box.cma: box.cmo libbox_caml.a
 box.cmxa: box.cmx libbox_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ box.cmx \
 	-ccopt "-L$(BOX_PREFIX)/lib" -cclib "-lbox_caml"
+	$(RANLIB) box.a
 
 
 #---------------------------------------
