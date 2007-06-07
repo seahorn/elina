@@ -33,11 +33,11 @@ ap_manager_t* mp; /* polyhedron */
 oct_internal_t* pr;
 pk_internal_t* pk;
 
+#define MAXN 50000
+int N = 70;
 
-#define N 70
-
-char b1_[N+4]= " [";
-char b2_[N+4];
+char b1_[MAXN+4]= " [";
+char b2_[MAXN+4];
 int i_;
 int error_ = 0;
 
@@ -50,7 +50,8 @@ exactness flag;
     memset(b1_+2,' ',N); b1_[N+2]=']'; b1_[N+3]=0;			\
     memset(b2_,8,N+3); b2_[N+3]=0;					\
     for (i_=0;i_<N;i_++) {						\
-      printf("%s%s",b1_,b2_);						\
+      if (N<80) printf("%s%s",b1_,b2_);					\
+      else if (i_) printf("%c",b1_[i_+1]);				\
       fflush(stdout);							\
       flag = exact;							\
       
@@ -70,7 +71,10 @@ if (m->result.flag_exact==tbool_true) ;		      \
     error_++;						\
   } while (0)
 
-#define ENDLOOP	} } printf("%s%s\n",b1_,b2_)
+#define ENDLOOP					\
+  } }						\
+  if (N<80) printf("%s%s\n",b1_,b2_);		\
+  else printf("%c",b1_[i_+2])
 
 
 char check(oct_t* o)
@@ -109,27 +113,68 @@ void random_bound(bound_t b)
   num_clear(n);
 }
 
-void random_hmat(bound_t* b, int dim, float frac)
+oct_t* random_oct(int dim,float frac)
 {
-  int i,j;
+  oct_t* o = oct_alloc_internal(pr,dim,0);
+  bound_t* b;
+  int i,j,x,y;
   num_t n;
+  o->m = hmat_alloc_top(pr,dim);
+  b = o->m;
   num_init(n);
   for (i=0;i<2*dim;i++)
     for (j=0;j<=(i|1);j++,b++) {
       if (i==j) continue;
       if (lrand48()%100>frac*100) continue;
-      num_set_int2(n,lrand48()%20-2,lrand48()%4+1);
+      y = lrand48()%4+1;
+      x = lrand48()%20-2;      
+      num_set_int2(n,x,y);
       bound_set_num(*b,n);
     }
   num_clear(n);
+  return o;
 }
 
-oct_t* random_oct(int dim,float frac)
+/* build polyhedron & octagon at the same time, from same constraints */
+void random_poly_oct(int dim,float frac, oct_t**o, ap_abstract0_t** p)
 {
-  oct_t* o = oct_alloc_internal(pr,dim,0);
-  o->m = hmat_alloc_top(pr,dim);
-  random_hmat(o->m,dim,frac);
-  return o;
+  bound_t* b;
+  int i,j,x,y;
+  num_t n;
+  *o = oct_alloc_internal(pr,dim,0);
+  (*o)->m = hmat_alloc_top(pr,dim);
+  *p = ap_abstract0_top(mp,0,dim);
+  b = (*o)->m;
+  num_init(n);
+  for (i=0;i<2*dim;i++)
+    for (j=0;j<=(i|1);j++,b++) {
+      if (i==j) continue;
+      if (lrand48()%100>frac*100) continue;
+      {
+	ap_linexpr0_t* l;
+	ap_lincons0_array_t c = ap_lincons0_array_make(1);
+	y = lrand48()%4+1;
+	x = lrand48()%20-2;      
+	if (!num_set_int2(n,x,y)) flag = none;
+	bound_set_num(*b,n);
+	l = ap_linexpr0_alloc(AP_LINEXPR_SPARSE, 2);
+	if (i/2!=j/2)
+	  ap_linexpr0_set_list(l,
+			       AP_CST_S_FRAC, x, y,
+			       AP_COEFF_S_INT, (j%2) ?  1 : -1, j/2,
+			       AP_COEFF_S_INT, (i%2) ? -1 :  1, i/2,
+			       AP_END);
+	else
+	  ap_linexpr0_set_list(l,
+			       AP_CST_S_FRAC, x, y,
+			       AP_COEFF_S_INT, (j%2) ? 2 : -2, j/2,
+			       AP_END);
+	c.p[0] = ap_lincons0_make(AP_CONS_SUPEQ, l, NULL);
+	*p = ap_abstract0_meet_lincons_array(mp,true,*p,&c);
+	ap_lincons0_array_clear(&c);
+      }
+    }
+  num_clear(n);
 }
 
 typedef enum  {
@@ -261,6 +306,7 @@ oct_t* oct_of_poly(ap_abstract0_t* p)
   return o;
 }
 
+/* may not be exact (e.g., long double octagons and mpq polyhedra) */
 ap_abstract0_t* poly_of_oct(oct_t* o)
 {
   ap_lincons0_array_t ar;
@@ -309,11 +355,9 @@ void info(void)
 {
   printf("octagons:  %s (%s)\n",mo->library,mo->version);
   printf("polyhedra: %s (%s)\n",mp->library,mp->version);
-  printf("nums:      %s (%s wto overflow,%s,%s double,%s mpq)\n",num_name,
+  printf("nums:      %s (%s wto overflow,%s)\n",num_name,
 	 num_safe ? "sound" : "unsound",
-	 num_incomplete ? "incomplete" : "complete",
-	 num_of_double_approx ? "inexact" : "exact",
-	 num_of_mpq_approx ? "inexact" : "exact" );
+	 num_incomplete ? "incomplete" : "complete");
 }
 
 
@@ -423,17 +467,23 @@ void test_incremental_closure(void)
 
 void test_polyhedra_conversion(void)
 {
-  printf("\nconversion to polyhedra %s\n","(* expected)");
+  printf("\nconversion to polyhedra %s\n",num_incomplete ? "" : "(* expected)");
   LOOP {
     oct_t *o, *o2;
     ap_abstract0_t *p, *p2;
-    o = random_oct(6,.1);
+    o = random_oct(2,.1);
     p = poly_of_oct(o);
     o2 = oct_of_poly(p);
     p2 = poly_of_oct(o2);
     RESULT(check(o)); check(o2);
-    if (oct_is_leq(mo,o,o2)==tbool_false || ap_abstract0_is_leq(mp,p,p2)==tbool_false) {
-      ERROR("not included in");
+    if (oct_is_leq(mo,o,o2)==tbool_false) {
+      ERROR("oct not included in");
+      print_oct("o",o); 
+      print_poly("p",p); 
+      print_oct("o2",o2); 
+    }
+    if (ap_abstract0_is_leq(mp,p,p2)==tbool_false) {
+      ERROR("poly not included in");
       print_oct("o",o); 
       print_poly("p",p); 
       print_oct("o2",o2); 
@@ -511,7 +561,7 @@ void test_lincons_conversion(exprmode mode)
   printf("\nconversion from %slincons %s\n",exprname[mode],
 	 num_incomplete?"":(mode<=expr_oct)?"(* expected)":"(*,x,. expected)");
   LOOP {
-    int dim = 7, nb = 10, i;
+    int dim = 6, nb = 10, i;
     ap_abstract0_t *p, *p2;
     oct_t *o, *oo;
     ap_lincons0_array_t t = ap_lincons0_array_make(nb);
@@ -551,7 +601,7 @@ void test_generator_conversion(void)
 {
   printf("\nconversion to generators %s\n",num_incomplete?"":"(.,* expected)");
   LOOP {
-    size_t dim = 7;
+    size_t dim = 6;
     oct_t *o, *o2;
     ap_generator0_array_t t;
     o  = random_oct(dim,.1);
@@ -574,7 +624,7 @@ void test_box_conversion(void)
 {
   printf("\nconversion to box %s\n",num_incomplete?"":"(* expected)");
   LOOP {
-    size_t dim = 7;
+    size_t dim = 6;
     int i;
     oct_t *o,*o2,*o3;
     ap_interval_t **b,**b2;
@@ -637,13 +687,12 @@ void test_bound_dim(void)
 {
   printf("\nbound dimension %s\n",num_incomplete?"":"(* expected)");
   LOOP {
-    int dim = 8;
+    int dim = 6;
     int v = lrand48() % dim;
     oct_t *o;
     ap_abstract0_t *p;
     ap_interval_t *io, *ip;
-    o  = random_oct(dim,.2);
-    p  = poly_of_oct(o);
+    random_poly_oct(dim, .2, &o, &p);
     io = oct_bound_dimension(mo,o,v); FLAG(mo);
     ip = ap_abstract0_bound_dimension(mp,p,v); FLAG(mp);
     RESULT(check(o));
@@ -676,13 +725,12 @@ void test_bound_linexpr(exprmode mode)
   printf("\nbound %slinexpr %s\n",exprname[mode],
 	 num_incomplete?"":(mode<=expr_oct)?"(* expected)":"(*,. expected)");
   LOOP {
-    int dim = 8;
+    int dim = 6;
     oct_t *o;
     ap_abstract0_t *p;
     ap_linexpr0_t *e, *ee;
     ap_interval_t *io, *ip;
-    o  = random_oct(dim,.2);
-    p  = poly_of_oct(o);
+    random_poly_oct(dim, .2, &o, &p);
     e  = random_linexpr(mode,dim);
     ee = random_from_linexpr(e);
     io = oct_bound_linexpr(mo,o,e); FLAG(mo);
@@ -704,16 +752,14 @@ void test_bound_linexpr(exprmode mode)
 
 void test_meet(void)
 {
-  printf("\nmeet %s\n","(* expected)");
+  printf("\nmeet %s\n",num_incomplete ? "" : "(* expected)");
   LOOP {
-    int dim = 7;
+    int dim = 6;
     oct_t *o1, *o2, *o;
     ap_abstract0_t *p1, *p2, *p, *pp;
-    o1 = random_oct(dim,.2);
-    o2 = random_oct(dim,.2);
+    random_poly_oct(dim, .2, &o1, &p1);
+    random_poly_oct(dim, .2, &o2, &p2);
     o  = oct_meet(mo,false,o1,o2); FLAG(mo);
-    p1 = poly_of_oct(o1);
-    p2 = poly_of_oct(o2);
     p  = ap_abstract0_meet(mp,false,p1,p2); FLAG(mp);
     pp = poly_of_oct(o);
     RESULT(check(o)); check(o1); check(o2);
@@ -773,13 +819,13 @@ void test_meet(void)
 #define NB_MEET 5
 void test_meet_array(void)
 {
-  printf("\nmeet array %s\n","(* expected)");
+  printf("\nmeet array %s\n",num_incomplete ? "" : "(* expected)");
   LOOP {
     int i, dim = 6;
     oct_t* o[NB_MEET], *oo;
     ap_abstract0_t* p[NB_MEET], *pp, *ppp;
     for (i=0;i<NB_MEET;i++) 
-      { o[i] = random_oct(dim,.2); p[i] = poly_of_oct(o[i]); }
+      random_poly_oct(dim, .2, &o[i], &p[i]);
     oo = oct_meet_array(mo,o,NB_MEET); FLAG(mo);
     pp = poly_of_oct(oo);
     ppp = ap_abstract0_meet_array(mp,p,NB_MEET); 
@@ -801,17 +847,16 @@ void test_add_lincons(exprmode mode)
   printf("\nadd %slincons %s\n",exprname[mode],
 	 num_incomplete?"":(mode<=expr_oct)?"(* expected)":"(*,x,. expected)");
   LOOP {
-    size_t i, dim = 7, nb = 4;
+    size_t i, dim = /*6*/3, nb = 1/*4*/;
     oct_t *o, *o1, *o2;
     ap_abstract0_t *p, *p1, *p2;
     ap_lincons0_array_t ar = ap_lincons0_array_make(nb);
     ap_lincons0_array_t arr = ap_lincons0_array_make(nb);
-    o = random_oct(dim,.2);
-    p = poly_of_oct(o);
-     if (lrand48()%10>=8) oct_close(pr,o);
+    random_poly_oct(dim, .2, &o, &p);
+    if (lrand48()%10>=8) oct_close(pr,o);
     for (i=0;i<nb;i++) {
-      ar.p[i] = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ:
-				 (lrand48()%100>=90)?AP_CONS_SUP:
+      ar.p[i] = ap_lincons0_make((lrand48()%100>=80)?AP_CONS_EQ:
+				 (lrand48()%100>=80)?AP_CONS_SUP:
 				 AP_CONS_SUPEQ,
 				 random_linexpr(mode,dim),
 				 NULL);
@@ -850,14 +895,13 @@ void test_sat_lincons(exprmode mode)
   printf("\nsaturate %slincons %s\n",exprname[mode],
 	 num_incomplete?"":(mode<=expr_oct)?"(* expected)":"(*,. expected)");
   LOOP {
-    size_t dim = 7;
+    size_t dim = 6;
     oct_t *o, *o1;
     ap_abstract0_t* p;
     ap_lincons0_t l, ll;
     ap_lincons0_array_t ar = ap_lincons0_array_make(1);
     tbool_t ro,ro1,rp;
-    o = random_oct(dim,.1);
-    p = poly_of_oct(o);
+    random_poly_oct(dim, .1, &o, &p);
     l = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ: AP_CONS_SUPEQ,
 			 random_linexpr(mode,dim),
 			 NULL);
@@ -902,14 +946,12 @@ void test_join(void)
 {
   printf("\njoin %s\n",num_incomplete?"":"(*,x expected)");
   LOOP {
-    int dim = 2;
+    int dim = 6;
     oct_t *o1, *o2, *o3, *o;
     ap_abstract0_t *p1, *p2, *p, *pp;
-    o1 = random_oct(dim,.1);
-    o2 = random_oct(dim,.1);
+    random_poly_oct(dim, .1, &o1, &p1);
+    random_poly_oct(dim, .1, &o2, &p2);
     o  = oct_join(mo,false,o1,o2); FLAG(mo);
-    p1 = poly_of_oct(o1);
-    p2 = poly_of_oct(o2);
     p  = ap_abstract0_join(mp,false,p1,p2); FLAG(mp);
     pp = poly_of_oct(o);
     o3 = oct_of_poly(p);
@@ -970,7 +1012,7 @@ void test_join(void)
   } ENDLOOP;
 }
 
-#define NB_JOIN 5
+#define NB_JOIN 7
 void test_join_array(void)
 {
   printf("\njoin array %s\n",num_incomplete?"":"(x,* expected)");
@@ -979,7 +1021,7 @@ void test_join_array(void)
     oct_t* o[NB_JOIN], *oo, *ooo;
     ap_abstract0_t* p[NB_JOIN], *pp, *ppp, *ps;
     for (i=0;i<NB_JOIN;i++) 
-      { o[i] = random_oct(dim,.1); p[i] = poly_of_oct(o[i]); }
+      random_poly_oct(dim, .1, &o[i], &p[i]);
     oo = oct_join_array(mo,o,NB_JOIN); FLAG(mo);
     pp = poly_of_oct(oo);
     ppp = ap_abstract0_join_array(mp,p,NB_JOIN); 
@@ -1023,12 +1065,11 @@ void test_add_ray(void)
 {
   printf("\nadd rays %s\n",num_incomplete?"":"(*,x expected)");
   LOOP {
-    size_t i, dim = 7, nb = 4;
+    size_t i, dim = 2, nb = 1;
     oct_t *o, *o1, *o2;
     ap_abstract0_t *p, *p1, *p2;
     ap_generator0_array_t ar = ap_generator0_array_make(nb);
-    o = random_oct(dim,.1);
-    p = poly_of_oct(o);
+    random_poly_oct(dim, .1, &o, &p);
     if (lrand48()%10>=8) oct_close(pr,o);
     for (i=0;i<nb;i++)
       ar.p[i] = random_generator(dim,
@@ -1078,7 +1119,7 @@ void test_dimadd(void)
     o2 = oct_add_dimensions(mo,false,o1,a,true);
     o3 = oct_remove_dimensions(mo,false,o2,r);
     RESULT(check(o1)); check(o2); check(o3);
-    if (oct_is_eq(mo,o1,o3)!=tbool_true) {
+    if (oct_is_eq(mo,o1,o3)==tbool_false) {
       ERROR("not eq");
       ap_dimchange_fprint(stderr,a); ap_dimchange_fprint(stderr,r);
       print_oct("o1",o1); print_oct("o2",o2);print_oct("o3",o3);
@@ -1107,7 +1148,7 @@ void test_dimrem(void)
     o3 = oct_add_dimensions(mo,false,o2,a,false);
     o4 = oct_forget_array(mo,false,o1,r->dim,r->realdim,false);
     RESULT(check(o1)); check(o2); check(o3); check(o4);
-    if (oct_is_eq(mo,o3,o4)!=tbool_true) {
+    if (oct_is_eq(mo,o3,o4)==tbool_false) {
       ERROR("not eq");
       ap_dimchange_fprint(stderr,r); ap_dimchange_fprint(stderr,a);
       print_oct("o1",o1); print_oct("o2",o2);
@@ -1163,10 +1204,9 @@ void test_expand(void)
     size_t n = (lrand48() % 2) + 1;
     oct_t *o1, *o2, *o3;
     ap_abstract0_t *p1, *p2, *p3;
-    o1 = random_oct(dim,.1);
+    random_poly_oct(dim, .1, &o1, &p1);
     o2 = oct_expand(mo,false,o1,d,n); FLAG(mo);
     o3 = oct_fold(mo,false,o2,dd,n+1); FLAG(mo);
-    p1 = poly_of_oct(o1);
     p2 = ap_abstract0_expand(mp,false,p1,d,n); FLAG(mp);
     p3 = poly_of_oct(o2);
     RESULT(check(o1)); check(o2); check(o3); check(o3);
@@ -1197,8 +1237,7 @@ void test_fold(void)
     ap_dim_t dd[3];
     oct_t *o1, *o2;
     ap_abstract0_t *p1, *p2, *p3;
-    o1 = random_oct(dim,.1);
-    p1 = poly_of_oct(o1);
+    random_poly_oct(dim, .1, &o1, &p1);
     dd[0] = lrand48() % (dim-3);
     dd[1] = dd[0] + 1 + (lrand48() % (dim-2-dd[0]));
     dd[2] = dd[1] + 1 + (lrand48() % (dim-1-dd[1]));
@@ -1352,8 +1391,7 @@ void test_assign(int subst, exprmode mode)
     ap_abstract0_t *p, *p1, *p2;
     ap_linexpr0_t* l = random_linexpr(mode,dim);
     ap_linexpr0_t* ll = random_from_linexpr(l);
-    o = random_oct(dim,.1);
-    p = poly_of_oct(o);
+    random_poly_oct(dim, .1, &o, &p);
     if (lrand48()%10>=5) oct_close(pr,o);
     o1 = subst ? oct_substitute_linexpr(mo,false,o,d,l,NULL) : oct_assign_linexpr(mo,false,o,d,l,NULL);
     FLAG(mo);
@@ -1396,8 +1434,7 @@ void test_par_assign(int subst, exprmode mode)
     oct_t *o, *o1, *o2;
     ap_abstract0_t *p, *p1, *p2;
     ap_linexpr0_t *l[NB_ASSIGN], *ll[NB_ASSIGN];
-    o = random_oct(dim,.1);
-    p = poly_of_oct(o);
+    random_poly_oct(dim, .1, &o, &p);
     for (i=0;i<NB_ASSIGN;i++) {
       l[i]  = random_linexpr(mode,dim);
       ll[i] = random_from_linexpr(l[i]);
@@ -1540,10 +1577,14 @@ int main(int argc, const char** argv)
   int i;
 
   seed = time(NULL);
-  if (argc==2){
-    seed = atol(argv[1]);
+  for (i=1;i<argc;i++) {
+    if (argv[i][0]=='+') N = atol(argv[i]+1);
+    else seed = atol(argv[i]);
   }
-  printf("seed = %ld\n",seed);
+  printf("seed = %ld, N= %i\n", seed, N);
+
+  assert(N<MAXN);
+
   /* init */
   srand48(seed);
   mo = oct_manager_alloc();

@@ -111,13 +111,13 @@ oct_init_from_manager(ap_manager_t* man, ap_funid_t id, size_t size)
   /* malloc with safe-guard */
 #define checked_malloc(ptr,t,nb,action)					\
   do {									\
-    (ptr) = (t*)malloc(sizeof(t)*(nb));				\
+    (ptr) = (t*)malloc(sizeof(t)*(nb));					\
     if (!(ptr)) {							\
       char buf_[1024];							\
       snprintf(buf_,sizeof(buf_),					\
 	       "cannot allocate %s[%lu] for %s in %s at %s:%i",		\
 	       #t, (long unsigned)(nb), #ptr,				\
-	       __func__, __FILE__, __LINE__);			\
+	       __func__, __FILE__, __LINE__);				\
       ap_manager_raise_exception(pr->man,AP_EXC_OUT_OF_SPACE,		\
 				 pr->funid,buf_);			\
       action }								\
@@ -231,10 +231,6 @@ static inline void bound_badd(bound_t dst, bound_t arg)
   num_name              unique type description
   num_incomplete        does the type make algorithms incomplete
   num_safe              is the type safe in case of overflow
-  num_to_double_approx  num are approximated when converted to double
-  num_to_mpq_approx     num are approximated when converted to mpq
-  num_of_double_approx  num are approximated when converted from double
-  num_of_mpq_approx     num are approximated when converted from mpq
   num_fpu               num requires init_fpu to be called
   num_export_double     constraints are output using double instead of mpq
 */
@@ -245,20 +241,12 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_name          "NUM_LONGINT"
 #define num_incomplete    1    
 #define num_safe          0
-#define num_to_double_approx 1
-#define num_to_mpq_approx    0
-#define num_of_double_approx 1
-#define num_of_mpq_approx    1
 #define num_fpu              0
 #define num_export_double    0
 #elif defined ( NUM_LONGLONGINT )
 #define num_name             "NUM_LONGLONGINT"
 #define num_incomplete       1
 #define num_safe             0
-#define num_to_double_approx 1
-#define num_to_mpq_approx    0
-#define num_of_double_approx 1
-#define num_of_mpq_approx    1
 #define num_fpu              0
 #define num_export_double    0
 
@@ -267,10 +255,6 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_name             "NUM_MPZ"
 #define num_incomplete       1
 #define num_safe             1
-#define num_to_double_approx 1
-#define num_to_mpq_approx    0
-#define num_of_double_approx 1
-#define num_of_mpq_approx    1
 #define num_fpu              0
 #define num_export_double    0
 
@@ -279,20 +263,12 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_name             "NUM_LONGRAT"
 #define num_incomplete       0
 #define num_safe             0
-#define num_to_double_approx 1
-#define num_to_mpq_approx    0
-#define num_of_double_approx 1
-#define num_of_mpq_approx    0 /* as long as mpq_fits_num */
 #define num_fpu              0
 #define num_export_double    0
 #elif defined ( NUM_LONGLONGRAT )
 #define num_name             "NUM_LONGLONGRAT"
 #define num_incomplete       0
 #define num_safe             0
-#define num_to_double_approx 1
-#define num_to_mpq_approx    0
-#define num_of_double_approx 1
-#define num_of_mpq_approx    0 /* as long as mpq_fits_num */
 #define num_fpu              0
 #define num_export_double    0
 
@@ -301,10 +277,6 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_name             "NUM_MPQ"
 #define num_incomplete       0
 #define num_safe             1
-#define num_to_double_approx 1
-#define num_to_mpq_approx    0
-#define num_of_double_approx 0
-#define num_of_mpq_approx    0
 #define num_fpu              0
 #define num_export_double    0
 
@@ -313,20 +285,12 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 #define num_name            "NUM_DOUBLE"
 #define num_incomplete       1
 #define num_safe             1
-#define num_to_double_approx 0
-#define num_to_mpq_approx    0
-#define num_of_double_approx 0
-#define num_of_mpq_approx    1
 #define num_fpu              1
 #define num_export_double    1
 #elif defined ( NUM_LONGDOUBLE )
 #define num_name             "NUM_LONGDOUBLE"
 #define num_incomplete       1
 #define num_safe             1
-#define num_to_double_approx 1
-#define num_to_mpq_approx    0
-#define num_of_double_approx 0
-#define num_of_mpq_approx    1
 #define num_fpu              1
 #define num_export_double    1
 
@@ -357,9 +321,8 @@ static inline void bound_of_scalar(oct_internal_t* pr,
       if (mul2) d *= 2;
       if (d==1/0.) bound_set_infty(r,1);
       else if (double_fits_num(d)) { 
-	num_set_double(bound_numref(r),d);
+	if (!num_set_double(bound_numref(r),d) ||  mul2) pr->conv = true;
 	bound_set_num(r,bound_numref(r));
-	if (num_of_double_approx || mul2) pr->conv = true;
       }
       else { pr->conv = true; bound_set_infty(r,1); }
     }
@@ -369,10 +332,9 @@ static inline void bound_of_scalar(oct_internal_t* pr,
     if (neg) mpq_neg(t->val.mpq,t->val.mpq);
     if (ap_scalar_infty(t)==1) bound_set_infty(r,1);
     else if (mpq_fits_num(t->val.mpq)) {
-      num_set_mpq(bound_numref(r),t->val.mpq);
+      if (!num_set_mpq(bound_numref(r),t->val.mpq))  pr->conv = true;
       bound_set_num(r,bound_numref(r));
       if (mul2) bound_mul_2(r,r);
-      if (num_of_mpq_approx) pr->conv = true;
     }
     else { pr->conv = true; bound_set_infty(r,1); }
     /* undo change in argument */
@@ -417,8 +379,35 @@ static inline void bounds_of_coeff(oct_internal_t* pr,
   }
 }
 
-void bounds_of_generator(oct_internal_t* pr, bound_t* dst, 
-			 ap_linexpr0_t* e, size_t dim);
+static void bounds_of_generator(oct_internal_t* pr, bound_t* dst, 
+				ap_linexpr0_t* e, size_t dim)
+{
+  size_t i;
+  switch (e->discr) {
+  case AP_LINEXPR_DENSE:
+    arg_assert(e->size<=dim,return;);
+    for (i=0;i<e->size;i++) {
+      bounds_of_coeff(pr,dst[2*i],dst[2*i+1],e->p.coeff[i],false);
+    }
+    for (;i<dim;i++) {
+      bound_set_int(dst[2*i],0);
+      bound_set_int(dst[2*i+1],0);
+    }
+    break;
+  case AP_LINEXPR_SPARSE:
+    for (i=0;i<dim;i++) {
+      bound_set_int(dst[2*i],0);
+      bound_set_int(dst[2*i+1],0);
+    }
+    for (i=0;i<e->size;i++) {
+      size_t d = e->p.linterm[i].dim;
+      arg_assert(d<dim,return;);
+      bounds_of_coeff(pr,dst[2*d],dst[2*d+1],e->p.linterm[i].coeff,false);
+    }
+    break;
+  default: arg_assert(0,return;);
+  }
+}
 
 /* ============================================================ */
 /* III.3 Conversions to user types */
@@ -437,15 +426,13 @@ static inline void scalar_of_upper_bound(oct_internal_t* pr,
 #if num_export_double
     /* use double */
     ap_scalar_reinit(r,AP_SCALAR_DOUBLE);
-    double_set_num(&r->val.dbl,bound_numref(b));
+    if (!double_set_num(&r->val.dbl,bound_numref(b)) || div2) pr->conv = 1;
     if (div2) r->val.dbl /= 2;
-    if (num_to_double_approx || div2) pr->conv = 1;
 #else
     /* use mpq */
     ap_scalar_reinit(r,AP_SCALAR_MPQ);
-    mpq_set_num(r->val.mpq,bound_numref(b));
+    if (!mpq_set_num(r->val.mpq,bound_numref(b)) || div2) pr->conv = 1;
     if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
-    if (num_to_mpq_approx) pr->conv = 1;
 #endif
   }
 }
@@ -463,17 +450,15 @@ static inline void scalar_of_lower_bound(oct_internal_t* pr,
 #if num_export_double
     /* use double */
     ap_scalar_reinit(r,AP_SCALAR_DOUBLE);
-    double_set_num(&r->val.dbl,bound_numref(b));
+    if (!double_set_num(&r->val.dbl,bound_numref(b)) || div2) pr->conv = 1;
     if (div2) r->val.dbl /= 2;
     r->val.dbl = -r->val.dbl;
-    if (num_to_double_approx || div2) pr->conv = 1;
 #else
     /* use mpq */
     ap_scalar_reinit(r,AP_SCALAR_MPQ);
-    mpq_set_num(r->val.mpq,bound_numref(b));
+    if (!mpq_set_num(r->val.mpq,bound_numref(b)) || div2)  pr->conv = 1;
     if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
     mpq_neg(r->val.mpq,r->val.mpq);
-    if (num_to_mpq_approx) pr->conv = 1;
 #endif
   }
 }
@@ -583,8 +568,8 @@ typedef struct {
 } uexpr;
 
 /* convert expression to bounds, look for unit unary or binary form */
-uexpr uexpr_of_linexpr(oct_internal_t* pr, bound_t* dst,
-		       ap_linexpr0_t* e, size_t dim);
+uexpr oct_uexpr_of_linexpr(oct_internal_t* pr, bound_t* dst,
+			   ap_linexpr0_t* e, size_t dim);
 
 
 /* ********************************************************************** */

@@ -235,7 +235,7 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
       assert(0);
     }
 
-    u = uexpr_of_linexpr(pr,pr->tmp,lincons->linexpr0,a->dim);
+    u = oct_uexpr_of_linexpr(pr,pr->tmp,lincons->linexpr0,a->dim);
 
     switch (u.type) {      
 
@@ -331,7 +331,7 @@ ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
   else {
     bound_t* b = a->closed ? a->closed : a->m;
     size_t i, ui, uj;
-    uexpr u = uexpr_of_linexpr(pr,pr->tmp,expr,a->dim);
+    uexpr u = oct_uexpr_of_linexpr(pr,pr->tmp,expr,a->dim);
     switch (u.type) {      
     case ZERO:
       interval_of_bounds(pr,r,pr->tmp[0],pr->tmp[1],false);
