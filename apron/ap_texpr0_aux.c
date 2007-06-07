@@ -3,6 +3,10 @@
 /* ************************************************************************* */
 
 #include "ap_texpr0_aux.h"
+#include "num.h"
+#include "bound.h"
+#include "itv.h"
+#include "itv_linexpr.h"
 
 #if defined(NUM_MPQ)
 /* Assume b>=0, return true if exact. round indicates the rounding mode */
@@ -56,7 +60,7 @@ bool itv_sqrt(itv_t a, itv_t b)
   *(a->inf) = sqrt(*(b->inf));
   bound_neg(b->inf,b->inf);
   if (a!=b) bound_neg(a->inf,a->inf);
-  nextafter(*(a->inf),(double)1.0/(double)0.0);
+  *(a->inf) = nextafter(*(a->inf),(double)1.0/(double)0.0);
   *(b->sup) = sqrt(*(b->sup));
   return exact;
 }
@@ -106,13 +110,13 @@ int itv_cmp_range(itv_t a, itv_t b)
 
 static void
 ap_texpr0_intlinearize_rec_unop(itv_internal_t* intern,	itv_t itv, itv_t* p,
-				ap_texpr_node_t* node,
+				ap_texpr0_node_t* node,
 				itv_linexpr_t* res,
 				bool* pexact);
 static itv_linexpr_t 
 ap_texpr0_intlinearize_rec_binop(itv_internal_t* intern,
 				 itv_t itv, itv_t* p,
-				 ap_texpr_node_t* node,
+				 ap_texpr0_node_t* node,
 				 itv_linexpr_t* resA, itv_linexpr_t* resB,
 				 bool* pexact);
 static
@@ -138,7 +142,7 @@ itv_linexpr_t ap_texpr0_intlinearize_rec(itv_internal_t* intern,
     break;
   case AP_TEXPR_NODE:
     {
-      ap_texpr_node_t* node = expr0->val.node;
+      ap_texpr0_node_t* node = expr0->val.node;
       if (ap_texpr0_is_unop(node->op)){
 	/* Unary operator */
 	res = ap_texpr0_intlinearize_rec(intern,itv,p,node->exprA,&exact2);
@@ -182,7 +186,7 @@ itv_linexpr_t ap_texpr0_intlinearize_rec(itv_internal_t* intern,
 static 
 void ap_texpr0_intlinearize_rec_unop(itv_internal_t* intern,
 				     itv_t itv, itv_t* p,
-				     ap_texpr_node_t* node,
+				     ap_texpr0_node_t* node,
 				     itv_linexpr_t* res,
 				     bool* pexact)
 {
@@ -194,15 +198,14 @@ void ap_texpr0_intlinearize_rec_unop(itv_internal_t* intern,
       itv_set_bottom(itv);
     }
     else {
-      switch (node->mode){
-      case AP_MODE_EXACT:
+      if (node->dir==AP_RDIR_EXACT || node->type==AP_RTYPE_REAL) {
 	if (bound_sgn(itv->inf)>0){
 	  /* filter to keep only positive values */
 	  bound_set_int(itv->inf,0);
 	}
 	*pexact = itv_sqrt(itv,itv);
-	break;
-      default:
+      }
+      else {
 	fprintf(stderr,"ap_texpr0_linearize_rec_unop: operator/mode not yet implemented");
 	abort();
       }
@@ -224,12 +227,12 @@ static
 itv_linexpr_t 
 ap_texpr0_intlinearize_rec_binop(itv_internal_t* intern,
 				 itv_t itv, itv_t* p,
-				 ap_texpr_node_t* node,
+				 ap_texpr0_node_t* node,
 				 itv_linexpr_t* resA, itv_linexpr_t* resB,
 				 bool* pexact)
 {
   itv_linexpr_t res;
-  if (node->mode == AP_MODE_EXACT){
+  if (node->dir==AP_RDIR_EXACT || node->type==AP_RTYPE_REAL) {
     switch (node->op){
     case AP_TEXPR_ADD:
       res = itv_linexpr_add(intern,resA,resB);
@@ -291,19 +294,36 @@ ap_texpr0_intlinearize_rec_binop(itv_internal_t* intern,
 }
 
 ap_linexpr0_t* ITVFUN(ap_texpr0_intlinearize)
-  (ap_interval_t** tinterval, size_t size,
+  (ap_manager_t* man,
+   void* abs,
    ap_texpr0_t* expr0,
    bool quasilinearize,
    bool* pexact)
 {
+  tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+  ap_interval_t** (*to_box)(ap_manager_t*,...) = man->funptr[AP_FUNID_TO_BOX];
+  ap_dimension_t (*dimension)(ap_manager_t*,...) = man->funptr[AP_FUNID_DIMENSION];
+  ap_interval_t** tinterval;
   bool exact,exact2;
+  ap_dimension_t dim;
   itv_t* titv;
   itv_linexpr_t linexpr;
   itv_t itv;
   ap_linexpr0_t* linexpr0;
+  size_t size;
 
   itv_internal_t* intern = itv_internal_alloc();
   itv_init(itv);
+
+  assert(is_bottom(man,abs)!=tbool_true);
+  exact = true;
+  
+  tinterval = to_box(man,abs);
+  exact = (man->result.flag_exact == tbool_true) && exact;
+
+  dim = dimension(man,abs);
+  size = dim.intdim+dim.realdim;
+
   exact = itv_array_set_ap_interval_array(intern,&titv,tinterval,size);
   linexpr = ap_texpr0_intlinearize_rec(intern,itv,titv,expr0,&exact2);
   exact = exact && exact2;
@@ -320,5 +340,6 @@ ap_linexpr0_t* ITVFUN(ap_texpr0_intlinearize)
   itv_linexpr_clear(&linexpr);
   itv_clear(itv);
   itv_internal_free(intern);
+  ap_interval_array_free(tinterval,size);
   return linexpr0;
 }
