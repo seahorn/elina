@@ -1589,6 +1589,8 @@ int main(int argc, const char** argv)
   srand48(seed);
   mo = oct_manager_alloc();
   mp = pk_manager_alloc(false);
+  if (!mo || !mp) return 1;
+  assert(mp);
   for (i=0;i<AP_FUNID_SIZE;i++) {
     mo->option.funopt[i].flag_exact_wanted = true;
     mo->option.funopt[i].flag_best_wanted = true;
