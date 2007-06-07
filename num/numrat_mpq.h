@@ -41,11 +41,12 @@ static inline void numrat_canonicalize(numrat_t a)
 #define numrat_numref(a) mpq_numref(a)
 #define numrat_denref(a) mpq_denref(a)
 
-static inline void numrat_set_numint2(numrat_t a, numint_t b, numint_t c)
+static inline bool numrat_set_numint2(numrat_t a, numint_t b, numint_t c)
 {
   numint_set(numrat_numref(a),b);
   numint_set(numrat_denref(a),c);
   numrat_canonicalize(a);
+  return true;
 }
 
 /* ====================================================================== */
@@ -172,8 +173,8 @@ static inline int numrat_snprint(char* s, size_t size, numrat_t a)
 /* ====================================================================== */
 
 /* int2 -> numrat */
-static inline void numrat_set_int2(numrat_t a, long int i, unsigned long int j)
-{ mpq_set_si(a,i,j); numrat_canonicalize(a); }
+static inline bool numrat_set_int2(numrat_t a, long int i, long int j)
+{ assert(j>0); mpq_set_si(a,i,j); numrat_canonicalize(a); return true; }
 
 /* mpz -> numrat */
 static inline bool numrat_set_mpz(numrat_t a, mpz_t b)

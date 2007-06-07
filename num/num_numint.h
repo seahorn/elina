@@ -134,8 +134,8 @@ static inline int num_snprint(char* s, size_t size, num_t a)
 /* Conversions */
 /* ====================================================================== */
 
-static inline void num_set_int2(num_t a, long int i, unsigned long int j)
-              { numint_set_int2(a,i,j); }
+static inline bool num_set_int2(num_t a, long int i, long int j)
+              { return numint_set_int2(a,i,j); }
   /* int2 -> num */
 
 static inline bool num_set_mpz(num_t a, mpz_t b)

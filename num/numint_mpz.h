@@ -154,12 +154,13 @@ static inline int numint_snprint(char* s, size_t size, numint_t a)
 /* ====================================================================== */
 
 /* int2 -> numint */
-static inline void numint_set_int2(numint_t a, long int i, unsigned long int j)
+static inline bool numint_set_int2(numint_t a, long int i, long int j)
 {  
-  numint_t b;
+  unsigned long int r;
+  assert(j>0);
   numint_set_int(a,i);
-  numint_init_set_int(b,(long int)j);
-  numint_cdiv_q(a,a,b);
+  r = mpz_cdiv_q_ui(a,a,j);
+  return r ? false : true;
 }
 
 /* mpz -> numint */

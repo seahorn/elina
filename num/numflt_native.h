@@ -165,8 +165,12 @@ static inline int numflt_snprint(char* s, size_t size, numflt_t a)
 /* ====================================================================== */
 
 /* int2 -> numflt */
-static inline void numflt_set_int2(numflt_t a, long int i, unsigned long int j)
-{ *a = (numflt_native)i/(-((numflt_native)(-j))); }
+static inline bool numflt_set_int2(numflt_t a, long int i, long int j)
+{ 
+  assert(j>0);
+  *a = (numflt_native)i/(numflt_native)j; 
+  return (-*a==(numflt_native)(-i)/(numflt_native)j);
+}
 
 /* mpz -> numflt */
 /* mpfr is supposed to have exactly the IEEE754 double precision of NUMFLT_MANT_DIG bits */

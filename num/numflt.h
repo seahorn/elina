@@ -92,7 +92,7 @@ static inline int  numflt_snprint(char* s, size_t size, numflt_t a);
 /* Conversions */
 /* ====================================================================== */
 
-static inline void numflt_set_int2(numflt_t a, long int i, unsigned long int j);
+static inline bool numflt_set_int2(numflt_t a, long int i, long int j);
   /* int2 -> numflt */
 static inline bool numflt_set_mpz(numflt_t a, mpz_t b);
   /* mpz -> numflt */

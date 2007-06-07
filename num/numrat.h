@@ -89,7 +89,7 @@ static inline int numrat_snprint(char* s, size_t size, numrat_t a);
 /* Conversions */
 /* ====================================================================== */
 
-static inline void numrat_set_int2(numrat_t a, long int i, unsigned long int j);
+static inline bool numrat_set_int2(numrat_t a, long int i, long int j);
   /* int2 -> numrat */
 static inline bool numrat_set_mpz(numrat_t a, mpz_t b);
   /* mpz -> numrat */
@@ -132,7 +132,7 @@ static inline bool double_fits_numrat_tmp(double k, mpq_t mpq);
 /* ====================================================================== */
 
 static inline void numrat_canonicalize(numrat_t a);
-static inline void numrat_set_numint2(numrat_t a, numint_t b, numint_t c);
+static inline bool numrat_set_numint2(numrat_t a, numint_t b, numint_t c);
 
 /*
 static inline numint_t numrat_numref(numrat_t a);
