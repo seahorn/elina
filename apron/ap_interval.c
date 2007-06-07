@@ -62,12 +62,12 @@ void ap_interval_set_mpq(ap_interval_t* interval, mpq_t inf, mpq_t sup)
   ap_scalar_set_mpq(interval->inf,inf);
   ap_scalar_set_mpq(interval->sup,sup);
 }
-void ap_interval_set_int(ap_interval_t* interval, int inf, int sup)
+void ap_interval_set_int(ap_interval_t* interval, long int inf, long int sup)
 {
   ap_scalar_set_int(interval->inf,inf);
   ap_scalar_set_int(interval->sup,sup);
 }
-void ap_interval_set_frac(ap_interval_t* interval, int numinf, unsigned int deninf, int numsup, unsigned int densup)
+void ap_interval_set_frac(ap_interval_t* interval, long int numinf, unsigned long int deninf, long int numsup, unsigned long int densup)
 {
   ap_scalar_set_frac(interval->inf,numinf,deninf);
   ap_scalar_set_frac(interval->sup,numsup,densup);

@@ -7,46 +7,14 @@
 
 #include "ap_linearize.h"
 
-/* ********************************************************************** */
-/* Prototypes */
-/* ********************************************************************** */
+#define NUM_MPQ
+#include "ap_linearize_aux.h"
+#undef  NUM_MPQ
 
-ap_linexpr0_t* ap_quasilinearize_linexpr0_mpq(ap_manager_t* man,
-					      void* abs,
-					      ap_linexpr0_t* linexpr0,
-					      bool* pexact);
-ap_lincons0_t ap_quasilinearize_lincons0_mpq(ap_manager_t* man,
-					     void* abs,
-					     ap_lincons0_t* lincons0,
-					     bool* pexact);
-ap_linexpr0_t** ap_quasilinearize_tlinexpr0_mpq(ap_manager_t* man,
-						void* abs,
-						ap_linexpr0_t** texpr, size_t size,
-						bool* pexact);
-ap_lincons0_array_t ap_quasilinearize_lincons0_array_mpq(ap_manager_t* man,
-							 void* abs,
-							 ap_lincons0_array_t* array,
-							 bool* pexact,
-							 bool convert,
-							 bool linearize);
-ap_linexpr0_t* ap_quasilinearize_linexpr0_dbl(ap_manager_t* man,
-					      void* abs,
-					      ap_linexpr0_t* linexpr0,
-					      bool* pexact);
-ap_lincons0_t ap_quasilinearize_lincons0_dbl(ap_manager_t* man,
-					     void* abs,
-					     ap_lincons0_t* lincons0,
-					     bool* pexact);
-ap_linexpr0_t** ap_quasilinearize_tlinexpr0_dbl(ap_manager_t* man,
-						void* abs,
-						ap_linexpr0_t** texpr, size_t size,
-						bool* pexact);
-ap_lincons0_array_t ap_quasilinearize_lincons0_array_dbl(ap_manager_t* man,
-							 void* abs,
-							 ap_lincons0_array_t* array,
-							 bool* pexact,
-							 bool convert,
-							 bool linearize);
+#define NUM_DOUBLE
+#include "ap_linearize_aux.h"
+#undef  NUM_DOUBLE
+
 
 /* ********************************************************************** */
 /* Quasilinearization */

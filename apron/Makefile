@@ -26,7 +26,7 @@ ICFLAGS = -I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include
 H_FILES = \
 ap_config.h \
 ap_scalar.h ap_interval.h ap_coeff.h ap_dimension.h \
-ap_linexpr0.h ap_lincons0.h ap_generator0.h ap_expr0.h \
+ap_linexpr0.h ap_lincons0.h ap_generator0.h ap_expr0.h  ap_texpr0.h \
 ap_manager.h ap_abstract0.h ap_generic.h \
 ap_var.h ap_environment.h \
 ap_linexpr1.h ap_lincons1.h ap_generator1.h ap_expr1.h \
@@ -36,7 +36,7 @@ ap_linearize.h ap_linearize_aux.h
 
 C_FILES = \
 ap_scalar.c ap_interval.c ap_coeff.c ap_dimension.c \
-ap_linexpr0.c ap_lincons0.c ap_generator0.c \
+ap_linexpr0.c ap_lincons0.c ap_generator0.c ap_texpr0.c \
 ap_manager.c ap_abstract0.c ap_generic.c \
 ap_var.c ap_environment.c \
 ap_linexpr1.c ap_lincons1.c ap_generator1.c \
@@ -135,7 +135,7 @@ dep: $(H_FILES)
 #---------------------------------------
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) $(ICFLAGS) -c $<
+	$(CC) $(CFLAGS) $(ICFLAGS)  -I../itv -c $<
 
 %_mpq.o: %.c %.h
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -I../num -I../itv -I. -c $< -o $@
@@ -144,7 +144,7 @@ dep: $(H_FILES)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -I../num -I../itv -I. -c $< -o $@
 
 %_debug.o: %.c %.h
-	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS)  -I../itv -c -o $@ $<
 
 %_mpq_debug.o: %.c %.h
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPQ -I../num -I../itv -I. -c -o $@ $< -o $@

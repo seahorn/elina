@@ -11,6 +11,11 @@
 #include "ap_linearize.h"
 #include "ap_linearize_aux.h"
 
+#include "num.h"
+#include "bound.h"
+#include "itv.h"
+#include "itv_linexpr.h"
+
 static
 bool quasilinearize_alloc(ap_manager_t* man, void* abs,
 			  itv_internal_t** pintern,

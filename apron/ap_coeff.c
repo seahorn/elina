@@ -193,12 +193,12 @@ void ap_coeff_set_scalar_mpq(ap_coeff_t* coeff, mpq_t mpq)
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPQ); 
   ap_scalar_set_mpq(coeff->val.scalar,mpq); 
 }
-void ap_coeff_set_scalar_int(ap_coeff_t* coeff, int num)
+void ap_coeff_set_scalar_int(ap_coeff_t* coeff, long int num)
 {
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPQ); 
   ap_scalar_set_int(coeff->val.scalar,num); 
 }
-void ap_coeff_set_scalar_frac(ap_coeff_t* coeff, int num, unsigned int den)
+void ap_coeff_set_scalar_frac(ap_coeff_t* coeff, long int num, unsigned long int den)
 {
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPQ); 
   ap_scalar_set_frac(coeff->val.scalar,num,den); 
@@ -221,14 +221,14 @@ void ap_coeff_set_interval_mpq(ap_coeff_t* coeff, mpq_t inf, mpq_t sup)
 {
   ap_interval_set_mpq(coeff->val.interval,inf,sup);
 }
-void ap_coeff_set_interval_int(ap_coeff_t* coeff, int inf, int sup)
+void ap_coeff_set_interval_int(ap_coeff_t* coeff, long int inf, long int sup)
 {
   ap_coeff_reinit(coeff,AP_COEFF_INTERVAL,AP_SCALAR_MPQ); 
   ap_interval_set_int(coeff->val.interval,inf,sup); 
 }
 void ap_coeff_set_interval_frac(ap_coeff_t* coeff,
-				       int numinf, unsigned int deninf, 
-				       int numsup, unsigned int densup)
+				       long int numinf, unsigned long int deninf, 
+				       long int numsup, unsigned long int densup)
 {
   ap_coeff_reinit(coeff,AP_COEFF_INTERVAL,AP_SCALAR_MPQ); 
   ap_interval_set_frac(coeff->val.interval,numinf,deninf,numsup,densup); 

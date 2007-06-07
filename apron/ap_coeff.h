@@ -66,8 +66,8 @@ void ap_coeff_set(ap_coeff_t* a, ap_coeff_t* b);
   /* Assignement */
 void ap_coeff_set_scalar(ap_coeff_t* coeff, ap_scalar_t* scalar);
 void ap_coeff_set_scalar_mpq(ap_coeff_t* coeff, mpq_t mpq);
-void ap_coeff_set_scalar_int(ap_coeff_t* coeff, int num);
-void ap_coeff_set_scalar_frac(ap_coeff_t* coeff, int num, unsigned int den);
+void ap_coeff_set_scalar_int(ap_coeff_t* coeff, long int num);
+void ap_coeff_set_scalar_frac(ap_coeff_t* coeff, long int num, unsigned long int den);
 void ap_coeff_set_scalar_double(ap_coeff_t* coeff, double num);
   /* Assign a coefficient of type SCALAR, with resp.
      - a coeff
@@ -79,10 +79,10 @@ void ap_coeff_set_scalar_double(ap_coeff_t* coeff, double num);
 void ap_coeff_set_interval(ap_coeff_t* coeff, ap_interval_t* itv);
 void ap_coeff_set_interval_scalar(ap_coeff_t* coeff, ap_scalar_t* inf, ap_scalar_t* sup);
 void ap_coeff_set_interval_mpq(ap_coeff_t* coeff, mpq_t inf, mpq_t sup);
-void ap_coeff_set_interval_int(ap_coeff_t* coeff, int inf, int sup);
+void ap_coeff_set_interval_int(ap_coeff_t* coeff, long int inf, long int sup);
 void ap_coeff_set_interval_frac(ap_coeff_t* coeff,
-                                  int numinf, unsigned int deninf,
-                                  int numsup, unsigned int densup);
+                                  long int numinf, unsigned long int deninf,
+                                  long int numsup, unsigned long int densup);
 void ap_coeff_set_interval_double(ap_coeff_t* coeff, double inf, double sup);
   /* Assign a coefficient of type INTERVAL, with resp.
      - an interval of coeff

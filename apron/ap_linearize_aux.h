@@ -4,25 +4,20 @@
 /* Auxiliary module to ap_linearize, which contains functions depending of the
    number representation */
 
-#ifndef _AP_LINEARIZE_AUX_H_
-#define _AP_LINEARIZE_AUX_H_
-
-#include "ap_manager.h"
-#include "ap_expr0.h"
-#include "ap_abstract0.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+/* may be included several times, with different NUM_ defined */
 
 #if !defined(NUM_MPQ) && !defined(NUM_DOUBLE)
 #error "Wrong NUM type"
 #endif
 
-#include "num.h"
-#include "bound.h"
-#include "itv.h"
-#include "itv_linexpr.h"
+#include "ap_manager.h"
+#include "ap_expr0.h"
+#include "ap_abstract0.h"
+#include "itv_fun.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 ap_linexpr0_t* ITVFUN(ap_quasilinearize_linexpr0)(ap_manager_t* man,
 						  void* abs,
@@ -43,8 +38,7 @@ ap_lincons0_array_t ITVFUN(ap_quasilinearize_lincons0_array)(ap_manager_t* man,
 							     bool convert,
 							     bool linearize);
 
+
 #ifdef __cplusplus
 }
-#endif
-
 #endif

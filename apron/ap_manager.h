@@ -37,6 +37,7 @@ static inline tbool_t tbool_of_bool(bool a);
 static inline tbool_t tbool_of_int(int n);
 static inline tbool_t tbool_or(tbool_t a, tbool_t b);
 static inline tbool_t tbool_and(tbool_t a, tbool_t b);
+static inline tbool_t tbool_not(tbool_t a);
 
 /* For serialization */
 typedef struct ap_membuf_t {
@@ -268,6 +269,12 @@ static inline tbool_t tbool_and(tbool_t a, tbool_t b)
     ( (a==tbool_false || b==tbool_false) ? tbool_false :
       ( (a==tbool_top || b==tbool_top) ? tbool_top :
         tbool_true ) );
+}
+static inline tbool_t tbool_not(tbool_t a)
+{
+  return
+    a==tbool_false ? tbool_true :
+    a==tbool_true  ? tbool_false : a;
 }
 static inline
 ap_manager_t* ap_manager_copy(ap_manager_t* man)

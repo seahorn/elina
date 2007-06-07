@@ -52,8 +52,8 @@ void ap_interval_set(ap_interval_t* interval, ap_interval_t* interval2);
   /* Assignement */
 void ap_interval_set_scalar(ap_interval_t* interval, ap_scalar_t* inf, ap_scalar_t* sup);
 void ap_interval_set_mpq(ap_interval_t* interval, mpq_t inf, mpq_t sup);
-void ap_interval_set_int(ap_interval_t* interval, int inf, int sup);
-void ap_interval_set_frac(ap_interval_t* interval, int numinf, unsigned int deninf, int numsup, unsigned int densup);
+void ap_interval_set_int(ap_interval_t* interval, long int inf, long int sup);
+void ap_interval_set_frac(ap_interval_t* interval, long int numinf, unsigned long int deninf, long int numsup, unsigned long int densup);
 void ap_interval_set_double(ap_interval_t* interval, double inf, double sup);
   /* Assignement from resp.
      - two scalars
