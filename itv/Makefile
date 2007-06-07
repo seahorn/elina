@@ -40,7 +40,7 @@ ICFLAGS = \
 CCMODULES = itv itv_linexpr
 CCSRC = itv_config.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
-CCINC_TO_INSTALL = itv.h itv_config.h
+CCINC_TO_INSTALL = itv.h itv_fun.h itv_config.h
 CCBIN_TO_INSTALL = 
 CCLIB_TO_INSTALL = \
 libitvli.a libitvli_debug.a \
@@ -171,5 +171,5 @@ testllr: testllr_debug.o libitvllr_debug.a
 # DEPENDENCIES
 #-----------------------------------
 
-itv%.o: itv.c itv.h
-itv_linexpr%.o: itv_linexpr.c itv_linexpr.h itv.h
+itv%.o: itv.c itv.h itv_fun.h
+itv_linexpr%.o: itv_linexpr.c itv_linexpr.h itv.h itv_fun.h
