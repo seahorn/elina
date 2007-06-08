@@ -712,8 +712,8 @@ void test_bound_dim(void)
     else if (ap_interval_cmp(ip,io)==-1) RESULT('.');
     else ERROR("not included in");
     if (flag==exact && ap_interval_cmp(ip,io)!=0) ERROR("exact flag");
-    if (oct_is_dimension_unconstrained(mo,o,v)==tbool_true &&
-	ap_abstract0_is_dimension_unconstrained(mp,p,v)==tbool_false)
+    if (oct_is_dimension_unconstrained(mo,o,v)!=tbool_true &&
+	ap_abstract0_is_dimension_unconstrained(mp,p,v)==tbool_true)
       ERROR("not unconstrained");
     oct_free(mo,o); ap_abstract0_free(mp,p);
     ap_interval_free(io); ap_interval_free(ip);
