@@ -137,9 +137,9 @@ typedef struct ap_result_t {
   ap_exclog_t* exclog; /* history of exceptions */
   ap_exc_t exn;        /* exception for the last called function */
   tbool_t flag_exact;  /* result is mathematically exact or not
-                          or don't know */
+			  or don't know */
   tbool_t flag_best;   /* result is best correct approximation or not
-                          or don't know */
+			  or don't know */
 } ap_result_t;
 
 
@@ -188,10 +188,10 @@ typedef struct ap_manager_t {
   char* library;                 /* name of the effective library */
   char* version;                 /* version of the effective library */
   void* internal;                /* library dependent,
-                                    should be different for each thread
-                                    (working space) */
+				    should be different for each thread
+				    (working space) */
   void* funptr[AP_FUNID_SIZE];     /* Array of function pointers,
-                                   initialized by the effective library */
+				   initialized by the effective library */
   ap_option_t option;            /* Options (in) */
   ap_result_t result;            /* Exceptions and other indications (out) */
   void (*internal_free)(void*);  /* deallocation function for internal */
@@ -232,20 +232,20 @@ void ap_manager_set_abort_if_exception(ap_manager_t* man, ap_exc_t exn, bool fla
 /* ********************************************************************** */
 
 ap_manager_t* ap_manager_alloc(char* library, char* version,
-                               void* internal,
-                               void (*internal_free)(void*));
+			       void* internal,
+			       void (*internal_free)(void*));
 static inline
 ap_manager_t* ap_manager_copy(ap_manager_t* man);
   /* Increment the reference counter and return its argument */
 void ap_manager_raise_exception(ap_manager_t* man,
-                             ap_exc_t exn, ap_funid_t funid, const char* msg);
+				ap_exc_t exn, ap_funid_t funid, const char* msg);
   /* raise an exception and put fiels
      man->result.flag_exact et man->result.flag_best to
      tbool_false
   */
 ap_exclog_t* ap_exc_cons(ap_exc_t exn,
-                         ap_funid_t funid, const char* msg,
-                         ap_exclog_t* tail);
+			 ap_funid_t funid, const char* msg,
+			 ap_exclog_t* tail);
 void ap_exclog_free(ap_exclog_t* head);
 
 /* ********************************************************************** */
@@ -261,14 +261,14 @@ static inline tbool_t tbool_or(tbool_t a, tbool_t b)
   return
     ( (a==tbool_true || b==tbool_true) ? tbool_true :
       ( (a==tbool_top || b==tbool_top) ? tbool_top :
-        tbool_false ) );
+	tbool_false ) );
 }
 static inline tbool_t tbool_and(tbool_t a, tbool_t b)
 {
   return
     ( (a==tbool_false || b==tbool_false) ? tbool_false :
       ( (a==tbool_top || b==tbool_top) ? tbool_top :
-        tbool_true ) );
+	tbool_true ) );
 }
 static inline tbool_t tbool_not(tbool_t a)
 {
