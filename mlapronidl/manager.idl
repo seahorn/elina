@@ -203,14 +203,23 @@ void ap_funopt_make([ref,out]struct ap_funopt_t* x)
      quote(call,"ap_funopt_init(x);");
 
 quote(MLI,"(** Get the options sets for the function. The result is a copy of the internal structure and may be freely modified *)")
-struct ap_funopt_t ap_manager_get_funopt(ap_manager_ptr man, enum ap_funid_t funid);
+struct ap_funopt_t ap_manager_get_funopt(ap_manager_ptr man, enum ap_funid_t funid)
+  quote(call,"\
+  if (funid >= Funid_size) failwith(\"Manager.get.funopt <funid>: <funid> should be less than Funid_size (no option for remaining identifiers)\");\n \
+  _res = ap_manager_get_funopt(man,funid);\n\
+");
+
 quote(MLI,"(** Set the options for the function *)")
-void ap_manager_set_funopt(ap_manager_ptr man, enum ap_funid_t funid, [ref]struct ap_funopt_t* funopt);
+void ap_manager_set_funopt(ap_manager_ptr man, enum ap_funid_t funid, [ref]struct ap_funopt_t* funopt)
+  quote(call,"\
+  if (funid >= Funid_size) failwith(\"Manager.set.funopt <funid> ...: <funid> should be less than Funid_size (no option for remaining identifiers)\");\n\
+  ap_manager_set_funopt(man,funid,funopt);\n\
+");
 
 quote(MLI,"(** Get the corresponding result flag *)")
 enum tbool_t ap_manager_get_flag_exact(ap_manager_ptr man);
 quote(MLI,"(** Get the corresponding result flag *)")
-enum tbool_t ap_manager_get_flag_best(ap_manager_ptr man); 
+enum tbool_t ap_manager_get_flag_best(ap_manager_ptr man);
 
 
 quote(MLI,"(** Exception raised by functions of the interface *)")
