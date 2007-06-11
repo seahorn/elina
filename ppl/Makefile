@@ -99,7 +99,7 @@ uninstall:
 
 distclean: uninstall
 
-dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) ppl.idl sedscript_caml ppl_caml.c ppl.ml ppl.mli
+dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) ppl.idl sedscript_caml ppl_caml.c ppl.ml ppl.mli ppl.patch
 	(cd ..; tar zcvf ppl.tgz $(^:%=ppl/%))
 
 #---------------------------------------
