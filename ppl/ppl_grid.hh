@@ -1,5 +1,5 @@
 /*
- * ppl_pgrid.hh
+ * ppl_grid.hh
  *
  * APRON Library / PPL library wrapper
  *
@@ -14,8 +14,8 @@
  * Please read the COPYING file packaged in the distribution.
  */
 
-#ifndef __PPL_GRID_H
-#define __PPL_GRID_H
+#ifndef __PPL_GRID_HH
+#define __PPL_GRID_HH
 
 #include "ppl.hh"
 

@@ -22,6 +22,7 @@
 #include "pk.h"
 #include "pkeq.h"
 #include "apron_ppl.h"
+#include "ap_pkgrid.h"
 
 ap_linexpr0_t* random_linexpr_std(int);
 ap_abstract0_t* random_abstract_std(ap_manager_t* man, int dim);
@@ -1007,6 +1008,7 @@ int main(int argc, char** argv)
   ap_manager_t* manppll = ap_ppl_poly_manager_alloc(false);
   ap_manager_t* manppls = ap_ppl_poly_manager_alloc(true);
   ap_manager_t* manpplgrid = ap_ppl_grid_manager_alloc();
+  ap_manager_t* manpkgrid = ap_pkgrid_manager_alloc(false);
 
   /* First serie */
   intdim = 0;
@@ -1014,6 +1016,10 @@ int main(int argc, char** argv)
   random_abstract = &random_abstract_std;
   for (i=0; i<1; i++){
     random_abstract2 = i==0 ? &random_abstract2_std : &random_abstract2_inv;
+
+    // manpkgrid 
+    test(manpkgrid,manpplgrid);
+    test(manpkgrid,manpkl);
 
     // box/polyhedra
     test(manpkl,manbox);

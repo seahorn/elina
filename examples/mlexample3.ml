@@ -13,6 +13,7 @@ aprontop -I $APRON_INSTALL/lib
 #load "oct.cma";;
 #load "polka.cma";;
 #load "ppl.cma";;
+#load "polkaGrid.cma";;
 
 #install_printer Apron.Linexpr1.print;;
 #install_printer Apron.Lincons1.print;;
@@ -47,7 +48,7 @@ let manoct = Oct.manager_alloc ();;
 let manppl = Ppl.manager_alloc_strict();;
 let mangrid = Ppl.manager_alloc_grid ();;
 let maneq = Polka.manager_alloc_equalities ();;
-
+let manpkgrid = PolkaGrid.manager_alloc_loose ();;
 let var_x = Var.of_string "x";;
 let var_y = Var.of_string "y";;
 let var_z = Var.of_string "z";;
@@ -84,11 +85,12 @@ let ex1 (man:'a Manager.t) : 'a Abstract1.t =
   
   let abs = Abstract1.of_lincons_array man env tab in
   printf "abs=%a@." Abstract1.print abs;
+(*
   let array = Abstract1.to_generator_array man abs in
   printf "gen=%a@." generator1_array_print array;
   let array = Abstract1.to_generator_array man abs in
   printf "gen=%a@." generator1_array_print array;
-
+*)
   (* Extraction (we first extract values for existing constraints, then for
      dimensions) *)
   let box = Abstract1.to_box man abs in
@@ -157,3 +159,4 @@ let abs3 = ex1 manoct;;
 let abs4 = ex1 manbox;;
 let abs5 = ex1 maneq;;
 let abs6 = ex1 mangrid;;
+let abs7 = ex1 manpkgrid;;

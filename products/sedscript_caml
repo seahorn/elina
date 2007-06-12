@@ -1,0 +1,4 @@
+s/Manager.ap_manager_ptr/'a t Apron.Manager.t/g; 
+s/external ap_pkgrid_/external /g;  
+s/external manager_alloc_loose : unit -> 'a t Apron.Manager.t/external manager_alloc_loose : unit -> Polka.loose t Apron.Manager.t/g;
+s/external manager_alloc_strict : unit -> 'a t Apron.Manager.t/external manager_alloc_strict : unit -> Polka.strict t Apron.Manager.t/g;

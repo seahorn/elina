@@ -5,13 +5,14 @@ LCFLAGS = \
 -L$(MPFR_PREFIX)/lib \
 -Lapron -Litv -Lbox -Loctagons -Lnewpolka \
 -L$(PPL_PREFIX)/lib -Lppl \
+-Lproducts \
 -L$(CAMLIDL_PREFIX)/lib/ocaml
 
 OCAMLINC = \
--I mlgmpidl -I mlapronidl -I box -I octagons -I newpolka -I ppl
+-I mlgmpidl -I mlapronidl -I box -I octagons -I newpolka -I ppl -I products
 
 ifdef HAS_PPL
-OCAMLLDFLAGS_PPL = ppl.cma -cclib "-lppl_caml -lapron_ppl -lppl -lgmpxx" -cc "g++"
+OCAMLLDFLAGS_PPL = polkaGrid.cma ppl.cma -cclib "-lpolkaGrid_caml -lap_pkgrid_debug -lppl_caml -lapron_ppl -lppl -lgmpxx" -cc "g++"
 endif
 
 OCAMLLDFLAGS = \
@@ -35,6 +36,7 @@ c:
 	(cd octagons; make Qg Fd)
 ifdef HAS_PPL
 	(cd ppl; make)
+	(cd products; make)
 endif
 
 ml:
@@ -45,6 +47,7 @@ ml:
 	(cd octagons; make mlQg mlFd)
 ifdef HAS_PPL
 	(cd ppl; make ml)
+	(cd products; make ml)
 endif
 
 .PHONY: apronrun aprontop
@@ -63,6 +66,7 @@ ifdef HAS_OCAML
 	(cd box; make rebuild)
 	(cd octagons; make rebuild)
 	(cd ppl; make rebuild)
+	(cd products; make rebuild)
 endif
 
 install:
@@ -74,6 +78,7 @@ install:
 	(cd octagons; make install)
 ifdef HAS_PPL
 	(cd ppl; make install)
+	(cd products; make install)
 endif
 
 ifdef HAS_OCAML

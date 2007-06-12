@@ -6,23 +6,6 @@ PREFIX = $(ITV_PREFIX)
 SRCDIR = $(shell pwd)
 
 #---------------------------------------
-# Programs
-#---------------------------------------
-
-# Installation program
-INSTALL = install
-INSTALLd = install -d
-# C compiler and C preprocessor
-CC = gcc
-CPP = gcc -E
-
-# LATEX and others
-LATEX = latex
-TEXI2DVI = texi2dvi
-MAKEINFO = makeinfo
-DVIPS = dvips
-
-#---------------------------------------
 # Flags
 #---------------------------------------
 
