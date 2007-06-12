@@ -194,7 +194,14 @@ const char* ap_manager_get_library(ap_manager_t* man)
 const char* ap_manager_get_version(ap_manager_t* man)
 { return man->version; }
 ap_funopt_t ap_manager_get_funopt(ap_manager_t* man, ap_funid_t funid)
-{ return man->option.funopt[funid]; }
+{
+  if (funid<AP_FUNID_SIZE) 
+    return man->option.funopt[funid];
+  else {
+    fprintf(stderr,"ap_manager.c: ap_manager_get_funopt: funid should be less than AP_FUNID_SIZE\n");
+    abort();
+  }
+}
 bool ap_manager_get_abort_if_exception(ap_manager_t* man, ap_exc_t exn)
 { return man->option.abort_if_exception[exn]; }
 tbool_t ap_manager_get_flag_exact(ap_manager_t* man)
@@ -204,7 +211,7 @@ tbool_t ap_manager_get_flag_best(ap_manager_t* man)
 
 
 void ap_manager_set_funopt(ap_manager_t* man, ap_funid_t funid, ap_funopt_t* funopt)
-{ man->option.funopt[funid] = *funopt; }
+{ if (funid<AP_FUNID_SIZE) man->option.funopt[funid] = *funopt; }
 
 void ap_manager_set_abort_if_exception(ap_manager_t* man, ap_exc_t exn, bool flag)
 { man->option.abort_if_exception[exn] = flag; }

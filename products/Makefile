@@ -50,7 +50,7 @@ clean:
 
 mostlyclean: clean
 	/bin/rm -fr manager.idl
-	/bin/rm -f polkaGrid.ml polkaGrid.mli
+	/bin/rm -f polkaGrid.ml polkaGrid.mli polkaGrid_caml.c
 
 install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
 	$(INSTALLd) $(PREFIX)/include $(PREFIX)/lib

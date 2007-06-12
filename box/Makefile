@@ -59,7 +59,7 @@ clean:
 
 mostlyclean: clean
 	/bin/rm -fr manager.idl
-	/bin/rm -f box.ml box.mli
+	/bin/rm -f box.ml box.mli box_caml.c
 
 install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
 	$(INSTALLd) $(PREFIX)/include $(PREFIX)/lib

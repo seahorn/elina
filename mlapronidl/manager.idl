@@ -12,65 +12,38 @@ quote(C, "\n\
 #define True tbool_true \n\
 #define Top tbool_top \n\
 \n\
-#define Funid_unknown    AP_FUNID_UNKNOWN\n\
-#define Funid_copy    AP_FUNID_COPY\n\
-#define Funid_free    AP_FUNID_FREE\n\
-#define Funid_asize    AP_FUNID_ASIZE\n\
-#define Funid_minimize    AP_FUNID_MINIMIZE\n\
-#define Funid_canonicalize    AP_FUNID_CANONICALIZE\n\
-#define Funid_approximate    AP_FUNID_APPROXIMATE\n\
-#define Funid_fprint    AP_FUNID_FPRINT\n\
-#define Funid_fprintdiff    AP_FUNID_FPRINTDIFF\n\
-#define Funid_fdump    AP_FUNID_FDUMP\n\
-#define Funid_serialize_raw    AP_FUNID_SERIALIZE_RAW\n\
-#define Funid_deserialize_raw    AP_FUNID_DESERIALIZE_RAW\n\
-#define Funid_bottom    AP_FUNID_BOTTOM\n\
-#define Funid_top    AP_FUNID_TOP\n\
-#define Funid_of_box    AP_FUNID_OF_BOX\n\
-#define Funid_of_lincons_array    AP_FUNID_OF_LINCONS_ARRAY\n\
-#define Funid_dimension    AP_FUNID_DIMENSION\n\
-#define Funid_is_bottom    AP_FUNID_IS_BOTTOM\n\
-#define Funid_is_top    AP_FUNID_IS_TOP\n\
-#define Funid_is_leq    AP_FUNID_IS_LEQ\n\
-#define Funid_is_eq    AP_FUNID_IS_EQ\n\
-#define Funid_is_dimension_unconstrained    AP_FUNID_IS_DIMENSION_UNCONSTRAINED\n\
-#define Funid_sat_interval    AP_FUNID_SAT_INTERVAL\n\
-#define Funid_sat_lincons    AP_FUNID_SAT_LINCONS\n\
-#define Funid_bound_dimension    AP_FUNID_BOUND_DIMENSION\n\
-#define Funid_bound_linexpr    AP_FUNID_BOUND_LINEXPR\n\
-#define Funid_to_box    AP_FUNID_TO_BOX\n\
-#define Funid_to_lincons_array    AP_FUNID_TO_LINCONS_ARRAY\n\
-#define Funid_to_generator_array    AP_FUNID_TO_GENERATOR_ARRAY\n\
-#define Funid_meet    AP_FUNID_MEET\n\
-#define Funid_meet_array    AP_FUNID_MEET_ARRAY\n\
-#define Funid_meet_lincons_array    AP_FUNID_MEET_LINCONS_ARRAY\n\
-#define Funid_join    AP_FUNID_JOIN\n\
-#define Funid_join_array    AP_FUNID_JOIN_ARRAY\n\
-#define Funid_add_ray_array    AP_FUNID_ADD_RAY_ARRAY\n\
-#define Funid_assign_linexpr    AP_FUNID_ASSIGN_LINEXPR\n\
-#define Funid_assign_linexpr_array    AP_FUNID_ASSIGN_LINEXPR_ARRAY\n\
-#define Funid_substitute_linexpr    AP_FUNID_SUBSTITUTE_LINEXPR\n\
-#define Funid_substitute_linexpr_array    AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY\n\
-#define Funid_add_dimensions    AP_FUNID_ADD_DIMENSIONS\n\
-#define Funid_remove_dimensions    AP_FUNID_REMOVE_DIMENSIONS\n\
-#define Funid_permute_dimensions    AP_FUNID_PERMUTE_DIMENSIONS\n\
-#define Funid_forget_array    AP_FUNID_FORGET_ARRAY\n\
-#define Funid_expand    AP_FUNID_EXPAND\n\
-#define Funid_fold    AP_FUNID_FOLD\n\
-#define Funid_widening    AP_FUNID_WIDENING\n\
-#define Funid_closure    AP_FUNID_CLOSURE\n\
-#define Funid_size    AP_FUNID_SIZE\n\
-#define Funid_change_environment    AP_FUNID_CHANGE_ENVIRONMENT\n\
-#define Funid_rename_array    AP_FUNID_RENAME_ARRAY\n\
-#define Funid_size2    AP_FUNID_SIZE2\n\
-\n\
-#define Exc_none    AP_EXC_NONE\n\
-#define Exc_timeout    AP_EXC_TIMEOUT\n\
-#define Exc_out_of_space    AP_EXC_OUT_OF_SPACE\n\
-#define Exc_overflow    AP_EXC_OVERFLOW\n\
-#define Exc_invalid_argument    AP_EXC_INVALID_ARGUMENT\n\
-#define Exc_not_implemented    AP_EXC_NOT_IMPLEMENTED\n\
-#define Exc_size    AP_EXC_SIZE\n\
+void camlidl_apron_manager_funid_ml2c(value _v, enum ap_funid_t* res)\n\
+{\n\
+  int v = Int_val(_v);\n\
+  if (v+2>=AP_FUNID_CHANGE_ENVIRONMENT)\n\
+    *res = v+2;\n\
+  else\n\
+    *res = v+1;\n\
+}\n\
+value camlidl_apron_manager_funid_c2ml(enum ap_funid_t* arg)\n\
+{\n\
+  int n = *arg;\n\
+  if (n>AP_FUNID_UNKNOWN && n<AP_FUNID_SIZE2 && n!=AP_FUNID_SIZE){\n\
+    if (n<AP_FUNID_SIZE) n--;\n\
+    else n -= 2;\n\
+  }\n\
+  else {\n\
+    invalid_argument(\"enum ap_funid_t: bad enum value\");\n\
+  }\n\
+  return Val_int(n);\n\
+}\n\
+void camlidl_apron_manager_exc_ml2c(value _v, enum ap_exc_t* res)\n\
+{\n\
+  *res = Int_val(_v);\n\
+}\n\
+value camlidl_apron_manager_exc_c2ml(enum ap_exc_t* arg)\n\
+{\n\
+    int n = *arg;\n\
+  if (! (n>=AP_EXC_NONE && n<AP_EXC_SIZE)){\n\
+    invalid_argument(\"enum ap_exc_t: bad enum value\");\n\
+  }\n\
+  return Val_int(n);\n\
+}\n\
 ")
 
 enum tbool_t {
@@ -79,59 +52,60 @@ enum tbool_t {
   Top
 };
 
-enum ap_funid_t {
-  Funid_unknown,
-  Funid_copy,
-  Funid_free,
-  Funid_asize, /* For avoiding name conflict with Funid_SIZE */
-  Funid_minimize,
-  Funid_canonicalize,
-  Funid_approximate,
-  Funid_fprint,
-  Funid_fprintdiff,
-  Funid_fdump,
-  Funid_serialize_raw,
-  Funid_deserialize_raw,
-  Funid_bottom,
-  Funid_top,
-  Funid_of_box,
-  Funid_of_lincons_array,
-  Funid_dimension,
-  Funid_is_bottom,
-  Funid_is_top,
-  Funid_is_leq,
-  Funid_is_eq,
-  Funid_is_dimension_unconstrained,
-  Funid_sat_interval,
-  Funid_sat_lincons,
-  Funid_bound_dimension,
-  Funid_bound_linexpr,
-  Funid_to_box,
-  Funid_to_lincons_array,
-  Funid_to_generator_array,
-  Funid_meet,
-  Funid_meet_array,
-  Funid_meet_lincons_array,
-  Funid_join,
-  Funid_join_array,
-  Funid_add_ray_array,
-  Funid_assign_linexpr,
-  Funid_assign_linexpr_array,
-  Funid_substitute_linexpr,
-  Funid_substitute_linexpr_array,
-  Funid_add_dimensions,
-  Funid_remove_dimensions,
-  Funid_permute_dimensions,
-  Funid_forget_array,
-  Funid_expand,
-  Funid_fold,
-  Funid_widening,
-  Funid_closure,
-  Funid_size,
-  Funid_change_environment,
-  Funid_rename_array,
-  Funid_size2
-};
+typedef [abstract,
+	 ml2c(camlidl_apron_manager_funid_ml2c),
+	 c2ml(camlidl_apron_manager_funid_c2ml),
+	 mltype("\n\
+  | Funid_copy\n\
+  | Funid_free\n\
+  | Funid_asize\n\
+  | Funid_minimize\n\
+  | Funid_canonicalize\n\
+  | Funid_approximate\n\
+  | Funid_fprint\n\
+  | Funid_fprintdiff\n\
+  | Funid_fdump\n\
+  | Funid_serialize_raw\n\
+  | Funid_deserialize_raw\n\
+  | Funid_bottom\n\
+  | Funid_top\n\
+  | Funid_of_box\n\
+  | Funid_of_lincons_array\n\
+  | Funid_dimension\n\
+  | Funid_is_bottom\n\
+  | Funid_is_top\n\
+  | Funid_is_leq\n\
+  | Funid_is_eq\n\
+  | Funid_is_dimension_unconstrained\n\
+  | Funid_sat_interval\n\
+  | Funid_sat_lincons\n\
+  | Funid_bound_dimension\n\
+  | Funid_bound_linexpr\n\
+  | Funid_to_box\n\
+  | Funid_to_lincons_array\n\
+  | Funid_to_generator_array\n\
+  | Funid_meet\n\
+  | Funid_meet_array\n\
+  | Funid_meet_lincons_array\n\
+  | Funid_join\n\
+  | Funid_join_array\n\
+  | Funid_add_ray_array\n\
+  | Funid_assign_linexpr\n\
+  | Funid_assign_linexpr_array\n\
+  | Funid_substitute_linexpr\n\
+  | Funid_substitute_linexpr_array\n\
+  | Funid_add_dimensions\n\
+  | Funid_remove_dimensions\n\
+  | Funid_permute_dimensions\n\
+  | Funid_forget_array\n\
+  | Funid_expand\n\
+  | Funid_fold\n\
+  | Funid_widening\n\
+  | Funid_closure\n\
+  | Funid_change_environment\n\
+  | Funid_rename_array
+")]
+enum ap_funid_t ap_funid_t;
 
 struct ap_funopt_t {
   int algorithm;
@@ -157,19 +131,22 @@ struct ap_funopt_t {
   */
 };
 
-enum ap_exc_t {
-  Exc_none,           /* no exception detected */
-  Exc_timeout,        /* timeout detected */
-  Exc_out_of_space,   /* out of space detected */
-  Exc_overflow,        /* magnitude overflow detected */
-  Exc_invalid_argument, /* invalid arguments */
-  Exc_not_implemented, /* not implemented */
-  Exc_size
-};
+typedef [abstract,
+	 ml2c(camlidl_apron_manager_exc_ml2c),
+	 c2ml(camlidl_apron_manager_exc_c2ml),
+	 mltype("\n\
+  | Exc_none\n\
+  | Exc_timeout\n\
+  | Exc_out_of_space\n\
+  | Exc_overflow\n\
+  | Exc_invalid_argument\n\
+  | Exc_not_implemented\n\
+")]
+enum ap_exc_t ap_exc_t;
 
 struct ap_exclog_t {
-  enum ap_exc_t exn;
-  enum ap_funid_t funid;
+  ap_exc_t exn;
+  ap_funid_t funid;
   [string]char* msg;
 };
 
@@ -202,17 +179,17 @@ quote(MLI,"(** Return the default options for any function ([0] or [false] for a
 void ap_funopt_make([ref,out]struct ap_funopt_t* x)
      quote(call,"ap_funopt_init(x);");
 
-quote(MLI,"(** Get the options sets for the function. The result is a copy of the internal structure and may be freely modified *)")
-struct ap_funopt_t ap_manager_get_funopt(ap_manager_ptr man, enum ap_funid_t funid)
+quote(MLI,"(** Get the options sets for the function. The result is a copy of the internal structure and may be freely modified. [funid] should be different from [Funid_change_environment] and [Funid_rename_array] (no option associated to them). *)")
+struct ap_funopt_t ap_manager_get_funopt(ap_manager_ptr man, ap_funid_t funid)
   quote(call,"\
-  if (funid >= Funid_size) failwith(\"Manager.get.funopt <funid>: <funid> should be less than Funid_size (no option for remaining identifiers)\");\n \
+  if (funid >= AP_FUNID_SIZE) invalid_argument(\"Manager.get.funopt <funid>: <funid> should be different from Funid_change_environment and Funid_rename_array (no option for remaining identifiers)\");\n\
   _res = ap_manager_get_funopt(man,funid);\n\
 ");
 
-quote(MLI,"(** Set the options for the function *)")
-void ap_manager_set_funopt(ap_manager_ptr man, enum ap_funid_t funid, [ref]struct ap_funopt_t* funopt)
+quote(MLI,"(** Set the options for the function. [funid] should be different from [Funid_change_environment] and [Funid_rename_array] (no option associated to them). *)")
+void ap_manager_set_funopt(ap_manager_ptr man, ap_funid_t funid, [ref]struct ap_funopt_t* funopt)
   quote(call,"\
-  if (funid >= Funid_size) failwith(\"Manager.set.funopt <funid> ...: <funid> should be less than Funid_size (no option for remaining identifiers)\");\n\
+  if (funid >= AP_FUNID_SIZE) invalid_argument(\"Manager.set.funopt <funid> ...: <funid> should be different from Funid_change_environment and Funid_rename_array (no option for remaining identifiers)\");\n\
   ap_manager_set_funopt(man,funid,funopt);\n\
 ");
 
@@ -244,7 +221,6 @@ let string_of_tbool = function\n\
 | True -> \"True\"\n\
 | Top -> \"Top\"\n\
 let string_of_funid = function\n\
-| Funid_unknown -> \"Funid_unknown\"\n\
 | Funid_copy -> \"Funid_copy\"\n\
 | Funid_free -> \"Funid_free\"\n\
 | Funid_asize -> \"Funid_asize\"\n\
@@ -291,10 +267,8 @@ let string_of_funid = function\n\
 | Funid_fold -> \"Funid_fold\"\n\
 | Funid_widening -> \"Funid_widening\"\n\
 | Funid_closure -> \"Funid_closure\"\n\
-| Funid_size -> \"Funid_size\"\n\
 | Funid_change_environment -> \"Funid_change_environment\"\n\
 | Funid_rename_array -> \"Funid_rename_array\"\n\
-| Funid_size2 -> \"Funid_size2\"\n\
 \n\
 let string_of_exc = function\n\
 | Exc_none -> \"Exc_none\"\n\
@@ -303,7 +277,6 @@ let string_of_exc = function\n\
 | Exc_overflow -> \"Exc_overflow\"\n\
 | Exc_invalid_argument -> \"Exc_invalid_argument\"\n\
 | Exc_not_implemented -> \"Exc_not_implemented\"\n\
-| Exc_size -> \"Exc_size\"\n\
 \n\
 let print_tbool fmt x = Format.pp_print_string fmt (string_of_tbool x)\n\
 let print_funid fmt x = Format.pp_print_string fmt (string_of_funid x)\n\

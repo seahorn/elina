@@ -799,11 +799,16 @@ exact (resp. a best approximation) result.
 @subheading Options
 @xref{ap_funopt_t}.
 @deftypefun ap_funopt_t ap_manager_get_funopt (ap_manager_t* @var{man}, ap_funid_t @var{funid})
-Getting the option attached to the specified function in the manager.
+Getting the option attached to the specified function in the
+manager. @var{funid} should be less than @code{AP_FUNID_SIZE} (no
+option associated to other identifiers). Otherwise, abort with a
+message.
 @end deftypefun
 @deftypefun void ap_manager_set_funopt (ap_manager_t* @var{man}, ap_funid_t @var{funid}, ap_funopt_t* @var{fopt})
 Setting the option attached to the specified function in the
-manager. @var{fopt} is copied (and not only referenced).
+manager. @var{fopt} is copied (and not only referenced). @var{funid}
+should be less than @code{AP_FUNID_SIZE} (no option associated to
+other identifiers). Otherwise, do nothing.
 @end deftypefun
 @deftypefun void ap_funopt_init (ap_funopt_t* @var{fopt})
 Initialize @var{fopt} with default values.
