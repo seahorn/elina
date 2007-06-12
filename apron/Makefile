@@ -32,7 +32,8 @@ ap_var.h ap_environment.h \
 ap_linexpr1.h ap_lincons1.h ap_generator1.h ap_expr1.h \
 ap_abstract1.h \
 ap_global0.h ap_global1.h \
-ap_linearize.h ap_linearize_aux.h
+ap_linearize.h ap_linearize_aux.h \
+ap_reducedproduct.h
 
 C_FILES = \
 ap_scalar.c ap_interval.c ap_coeff.c ap_dimension.c \
@@ -41,7 +42,8 @@ ap_manager.c ap_abstract0.c ap_generic.c \
 ap_var.c ap_environment.c \
 ap_linexpr1.c ap_lincons1.c ap_generator1.c \
 ap_abstract1.c \
-ap_linearize.c
+ap_linearize.c \
+ap_reducedproduct.c
 
 C_FILES_AUX = ap_linearize_aux.c ap_texpr0_aux.c
 H_FILES_AUX = ap_linearize_aux.h ap_texpr0_aux.h
@@ -120,8 +122,8 @@ libapron_debug.a: $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%_mpq_debug.o) $(C_
 .PHONY : dep
 
 dep: $(H_FILES)
-	for i in $(C_FILES); do			\
-		cpp $(ICFLAGS) -MM $$i;			\
+	for i in $(C_FILES); do		\
+		cpp $(ICFLAGS) -I../itv -MM $$i;	\
 	done
 
 #--------------------------------------------------------------
@@ -222,3 +224,7 @@ ap_linearize.o: ap_linearize.c ap_linearize.h ap_manager.h ap_coeff.h \
   ap_scalar.h \
   ap_interval.h ap_expr0.h ap_linexpr0.h ap_dimension.h ap_lincons0.h \
   ap_generator0.h ap_abstract0.h
+ap_reducedproduct.o: ap_reducedproduct.c ap_global0.h ap_config.h \
+  ap_scalar.h ap_interval.h \
+  ap_coeff.h ap_dimension.h ap_linexpr0.h ap_lincons0.h ap_generator0.h \
+  ap_manager.h ap_abstract0.h ap_expr0.h ap_texpr0.h ap_reducedproduct.h
