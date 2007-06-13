@@ -613,6 +613,7 @@ Managers are allocated by the underlying libraries/abstract domains, but are fre
 * Oct::
 * NewPolka::
 * PPL::
+* pkgrid::
 @end menu
 
 @c ===================================================================
@@ -855,11 +856,18 @@ raised one.
 @include newpolka.texi
 
 @c ===================================================================
-@node PPL,  , NewPolka, Managers and Abstract Domains
+@node PPL, pkgrid, NewPolka, Managers and Abstract Domains
 @section PPL (@file{apron_ppl.h}): convex polyhedra and linear congruences abstract domains
 @c ===================================================================
 
 @include apron_ppl.texi
+
+@c ===================================================================
+@node pkgrid,  , PPL, Managers and Abstract Domains
+@section pkgrid (@file{ap_pkgrid.h}): reduced product of NewPolka convex polyhedra and PPL linear congruences abstract domains
+@c ===================================================================
+
+@include ap_pkgrid.texi
 
 @c *******************************************************************
 @node Scalars & Intervals & Coefficients, Level 1 of the interface, Managers and Abstract Domains, Top
@@ -3823,12 +3831,13 @@ constraints in @var{array} that are satisfied by both @var{a1} and
 @c *******************************************************************
 
 The signatures of the functions described in this chapter are
-provided by the files @file{ap_generic.h} and
-@file{ap_linearize.h}.
+provided by the files @file{ap_generic.h}, 
+@file{ap_linearize.h} and @file{ap_reducedproduct.h}
 
 @menu
 * Generic implementations::
 * Linearization functions::
+* Generic reduced product::
 @end menu
 
 @c ===================================================================
@@ -3885,7 +3894,7 @@ It relies on: @code{is_bottom}, @code{ copy}, @code{ dimension},
 @end deftypefun
 
 @c ===================================================================
-@node Linearization functions,  , Generic implementations, Functions for implementors
+@node Linearization functions, Generic reduced product, Generic implementations, Functions for implementors
 @section Linearization functions
 @c ===================================================================
 
@@ -3919,6 +3928,42 @@ constraints into linear constraints for @code{>0,>=0,=0}
 constraint types. If @var{convert} is true, the scalars in the
 result are guaranteed to be of type @var{discr}. Otherwise, some
 constraints may simply be copied from the input to the output.
+@end deftypefun
+
+@c ===================================================================
+@node Generic reduced product, ,Linearization functions, Functions for implementors
+@section Generic reduced product
+@c ===================================================================
+
+TO BE COMPLETED
+
+@deftp datatype ap_reducedproduct_t
+(internal) abstract value for a product
+@example
+typedef struct ap_reducedproduct_t @{
+  bool reduced; /* is the product reduced ? */
+  void* p[0];   /* array of internal abstract values, 
+		   the size of which is specified in the associated 
+		   ap_reducedproduct_internal_t */
+@} ap_reducedproduct_t;
+@end example
+@end deftp
+
+@deftp datatype ap_reducedproduct_internal_t
+internal field of a manager for generic reduced products
+@example
+typedef struct ap_reducedproduct_internal_t @{
+  void (*reduce)(ap_manager_t*, ap_reducedproduct_t*);             
+    /* reduce function */
+  void (*approximate)(ap_manager_t*, ap_reducedproduct_t*, int n); 
+    /* approximate function */
+  size_t size;                 /* size of the product */
+  ap_manager_t* tmanagers[0];  /* of size size */
+@} ap_reducedproduct_internal_t;
+@end example
+@end deftp
+
+@deftypefun ap_manager_t* ap_reducedproduct_manager_alloc (ap_manager_t** @var{tab}, size_t @var{size}, void (*@var{reduce})(ap_manager_t*, ap_reducedproduct_t*), void (*@var{approximate})(ap_manager_t*, ap_reducedproduct_t*, int n))
 @end deftypefun
 
 @c *******************************************************************

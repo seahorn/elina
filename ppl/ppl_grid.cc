@@ -24,7 +24,6 @@
 using namespace std;
 using namespace Parma_Polyhedra_Library;
 
-
 /* ********************************************************************** */
 /* General stuff */
 /* ********************************************************************** */
@@ -178,7 +177,6 @@ void ap_ppl_grid_minimize(ap_manager_t* man, PPL_Grid* a)
   CATCH_WITH_VOID(AP_FUNID_MINIMIZE);
 }
 
-/* NOT IMPLEMENTED! */
 extern "C" 
 void ap_ppl_grid_canonicalize(ap_manager_t* man, PPL_Grid* a)
 {
@@ -664,7 +662,6 @@ PPL_Grid* ap_ppl_grid_meet_lincons_array(ap_manager_t* man,
     if (ap_ppl_of_lincons_array(intern->itv,c,array))
       man->result.flag_exact = man->result.flag_best = tbool_top;
     r->p->add_recycled_congruences_and_minimize(c);
-    r->reduce();
     return r;
   }
   CATCH_WITH_GRID(AP_FUNID_MEET_LINCONS_ARRAY,a);
@@ -790,6 +787,7 @@ PPL_Grid* ap_ppl_grid_assign_linexpr_array(ap_manager_t* man,
 							   org,
 							   tdim,texpr,size,
 							   dest);
+  r->reduce();
   return r;
 }
 extern "C"
@@ -815,6 +813,7 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr_array(ap_manager_t* man,
 							       org,
 							       tdim,texpr,size,
 							       dest);
+  r->reduce();
   return r;
 }
   
@@ -834,6 +833,9 @@ PPL_Grid* ap_ppl_grid_forget_array(ap_manager_t* man,
       if (project) {
 	for (size_t i=0;i<size;i++)
 	  r->p->add_constraint_and_minimize(Variable(tdim[i])==0);
+      }
+      else {
+	r->reduce();
       }
     }
     return r;
@@ -997,6 +999,7 @@ PPL_Grid* ap_ppl_grid_widening(ap_manager_t* man,
   try {
     PPL_Grid* r = new PPL_Grid(*a2);
     r->p->widening_assign(*a1->p);
+    r->reduce();
     return r;
   }
   CATCH_WITH_GRID(AP_FUNID_WIDENING,a1);
@@ -1016,22 +1019,10 @@ PPL_Grid* ap_ppl_grid_widening_threshold(ap_manager_t* man,
     ap_ppl_of_lincons_array(intern->itv,c,array);
     PPL_Grid* r = new PPL_Grid(*a2);
     r->p->limited_extrapolation_assign(*a1->p,c);
+    r->reduce();
     return r;
   }
   CATCH_WITH_GRID(AP_FUNID_WIDENING,a1);
-}
-
-ap_abstract0_t*
-ap_abstract0_ppl_grid_widening_thresholds(ap_manager_t* man,
-					  ap_abstract0_t* a1,
-					  ap_abstract0_t* a2,
-					  ap_lincons0_array_t* array)
-{
-  arg_assert(man->library==a1->man->library &&
-             man->library==a2->man->library,
-             return ap_ppl_invalid_abstract0(man,a1);,
-	     AP_FUNID_WIDENING);
-  return ap_ppl_make_abstract0(man,ap_ppl_grid_widening_threshold(man,(PPL_Grid*)a1->value,(PPL_Grid*)a2->value,array));
 }
 
 extern "C" 

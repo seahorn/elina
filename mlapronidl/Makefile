@@ -144,17 +144,18 @@ apron_parser.ml apron_parser.mli: apron_parser.mly
 mlapronidl.pdf: mlapronidl.dvi
 	$(DVIPDF) mlapronidl.dvi
 
-mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli  ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
-	$(OCAMLDOC) $(OCAMLINC) \
-	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli  ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
+mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli  ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
+	$(OCAMLDOC) $(OCAMLINC) -I ../newpolka \
+	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
 	latex mlapronidl
 	makeindex mlapronidl
 	latex mlapronidl
 	latex mlapronidl
 
-html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli  ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
+html: $(IDLMODULES:%=%.mli) parser.mli mlapronidl.odoc $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
 	mkdir -p html
-	$(OCAMLDOC) $(OCAMLINC) -html -d html -colorize-code $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
+	$(OCAMLDOC) $(OCAMLINC)  -I ../newpolka \
+-html -d html -colorize-code $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
 	cp -f index.html html
 
 #--------------------------------------------------------------

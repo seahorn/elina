@@ -123,7 +123,6 @@ distclean:
 	(cd ppl; make distclean)
 
 doc:
-	(hyperlatex index.tex)
 	(cd apron; make html apron.pdf)
 ifdef HAS_OCAML
 	(cd mlgmpidl; make html mlgmpidl.pdf)
@@ -145,7 +144,10 @@ dist:
 	tar vczf $(PKGNAME).tgz $(PKGNAME)
 	rm -rf $(PKGNAME)
 
-online: doc
+# these 2 targets are for main developpers only
+index.html: index.tex 
+	hyperlatex index.tex
+online: doc index.html
 	rm -fr online
 	mkdir -p online
 	mv index.html online

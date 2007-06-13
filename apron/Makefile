@@ -87,6 +87,8 @@ distclean:
 
 .PHONY : html
 
+ap_pkgrid.texi: ../products/ap_pkgrid.texi
+	ln -s $< $@
 apron_ppl.texi: ../ppl/apron_ppl.texi
 	ln -s $< $@
 newpolka.texi: ../newpolka/newpolka.texi
@@ -100,7 +102,7 @@ apron.pdf: apron.dvi
 apron.dvi: apron.texi rationale.texi apron_ppl.texi newpolka.texi box.texi
 	$(TEXI2DVI) -o $@ $<
 
-apron.info: apron.texi apron_ppl.texi newpolka.texi box.texi
+apron.info: apron.texi ap_pkgrid.texi apron_ppl.texi newpolka.texi box.texi
 	$(MAKEINFO) -o $@ $<
 
 
