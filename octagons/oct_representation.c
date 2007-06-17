@@ -15,7 +15,6 @@
 
 #include "oct.h"
 #include "oct_internal.h"
-#include "setround.h"
 
 
 /* ============================================================ */
@@ -340,7 +339,7 @@ ap_manager_t* oct_manager_alloc(void)
   oct_internal_t* pr;
 
 #if num_fpu
-  if (!init_fpu()) {
+  if (!ap_fpu_init()) {
     fprintf(stderr,"oct_manager_alloc cannot change the FPU rounding mode\n");
     return NULL;
   }

@@ -49,9 +49,9 @@ OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
 #---------------------------------------
 
 CCSOURCES = oct_hmat.c oct_print.c oct_transfer.c oct_closure.c oct_nary.c \
-	    oct_representation.c oct_predicate.c oct_resize.c setround.c
+	    oct_representation.c oct_predicate.c oct_resize.c
 
-CCINC = oct_internal.h oct_fun.h setround.h
+CCINC = oct_internal.h oct_fun.h
 
 # trigers a whole recompilation
 #DEPS = $(APRON_PREFIX)/include/ap_abstract0.h
