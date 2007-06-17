@@ -114,10 +114,10 @@ html: apron.texi apron_ppl.texi newpolka.texi box.texi
 # C rules
 #---------------------------------------
 
-libapron.a: $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%_mpq.o) $(C_FILES_AUX:%.c=%_dbl.o) 
+libapron.a: $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%_mpq.o) $(C_FILES_AUX:%.c=%_dbl.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
-libapron_debug.a: $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%_mpq_debug.o) $(C_FILES_AUX:%.c=%_dbl_debug.o) 
+libapron_debug.a: $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%_mpq_debug.o) $(C_FILES_AUX:%.c=%_dbl_debug.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
@@ -143,9 +143,10 @@ dep: $(H_FILES)
 
 %_mpq.o: %.c %.h
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -I../num -I../itv -I. -c $< -o $@
-
 %_dbl.o: %.c %.h
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -I../num -I../itv -I. -c $< -o $@
+%_ldbl.o: %.c %.h
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGDOUBLE -I../num -I../itv -I. -c $< -o $@
 
 %_debug.o: %.c %.h
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS)  -I../itv -c -o $@ $<
@@ -154,6 +155,8 @@ dep: $(H_FILES)
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPQ -I../num -I../itv -I. -c -o $@ $< -o $@
 %_dbl_debug.o: %.c %.h
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_DOUBLE -I../num -I../itv -I. -c -o $@ $< -o $@
+%_ldbl_debug.o: %.c %.h
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGDOUBLE -I../num -I../itv -I. -c -o $@ $< -o $@
 
 #---------------------------------------
 # dependencies (generated with make dep)

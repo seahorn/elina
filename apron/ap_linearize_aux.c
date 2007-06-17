@@ -17,25 +17,22 @@
 #include "itv_linexpr.h"
 
 static
-bool quasilinearize_alloc(ap_manager_t* man, void* abs,
+bool quasilinearize_alloc(ap_manager_t* man, ap_abstract0_t* abs,
 			  itv_internal_t** pintern,
 			  itv_lincons_t* plincons,
 			  itv_t** ptitv, size_t* psize)
 {
-  tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-  ap_interval_t** (*to_box)(ap_manager_t*,...) = man->funptr[AP_FUNID_TO_BOX];
-  ap_dimension_t (*dimension)(ap_manager_t*,...) = man->funptr[AP_FUNID_DIMENSION];
   bool exact,exact2;
   ap_dimension_t dim;
   ap_interval_t** tinterval;
 
-  assert(is_bottom(man,abs)!=tbool_true);
+  assert(ap_abstract0_is_bottom(man,abs)!=tbool_true);
   exact = true;
 
-  tinterval = to_box(man,abs);
+  tinterval = ap_abstract0_to_box(man,abs);
   exact = (man->result.flag_exact == tbool_true) && exact;
 
-  dim = dimension(man,abs);
+  dim = ap_abstract0_dimension(man,abs);
   *psize = dim.intdim+dim.realdim;
   *pintern = itv_internal_alloc();
   exact = itv_array_set_ap_interval_array(*pintern,ptitv,tinterval,*psize)
@@ -68,11 +65,11 @@ void quasilinearize_free(itv_internal_t* intern,
 */
 
 
-ap_linexpr0_t* ITVFUN(ap_quasilinearize_linexpr0)
-  (ap_manager_t* man,
-   void* abs,
-   ap_linexpr0_t* linexpr0,
-   bool* pexact)
+ap_linexpr0_t* 
+ITVFUN(ap_quasilinearize_linexpr0)(ap_manager_t* man,
+				   ap_abstract0_t* abs,
+				   ap_linexpr0_t* linexpr0,
+				   bool* pexact)
 {
   size_t nbdims;
   ap_linexpr0_t* rlinexpr0;
@@ -94,11 +91,11 @@ ap_linexpr0_t* ITVFUN(ap_quasilinearize_linexpr0)
 }
 
 /* Same for ap_lincons0_t */
-ap_lincons0_t ITVFUN(ap_quasilinearize_lincons0)
-  (ap_manager_t* man,
-   void* abs,
-   ap_lincons0_t* lincons0,
-   bool* pexact)
+ap_lincons0_t 
+ITVFUN(ap_quasilinearize_lincons0)(ap_manager_t* man,
+				   ap_abstract0_t* abs,
+				   ap_lincons0_t* lincons0,
+				   bool* pexact)
 {
   ap_linexpr0_t* rlinexpr0 = ITVFUN(ap_quasilinearize_linexpr0)(man,abs,
 								lincons0->linexpr0,
@@ -112,10 +109,11 @@ ap_lincons0_t ITVFUN(ap_quasilinearize_lincons0)
 }
 
 /* Same for arrays of ap_linexpr0_t */
-ap_linexpr0_t** ITVFUN(ap_quasilinearize_tlinexpr0)(ap_manager_t* man,
-						   void* abs,
-						   ap_linexpr0_t** texpr, size_t size,
-						   bool* pexact)
+ap_linexpr0_t** 
+ITVFUN(ap_quasilinearize_linexpr0_array)(ap_manager_t* man,
+					 ap_abstract0_t* abs,
+					 ap_linexpr0_t** texpr, size_t size,
+					 bool* pexact)
 {
   size_t nbdims;
   ap_linexpr0_t** tab;
@@ -143,7 +141,7 @@ ap_linexpr0_t** ITVFUN(ap_quasilinearize_tlinexpr0)(ap_manager_t* man,
 /* Same for ap_lincons0_array_t */
 ap_lincons0_array_t
 ITVFUN(ap_quasilinearize_lincons0_array)(ap_manager_t* man,
-					 void* abs,
+					 ap_abstract0_t* abs,
 					 ap_lincons0_array_t* array,
 					 bool* pexact,
 					 bool convert,
@@ -200,4 +198,39 @@ ITVFUN(ap_quasilinearize_lincons0_array)(ap_manager_t* man,
   ap_lincons0_clear(&lincons0);
   quasilinearize_free(intern,&lincons,titv,nbdims);
   return res;
+}
+
+
+/* evaluation */
+ap_interval_t* 
+ITVFUN(ap_linexpr0_eval)(ap_manager_t* man,
+			 ap_abstract0_t* abs,
+			 ap_linexpr0_t* expr,
+			 bool* pexact)
+{
+  bool exact;
+  itv_internal_t* intern;
+  ap_dimension_t dim;
+  ap_interval_t** aenv;
+  itv_t* ienv;
+  itv_t res;
+  ap_interval_t* r = ap_interval_alloc();
+  if (pexact) *pexact = true;
+  aenv = ap_abstract0_to_box(man,abs);
+  if (!aenv) { 
+    ap_interval_set_bottom(r); 
+    return r; 
+  }
+  dim = ap_abstract0_dimension(man,abs);
+  intern = itv_internal_alloc();
+  itv_init(res);
+  itv_array_set_ap_interval_array(intern,&ienv,aenv,dim.intdim+dim.realdim);
+  exact = itv_eval_ap_linexpr0(intern,res,ienv,expr);
+  if (pexact) *pexact = exact;
+  ap_interval_set_itv(intern,r,res);
+  itv_internal_free(intern);
+  ap_interval_array_free(aenv,dim.intdim+dim.realdim);
+  itv_array_free(ienv,dim.intdim+dim.realdim);
+  itv_clear(res);
+  return r;
 }

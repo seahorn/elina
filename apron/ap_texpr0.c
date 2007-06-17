@@ -211,10 +211,10 @@ ap_texpr0_t* ap_texpr0_from_linexpr0(ap_linexpr0_t* e)
   ap_dim_t d;
   ap_coeff_t* c;
   ap_linexpr0_ForeachLinterm(e, i, d, c) {
-    res = ap_texpr0_binop(AP_TEXPR_ADD, AP_RTYPE_REAL, AP_RDIR_EXACT,
+    res = ap_texpr0_binop(AP_TEXPR_ADD, AP_RTYPE_REAL, AP_RDIR_RND,
 			  res,
 			  ap_texpr0_binop(AP_TEXPR_MUL, 
-					  AP_RTYPE_REAL, AP_RDIR_EXACT,
+					  AP_RTYPE_REAL, AP_RDIR_RND,
 					  ap_texpr0_cst(c), ap_texpr0_dim(d)));
   }
   return res;
@@ -235,7 +235,7 @@ static const int ap_texpr_op_precedence[] =
   };    
 
 static const char* ap_texpr_rtype_name[] =
-  { "", "i", "f", "d", "l", "q", "h", };
+  { "", "i", "f", "d", "l", "q", };
 
 static const char* ap_texpr_rdir_name[] =
   { "n", "0", "+oo", "-oo", "?", "", };
@@ -243,8 +243,7 @@ static const char* ap_texpr_rdir_name[] =
 /* node induces some rounding (to float or integer) */
 static inline bool ap_texpr0_node_exact(ap_texpr0_node_t* a)
 {
-  if (a->op==AP_TEXPR_NEG ||
-      a->dir==AP_RDIR_EXACT ||
+  if (a->op==AP_TEXPR_NEG || a->op==AP_TEXPR_MOD ||
       a->type==AP_RTYPE_REAL) return true;
   return false;
 }
@@ -304,6 +303,10 @@ void ap_texpr0_fprint(FILE* stream, ap_texpr0_t* a, char** name_of_dim)
     assert(false);
   }
 }
+
+void ap_texpr0_print(ap_texpr0_t* a, char** name_of_dim)
+{ ap_texpr0_fprint(stdout, a, name_of_dim); }
+
 
 /* ====================================================================== */
 /* III. Tests, size */
@@ -611,7 +614,7 @@ void ap_texpr0_subst_with(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst)
   }
 }
 
-/* linearization */
+/* linearization / evaluation */
 
 #define NUM_MPQ
 #include "ap_texpr0_aux.h"
@@ -621,27 +624,41 @@ void ap_texpr0_subst_with(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst)
 #include "ap_texpr0_aux.h"
 #undef  NUM_DOUBLE
 
-ap_linexpr0_t* ap_texpr0_intlinearize(ap_manager_t* man,
-				      void* abs,
-				      ap_texpr0_t* expr, 
-				      ap_scalar_discr_t discr,
-				      bool quasilinearize,
-				      bool* pexact)
+ap_linexpr0_t* 
+ap_texpr0_linearize(ap_manager_t* man,
+		    ap_abstract0_t* abs,
+		    ap_texpr0_t* expr, 
+		    ap_scalar_discr_t discr,
+		    bool quasilinearize,
+		    bool* pexact)
 {
-  ap_linexpr0_t* linexpr0;
   switch (discr){
   case AP_SCALAR_MPQ:
-    linexpr0 = ap_texpr0_intlinearize_mpq(man,abs,expr,quasilinearize,pexact);
-    break;
+    return ap_texpr0_linearize_mpq(man,abs,expr,quasilinearize,pexact);
   case AP_SCALAR_DOUBLE:
-    linexpr0 = ap_texpr0_intlinearize_dbl(man,abs,expr,quasilinearize,pexact);
-    break;
+    return ap_texpr0_linearize_dbl(man,abs,expr,quasilinearize,pexact);
   default:
     assert(false);
     return NULL; 
-    break;
   }
-  return linexpr0;
+}
+
+ap_interval_t* 
+ap_texpr0_eval(ap_manager_t* man,
+	       ap_abstract0_t* abs,
+	       ap_texpr0_t* expr, 
+	       ap_scalar_discr_t discr,
+	       bool* pexact)
+{
+  switch (discr){
+  case AP_SCALAR_MPQ:
+    return ap_texpr0_eval_mpq(man,abs,expr,pexact);
+  case AP_SCALAR_DOUBLE:
+    return ap_texpr0_eval_dbl(man,abs,expr,pexact);
+  default:
+    assert(false);
+    return NULL; 
+  }
 }
 
 /* ====================================================================== */

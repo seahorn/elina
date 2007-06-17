@@ -13,6 +13,7 @@
 #include "ap_dimension.h"
 #include "ap_coeff.h"
 #include "ap_linexpr0.h"
+#include "ap_manager.h"
 #include "ap_abstract0.h"
 
 #ifdef __cplusplus
@@ -23,15 +24,26 @@ extern "C" {
 /* Datatypes */
 /* ====================================================================== */
 
+
+/*
+  IMPORTANT NOTE
+  --------------
+  correct use of floating-point AP_RTYPE_xxx currently supposes that the 
+  FPU rounds towards +oo 
+*/
+
+
+
 /* Operators */
 typedef enum ap_texpr_op_t {
 
   /* Binary operators */
   AP_TEXPR_ADD, AP_TEXPR_SUB, AP_TEXPR_MUL, AP_TEXPR_DIV,
-  AP_TEXPR_MOD, 
+  AP_TEXPR_MOD,  /* either integer or real, no rounding */
 
   /* Unary operators */
-  AP_TEXPR_NEG, AP_TEXPR_CAST, AP_TEXPR_SQRT,
+  AP_TEXPR_NEG /* no rounding */, 
+  AP_TEXPR_CAST, AP_TEXPR_SQRT,
 
 } ap_texpr_op_t;
 
@@ -43,7 +55,6 @@ typedef enum ap_texpr_rtype_t {
   AP_RTYPE_DOUBLE,   /* IEEE 754 64-bit double precision, e.g.: C's double */
   AP_RTYPE_EXTENDED, /* non-standard 80-bit double extended, e.g.: Intel's long double */
   AP_RTYPE_QUAD,     /* non-standard 128-bit quadruple precision, e.g.: Motorola's long double */
-  AP_RTYPE_HALF,     /* non-standard 16-bit half precision, e.g.: nVIDIA */
 } ap_texpr_rtype_t;
 
 /* Rounding direction */
@@ -53,10 +64,8 @@ typedef enum ap_texpr_rdir_t {
   AP_RDIR_UP      = GMP_RNDU, /* + Infinity */
   AP_RDIR_DOWN    = GMP_RNDD, /* - Infinity */
   AP_RDIR_RND,    /* All possible mode, non deterministically */
-  AP_RDIR_EXACT,
   AP_RDIR_SIZE    /* Not to be used ! */
 } ap_texpr_rdir_t;
-
 
 /* Internal (operator) nodes */
 typedef struct ap_texpr0_node_t {
@@ -134,6 +143,7 @@ void ap_texpr0_node_free(ap_texpr0_node_t* node);
 /* ====================================================================== */
 
 void ap_texpr0_fprint(FILE* stream, ap_texpr0_t* a, char** name_of_dim);
+void ap_texpr0_print(ap_texpr0_t* a, char** name_of_dim);
   /* Prints the expression, name_of_dim can be NULL */
 
 
@@ -194,12 +204,19 @@ ap_texpr0_t* ap_texpr0_subst(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst);
 void ap_texpr0_subst_with   (ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst);
   /* Substitue every occurence of dimension dim with a copy of dst  */
 
-ap_linexpr0_t* ap_texpr0_intlinearize(ap_manager_t* man,
-				      void* abs,
-				      ap_texpr0_t* expr, 
-				      ap_scalar_discr_t discr,
-				      bool quasilinearize,
-				      bool* pexact);
+ap_interval_t* ap_texpr0_eval(ap_manager_t* man,
+			      ap_abstract0_t* abs,
+			      ap_texpr0_t* expr, 
+			      ap_scalar_discr_t discr,
+			      bool* pexact);
+  /* Evaluation to an interval */
+
+ap_linexpr0_t* ap_texpr0_linearize(ap_manager_t* man,
+				   ap_abstract0_t* abs,
+				   ap_texpr0_t* expr, 
+				   ap_scalar_discr_t discr,
+				   bool quasilinearize,
+				   bool* pexact);
   /* Linearization */
 
 /* ====================================================================== */

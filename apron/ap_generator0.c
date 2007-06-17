@@ -32,7 +32,7 @@ void ap_generator0_fprint(FILE* stream, ap_generator0_t* gen, char** name_of_dim
     str = "RAYMOD:  ";
     break;
   }
-  fprintf(stream,str);
+  fprintf(stream,"%s",str);
   ap_linexpr0_fprint(stream,gen->linexpr0,name_of_dim);
 }
 

@@ -201,7 +201,6 @@ void ap_linexpr0_fprint(FILE* stream, ap_linexpr0_t* a, char** name_of_dim)
 	}
 	if (!ap_scalar_equal_int(scalar,1))
 	  ap_scalar_fprint(stream,scalar);
-	first = false;
 	break;
       case AP_COEFF_INTERVAL:
 	if (!first)
@@ -210,9 +209,10 @@ void ap_linexpr0_fprint(FILE* stream, ap_linexpr0_t* a, char** name_of_dim)
 	break;
       }
       if (name_of_dim)
-	fprintf(stream,name_of_dim[dim]);
+	fprintf(stream,"%s",name_of_dim[dim]);
       else
 	fprintf(stream,"x%lu",(unsigned long)dim);
+      first = false;
     }
   }
   /* Constant */

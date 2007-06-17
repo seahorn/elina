@@ -6,7 +6,7 @@
 
 /* may be included several times, with different NUM_ defined */
 
-#if !defined(NUM_MPQ) && !defined(NUM_DOUBLE)
+#if !defined(NUM_MPQ) && !defined(NUM_DOUBLE) && !defined(NUM_LONGDOUBLE)
 #error "Wrong NUM type"
 #endif
 
@@ -19,24 +19,38 @@
 extern "C" {
 #endif
 
-ap_linexpr0_t* ITVFUN(ap_quasilinearize_linexpr0)(ap_manager_t* man,
-						  void* abs,
-						  ap_linexpr0_t* linexpr0,
-						  bool* pexact);
-ap_lincons0_t ITVFUN(ap_quasilinearize_lincons0)(ap_manager_t* man,
-						 void* abs,
-						 ap_lincons0_t* lincons0,
-						 bool* pexact);
-ap_linexpr0_t** ITVFUN(ap_quasilinearize_tlinexpr0)(ap_manager_t* man,
-						    void* abs,
-						    ap_linexpr0_t** texpr, size_t size,
-						    bool* pexact);
-ap_lincons0_array_t ITVFUN(ap_quasilinearize_lincons0_array)(ap_manager_t* man,
-							     void* abs,
-							     ap_lincons0_array_t* array,
-							     bool* pexact,
-							     bool convert,
-							     bool linearize);
+ap_interval_t* 
+ITVFUN(ap_linexpr0_eval)(ap_manager_t* man,
+			 ap_abstract0_t* abs,
+			 ap_linexpr0_t* expr,
+			 bool* pexact);
+
+
+ap_linexpr0_t* 
+ITVFUN(ap_quasilinearize_linexpr0)(ap_manager_t* man,
+				   ap_abstract0_t* abs,
+				   ap_linexpr0_t* linexpr0,
+				   bool* pexact);
+  
+ap_lincons0_t 
+ITVFUN(ap_quasilinearize_lincons0)(ap_manager_t* man,
+				   ap_abstract0_t* abs,
+				   ap_lincons0_t* lincons0,
+				   bool* pexact);
+  
+ap_linexpr0_t** 
+ITVFUN(ap_quasilinearize_linexpr0_array)(ap_manager_t* man,
+					 ap_abstract0_t* abs,
+					 ap_linexpr0_t** texpr, size_t size,
+					 bool* pexact);
+
+ap_lincons0_array_t 
+ITVFUN(ap_quasilinearize_lincons0_array)(ap_manager_t* man,
+					 ap_abstract0_t* abs,
+					 ap_lincons0_array_t* array,
+					 bool* pexact,
+					 bool convert,
+					 bool linearize);
 
 
 #ifdef __cplusplus

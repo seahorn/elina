@@ -15,6 +15,32 @@
 #include "ap_linearize_aux.h"
 #undef  NUM_DOUBLE
 
+#define NUM_LONGDOUBLE
+#include "ap_linearize_aux.h"
+#undef  NUM_LONGDOUBLE
+
+
+/* ********************************************************************** */
+/* Evaluation */
+/* ********************************************************************** */
+
+ap_interval_t* 
+ap_linexpr0_eval(ap_manager_t* man,
+		 ap_abstract0_t* abs,
+		 ap_linexpr0_t* expr, 
+		 ap_scalar_discr_t discr,
+		 bool* pexact)
+{
+  switch (discr){
+  case AP_SCALAR_MPQ:
+    return ap_linexpr0_eval_mpq(man,abs,expr,pexact);
+  case AP_SCALAR_DOUBLE:
+    return ap_linexpr0_eval_dbl(man,abs,expr,pexact);
+  default:
+    assert(false);
+    return NULL; 
+  }
+}
 
 /* ********************************************************************** */
 /* Quasilinearization */
@@ -63,17 +89,18 @@ ap_lincons0_t ap_quasilinearize_lincons0(ap_manager_t* man,
 }
 
 /* Same for arrays of ap_linexpr0_t */
-ap_linexpr0_t** ap_quasilinearize_tlinexpr0(ap_manager_t* man,
-					    void* abs,
-					    ap_linexpr0_t** texpr, size_t size,
-					    ap_scalar_discr_t discr,
-					    bool* pexact)
+ap_linexpr0_t** 
+ap_quasilinearize_linexpr0_array(ap_manager_t* man,
+				 void* abs,
+				 ap_linexpr0_t** texpr, size_t size,
+				 ap_scalar_discr_t discr,
+				 bool* pexact)
 {
   switch (discr){
   case AP_SCALAR_MPQ:
-    return ap_quasilinearize_tlinexpr0_mpq(man,abs,texpr,size,pexact);
+    return ap_quasilinearize_linexpr0_array_mpq(man,abs,texpr,size,pexact);
   case AP_SCALAR_DOUBLE:
-    return ap_quasilinearize_tlinexpr0_dbl(man,abs,texpr,size,pexact);
+    return ap_quasilinearize_linexpr0_array_dbl(man,abs,texpr,size,pexact);
   default:
     abort();
   }

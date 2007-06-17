@@ -12,5 +12,6 @@
 #include "ap_lincons0.h"
 #include "ap_generator0.h"
 #include "ap_texpr0.h"
+#include "ap_linearize.h"
 
 #endif

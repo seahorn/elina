@@ -8,6 +8,8 @@
 #ifndef _AP_ABSTRACT0_H_
 #define _AP_ABSTRACT0_H_
 
+typedef struct ap_abstract0_t ap_abstract0_t;
+
 #include "ap_manager.h"
 #include "ap_expr0.h"
 
@@ -16,10 +18,10 @@ extern "C" {
 #endif
 
 /* Generic abstract value at level 0 */
-typedef struct ap_abstract0_t {
+struct ap_abstract0_t {
   void* value;       /* Abstract value of the underlying library */
   ap_manager_t* man; /* Used to identify the effective type of value */
-} ap_abstract0_t;
+};
 
 /* ********************************************************************** */
 /* I. General management */
