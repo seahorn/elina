@@ -65,9 +65,13 @@ typedef struct itv_lincons_t {
 static inline void itv_linexpr_init(itv_linexpr_t* expr, size_t size);
 static inline void itv_linexpr_reinit(itv_linexpr_t* expr, size_t size);
 static inline void itv_linexpr_clear(itv_linexpr_t* expr);
+static inline void itv_linexpr_fprint(FILE* stream, itv_linexpr_t* expr, char** name);
+static inline void itv_linexpr_print(itv_linexpr_t* expr, char** name);
 
 static inline void itv_lincons_init(itv_lincons_t* cons);
 static inline void itv_lincons_clear(itv_lincons_t* cons);
+static inline void itv_lincons_fprint(FILE* stream, itv_lincons_t* cons, char** name);
+static inline void itv_lincons_print(itv_lincons_t* cons, char** name);
 
 /* ********************************************************************** */
 /* II. Conversions from and to APRON datatypes */
@@ -150,7 +154,7 @@ static inline itv_linexpr_t itv_linexpr_sub(itv_internal_t* intern,
 					    itv_linexpr_t* exprA,
 					    itv_linexpr_t* exprB);
   /* Resp. add and substract two linear epxression.
-     (Substraction temporarily negates exprB,a nd then restores it */
+     (Substraction temporarily negates exprB, and then restores it */
 
 /* ********************************************************************** */
 /* Definition of inline functions */
@@ -280,6 +284,22 @@ static inline itv_linexpr_t itv_linexpr_sub(itv_internal_t* intern,
 					    itv_linexpr_t* exprA,
 					    itv_linexpr_t* exprB)
 { return ITVFUN(itv_linexpr_sub)(intern,exprA,exprB); }
+
+void ITVFUN(itv_linexpr_fprint)(FILE* stream, itv_linexpr_t* expr, char** name);
+void ITVFUN(itv_lincons_fprint)(FILE* stream, itv_lincons_t* cons, char** name);
+
+static inline void itv_linexpr_fprint(FILE* stream, itv_linexpr_t* expr, char** name)
+{ ITVFUN(itv_linexpr_fprint)(stream,expr,name); }
+
+static inline void itv_lincons_fprint(FILE* stream, itv_lincons_t* cons, char** name)
+{ ITVFUN(itv_lincons_fprint)(stream,cons,name); }
+
+static inline void itv_linexpr_print(itv_linexpr_t* expr, char** name)
+{ itv_linexpr_fprint(stdout,expr,name); }
+
+static inline void itv_lincons_print(itv_lincons_t* cons, char** name)
+{ itv_lincons_fprint(stdout,cons,name); }
+
 
 #ifdef __cplusplus
 }

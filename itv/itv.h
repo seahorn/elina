@@ -34,6 +34,10 @@ typedef struct itv_internal_t {
   num_t canonicalize_num;
   bound_t muldiv_bound;
   bound_t mul_bound;
+  bound_t sqrt_bound;
+  bound_t linear_bound;
+  bound_t linear_bound2;
+  bound_t linear_bound3;
   itv_t mul_itv;
   itv_t mul_itv2;
   ap_scalar_t* ap_conversion_scalar;
@@ -70,10 +74,19 @@ static inline void itv_array_free(itv_t* a, size_t size);
 /* Assignement */
 static inline void itv_set(itv_t a, itv_t b);
 static inline void itv_set_num(itv_t a, num_t b);
+static inline void itv_set_num2(itv_t a, num_t b, num_t c);
 static inline void itv_set_int(itv_t a, long int b);
+static inline void itv_set_int2(itv_t a, long int b, long int c);
 static inline void itv_set_bottom(itv_t a);
 static inline void itv_set_top(itv_t a);
 static inline void itv_swap(itv_t a, itv_t b);
+
+/* a = [-b,b] */
+static inline void itv_set_unit_num(itv_t a, num_t b);
+ static inline void itv_set_unit_bound(itv_t a, bound_t b);
+
+/* a = b + [-c,c] */
+static inline void itv_enlarge_bound(itv_t a, itv_t b, bound_t c);
 
 /* Normalization and tests */
 static inline bool itv_canonicalize(itv_internal_t* intern,
@@ -95,6 +108,18 @@ static inline bool itv_is_leq(itv_t a, itv_t b);
 static inline bool itv_is_eq(itv_t a, itv_t b);
   /* Equality test */
 
+static inline bool itv_is_pos(itv_t a);
+static inline bool itv_is_neg(itv_t a);
+  /* Included in [0;+oo], [-oo;0], or any of those */
+
+static inline bool itv_is_int(itv_internal_t* intern, itv_t a);
+  /* has integer bounds */
+
+static inline void itv_range_abs(bound_t a, itv_t b);
+  /* a=(max b - min b) */
+static inline void itv_range_rel(itv_internal_t* intern, bound_t a, itv_t b);
+  /* a=(max b - min b) / (|a+b|/2) */ 
+
 /* Lattice operations */
 static inline bool itv_meet(itv_internal_t* intern,
 			    itv_t a, itv_t b, itv_t c);
@@ -103,6 +128,10 @@ static inline void itv_join(itv_t a, itv_t b, itv_t c);
   /* Assign a with the union of b and c */
 static inline void itv_widening(itv_t a, itv_t b, itv_t c);
   /* Assign a with the standard interval widening of b by c */
+
+static inline void itv_meet_pos(itv_t a, itv_t b);
+static inline void itv_meet_neg(itv_t a, itv_t b);
+  /* Intersection with [0;+oo], [-oo;0] */
 
 /* Arithmetic operations */
 static inline void itv_add(itv_t a, itv_t b, itv_t c);
@@ -118,6 +147,26 @@ static inline void itv_mul_num(itv_t a, itv_t b, num_t c);
 static inline void itv_div_num(itv_t a, itv_t b, num_t c);
 static inline void itv_mul_bound(itv_t a, itv_t b, bound_t c);
 static inline void itv_div_bound(itv_t a, itv_t b, bound_t c);
+static inline bool itv_sqrt(itv_internal_t* intern, itv_t a, itv_t b);
+static inline void itv_abs(itv_t a, itv_t b);
+static inline void itv_mul_2exp(itv_t a, itv_t b, int c);
+
+static inline void itv_magnitude(bound_t a, itv_t b);
+  /* get the absolute value of maximal bound */
+
+static inline void itv_mod(itv_internal_t* intern, itv_t a, itv_t b, itv_t c,
+			   bool is_int);
+  /* x mod y = x - y*trunc(x/y) */
+
+/* Integer casts (rounding towards +oo, -oo, 0, or worst-case) */
+static inline void itv_ceil(itv_t a, itv_t b);
+static inline void itv_floor(itv_t a, itv_t b);
+static inline void itv_trunc(itv_t a, itv_t b);
+static inline void itv_to_int(itv_t a, itv_t b);
+
+/* Floating-point casts (worst cases) */
+static inline void itv_to_float(itv_t a, itv_t b);
+static inline void itv_to_double(itv_t a, itv_t b);
 
 
 /* Printing */
@@ -173,8 +222,14 @@ void ITVFUN(itv_sub)(itv_t a, itv_t b, itv_t c);
 void ITVFUN(itv_neg)(itv_t a, itv_t b);
 void ITVFUN(itv_mul)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
 void ITVFUN(itv_div)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
+bool ITVFUN(itv_sqrt)(itv_internal_t* intern, itv_t a, itv_t b);
+void ITVFUN(itv_abs)(itv_t a, itv_t b);
+void ITVFUN(itv_mod)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c, 
+		     bool is_int);
 void ITVFUN(itv_fprint)(FILE* stream, itv_t a);
-int ITVFUN(itv_snprint)(char* s, size_t size, itv_t a);
+int  ITVFUN(itv_snprint)(char* s, size_t size, itv_t a);
+
+
 
 bool ITVFUN(itv_set_ap_scalar)(itv_internal_t* intern,
 			       itv_t a, ap_scalar_t* b);
@@ -204,7 +259,7 @@ static inline void itv_internal_free(itv_internal_t* intern)
 { ITVFUN(itv_internal_free)(intern); }
 
 static inline bool itv_canonicalize(itv_internal_t* intern,
-			       itv_t a, bool integer)
+				    itv_t a, bool integer)
 { return ITVFUN(itv_canonicalize)(intern,a,integer); }
 
 static inline void itv_mul_num(itv_t a, itv_t b, num_t c)
@@ -312,10 +367,37 @@ static inline void itv_set_num(itv_t a, num_t b)
   bound_set_num(a->sup,b);
   bound_neg(a->inf,a->sup);
 }
+  static inline void itv_set_num2(itv_t a, num_t b, num_t c)
+{
+  bound_set_num(a->sup,b);
+  num_neg(c,c);
+  bound_set_num(a->inf,c);
+  num_neg(c,c);
+}
+static inline void itv_set_unit_num(itv_t a, num_t b)
+{
+  bound_set_num(a->inf,b);
+  bound_set_num(a->sup,b);
+}
+static inline void itv_set_unit_bound(itv_t a, bound_t b)
+{
+  bound_set(a->inf,b);
+  bound_set(a->sup,b);
+}
+static inline void itv_enlarge_bound(itv_t a, itv_t b, bound_t c)
+{
+  bound_add(a->inf,b->inf,c);
+  bound_add(a->sup,b->sup,c);
+}
 static inline void itv_set_int(itv_t a, long int b)
 {
   bound_set_int(a->inf,-b);
   bound_set_int(a->sup,b);
+}
+static inline void itv_set_int2(itv_t a, long int b, long int c)
+{
+  bound_set_int(a->inf,-b);
+  bound_set_int(a->sup,c);
 }
 static inline void itv_set_bottom(itv_t a)
 {
@@ -402,10 +484,86 @@ static inline void itv_sub_num(itv_t a, itv_t b, num_t c)
   bound_sub_num(a->sup,b->sup,c);
   bound_add_num(a->inf,b->inf,c);
 }
+static inline bool itv_sqrt(itv_internal_t* intern, itv_t a, itv_t b)
+{ return ITVFUN(itv_sqrt)(intern,a,b); }
 
+static inline void itv_abs(itv_t a, itv_t b)
+{ ITVFUN(itv_abs)(a,b); }
+
+static inline void itv_mod(itv_internal_t* intern, itv_t a, itv_t b, itv_t c,
+			   bool is_int)
+{ ITVFUN(itv_mod)(intern,a,b,c,is_int); }
 
 static inline void itv_print(itv_t itv)
 { itv_fprint(stdout,itv); }
+
+
+static inline void itv_ceil(itv_t a, itv_t b)
+{ bound_ceil(a->sup,b->sup); bound_floor(a->inf,b->inf); }
+
+static inline void itv_floor(itv_t a, itv_t b)
+{ bound_floor(a->sup,b->sup);  bound_ceil(a->inf,b->inf); }
+
+static inline void itv_trunc(itv_t a, itv_t b)
+{ bound_trunc(a->sup,b->sup); bound_trunc(a->inf,b->inf); }
+
+static inline void itv_to_int(itv_t a, itv_t b)
+{ bound_ceil(a->sup,b->sup); bound_ceil(a->inf,b->inf); }
+
+static inline void itv_to_float(itv_t a, itv_t b)
+{ bound_to_float(a->sup,b->sup); bound_to_float(a->inf,b->inf); }
+
+static inline void itv_to_double(itv_t a, itv_t b)
+{ bound_to_double(a->sup,b->sup); bound_to_double(a->inf,b->inf); }
+
+static inline void itv_mul_2exp(itv_t a, itv_t b, int c)
+{ bound_mul_2exp(a->sup,b->sup,c); bound_mul_2exp(a->inf,b->inf,c); }
+
+static inline bool itv_is_pos(itv_t a)
+{ return (bound_sgn(a->inf)<=0); }
+
+static inline bool itv_is_neg(itv_t a)
+{ return (bound_sgn(a->sup)<=0); }
+
+static inline void itv_meet_pos(itv_t a, itv_t b)
+{ 
+  bound_set_int(a->inf,0);
+  if (a!=b) bound_set(a->sup,b->sup);
+}
+ 
+static inline void itv_meet_neg(itv_t a, itv_t b)
+{ 
+  bound_set_int(a->sup,0);
+  if (a!=b) bound_set(a->inf,b->inf);
+}
+
+static inline void itv_magnitude(bound_t a, itv_t b)
+{
+  if (bound_sgn(b->inf)<=0) bound_set(a,b->sup);
+  else if (bound_sgn(b->sup)<=0) bound_set(a,b->inf);
+  else bound_max(a,b->inf,b->sup);
+}
+
+static inline void itv_range_abs(bound_t a, itv_t b)
+{ bound_add(a,b->sup,b->inf); }
+
+static inline void itv_range_rel(itv_internal_t* intern, bound_t a, itv_t b)
+{ 
+  bound_add(a,b->sup,b->inf);
+  if (!bound_infty(a)) {
+    itv_magnitude(intern->muldiv_bound,b);
+    bound_div_2(intern->muldiv_bound,intern->muldiv_bound);
+    bound_div(a,a,intern->muldiv_bound);
+  }
+}
+
+static inline bool itv_is_int(itv_internal_t* intern, itv_t a)
+{
+  bound_trunc(intern->muldiv_bound,a->sup);
+  if (bound_cmp(intern->muldiv_bound,a->sup)) return false;
+  bound_trunc(intern->muldiv_bound,a->inf);
+  return !bound_cmp(intern->muldiv_bound,a->inf);
+}
 
 #ifdef __cplusplus
 }

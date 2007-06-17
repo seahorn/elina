@@ -3,6 +3,7 @@
 /* ********************************************************************** */
 
 #include "itv.h"
+#include "math.h"
 
 /* The macro ITVFUN(itv_name) (defined in itv.h) expands name 
    with itvNUM_SUFFIX_ */
@@ -12,6 +13,10 @@ void ITVFUN(itv_internal_init)(itv_internal_t* intern)
   num_init(intern->canonicalize_num);
   bound_init(intern->muldiv_bound);
   bound_init(intern->mul_bound);
+  bound_init(intern->sqrt_bound);
+  bound_init(intern->linear_bound);
+  bound_init(intern->linear_bound2);
+  bound_init(intern->linear_bound3);
   itv_init(intern->mul_itv);
   itv_init(intern->mul_itv2);
   intern->ap_conversion_scalar = ap_scalar_alloc();
@@ -26,6 +31,10 @@ void ITVFUN(itv_internal_clear)(itv_internal_t* intern)
   num_clear(intern->canonicalize_num);
   bound_clear(intern->muldiv_bound);
   bound_clear(intern->mul_bound);
+  bound_clear(intern->sqrt_bound);
+  bound_clear(intern->linear_bound);
+  bound_clear(intern->linear_bound2);
+  bound_clear(intern->linear_bound3);
   itv_clear(intern->mul_itv);
   itv_clear(intern->mul_itv2);
   ap_scalar_free(intern->ap_conversion_scalar); intern->ap_conversion_scalar = NULL;
@@ -56,7 +65,7 @@ void ITVFUN(itv_internal_free)(itv_internal_t* intern)
    In any case, return true if the interval is bottom
 */
 bool ITVFUN(itv_canonicalize)(itv_internal_t* intern,
-			  itv_t a, bool integer)
+			      itv_t a, bool integer)
 {
   bool exc;
 
@@ -147,6 +156,73 @@ void ITVFUN(itv_neg)(itv_t a, itv_t b)
   }
 }
 
+bool ITVFUN(itv_sqrt)(itv_internal_t* intern, itv_t a, itv_t b)
+{
+  bool exact = true;
+  if (itv_is_bottom(intern,b) || bound_sgn(b->sup)<0) {
+    /* empty result */
+    itv_set_bottom(a);
+    return true;
+  }
+  /* lower bound */
+  if (bound_sgn(b->inf)>=0) {
+    bound_set_int(a->inf,0);
+  }
+  else {
+    bound_neg(b->inf,b->inf);
+    bound_sqrt(intern->sqrt_bound,a->inf,b->inf);
+    exact = exact && bound_equal(intern->sqrt_bound,a->inf);
+    bound_neg(b->inf,b->inf);
+    if (a!=b) bound_neg(a->inf,a->inf);
+  }
+  /* upper bound */
+  bound_sqrt(a->sup,intern->sqrt_bound,b->sup);
+  exact = exact && bound_equal(intern->sqrt_bound,a->sup);
+  return exact;
+}
+
+void ITVFUN(itv_abs)(itv_t a, itv_t b)
+{
+  if (bound_sgn(b->inf)<=0)
+    /* positive interval */
+    itv_set(a,b);
+  else if (bound_sgn(b->sup)<=0)
+    /* negative interval */
+    itv_neg(a,b);
+  else {
+    bound_max(a->sup,b->inf,b->sup);
+    bound_set_int(a->inf,0);
+  }
+}
+
+void ITVFUN(itv_mod)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c,
+		     bool is_int)
+{
+  /* b-|c|*trunc(b/|c|) */
+  itv_abs(intern->eval_itv, c);
+  if (!bound_sgn(intern->eval_itv->inf)) itv_set_top(a);
+  else {
+    itv_div(intern, intern->eval_itv2, b, intern->eval_itv);
+    itv_trunc(intern->eval_itv2, intern->eval_itv2);
+    itv_mul(intern, intern->eval_itv2, intern->eval_itv2, intern->eval_itv);
+    if (is_int) bound_sub_uint(intern->eval_itv->sup,intern->eval_itv->sup,1);
+    if (bound_sgn(b->sup)<0) {
+      /* [-max|c|,0] */
+      bound_set(intern->eval_itv->inf, intern->eval_itv->sup);
+      bound_set_int(intern->eval_itv->sup, 0);
+    }
+    else if (bound_sgn(b->inf)>0)
+      /* [-max|c|,max|c|] */
+      bound_set(intern->eval_itv->inf, intern->eval_itv->sup);
+    else 
+      /* [0,max|c|] */
+      bound_set_int(intern->eval_itv->inf, 0);
+    itv_sub(a, b, intern->eval_itv2);
+    itv_meet(intern, a, a, intern->eval_itv);
+  }
+}
+
+
 /* ====================================================================== */
 /* Multiplication */
 /* ====================================================================== */
@@ -184,16 +260,9 @@ void itv_mulpn(itv_internal_t* intern,
 	       itv_t c)
 {
   assert(bound_sgn(b->inf)<=0 && bound_sgn(c->sup)<=0);
-  if (a!=b){
-    bound_mul(a->sup,b->inf,c->sup);
-    bound_neg(a->sup,a->sup);
-    bound_mul(a->inf,b->sup,c->inf);
-  }
-  else {
-    bound_mul(intern->mul_bound,b->inf,c->sup);
-    bound_mul(a->inf,b->sup,c->inf);
-    bound_neg(a->sup,intern->mul_bound);
-  }
+  bound_mul(intern->mul_bound,b->inf,c->sup);
+  bound_mul(a->inf,b->sup,c->inf);
+  bound_neg(a->sup,intern->mul_bound);
 }
 /* Assume that interval c is positive */
 static
@@ -286,16 +355,10 @@ void itv_divpp(itv_internal_t* intern,
 	       itv_t b,
 	       itv_t c)
 {
-  assert(bound_sgn(b->inf)<=0 && bound_sgn(c->inf)<=0);
-  if (a!=c){
-    bound_div(a->inf,b->inf,c->sup);
-    bound_div(a->sup,b->sup,c->inf);
-    bound_neg(a->sup,a->sup);
-  } else {
-    bound_div(intern->mul_bound,b->sup,c->inf);
-    bound_div(a->inf,b->inf,c->sup);
-    bound_neg(a->sup,intern->mul_bound);
-  }     
+  assert(bound_sgn(b->inf)<=0 && bound_sgn(c->inf)<0);
+  bound_div(intern->mul_bound,b->sup,c->inf);
+  bound_div(a->inf,b->inf,c->sup);
+  bound_neg(a->sup,intern->mul_bound);
 }
 /* Assume that both intervals are negative */
 static
@@ -304,7 +367,7 @@ void itv_divnn(itv_internal_t* intern,
 	       itv_t b,
 	       itv_t c)
 {
-  assert(bound_sgn(b->sup)<=0 && bound_sgn(c->sup)<=0);
+  assert(bound_sgn(b->sup)<=0 && bound_sgn(c->sup)<0);
   if (a!=b){
     bound_div(a->inf,b->sup,c->inf);
     bound_div(a->sup,b->inf,c->sup);
@@ -321,7 +384,7 @@ void itv_divpn(itv_internal_t* intern,
 	       itv_t b,
 	       itv_t c)
 {
-  assert(bound_sgn(b->inf)<=0 && bound_sgn(c->sup)<=0);
+  assert(bound_sgn(b->inf)<=0 && bound_sgn(c->sup)<0);
   /* 
      bound_div(a->inf,b->sup,c->sup);
      bound_neg(a->inf,a->inf)
@@ -339,9 +402,11 @@ void itv_divnp(itv_internal_t* intern,
 	       itv_t b,
 	       itv_t c)
 {
-  assert(bound_sgn(b->inf)<=0 && bound_sgn(c->sup)<=0);
+  assert(bound_sgn(b->sup)<=0 && bound_sgn(c->inf)<0);
+  bound_neg(b->inf, b->inf);
   bound_div(a->inf,b->inf,c->inf);
   bound_div(a->sup,b->sup,c->sup);
+  if (a!=b) bound_neg(b->inf, b->inf);
 }
 
 /* Assume that interval c is positive */
@@ -351,7 +416,7 @@ void itv_divp(itv_internal_t* intern,
 	       itv_t b,
 	       itv_t c)
 {
-  assert(bound_sgn(c->inf)<=0);
+  assert(bound_sgn(c->inf)<0);
 
   if (bound_sgn(b->inf)<=0){
     /* b is positive */
@@ -376,7 +441,7 @@ void itv_divn(itv_internal_t* intern,
 	      itv_t b,
 	      itv_t c)
 {
-  assert(bound_sgn(c->sup)<=0);
+  assert(bound_sgn(c->sup)<0);
 
   if (bound_sgn(b->inf)<=0){
     /* b is positive */
@@ -392,8 +457,8 @@ void itv_divn(itv_internal_t* intern,
       bound_div(a->inf,b->sup,c->sup);
       bound_div(a->sup,b->inf,c->sup);
     */
-    bound_div(a->sup,b->sup,c->sup);
     bound_div(a->inf,b->inf,c->sup);
+    bound_div(a->sup,b->sup,c->sup);
     bound_swap(a->inf,a->sup);
     bound_neg(a->inf,a->inf);
     bound_neg(a->sup,a->sup);
@@ -402,11 +467,11 @@ void itv_divn(itv_internal_t* intern,
 
 void ITVFUN(itv_div)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c)
 {
-  if (bound_sgn(c->inf)<=0){
+  if (bound_sgn(c->inf)<0){
     /* c is positive */
     itv_divp(intern,a,b,c);
   }
-  else if (bound_sgn(c->sup)<=0){
+  else if (bound_sgn(c->sup)<0){
     /* c is negative */
     itv_divn(intern,a,b,c);
   }
