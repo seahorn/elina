@@ -5,7 +5,12 @@
 #ifndef _NUM_H_
 #define _NUM_H_
 
+#include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
+#include <string.h>
+#include <assert.h>
+#include <math.h>
 
 #include "gmp.h"
 #include "mpfr.h"
@@ -92,9 +97,17 @@ static inline void num_div(num_t a, num_t b, num_t c);
 static inline void num_div_2(num_t a, num_t b);
 static inline void num_min(num_t a, num_t b, num_t c);
 static inline void num_max(num_t a, num_t b, num_t c);
+
+static inline void num_mul_2exp(num_t a, num_t b, int c);
+  /* multiplies b by 2^c (c can be positive or negative) */
+
 static inline void num_floor(num_t a, num_t b);
 static inline void num_ceil(num_t a, num_t b);
+static inline void num_trunc(num_t a, num_t b);
   /* Approximate to the nearest integer toward resp. -infty, +infty */
+
+static inline void num_sqrt(num_t up, num_t down, num_t b);
+  /* Compute both an upper bound and a lower bound */
 
 /* ====================================================================== */
 /* Arithmetic Tests */
@@ -136,6 +149,8 @@ static inline bool mpq_set_num(mpq_t a, num_t b);
   /* num -> mpq */
 static inline bool double_set_num(double* a, num_t b);
   /* num -> double */
+static inline bool float_set_num(float* a, num_t b);
+  /* num -> float */
 static inline bool ap_scalar_set_num(ap_scalar_t* a, num_t b);
   /* num -> ap_scalar */
 
@@ -143,6 +158,7 @@ static inline bool mpz_fits_num(mpz_t a);
 static inline bool mpq_fits_num(mpq_t a);
 static inline bool double_fits_num(double a);
 static inline bool num_fits_int(num_t a);
+static inline bool num_fits_float(num_t a);
 static inline bool num_fits_double(num_t a);
 
 /* Optimized versions */

@@ -70,6 +70,9 @@ static inline void numflt_min(numflt_t a, numflt_t b, numflt_t c);
 static inline void numflt_max(numflt_t a, numflt_t b, numflt_t c);
 static inline void numflt_floor(numflt_t a, numflt_t b);
 static inline void numflt_ceil(numflt_t a, numflt_t b);
+static inline void numflt_trunc(numflt_t a, numflt_t b);
+static inline void numflt_sqrt(numflt_t up, numflt_t down, numflt_t b);
+static inline void numflt_mul_2exp(numflt_t a, numflt_t b, int c);
 
 /* ====================================================================== */
 /* Arithmetic Tests */
@@ -118,6 +121,7 @@ static inline bool mpz_fits_numflt(mpz_t a);
 static inline bool mpq_fits_numflt(mpq_t a);
 static inline bool double_fits_numflt(double a);
 static inline bool numflt_fits_int(numflt_t a);
+static inline bool numflt_fits_float(numflt_t a);
 static inline bool numflt_fits_double(numflt_t a);
 
 /* Optimized versions */

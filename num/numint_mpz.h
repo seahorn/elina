@@ -90,6 +90,8 @@ static inline void numint_fdiv_q(numint_t a, numint_t b, numint_t c)
 { mpz_fdiv_q(a,b,c); }
 static inline void numint_cdiv_q(numint_t a, numint_t b, numint_t c)
 { mpz_cdiv_q(a,b,c); }
+static inline void numint_tdiv_q(numint_t a, numint_t b, numint_t c)
+{ mpz_tdiv_q(a,b,c); }
 static inline void numint_cdiv_qr(numint_t a, numint_t b, numint_t c, numint_t d)
 { mpz_cdiv_qr(a,b,c,d); }
 static inline void numint_cdiv_2(numint_t a, numint_t b)
@@ -102,6 +104,23 @@ static inline void numint_min(numint_t a, numint_t b, numint_t c)
 { mpz_set(a, mpz_cmp(b,c)<=0 ? b : c); }
 static inline void numint_max(numint_t a, numint_t b, numint_t c)
 { mpz_set(a, mpz_cmp(b,c)>=0 ? b : c); }
+
+static inline void numint_sqrt(numint_t up, numint_t down, numint_t b)
+{
+  int perfect;
+  assert(mpz_sgn(b)>=0);
+  perfect = mpz_perfect_square_p(b);
+  mpz_sqrt(down,b);
+  if (perfect) mpz_set(up,down);
+  else mpz_add_ui(up,down,1);
+}
+
+static inline void numint_mul_2exp(numint_t a, numint_t b, int c)
+{
+  if (c>=0) mpz_mul_2exp(a,b,c);
+  else mpz_cdiv_q_2exp(a,b,-c);
+}
+
 
 /* ====================================================================== */
 /* Arithmetic Integer Operations */
@@ -235,11 +254,10 @@ static inline bool double_fits_numint(double a)
 { return true; }
 static inline bool numint_fits_int(numint_t a)
 { return mpz_fits_slong_p(a); }
+static inline bool numint_fits_float(numint_t a)
+{ return (mpz_sizeinbase(a,2)<127); }
 static inline bool numint_fits_double(numint_t a)
-{  
-  double d = mpz_get_d(a);
-  return fabs(d) != (double)1.0/(double)0.0;
-}
+{ return (mpz_sizeinbase(a,2)<1023); }
 
 /* ====================================================================== */
 /* Serialization */

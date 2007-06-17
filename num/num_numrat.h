@@ -100,7 +100,12 @@ static inline void num_floor(num_t a, num_t b)
               { numrat_floor(a,b); }
 static inline void num_ceil(num_t a, num_t b)
               { numrat_ceil(a,b); }
-  /* Approximate to the nearest integer toward resp. -infty, +infty */
+static inline void num_trunc(num_t a, num_t b)
+              { numrat_trunc(a,b); }
+static inline void num_sqrt(num_t up, num_t down, num_t b)
+              { numrat_sqrt(up,down,b); }
+static inline void num_mul_2exp(num_t a, num_t b, int c)
+              { numrat_mul_2exp(a,b,c); }
 
 /* ====================================================================== */
 /* Arithmetic Tests */
@@ -173,6 +178,8 @@ static inline bool double_fits_num(double a)
           { return double_fits_numrat(a); }
 static inline bool num_fits_int(num_t a)
           { return numrat_fits_int(a); }
+static inline bool num_fits_float(num_t a)
+          { return numrat_fits_float(a); }
 static inline bool num_fits_double(num_t a)
           { return numrat_fits_double(a); }
 

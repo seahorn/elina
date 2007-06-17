@@ -99,61 +99,36 @@ static inline void numint_mul(numint_t a, numint_t b, numint_t c)
 static inline void numint_mul_2(numint_t a, numint_t b)
 { *a = *b << 1; }
 
-#if defined(NUMINT_LONGINT)
-static inline void numint_fdiv_q(numint_t a, numint_t b, numint_t c)
+static inline void numint_tdiv_q(numint_t q, numint_t a, numint_t b)
+{ *q = *a / *b; }
+
+static inline int numint_sgn(numint_t a)
+{ return (*a==NUMINT_ZERO ? 0 : (*a>NUMINT_ZERO ? 1 : -1)); }
+
+static inline void numint_fdiv_q(numint_t q, numint_t a, numint_t b)
 {
-  ldiv_t d = ldiv(*b,*c); /* rounding towards 0 */
-  *a = d.quot;
-  if (d.quot<NUMINT_ZERO && d.rem!=NUMINT_ZERO){
-    *a = *a - 1; /* rounding towards minus infty */
-  }
+  if (numint_sgn(a)*numint_sgn(b)<0 && *a % *b) *q = *a / *b - 1;
+  else *q = *a / *b;
 } 
 static inline void numint_cdiv_q(numint_t q, numint_t a, numint_t b)
 {
-  ldiv_t d = ldiv(*a,*b); /* rounding towards 0 */
-  if (d.quot>=NUMINT_ZERO && d.rem!=NUMINT_ZERO){
-    d.quot++; /* rounding towards plus infty */
-  }
-  *q = d.quot;
+  if (numint_sgn(a)*numint_sgn(b)>0 && *a % *b) *q = *a / *b + 1;
+  else *q = *a / *b;
 } 
 static inline void numint_cdiv_qr(numint_t q, numint_t r, numint_t a, numint_t b)
 {
-  ldiv_t d = ldiv(*a,*b); /* rounding towards 0 */
-  if (d.quot>=NUMINT_ZERO && d.rem!=NUMINT_ZERO){
-    d.quot++; /* rounding towards plus infty */
-    d.rem -= *b;
+  numint_t qq,rr;
+  *qq = *a / *b;
+  *rr = *a % *b;
+  if (numint_sgn(a)*numint_sgn(b)>0 && *rr) {
+    *q = *qq + 1;
+    *r = *rr - *b;
   }
-  *q = d.quot;
-  *r = d.rem;
-} 
-#else
-static inline void numint_fdiv_q(numint_t a, numint_t b, numint_t c)
-{
-  lldiv_t d = lldiv(*b,*c); /* rounding towards 0 */
-  *a = d.quot;
-  if (d.quot<0 && d.rem!=0){
-    *a = *a - 1; /* rounding towards minus infty */
+  else {
+    *q = *qq;
+    *r = *rr;
   }
 } 
-static inline void numint_cdiv_q(numint_t q, numint_t a, numint_t b)
-{
-  lldiv_t d = lldiv(*a,*b); /* rounding towards 0 */
-  if (d.quot>=NUMINT_ZERO && d.rem!=NUMINT_ZERO){
-    d.quot++; /* rounding towards plus infty */
-  }
-  *q = d.quot;
-} 
-static inline void numint_cdiv_qr(numint_t q, numint_t r, numint_t a, numint_t b)
-{
-  lldiv_t d = lldiv(*a,*b); /* rounding towards 0 */
-  if (d.quot>=NUMINT_ZERO && d.rem!=NUMINT_ZERO){
-    d.quot++; /* rounding towards plus infty */
-    d.rem -= *b;
-  }
-  *q = d.quot;
-  *r = d.rem;
-} 
-#endif
 
 static inline void numint_cdiv_2(numint_t a, numint_t b)
 { *a = (*b>=NUMINT_ZERO) ? (*b+1)/2 : *b/2; }
@@ -165,6 +140,31 @@ static inline void numint_min(numint_t a, numint_t b, numint_t c)
 { *a = (*b<=*c) ? *b : *c; }
 static inline void numint_max(numint_t a, numint_t b, numint_t c)
 { *a = (*b>=*c) ? *b : *c; }
+
+static const long long numint_max_exact_double = 1LL << 52;
+
+static inline void numint_sqrt(numint_t up, numint_t down, numint_t b)
+{
+  double f = sqrt(*b);
+  assert(*b>=0);
+  if (*b<numint_max_exact_double) {
+    /* ceil(sqrt(b)) can be exactly represented as a double */
+    *up = ceil(f);
+    *down = floor(f);
+  }
+  else {
+    /* (unlikely) case where ulp(sqrt(b)) might  be greater than 1 */
+    *up = ceil(nextafter(f,+1/0.));
+    *down = floor(nextafter(f,0.));
+  }
+}
+
+static inline void numint_mul_2exp(numint_t a, numint_t b, int c)
+{
+  if (c>=0) *a = *b << c;
+  else numint_cdiv_q_2exp(a,b,-c);
+}
+
 
 /* ====================================================================== */
 /* Arithmetic Integer Operations */
@@ -206,8 +206,6 @@ static inline void numint_lcm(numint_t a, numint_t b,  numint_t c)
 /* Arithmetic Tests */
 /* ====================================================================== */
 
-static inline int numint_sgn(numint_t a)
-{ return (*a==NUMINT_ZERO ? 0 : (*a>NUMINT_ZERO ? 1 : -1)); }
 static inline int numint_cmp(numint_t a, numint_t b)
 { return (*a==*b ? 0 : (*a>*b ? 1 : -1)); }
 static inline int numint_cmp_int(numint_t a, long int b)
@@ -386,6 +384,8 @@ static inline bool numint_fits_int(numint_t a)
 #else
 { return (*a>=-LONG_MAX && *a<=LONG_MAX); }
 #endif
+static inline bool numint_fits_float(numint_t a)
+{ return true; }
 static inline bool numint_fits_double(numint_t a)
 { return true; }
 

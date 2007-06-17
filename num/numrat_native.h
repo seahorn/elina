@@ -185,6 +185,37 @@ static inline void numrat_ceil(numrat_t a, numrat_t b)
   numint_cdiv_q(a->n, b->n, b->d);
   numint_set_int(a->d,1);
 }
+static inline void numrat_trunc(numrat_t a, numrat_t b)
+{
+  numint_tdiv_q(a->n, b->n, b->d);
+  numint_set_int(a->d,1);
+}
+static inline void numrat_sqrt(numrat_t up, numrat_t down, numrat_t b)
+{
+  /* compute sqrt(p/q) as sqrt(p*q)/q */
+  numint_t pq;
+  assert(*b->n>=0);
+  numint_mul(pq, numrat_numref(b), numrat_denref(b));
+  numint_sqrt(numrat_numref(up), numrat_numref(down), pq);
+  numint_set(numrat_denref(up),numrat_denref(b));
+  numint_set(numrat_denref(down),numrat_denref(b));
+  numrat_canonicalize(up);
+  numrat_canonicalize(down);
+}
+
+static inline void numrat_mul_2exp(numrat_t a, numrat_t b, int c)
+{
+  if (c>=0) {
+    *a->n = *b->n << c;
+    *a->d = *b->d;
+  }
+  else {
+    *a->n = *b->n;
+    *a->d = *b->d << (-c);
+  }
+  numrat_canonicalize(a);
+}
+
 /* ====================================================================== */
 /* Arithmetic Tests */
 /* ====================================================================== */
@@ -369,6 +400,8 @@ static inline bool numrat_fits_int(numrat_t a)
   numint_cdiv_q(b,a->n,a->d);
   return *b<=LONG_MAX && *b>=-LONG_MAX;
 }
+static inline bool numrat_fits_float(numrat_t a)
+{ return true; }
 static inline bool numrat_fits_double(numrat_t a)
 { return true; }
 

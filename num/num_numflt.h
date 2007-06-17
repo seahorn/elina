@@ -101,7 +101,12 @@ static inline void num_floor(num_t a, num_t b)
               { numflt_floor(a,b); }
 static inline void num_ceil(num_t a, num_t b)
               { numflt_ceil(a,b); }
-  /* Approximate to the nearest integer toward resp. -infty, +infty */
+static inline void num_trunc(num_t a, num_t b)
+              { numflt_trunc(a,b); }
+static inline void num_sqrt(num_t up, num_t down, num_t b)
+              { numflt_sqrt(up,down,b); }
+static inline void num_mul_2exp(num_t a, num_t b, int c)
+              { numflt_mul_2exp(a,b,c); }
 
 /* ====================================================================== */
 /* Arithmetic Tests */
@@ -174,6 +179,8 @@ static inline bool double_fits_num(double a)
           { return double_fits_numflt(a); }
 static inline bool num_fits_int(num_t a)
           { return numflt_fits_int(a); }
+static inline bool num_fits_float(num_t a)
+          { return numflt_fits_double(a); }
 static inline bool num_fits_double(num_t a)
           { return numflt_fits_double(a); }
 

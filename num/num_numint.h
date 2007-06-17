@@ -93,18 +93,23 @@ static inline void num_mul(num_t a, num_t b, num_t c)
 static inline void num_mul_2(num_t a, num_t b)
               { numint_mul_2(a,b); }
 static inline void num_div(num_t a, num_t b, num_t c)
-{ numint_cdiv_q(a,b,c); }
+              { numint_cdiv_q(a,b,c); }
 static inline void num_div_2(num_t a, num_t b)
-{ numint_cdiv_2(a,b); }
+              { numint_cdiv_2(a,b); }
 static inline void num_min(num_t a, num_t b, num_t c)
               { numint_min(a,b,c); }
 static inline void num_max(num_t a, num_t b, num_t c)
               { numint_max(a,b,c); }
 static inline void num_floor(num_t a, num_t b)
-{ numint_set(a,b); }
+              { numint_set(a,b); }
 static inline void num_ceil(num_t a, num_t b)
-{ numint_set(a,b); }
-  /* Approximate to the nearest integer toward resp. -infty, +infty */
+              { numint_set(a,b); }
+static inline void num_trunc(num_t a, num_t b)
+              { numint_set(a,b); }
+static inline void num_sqrt(num_t up, num_t down, num_t b)
+              { numint_sqrt(up,down,b); }
+static inline void num_mul_2exp(num_t a, num_t b, int c)
+              { numint_mul_2exp(a,b,c); }
 
 /* ====================================================================== */
 /* Arithmetic Tests */
@@ -177,6 +182,8 @@ static inline bool double_fits_num(double a)
           { return double_fits_numint(a); }
 static inline bool num_fits_int(num_t a)
           { return numint_fits_int(a); }
+static inline bool num_fits_float(num_t a)
+          { return numint_fits_float(a); }
 static inline bool num_fits_double(num_t a)
           { return numint_fits_double(a); }
 

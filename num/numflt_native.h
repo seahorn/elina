@@ -108,6 +108,18 @@ static inline void numflt_floor(numflt_t a, numflt_t b)
 { *a = floor(*b); }
 static inline void numflt_ceil(numflt_t a, numflt_t b)
 { *a = ceil(*b); }
+static inline void numflt_trunc(numflt_t a, numflt_t b)
+{ *a = trunc(*b); }
+static inline void numflt_sqrt(numflt_t up, numflt_t down, numflt_t b)
+{
+  assert(*b>=0);
+  *up = sqrt(*b);
+  assert(*up**up>=*b); /* assumes round towards +oo! */
+  if (*up**up==*b) *down = *up;
+  else *down = nextafter(*up,0);
+}
+static inline void numflt_mul_2exp(numflt_t a, numflt_t b, int c)
+{ *a = ldexp(*b,c); }
 #else
 static inline void numflt_abs(numflt_t a, numflt_t b)
 { *a = fabsl(*b); }
@@ -123,6 +135,18 @@ static inline void numflt_floor(numflt_t a, numflt_t b)
 { *a = floorl(*b); }
 static inline void numflt_ceil(numflt_t a, numflt_t b)
 { *a = ceill(*b); }
+static inline void numflt_trunc(numflt_t a, numflt_t b)
+{ *a = truncl(*b); }
+static inline void numflt_sqrt(numflt_t up, numflt_t down, numflt_t b)
+{
+  assert(*b>=0);
+  *up = sqrtl(*b);
+  assert(*up**up>=*b); /* assumes round towards +oo! */
+  if (*up**up==*b) *down = *up;
+  else *down = nextafterl(*up,0);
+}
+static inline void numflt_mul_2exp(numflt_t a, numflt_t b, int c)
+{ *a = ldexpl(*b,c); }
 #endif
 /* ====================================================================== */
 /* Arithmetic Tests */
@@ -271,15 +295,26 @@ static inline bool numflt_fits_int(numflt_t a)
   numflt_ceil(&d,a);
   return d >= (numflt_native)(-LONG_MAX) && d<= (numflt_native)LONG_MAX;
 }
-static inline bool numflt_fits_double(numflt_t a)
+static inline bool numflt_fits_float(numflt_t a)
+{
+  int e;
 #if defined(NUMFLT_DOUBLE)
-{ return true; }
+  frexp(*a,&e);
 #else
-{ 
-  double k = (double)*a;
-  return fabs(k) != (double)1.0/(double)0.0;
-}
+  frexpl(*a,&e);
 #endif
+  return (e<127);
+}
+static inline bool numflt_fits_double(numflt_t a)
+{
+#if defined(NUMFLT_DOUBLE)
+  return true;
+#else
+  int e;
+  frexpl(*a,&e);
+  return (e<1023);
+#endif
+}
 
 /* ====================================================================== */
 /* Only for floating point */

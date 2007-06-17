@@ -69,12 +69,17 @@ static inline void numint_mul(numint_t a, numint_t b, numint_t c);
 static inline void numint_mul_2(numint_t a, numint_t b);
 static inline void numint_fdiv_q(numint_t a, numint_t b, numint_t c);
 static inline void numint_cdiv_q(numint_t q, numint_t a, numint_t b);
+static inline void numint_cdiv_t(numint_t q, numint_t a, numint_t b);
 static inline void numint_cdiv_qr(numint_t q, numint_t r, numint_t a, numint_t b);
 static inline void numint_cdiv_2(numint_t a, numint_t b);
 static inline void numint_cdiv_q_2exp(numint_t a, numint_t b, unsigned long int c);
 static inline void numint_fdiv_q_2exp(numint_t a, numint_t b, unsigned long int c);
 static inline void numint_min(numint_t a, numint_t b, numint_t c);
 static inline void numint_max(numint_t a, numint_t b, numint_t c);
+static inline void numint_floor(numint_t a, numint_t b);
+static inline void numint_ceil(numint_t a, numint_t b);
+static inline void numint_sqrt(numint_t up, numint_t down, numint_t b);
+static inline void numint_mul_2exp(numint_t a, numint_t b, int c);
 
 /* ====================================================================== */
 /* Arithmetic Integer Operations */
@@ -133,6 +138,7 @@ static inline bool mpz_fits_numint(mpz_t a);
 static inline bool mpq_fits_numint(mpq_t a);
 static inline bool double_fits_numint(double a);
 static inline bool numint_fits_int(numint_t a);
+static inline bool numint_fits_float(numint_t a);
 static inline bool numint_fits_double(numint_t a);
 
 /* Optimized versions */

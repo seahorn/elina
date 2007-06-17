@@ -132,6 +132,35 @@ static inline void numrat_ceil(numrat_t a, numrat_t b)
   numint_cdiv_q(numrat_numref(a),numrat_numref(b),numrat_denref(b));
   numint_set_int(numrat_denref(a),1);
 }
+static inline void numrat_trunc(numrat_t a, numrat_t b)
+{
+  numint_tdiv_q(numrat_numref(a),numrat_numref(b),numrat_denref(b));
+  numint_set_int(numrat_denref(a),1);
+}
+static inline void numrat_sqrt(numrat_t up, numrat_t down, numrat_t b)
+{
+  /* compute sqrt(p/q) as sqrt(p*q)/q */
+  mpz_t tmp; 
+  int perfect;
+  assert(mpq_sgn(b)>=0);
+  mpz_init(tmp);
+  mpz_mul(tmp,mpq_numref(b),mpq_denref(b));
+  perfect = mpz_perfect_square_p(tmp);
+  mpz_sqrt(mpq_numref(down),tmp);
+  if (perfect) mpz_set(mpq_numref(up),mpq_numref(down));
+  else mpz_add_ui(mpq_numref(up),mpq_numref(down),1);
+  mpz_set(mpq_denref(up),mpq_denref(b));
+  mpz_set(mpq_denref(down),mpq_denref(b));
+  numrat_canonicalize(up);
+  numrat_canonicalize(down);
+  mpz_clear(tmp);
+}
+
+static inline void numrat_mul_2exp(numrat_t a, numrat_t b, int c)
+{
+  if (c>=0) mpq_mul_2exp(a,b,c);
+  else mpq_div_2exp(a,b,-c);
+}
 
 /* ====================================================================== */
 /* Arithmetic Tests */
@@ -260,10 +289,15 @@ static inline bool numrat_fits_int(numrat_t a)
   double d = ceil(mpq_get_d(a));
   return (d+1.0)<=LONG_MAX && (d-1.0)>=-LONG_MAX;
 }
+static inline bool numrat_fits_float(numrat_t a)
+{ 
+  return ((int)mpz_sizeinbase(numrat_numref(a),2)-
+	  (int)mpz_sizeinbase(numrat_denref(a),2)<126); 
+}
 static inline bool numrat_fits_double(numrat_t a)
 { 
-  double k = mpq_get_d(a);
-  return (fabs(k)+1.0) != (double)1.0/(double)0.0;
+  return ((int)mpz_sizeinbase(numrat_numref(a),2)-
+	  (int)mpz_sizeinbase(numrat_denref(a),2)<1022); 
 }
 
 /* ====================================================================== */

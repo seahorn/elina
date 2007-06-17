@@ -362,6 +362,53 @@ static inline void bound_ceil(bound_t a, bound_t b)
   if (bound_infty(b)) bound_set_infty(a,bound_sgn(b));
   else { num_ceil(bound_numref(a),bound_numref(b)); _bound_inf(a); } 
 }
+static inline void bound_trunc(bound_t a, bound_t b)
+{ 
+  if (bound_infty(b)) bound_set_infty(a,bound_sgn(b));
+  else { num_trunc(bound_numref(a),bound_numref(b)); _bound_inf(a); } 
+}
+static inline void bound_sqrt(bound_t up, bound_t down, bound_t b)
+{
+  if (bound_infty(b)) {
+    bound_set_infty(up,1);
+    bound_set_infty(down,1);
+  }
+  else {
+    num_sqrt(bound_numref(up),bound_numref(down),bound_numref(b));
+    _bound_inf(up);
+    _bound_inf(down);
+  }
+}
+
+static inline void bound_to_float(bound_t a, bound_t b)
+{
+  if (bound_infty(b) || !num_fits_float(bound_numref(b)))
+    bound_set_infty(a,bound_sgn(b));
+  else {
+    double d;
+    double_set_num(&d,bound_numref(b));
+    num_set_double(bound_numref(a),(double)((float)d));
+    _bound_inf(a); 
+  }
+}
+static inline void bound_to_double(bound_t a, bound_t b)
+{
+  if (bound_infty(b) || !num_fits_double(bound_numref(b)))
+    bound_set_infty(a,bound_sgn(b));
+  else {
+    double d;
+    double_set_num(&d,bound_numref(b));
+    num_set_double(bound_numref(a),d);
+    _bound_inf(a); 
+  }
+}
+
+static inline void bound_mul_2exp(bound_t a, bound_t b, int c)
+{
+  if (bound_infty(b)) bound_set_infty(a,bound_sgn(b));
+  else { num_mul_2exp(bound_numref(a),bound_numref(b),c); }
+}
+
 
 /* ====================================================================== */
 /* Arithmetic Tests */

@@ -67,6 +67,9 @@ static inline void numrat_min(numrat_t a, numrat_t b, numrat_t c);
 static inline void numrat_max(numrat_t a, numrat_t b, numrat_t c);
 static inline void numrat_floor(numrat_t a, numrat_t b);
 static inline void numrat_ceil(numrat_t a, numrat_t b);
+static inline void numrat_trunc(numrat_t a, numrat_t b);
+static inline void numrat_sqrt(numrat_t up, numrat_t down, numrat_t b);
+static inline void numrat_mul_2exp(numrat_t a, numrat_t b, int c);
 
 /* ====================================================================== */
 /* Arithmetic Tests */
@@ -114,6 +117,7 @@ static inline bool mpz_fits_numrat(mpz_t a);
 static inline bool mpq_fits_numrat(mpq_t a);
 static inline bool double_fits_numrat(double a);
 static inline bool numrat_fits_int(numrat_t a);
+static inline bool numrat_fits_float(numrat_t a);
 static inline bool numrat_fits_double(numrat_t a);
 
 /* Optimized versions */
