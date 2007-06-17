@@ -227,6 +227,10 @@ void ap_funopt_init(ap_funopt_t* fopt);
 void ap_manager_set_funopt(ap_manager_t* man, ap_funid_t funid, ap_funopt_t* funopt);
 void ap_manager_set_abort_if_exception(ap_manager_t* man, ap_exc_t exn, bool flag);
 
+bool ap_fpu_init(void);
+/* tries to set the FPU rounding-mode towards +oo, returns true if successful */
+
+
 /* ********************************************************************** */
 /* III. Implementor Functions */
 /* ********************************************************************** */
