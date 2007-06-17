@@ -928,7 +928,7 @@ PPL_Poly* ap_ppl_poly_assign_linexpr_array(ap_manager_t* man,
   texpr2 = 
     quasilinear ? 
     texpr :
-    ap_quasilinearize_tlinexpr0(man,org,texpr,size,AP_SCALAR_MPQ,&exact);
+    ap_quasilinearize_linexpr0_array(man,org,texpr,size,AP_SCALAR_MPQ,&exact);
 
   PPL_Poly* r = (PPL_Poly*)ap_generic_assign_linexpr_array(man, destructive, 
 							   org,
@@ -975,7 +975,7 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
       ap_dimension_t dimension = ap_ppl_poly_dimension(man,org);
       dest = new PPL_Poly(man,dimension.intdim,dimension.realdim,UNIVERSE);
     }
-    texpr2 = ap_quasilinearize_tlinexpr0(man,dest,texpr,size,AP_SCALAR_MPQ,&exact);
+    texpr2 = ap_quasilinearize_linexpr0_array(man,dest,texpr,size,AP_SCALAR_MPQ,&exact);
     if (!has_dest){
       delete dest;
       dest = NULL;
