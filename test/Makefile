@@ -38,9 +38,11 @@ C: ctest1
 #
 
 clean:
-	rm -f ctest1 *_debug *.o
+	rm -f ctest1 ctest1_debug *.o
 
 distclean: clean
+
+mostlyclean: clean
 
 dist: ctest1.c Makefile README
 	(cd ..; tar zcvf test.tgz $(^:%=test/%))

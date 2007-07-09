@@ -101,6 +101,7 @@ clean:
 	(cd ppl; make clean)
 	(cd products; make clean)
 	(cd examples; make clean)
+	(cd test; make clean)
 	rm -fr online tmp apronrun aprontop
 
 mostlyclean: clean

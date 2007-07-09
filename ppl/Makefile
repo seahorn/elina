@@ -73,7 +73,7 @@ all: libap_ppl.a libap_ppl_debug.a ap_ppl_test
 
 clean:
 	/bin/rm -f *.[ao] *.so ap_ppl_test
-	/bin/rm -f *.cm[ioax] *.cmxa pplrun ppltop
+	/bin/rm -f *.cm[ioax] *.cmxa pplrun ppltop manager.idl
 	/bin/rm -fr *~ \#*\# tmp
 
 mostlyclean:

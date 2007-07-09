@@ -38,7 +38,7 @@ IDLMODULEStex = ocamldoc.tex \
 Scalar.tex Interval.tex Coeff.tex \
 Dim.tex Linexpr0.tex Lincons0.tex Generator0.tex  Texpr0.tex Tcons0.tex Texpr1.tex Tcons1.tex Manager.tex Abstract0.tex \
 Var.tex Environment.tex Linexpr1.tex Lincons1.tex Generator1.tex Abstract1.tex \
-Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Gmp_random.tex Mpfr.tex Box.tex Polka.tex Oct.tex
+Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Mpf.tex Gmp_random.tex Mpfr.tex Box.tex Oct.tex Polka.tex Ppl.tex PolkaGrid.tex 
 
 MLMODULES = $(IDLMODULES) apron_parser apron_lexer parser
 
@@ -74,10 +74,10 @@ dist: $(IDLMODULES:%=%.idl) $(MLSRC) $(CCSRC) macros.m4 apron_caml.c apron_caml.
 	(cd ..; tar zcvf mlapronidl.tgz $(^:%=mlapronidl/%))
 
 clean:
-	/bin/rm -f $(IDLMODULEStex)
+	/bin/rm -f $(IDLMODULEStex) Apron_lexer.tex Apron_parser.tex Parser.tex
 	/bin/rm -f mpz.idl mpq.idl
 	/bin/rm -f mlapronidl.out mlapronidl.aux mlapronidl.idx mlapronidl.ilg mlapronidl.ind mlapronidl.bbl mlapronidl.blg mlapronidl.dvi mlapronidl.log mlapronidl.toc mlapronidl.ps
-	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
+	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma apron_parser.ml apron_parser.mli apron_lexer.ml
 	/bin/rm -fr tmp html
 	/bin/rm -f ocamldoc.[cefkimoptv]*
 
