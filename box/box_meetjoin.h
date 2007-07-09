@@ -22,6 +22,10 @@ box_t* box_meet_lincons_array(ap_manager_t* man,
 			      bool destructive,
 			      box_t* a,
 			      ap_lincons0_array_t* array);
+box_t* box_meet_tcons_array(ap_manager_t* man,
+			    bool destructive,
+			    box_t* a,
+			    ap_tcons0_array_t* array);
 box_t* box_add_ray_array(ap_manager_t* man,
 			 bool destructive,
 			 box_t* a, ap_generator0_array_t* array);

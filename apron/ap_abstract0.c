@@ -265,8 +265,28 @@ bool ap_abstract0_check_dim_array(ap_funid_t funid, ap_manager_t* man,
 }
 
 /* ====================================================================== */
-/* 0.4 Checking compatibility of arguments: linear expressions */
+/* 0.4 Checking compatibility of arguments: expressions */
 /* ====================================================================== */
+
+static
+void ap_abstract0_check_expr_raise(ap_funid_t funid, ap_manager_t* man,
+				   ap_dimension_t dimension,
+				   ap_dim_t dim,
+				   char* prefix)
+{
+  char str[160];
+  snprintf(str,159,"\
+%s:\n\
+abstract0: (%3lu,%3lu)\n\
+dimension: %3lu\
+",
+	   prefix,
+	   (unsigned long)dimension.intdim,(unsigned long)dimension.realdim,
+	   (unsigned long)dim);
+  ap_manager_raise_exception(man,
+			     AP_EXC_INVALID_ARGUMENT,
+			     funid,str);
+}
 
 /* Check that the linear expression makes sense in the given dimensionality */
 static
@@ -308,34 +328,43 @@ ap_dim_t ap_abstract0_check_linexpr_check(ap_dimension_t dimension,
 }
 
 static
-void ap_abstract0_check_linexpr_raise(ap_funid_t funid, ap_manager_t* man,
-				      ap_dimension_t dimension,
-				      ap_dim_t dim,
-				      char* prefix)
-{
-  char str[160];
-  snprintf(str,159,"\
-%s:\n\
-abstract0: (%3lu,%3lu)\n\
-dimension: %3lu\
-",
-	   prefix,
-	   (unsigned long)dimension.intdim,(unsigned long)dimension.realdim,
-	   (unsigned long)dim);
-  ap_manager_raise_exception(man,
-			     AP_EXC_INVALID_ARGUMENT,
-			     funid,str);
-}
-
-static
 bool ap_abstract0_check_linexpr(ap_funid_t funid, ap_manager_t* man,
 				ap_dimension_t dimension,
 				ap_linexpr0_t* expr)
 {
   ap_dim_t dim = ap_abstract0_check_linexpr_check(dimension,expr);
   if (dim!=AP_DIM_MAX){
-    ap_abstract0_check_linexpr_raise(funid,man,dimension,dim,
-				     "incompatible dimension in the linear expression for the abstract value");
+    ap_abstract0_check_expr_raise(funid,man,dimension,dim,
+				  "incompatible dimension in the linear expression for the abstract value");
+    return false;
+  } else {
+    return true;
+  }
+}
+
+/* Check that the tree expression makes sense in the given dimensionality */
+static
+ap_dim_t ap_abstract0_check_texpr_check(ap_dimension_t dimension,
+					ap_texpr0_t* expr)
+{
+  ap_dim_t dim;
+
+  dim = ap_texpr0_max_dim(expr);
+  if (dim < dimension.intdim+dimension.realdim)
+    return AP_DIM_MAX;
+  else
+    return dim;
+}
+
+static
+bool ap_abstract0_check_texpr(ap_funid_t funid, ap_manager_t* man,
+			      ap_dimension_t dimension,
+			      ap_texpr0_t* expr)
+{
+  ap_dim_t dim = ap_abstract0_check_texpr_check(dimension,expr);
+  if (dim!=AP_DIM_MAX){
+    ap_abstract0_check_expr_raise(funid,man,dimension,dim,
+				  "incompatible dimension in the tree expression for the abstract value");
     return false;
   } else {
     return true;
@@ -366,7 +395,7 @@ bool ap_abstract0_check_linexpr_array(ap_funid_t funid, ap_manager_t* man,
     if (dim!=AP_DIM_MAX){
       char str[80];
       sprintf(str,"incompatible dimension in the %luth expression of the array",(unsigned long)i);
-      ap_abstract0_check_linexpr_raise(funid,man,dimension,dim,str);
+      ap_abstract0_check_expr_raise(funid,man,dimension,dim,str);
       return false;
     }
   }
@@ -392,7 +421,7 @@ bool ap_abstract0_check_lincons_array(ap_funid_t funid, ap_manager_t* man,
     if (dim!=AP_DIM_MAX){
       char str[80];
       sprintf(str,"incompatible dimension in the %luth constraint of the array",(unsigned long)i);
-      ap_abstract0_check_linexpr_raise(funid,man,dimension,dim,str);
+      ap_abstract0_check_expr_raise(funid,man,dimension,dim,str);
       return false;
     }
   }
@@ -418,7 +447,60 @@ bool ap_abstract0_check_generator_array(ap_funid_t funid, ap_manager_t* man,
     if (dim!=AP_DIM_MAX){
       char str[80];
       sprintf(str,"incompatible dimension in the %luth generator of the array",(unsigned long)i);
-      ap_abstract0_check_linexpr_raise(funid,man,dimension,dim,str);
+      ap_abstract0_check_expr_raise(funid,man,dimension,dim,str);
+      return false;
+    }
+  }
+  return true;
+}
+
+/* Check that array of tree expressions makes sense in the given dimensionality */
+bool ap_abstract0_check_texpr_array(ap_funid_t funid, ap_manager_t* man,
+				    ap_dimension_t dimension,
+				    ap_texpr0_t** texpr, size_t size)
+{
+  size_t i;
+
+  for (i=0;i<size; i++){
+    if (texpr[i]==NULL){
+      char str[80];
+      sprintf(str,"null pointer in the %luth expression of the array",(unsigned long)i);
+      ap_manager_raise_exception(man,
+				 AP_EXC_INVALID_ARGUMENT,
+				 funid,str);
+      return false;
+    }
+    ap_dim_t dim = ap_abstract0_check_texpr_check(dimension,texpr[i]);
+    if (dim!=AP_DIM_MAX){
+      char str[80];
+      sprintf(str,"incompatible dimension in the %luth expression of the array",(unsigned long)i);
+      ap_abstract0_check_expr_raise(funid,man,dimension,dim,str);
+      return false;
+    }
+  }
+  return true;
+}
+/* Check that array of tree constraint makes sense in the given dimensionality */
+bool ap_abstract0_check_tcons_array(ap_funid_t funid, ap_manager_t* man,
+				      ap_dimension_t dimension,
+				      ap_tcons0_array_t* array)
+{
+  size_t i;
+
+  for (i=0;i<array->size; i++){
+    if (array->p[i].texpr0==NULL){
+      char str[80];
+      sprintf(str,"null pointer in the %luth constraint of the array",(unsigned long)i);
+      ap_manager_raise_exception(man,
+				 AP_EXC_INVALID_ARGUMENT,
+				 funid,str);
+      return false;
+    }
+    ap_dim_t dim = ap_abstract0_check_texpr_check(dimension,array->p[i].texpr0);
+    if (dim!=AP_DIM_MAX){
+      char str[80];
+      sprintf(str,"incompatible dimension in the %luth constraint of the array",(unsigned long)i);
+      ap_abstract0_check_expr_raise(funid,man,dimension,dim,str);
       return false;
     }
   }
@@ -679,21 +761,6 @@ ap_abstract0_t* ap_abstract0_of_box(ap_manager_t* man,
   void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_OF_BOX];
   return ap_abstract0_cons(man,ptr(man,intdim,realdim,tinterval));
 }
-ap_abstract0_t* ap_abstract0_of_lincons_array(ap_manager_t* man,
-					      size_t intdim, size_t realdim,
-					      ap_lincons0_array_t* array)
-{
-  ap_dimension_t dimension;
-  dimension.intdim = intdim;
-  dimension.realdim = realdim;
-  if (ap_abstract0_check_lincons_array(AP_FUNID_OF_LINCONS_ARRAY,man,dimension,array)){
-    void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_OF_LINCONS_ARRAY];
-    return ap_abstract0_cons(man,ptr(man,intdim,realdim,array));
-  }
-  else {
-    return ap_abstract0_top(man,intdim,realdim);
-  }
-}
 
 /* ============================================================ */
 /* II.2 Accessors */
@@ -761,6 +828,17 @@ tbool_t ap_abstract0_sat_lincons(ap_manager_t* man, ap_abstract0_t* a, ap_lincon
     return tbool_top;
   }
 }
+tbool_t ap_abstract0_sat_tcons(ap_manager_t* man, ap_abstract0_t* a, ap_tcons0_t* tcons)
+{
+  if (ap_abstract0_checkman1(AP_FUNID_SAT_TCONS,man,a) &&
+      ap_abstract0_check_texpr(AP_FUNID_SAT_TCONS,man,_ap_abstract0_dimension(a),tcons->texpr0) ){
+    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_TCONS];
+    return ptr(man,a->value,tcons);
+  }
+  else {
+    return tbool_top;
+  }
+}
 tbool_t ap_abstract0_sat_interval(ap_manager_t* man, ap_abstract0_t* a,
 				  ap_dim_t dim, ap_interval_t* interval)
 {
@@ -804,6 +882,21 @@ ap_interval_t* ap_abstract0_bound_linexpr(ap_manager_t* man,
     return itv;
   }
 }
+ap_interval_t* ap_abstract0_bound_texpr(ap_manager_t* man,
+					ap_abstract0_t* a, ap_texpr0_t* expr)
+{
+  if (ap_abstract0_checkman1(AP_FUNID_BOUND_TEXPR,man,a) &&
+      ap_abstract0_check_texpr(AP_FUNID_BOUND_TEXPR,man,_ap_abstract0_dimension(a),expr)){
+    ap_interval_t* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_BOUND_TEXPR];
+    return ptr(man,a->value,expr);
+  }
+  else {
+    ap_interval_t* itv = ap_interval_alloc();
+    ap_interval_reinit(itv,man->option.scalar_discr);
+    ap_interval_set_top(itv);
+    return itv;
+  }
+}
 ap_interval_t* ap_abstract0_bound_dimension(ap_manager_t* man,
 					    ap_abstract0_t* a, ap_dim_t dim)
 {
@@ -827,6 +920,17 @@ ap_lincons0_array_t ap_abstract0_to_lincons_array(ap_manager_t* man, ap_abstract
   }
   else {
     ap_lincons0_array_t res = { NULL, 0 };
+    return res;
+  }
+}
+ap_tcons0_array_t ap_abstract0_to_tcons_array(ap_manager_t* man, ap_abstract0_t* a)
+{
+  if (ap_abstract0_checkman1(AP_FUNID_TO_TCONS_ARRAY,man,a)){
+    ap_tcons0_array_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_TO_TCONS_ARRAY];
+    return ptr(man,a->value);
+  }
+  else {
+    ap_tcons0_array_t res = { NULL, 0 };
     return res;
   }
 }
@@ -954,6 +1058,33 @@ ap_abstract0_t* ap_abstract0_meet_lincons_array(ap_manager_t* man,
 			    dimension.realdim);
   }
 }
+ap_abstract0_t* ap_abstract0_meet_tcons_array(ap_manager_t* man,
+					      bool destructive,
+					      ap_abstract0_t* a,
+					      ap_tcons0_array_t* array)
+{
+  ap_dimension_t dimension = _ap_abstract0_dimension(a);
+  if (ap_abstract0_checkman1(AP_FUNID_MEET_TCONS_ARRAY,man,a) &&
+      ap_abstract0_check_tcons_array(AP_FUNID_MEET_TCONS_ARRAY,man,dimension,array) ){
+    void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_TCONS_ARRAY];
+    void* valueold = a->value;
+    void* value = ptr(man,destructive,a->value,array);
+    if (value==valueold){
+      assert(destructive);
+      return a;
+    }
+    else if (destructive){
+      ap_manager_free(a->man);
+    }
+    return ap_abstract0_cons(man,value);
+  }
+  else {
+    if (destructive) _ap_abstract0_free(a);
+    return ap_abstract0_top(man,
+			    dimension.intdim,
+			    dimension.realdim);
+  }
+}
 ap_abstract0_t* ap_abstract0_add_ray_array(ap_manager_t* man,
 					   bool destructive,
 					   ap_abstract0_t* a,
@@ -985,56 +1116,7 @@ ap_abstract0_t* ap_abstract0_add_ray_array(ap_manager_t* man,
 /* ============================================================ */
 /* III.2 Assignement and Substitutions */
 /* ============================================================ */
-ap_abstract0_t* ap_abstract0_asssub_linexpr(ap_funid_t funid,
-					    /* either assign or substitute */
-					    ap_manager_t* man,
-					    bool destructive,
-					    ap_abstract0_t* a,
-					    ap_dim_t dim, ap_linexpr0_t* expr,
-					    ap_abstract0_t* dest)
-{
-  ap_dimension_t dimension = _ap_abstract0_dimension(a);
-  if (ap_abstract0_checkman1(funid,man,a) &&
-      (dest!=NULL ? (ap_abstract0_checkman1(funid,man,dest) && ap_abstract0_check_abstract2(funid,man,a,dest)) : true) &&
-      ap_abstract0_check_dim(funid,man,dimension,dim) &&
-      ap_abstract0_check_linexpr(funid,man,dimension,expr) ){
-    void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
-    void* valueold = a->value;
-    void* value = ptr(man,destructive,a->value,dim,expr,dest);
-    if (value==valueold){
-      assert(destructive);
-      return a;
-    }
-    else if (destructive){
-      ap_manager_free(a->man);
-    }
-    return ap_abstract0_cons(man,value);
-  }
-  else {
-    if (destructive) _ap_abstract0_free(a);
-    return ap_abstract0_top(man,
-			    dimension.intdim,
-			    dimension.realdim);
-  }
-}
-ap_abstract0_t* ap_abstract0_assign_linexpr(ap_manager_t* man,
-					    bool destructive,
-					    ap_abstract0_t* a,
-					    ap_dim_t dim, ap_linexpr0_t* expr,
-					    ap_abstract0_t* dest)
-{
-  return ap_abstract0_asssub_linexpr(AP_FUNID_ASSIGN_LINEXPR,
-				     man,destructive,a,dim,expr,dest);
-}
-ap_abstract0_t* ap_abstract0_substitute_linexpr(ap_manager_t* man,
-						bool destructive,
-						ap_abstract0_t* a,
-						ap_dim_t dim, ap_linexpr0_t* expr,
-						ap_abstract0_t* dest)
-{
-  return ap_abstract0_asssub_linexpr(AP_FUNID_SUBSTITUTE_LINEXPR,
-				     man,destructive,a,dim,expr,dest);
-}
+
 ap_abstract0_t* ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
 						  ap_manager_t* man,
 						  bool destructive,
@@ -1089,6 +1171,61 @@ ap_abstract0_t* ap_abstract0_substitute_linexpr_array(ap_manager_t* man,
 {
   return ap_abstract0_asssub_linexpr_array(AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,
 					   man,destructive,a,tdim,texpr,size,dest);
+}
+ap_abstract0_t* ap_abstract0_asssub_texpr_array(ap_funid_t funid,
+						ap_manager_t* man,
+						bool destructive,
+						ap_abstract0_t* a,
+						ap_dim_t* tdim,
+						ap_texpr0_t** texpr,
+						size_t size,
+						ap_abstract0_t* dest)
+{
+  ap_dimension_t dimension = _ap_abstract0_dimension(a);
+  if (ap_abstract0_checkman1(funid,man,a) &&
+      (dest!=NULL ? (ap_abstract0_checkman1(funid,man,dest) && ap_abstract0_check_abstract2(funid,man,a,dest)) : true) &&
+      ap_abstract0_check_dim_array(funid,man,dimension,tdim,size) &&
+      ap_abstract0_check_texpr_array(funid,man,dimension,texpr,size) ){
+    void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
+    void* valueold = a->value;
+    void* value = ptr(man,destructive,a->value,tdim,texpr,size,dest);
+    if (value==valueold){
+      assert(destructive);
+      return a;
+    }
+    else if (destructive){
+      ap_manager_free(a->man);
+    }
+    return ap_abstract0_cons(man,value);
+  }
+  else {
+    if (destructive) _ap_abstract0_free(a);
+    return ap_abstract0_top(man,
+			    dimension.intdim,
+			    dimension.realdim);
+  }
+}
+ap_abstract0_t* ap_abstract0_assign_texpr_array(ap_manager_t* man,
+						bool destructive,
+						ap_abstract0_t* a,
+						ap_dim_t* tdim,
+						ap_texpr0_t** texpr,
+						size_t size,
+						ap_abstract0_t* dest)
+{
+  return ap_abstract0_asssub_texpr_array(AP_FUNID_ASSIGN_TEXPR_ARRAY,
+					 man,destructive,a,tdim,texpr,size,dest);
+}
+ap_abstract0_t* ap_abstract0_substitute_texpr_array(ap_manager_t* man,
+						    bool destructive,
+						    ap_abstract0_t* a,
+						    ap_dim_t* tdim,
+						    ap_texpr0_t** texpr,
+						    size_t size,
+						    ap_abstract0_t* dest)
+{
+  return ap_abstract0_asssub_texpr_array(AP_FUNID_SUBSTITUTE_TEXPR_ARRAY,
+					 man,destructive,a,tdim,texpr,size,dest);
 }
 
 /* ============================================================ */
@@ -1344,6 +1481,69 @@ ap_abstract0_t* ap_abstract0_closure(ap_manager_t* man, bool destructive, ap_abs
 /* ********************************************************************** */
 
 /* These functions do not correspond to functions in the underlying library. */
+
+
+/*
+   These two functions implement of_lincons/tcons_array constructors 
+   using top and meet_lincons/tcons_array operations.
+*/
+ap_abstract0_t* ap_abstract0_of_lincons_array(ap_manager_t* man,
+					      size_t intdim, size_t realdim,
+					      ap_lincons0_array_t* array)
+{
+  ap_abstract0_t* res = ap_abstract0_top(man,intdim,realdim);
+  res = ap_abstract0_meet_lincons_array(man,true,res,array);
+  return res;
+}
+ap_abstract0_t* ap_abstract0_of_tcons_array(ap_manager_t* man,
+				  size_t intdim, size_t realdim,
+				  ap_tcons0_array_t* array)
+{
+  ap_abstract0_t* res = ap_abstract0_top(man,intdim,realdim);
+  res = ap_abstract0_meet_tcons_array(man,true,res,array);
+  return res;
+}
+
+/*
+  These four functions implement assignement and substitution of a single
+  dimension by a single expression.
+*/
+ap_abstract0_t* ap_abstract0_assign_linexpr(ap_manager_t* man,
+					    bool destructive,
+					    ap_abstract0_t* a,
+					    ap_dim_t dim, ap_linexpr0_t* expr,
+					    ap_abstract0_t* dest)
+{
+  return ap_abstract0_asssub_linexpr_array(AP_FUNID_ASSIGN_LINEXPR_ARRAY,
+					   man,destructive,a,&dim,&expr,1,dest);
+}
+ap_abstract0_t* ap_abstract0_substitute_linexpr(ap_manager_t* man,
+						bool destructive,
+						ap_abstract0_t* a,
+						ap_dim_t dim, ap_linexpr0_t* expr,
+						ap_abstract0_t* dest)
+{
+  return ap_abstract0_asssub_linexpr_array(AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,
+					   man,destructive,a,&dim,&expr,1,dest);
+}
+ap_abstract0_t* ap_abstract0_assign_texpr(ap_manager_t* man,
+					  bool destructive,
+					  ap_abstract0_t* a,
+					  ap_dim_t dim, ap_texpr0_t* expr,
+					  ap_abstract0_t* dest)
+{
+  return ap_abstract0_asssub_texpr_array(AP_FUNID_ASSIGN_TEXPR_ARRAY,
+					 man,destructive,a,&dim,&expr,1,dest);
+}
+ap_abstract0_t* ap_abstract0_substitute_texpr(ap_manager_t* man,
+					      bool destructive,
+					      ap_abstract0_t* a,
+					      ap_dim_t dim, ap_texpr0_t* expr,
+					      ap_abstract0_t* dest)
+{
+  return ap_abstract0_asssub_texpr_array(AP_FUNID_SUBSTITUTE_TEXPR_ARRAY,
+					 man,destructive,a,&dim,&expr,1,dest);
+}
 
 /* This function implements widening with threshold, relying on the
    widening, sat_lincons and meet_lincons_array operations.

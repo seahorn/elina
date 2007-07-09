@@ -17,8 +17,7 @@ REQUIREMENTS
 For the C interface:
 
 GMP library (tested with version 4.0 and up)
-NUM "library" (a set of header files)
-ITV library
+ITV and NUM libraries
 APRON library
 
 For the OCaml interface, in addition:
@@ -39,8 +38,8 @@ You might also have to modify the Makefile for executables
 
 type 'make', and then 'make install' 
 
-The library is named libpolkai.a, libpolkal.a or libpolkag.a (and
-libpolkai_debug.a, ...).
+The library is named libpolkaRl.a, libpolkaRll.a or libpolkaMPQ.a (and
+libpolkaRl_debug.a, ...).
 
 i, l, g, stands for long int, long long int, and gmp, which
 indicates the underlying representation of integers.

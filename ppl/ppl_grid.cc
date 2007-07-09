@@ -16,7 +16,7 @@
 
 #include <assert.h>
 #include "ap_generic.h"
-#include "apron_ppl.h"
+#include "ap_ppl.h"
 #include "ppl_grid.hh"
 #include "ppl_user.hh"
 
@@ -318,24 +318,6 @@ PPL_Grid* ap_ppl_grid_of_box(ap_manager_t* man,
   CATCH_WITH_DIM(AP_FUNID_OF_BOX,intdim,realdim);
 }
 
-extern "C" 
-PPL_Grid* ap_ppl_grid_of_lincons_array(ap_manager_t* man,
-				       size_t intdim, size_t realdim,
-				       ap_lincons0_array_t* array)
-{
-  ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best = tbool_true;
-  try {
-    PPL_Grid* r = new PPL_Grid(intdim,realdim,UNIVERSE);
-    Congruence_System c;
-    if (!ap_ppl_of_lincons_array(intern->itv,c,array))
-      man->result.flag_exact = man->result.flag_best = tbool_top;
-    r->p->add_recycled_congruences_and_minimize(c);
-    return r;
-  }
-  CATCH_WITH_DIM(AP_FUNID_OF_LINCONS_ARRAY,intdim,realdim);
-}
-
 /* ============================================================ */
 /* II.2 Accessors */
 /* ============================================================ */
@@ -421,6 +403,13 @@ tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, PPL_Grid* a,
     }
   }
   CATCH_WITH_VAL(AP_FUNID_SAT_LINCONS,tbool_top);
+}
+
+extern "C"
+tbool_t ap_ppl_grid_sat_tcons(ap_manager_t* man, PPL_Grid* a,
+			      ap_tcons0_t* cons)
+{
+  return ap_generic_sat_tcons(man,a,cons,AP_SCALAR_MPQ,true);
 }
 
 /* utility shared by _bound_dimension, _to_box, & _sat_interval (exact) */
@@ -520,6 +509,14 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
   CATCH_WITH_VAL(AP_FUNID_BOUND_LINEXPR,(ap_interval_set_top(r),r));
 }
 
+extern "C"
+ap_interval_t* ap_ppl_grid_bound_texpr(ap_manager_t* man,
+				       PPL_Grid* a,
+				       ap_texpr0_t* expr)
+{
+  return ap_generic_bound_texpr(man,a,expr,AP_SCALAR_MPQ,true);
+}
+
 extern "C" 
 ap_interval_t* ap_ppl_grid_bound_dimension(ap_manager_t* man,
 					   PPL_Grid* a, ap_dim_t dim)
@@ -543,6 +540,13 @@ ap_lincons0_array_t ap_ppl_grid_to_lincons_array(ap_manager_t* man,
     return ap_ppl_to_lincons_array(a->p->congruences());
   }
   CATCH_WITH_VAL(AP_FUNID_TO_LINCONS_ARRAY,ap_lincons0_array_make(0));
+}
+
+extern "C"
+ap_tcons0_array_t ap_ppl_grid_to_tcons_array(ap_manager_t* man,
+					     PPL_Grid* a)
+{
+  return ap_generic_to_tcons_array(man,a);
 }
 
 extern "C" 
@@ -667,6 +671,19 @@ PPL_Grid* ap_ppl_grid_meet_lincons_array(ap_manager_t* man,
   CATCH_WITH_GRID(AP_FUNID_MEET_LINCONS_ARRAY,a);
 }
 
+extern "C"
+PPL_Grid* ap_ppl_grid_meet_tcons_array(ap_manager_t* man,
+					 bool destructive,
+					 PPL_Grid* a,
+					 ap_tcons0_array_t* array)
+{
+  return (PPL_Grid*)ap_generic_meet_intlinearize_tcons_array(man,destructive, a,
+							     array,
+							     AP_SCALAR_MPQ, AP_LINEXPR_LINEAR,
+							     (void* (*)(ap_manager_t*, bool, void*, ap_lincons0_array_t*))
+							     (&ap_ppl_grid_meet_lincons_array));
+}
+
 extern "C" 
 PPL_Grid* ap_ppl_grid_add_ray_array(ap_manager_t* man,
 				    bool destructive,
@@ -724,7 +741,7 @@ PPL_Grid* ap_ppl_grid_assign_linexpr(ap_manager_t* man,
     if (dest) r->p->intersection_assign(*dest->p);
     return r;
   }
-  CATCH_WITH_GRID(AP_FUNID_ASSIGN_LINEXPR,org);
+  CATCH_WITH_GRID(AP_FUNID_ASSIGN_LINEXPR_ARRAY,org);
 }
 
 extern "C" 
@@ -760,7 +777,7 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr(ap_manager_t* man,
     if (dest) r->p->intersection_assign(*dest->p);
     return r;
   }
-  CATCH_WITH_GRID(AP_FUNID_SUBSTITUTE_LINEXPR,org);
+  CATCH_WITH_GRID(AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,org);
 }
 
 extern "C"
@@ -772,6 +789,7 @@ PPL_Grid* ap_ppl_grid_assign_linexpr_array(ap_manager_t* man,
 					   size_t size,
 					   PPL_Grid* dest)
 {
+  PPL_Grid* r;
   size_t i;
   bool exact = true;
   for (i=0;i<size;i++){
@@ -780,14 +798,16 @@ PPL_Grid* ap_ppl_grid_assign_linexpr_array(ap_manager_t* man,
       break;
     }
   }
+  if (size==1)
+    r = ap_ppl_grid_assign_linexpr(man,destructive,org,tdim[0],texpr[0],dest);
+  else {
+    r = (PPL_Grid*)ap_generic_assign_linexpr_array(man, destructive, 
+						   org,
+						   tdim,texpr,size,
+						   dest);
+  }
   man->result.flag_exact = man->result.flag_best =
     (!exact || org->intdim) ? tbool_top : tbool_true;
-
-  PPL_Grid* r = (PPL_Grid*)ap_generic_assign_linexpr_array(man, destructive, 
-							   org,
-							   tdim,texpr,size,
-							   dest);
-  r->reduce();
   return r;
 }
 extern "C"
@@ -799,6 +819,7 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr_array(ap_manager_t* man,
 					       size_t size,
 					       PPL_Grid* dest)
 {
+  PPL_Grid* r;
   size_t i;
   bool exact = true;
   for (i=0;i<size;i++){
@@ -807,13 +828,16 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr_array(ap_manager_t* man,
       break;
     }
   }
+  if (size==1)
+    r = ap_ppl_grid_substitute_linexpr(man,destructive,org,tdim[0],texpr[0],dest);
+  else {
+    r = (PPL_Grid*)ap_generic_substitute_linexpr_array(man, destructive, 
+						       org,
+						       tdim,texpr,size,
+						       dest);
+  }
   man->result.flag_exact = man->result.flag_best =
     (!exact || org->intdim) ? tbool_top : tbool_true;
-  PPL_Grid* r = (PPL_Grid*)ap_generic_substitute_linexpr_array(man, destructive, 
-							       org,
-							       tdim,texpr,size,
-							       dest);
-  r->reduce();
   return r;
 }
   
@@ -841,6 +865,34 @@ PPL_Grid* ap_ppl_grid_forget_array(ap_manager_t* man,
     return r;
   }
   CATCH_WITH_GRID(AP_FUNID_FORGET_ARRAY,a);
+}
+extern "C"
+PPL_Grid* ap_ppl_grid_assign_texpr_array(ap_manager_t* man,
+					 bool destructive,
+					 PPL_Grid* org,
+					 ap_dim_t* tdim,
+					 ap_texpr0_t** texpr,
+					 size_t size,
+					 PPL_Grid* dest)
+{
+  return (PPL_Grid*)ap_generic_assign_texpr_array(man, destructive, 
+						  org,
+						  tdim,texpr,size,
+						  dest);
+}
+extern "C"
+PPL_Grid* ap_ppl_grid_substitute_texpr_array(ap_manager_t* man,
+					     bool destructive,
+					     PPL_Grid* org,
+					     ap_dim_t* tdim,
+					     ap_texpr0_t** texpr,
+					     size_t size,
+					     PPL_Grid* dest)
+{
+  return (PPL_Grid*)ap_generic_substitute_texpr_array(man, destructive, 
+						      org,
+						      tdim,texpr,size,
+						      dest);
 }
 
 /* partial functions used in map_space_dimensions */
@@ -1069,7 +1121,6 @@ extern "C" ap_manager_t* ap_ppl_grid_manager_alloc(void)
   man->funptr[AP_FUNID_BOTTOM] = (void*)ap_ppl_grid_bottom;
   man->funptr[AP_FUNID_TOP] = (void*)ap_ppl_grid_top;
   man->funptr[AP_FUNID_OF_BOX] = (void*)ap_ppl_grid_of_box;
-  man->funptr[AP_FUNID_OF_LINCONS_ARRAY] = (void*)ap_ppl_grid_of_lincons_array;
   man->funptr[AP_FUNID_DIMENSION] = (void*)ap_ppl_grid_dimension;
   man->funptr[AP_FUNID_IS_BOTTOM] = (void*)ap_ppl_grid_is_bottom;
   man->funptr[AP_FUNID_IS_TOP] = (void*)ap_ppl_grid_is_top;
@@ -1078,21 +1129,25 @@ extern "C" ap_manager_t* ap_ppl_grid_manager_alloc(void)
   man->funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED] = (void*)ap_ppl_grid_is_dimension_unconstrained;
   man->funptr[AP_FUNID_SAT_INTERVAL] = (void*)ap_ppl_grid_sat_interval;
   man->funptr[AP_FUNID_SAT_LINCONS] = (void*)ap_ppl_grid_sat_lincons;
+  man->funptr[AP_FUNID_SAT_TCONS] = (void*)ap_ppl_grid_sat_tcons;
   man->funptr[AP_FUNID_BOUND_DIMENSION] = (void*)ap_ppl_grid_bound_dimension;
   man->funptr[AP_FUNID_BOUND_LINEXPR] = (void*)ap_ppl_grid_bound_linexpr;
+  man->funptr[AP_FUNID_BOUND_TEXPR] = (void*)ap_ppl_grid_bound_texpr;
   man->funptr[AP_FUNID_TO_BOX] = (void*)ap_ppl_grid_to_box;
   man->funptr[AP_FUNID_TO_LINCONS_ARRAY] = (void*)ap_ppl_grid_to_lincons_array;
+  man->funptr[AP_FUNID_TO_TCONS_ARRAY] = (void*)ap_ppl_grid_to_tcons_array;
   man->funptr[AP_FUNID_TO_GENERATOR_ARRAY] = (void*)ap_ppl_grid_to_generator_array;
   man->funptr[AP_FUNID_MEET] = (void*)ap_ppl_grid_meet;
   man->funptr[AP_FUNID_MEET_ARRAY] = (void*)ap_ppl_grid_meet_array;
   man->funptr[AP_FUNID_MEET_LINCONS_ARRAY] = (void*)ap_ppl_grid_meet_lincons_array;
+  man->funptr[AP_FUNID_MEET_TCONS_ARRAY] = (void*)ap_ppl_grid_meet_tcons_array;
   man->funptr[AP_FUNID_JOIN] = (void*)ap_ppl_grid_join;
   man->funptr[AP_FUNID_JOIN_ARRAY] = (void*)ap_ppl_grid_join_array;
   man->funptr[AP_FUNID_ADD_RAY_ARRAY] = (void*)ap_ppl_grid_add_ray_array;
-  man->funptr[AP_FUNID_ASSIGN_LINEXPR] = (void*)ap_ppl_grid_assign_linexpr;
   man->funptr[AP_FUNID_ASSIGN_LINEXPR_ARRAY] = (void*)ap_ppl_grid_assign_linexpr_array;
-  man->funptr[AP_FUNID_SUBSTITUTE_LINEXPR] = (void*)ap_ppl_grid_substitute_linexpr;
   man->funptr[AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY] = (void*)ap_ppl_grid_substitute_linexpr_array;
+  man->funptr[AP_FUNID_ASSIGN_TEXPR_ARRAY] = (void*)ap_ppl_grid_assign_texpr_array;
+  man->funptr[AP_FUNID_SUBSTITUTE_TEXPR_ARRAY] = (void*)ap_ppl_grid_substitute_texpr_array;
   man->funptr[AP_FUNID_ADD_DIMENSIONS] = (void*)ap_ppl_grid_add_dimensions;
   man->funptr[AP_FUNID_REMOVE_DIMENSIONS] = (void*)ap_ppl_grid_remove_dimensions;
   man->funptr[AP_FUNID_PERMUTE_DIMENSIONS] = (void*)ap_ppl_grid_permute_dimensions;

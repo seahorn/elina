@@ -67,6 +67,8 @@ Dimension  & dimensions and related operations \\
 Linexpr0   & (interval) linear expressions, level 0 \\
 Lincons0   & (interval) linear constraints, level 0 \\
 Generator0 & generators, level 0 \\
+texpr0     & tree expressions, level 0 \\
+tcons0     & tree constraints, level 0 \\
 Manager    & managers \\
 Abstract0  & abstract values, level 0 \\
 Var        & variables \\
@@ -74,6 +76,8 @@ Environment& environment binding variables to dimensions \\
 Linexpr1   & (interval) linear expressions, level 1 \\
 Lincons1   & interval) linear constraints, level 1 \\
 Generator1 & generators, level 1 \\
+texpr1     & tree expressions, level 1 \\
+tcons1     & tree constraints, level 1 \\
 Abstract1  & abstract values, level 1 \\
 Parser     & strings parsing 
 \end{tabular}
@@ -133,13 +137,13 @@ The documentation (currently very sketchy) is generated with ocamldoc.
 To make things clearer, we assume an example file
 \texttt{example.ml} which uses both \textsc{NewPolka} (convex
 polyhedra) and \textsc{Box} (intervals) libraries, in their
-versions where integers (resp. rationals) are GMP integers (resp.
-rationals). We assume that C and OCaml interface and library files
-are located in directory \$APRON/lib.
+versions where rationals are GMP rationals (which is the default).
+We assume that C and OCaml interface and library files are located
+in directory \$APRON/lib.
 
 The native-code compilation command looks like
 \begin{quote}\tt
-  ocamlopt -I \$APRON/lib -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -lboxmpq -litvmpq"
+  ocamlopt -I \$APRON/lib -o example.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa
 \end{quote}
 Comments:
 \begin{enumerate}
@@ -150,19 +154,20 @@ Comments:
   \texttt{polka}.
 \item The C libraries associated to those \textsc{OCaml} libraries
   (\textit{e.g.,} \texttt{gmp\_caml}, \texttt{box\_caml}, \ldots)
-  are automatically looked for, with the exception of the
-  libraries implementing abstract domains (\textit{e.g.,}
-  \texttt{polkag}, \texttt{boxmpq} and \texttt{itvmpq}). The reason is that most of
-  these libraries may be compiled with different internal
-  representations and/or options, while their interface remains
-  the same.
+  are automatically looked for, as well as the the libraries
+  implementing abstract domains (\textit{e.g.,} \texttt{polka},
+  \texttt{box} \emph{in their default version} (which corresponds
+  to the MPQ suffix).
+  
+  If other versions of abstract domains library are wanted, you
+  should use the \texttt{-noautolink} option as explained below.
 \end{enumerate}
 
 The byte-code compilation process looks like
 \begin{quote}\tt
-  ocamlc -I \$APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq -litvmpq" \\
+  ocamlc -I \$APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma box.cma polka.cma\\
   ~\\
-  ocamlc -I \$APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq -litvmpq" example.ml
+  ocamlc -I \$APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma box.cma polka.cma example.ml
 \end{quote}
 Comments:
 \begin{enumerate}
@@ -175,7 +180,11 @@ The automatic search for C libraries associated to these
 \texttt{-noautolink} supported by both \texttt{ocamlc} and
 \texttt{ocamlopt} commands. For instance, the command for native-code compilation can alternatively looks like:
 \begin{quote}\tt
-  ocamlopt -I \$APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "--polka\_caml lpolkag -lbox\_caml -lboxmpq -litvmpq -lapron\_caml -lapron -lgmp\_caml -LGMP/lib -lgmp"
+  ocamlopt -I \$APRON/lib -noautolink -o example.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolka\_caml lpolka -lbox\_caml -lbox -lapron\_caml -lapron -lgmp\_caml -LMPFR -lmpfr -LGMP/lib -lgmp"
+\end{quote}
+This is mandatory if you want to use non-default versions of abstract domains library. For insta,ce; if you want to use \textsc{Polka} in its \texttt{Ill} version (\texttt{long long int}) and \textsc{Box} in its \texttt{D} version (\texttt{double}), the command looks like:
+\begin{quote}\tt
+  ocamlopt -I \$APRON/lib -noautolink -o example.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolka\_caml lpolkaIll -lbox\_caml -lboxD -lapron\_caml -lapron -lgmp\_caml -LMPFR -lmpfr -LGMP/lib -lgmp"
 \end{quote}
 
 The option \texttt{-verbose} helps to understand what is happening
@@ -203,6 +212,8 @@ abstract domain.
 \input{Linexpr1.tex}
 \input{Lincons1.tex}
 \input{Generator1.tex}
+\input{Texpr1.tex}
+\input{Tcons1.tex}
 \input{Abstract1.tex}
 \input{Parser.tex}
 
@@ -211,6 +222,8 @@ abstract domain.
 \input{Linexpr0.tex}
 \input{Lincons0.tex}
 \input{Generator0.tex}
+\input{Texpr0.tex}
+\input{Tcons0.tex}
 \input{Abstract0.tex}
 
 \part{MLGmpIDL modules}

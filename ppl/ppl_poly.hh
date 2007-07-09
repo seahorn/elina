@@ -153,13 +153,6 @@ PPL_Poly* ap_ppl_poly_of_box(ap_manager_t* man,
   /* Abstract an hypercube defined by the array of intervals
      of size intdim+realdim */
 
-PPL_Poly* ap_ppl_poly_of_lincons_array(ap_manager_t* man,
-				       size_t intdim, size_t realdim,
-				       ap_lincons0_array_t* array);
-  /* Abstract a convex polyhedra defined by the array of linear constraints
-     of size size */
-
-
 /* ============================================================ */
 /* II.2 Accessors */
 /* ============================================================ */
@@ -190,6 +183,9 @@ tbool_t ap_ppl_poly_is_eq(ap_manager_t* man, PPL_Poly* a1, PPL_Poly* a2);
 tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a, ap_lincons0_t* lincons);
   /* Satisfiability of a linear constraint */
 
+tbool_t ap_ppl_poly_sat_tcons(ap_manager_t* man, PPL_Poly* a, ap_tcons0_t* cons);
+  /* Satisfiability of a tree expression constraint. */
+
 tbool_t ap_ppl_poly_sat_interval(ap_manager_t* man, PPL_Poly* a,
 				 ap_dim_t dim, ap_interval_t* interval);
   /* Inclusion of a dimension in an interval */
@@ -207,6 +203,11 @@ ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
   /* Returns the interval taken by a linear expression
      over the abstract value. */
 
+ap_interval_t* ap_ppl_poly_bound_texpr(ap_manager_t* man,
+			      PPL_Poly* a, ap_texpr0_t* expr);
+  /* Returns the interval taken by a tree expression
+     over the abstract value. */
+
 ap_interval_t* ap_ppl_poly_bound_dimension(ap_manager_t* man,
 					   PPL_Poly* a, ap_dim_t dim);
   /* Returns the interval taken by the dimension
@@ -215,6 +216,10 @@ ap_interval_t* ap_ppl_poly_bound_dimension(ap_manager_t* man,
 ap_lincons0_array_t ap_ppl_poly_to_lincons_array(ap_manager_t* man, PPL_Poly* a);
   /* Converts an abstract value to a polyhedra
      (conjunction of linear constraints). */
+
+ap_tcons0_array_t ap_ppl_poly_to_tcons_array(ap_manager_t* man, PPL_Poly* a);
+  /* Converts an abstract value to a 
+     conjunction of tree expressions constraints. */
 
 ap_interval_t** ap_ppl_poly_to_box(ap_manager_t* man, PPL_Poly* a);
   /* Converts an abstract value to an interval/hypercube.
@@ -247,6 +252,11 @@ PPL_Poly* ap_ppl_poly_meet_lincons_array(ap_manager_t* man,
   /* Meet of an abstract value with a set of constraints
      (generalize ap_ppl_poly_of_lincons_array) */
 
+PPL_Poly* ap_ppl_poly_meet_tcons_array(ap_manager_t* man,
+			  bool destructive, PPL_Poly* a,
+			  ap_tcons0_array_t* array);
+  /* Meet of an abstract value with a set of tree expressionsconstraints. */
+
 PPL_Poly* ap_ppl_poly_add_ray_array(ap_manager_t* man,
 		       bool destructive, PPL_Poly* a,
 		       ap_generator0_array_t* array);
@@ -255,17 +265,6 @@ PPL_Poly* ap_ppl_poly_add_ray_array(ap_manager_t* man,
 /* ============================================================ */
 /* III.2 Assignement and Substitutions */
 /* ============================================================ */
-
-PPL_Poly* ap_ppl_poly_assign_linexpr(ap_manager_t* man,
-			bool destructive, PPL_Poly* a,
-			ap_dim_t dim, ap_linexpr0_t* expr,
-			PPL_Poly* dest);
-PPL_Poly* ap_ppl_poly_substitute_linexpr(ap_manager_t* man,
-			    bool destructive, PPL_Poly* a,
-			    ap_dim_t dim, ap_linexpr0_t* expr,
-			    PPL_Poly* dest);
-  /* Assignement and Substitution of a single dimension by resp.
-     a linear expression and a interval linear expression */
 
 PPL_Poly* ap_ppl_poly_assign_linexpr_array(ap_manager_t* man,
 					   bool destructive, PPL_Poly* a,
@@ -279,8 +278,20 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
 					       ap_linexpr0_t** texpr,
 					       size_t size,
 					       PPL_Poly* dest);
+PPL_Poly* ap_ppl_poly_assign_texpr_array(ap_manager_t* man,
+					 bool destructive, PPL_Poly* a,
+					 ap_dim_t* tdim,
+					 ap_texpr0_t** texpr,
+					 size_t size,
+					 PPL_Poly* dest);
+PPL_Poly* ap_ppl_poly_substitute_texpr_array(ap_manager_t* man,
+					     bool destructive, PPL_Poly* a,
+					     ap_dim_t* tdim,
+					     ap_texpr0_t** texpr,
+					     size_t size,
+					     PPL_Poly* dest);
   /* Parallel Assignement and Substitution of several dimensions by
-     linear expressons. */
+     expressons. */
 
 /* ============================================================ */
 /* III.3 Projections */

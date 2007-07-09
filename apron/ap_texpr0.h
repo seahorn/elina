@@ -13,8 +13,6 @@
 #include "ap_dimension.h"
 #include "ap_coeff.h"
 #include "ap_linexpr0.h"
-#include "ap_manager.h"
-#include "ap_abstract0.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,7 +40,7 @@ typedef enum ap_texpr_op_t {
   AP_TEXPR_MOD,  /* either integer or real, no rounding */
 
   /* Unary operators */
-  AP_TEXPR_NEG /* no rounding */, 
+  AP_TEXPR_NEG   /* no rounding */, 
   AP_TEXPR_CAST, AP_TEXPR_SQRT,
 
 } ap_texpr_op_t;
@@ -107,8 +105,8 @@ ap_texpr0_t* ap_texpr0_cst_interval_int    (long int inf, long int sup);
 ap_texpr0_t* ap_texpr0_cst_interval_frac   (long int numinf, unsigned long int deninf, 
 					    long int numsup, unsigned long int densup);
 ap_texpr0_t* ap_texpr0_cst_interval_double (double inf, double sup);
-ap_texpr0_t* ap_texpr0_cst_top             (void);
-  /* Crate a constant leaf expression */
+ap_texpr0_t* ap_texpr0_cst_interval_top    (void);
+  /* Create a constant leaf expression */
 
 ap_texpr0_t* ap_texpr0_dim(ap_dim_t dim);
   /* Create a dimension (variable) leaf expression */
@@ -151,10 +149,10 @@ void ap_texpr0_print(ap_texpr0_t* a, char** name_of_dim);
 /* III. Tests, size */
 /* ====================================================================== */
 
-static inline bool ap_texpr0_is_unop(ap_texpr_op_t op){
+static inline bool ap_texpr_is_unop(ap_texpr_op_t op){
   return (op>=AP_TEXPR_NEG && op<=AP_TEXPR_SQRT);
 }
-static inline bool ap_texpr0_is_binop(ap_texpr_op_t op){
+static inline bool ap_texpr_is_binop(ap_texpr_op_t op){
   return (op<=AP_TEXPR_MOD);
 }
   /* Operator classification */
@@ -200,24 +198,9 @@ bool ap_texpr0_is_scalar(ap_texpr0_t* a);
 /* ====================================================================== */
 
 
-ap_texpr0_t* ap_texpr0_subst(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst);
-void ap_texpr0_subst_with   (ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst);
+ap_texpr0_t* ap_texpr0_substitute(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst);
+void ap_texpr0_substitute_with   (ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst);
   /* Substitue every occurence of dimension dim with a copy of dst  */
-
-ap_interval_t* ap_texpr0_eval(ap_manager_t* man,
-			      ap_abstract0_t* abs,
-			      ap_texpr0_t* expr, 
-			      ap_scalar_discr_t discr,
-			      bool* pexact);
-  /* Evaluation to an interval */
-
-ap_linexpr0_t* ap_texpr0_linearize(ap_manager_t* man,
-				   ap_abstract0_t* abs,
-				   ap_texpr0_t* expr, 
-				   ap_scalar_discr_t discr,
-				   bool quasilinearize,
-				   bool* pexact);
-  /* Linearization */
 
 /* ====================================================================== */
 /* V. Change of dimensions and permutations */

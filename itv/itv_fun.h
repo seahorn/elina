@@ -8,21 +8,21 @@
 #undef NUM_SUFFIX
 
 #if defined(NUM_LONGINT)
-#define NUM_SUFFIX li
+#define NUM_SUFFIX Il
 #elif defined(NUM_LONGLONGINT)
-#define NUM_SUFFIX lli
+#define NUM_SUFFIX Ill
 #elif defined(NUM_MPZ)
-#define NUM_SUFFIX mpz
+#define NUM_SUFFIX MPZ
 #elif defined(NUM_LONGRAT)
-#define NUM_SUFFIX lr
+#define NUM_SUFFIX Rl
 #elif defined(NUM_LONGLONGRAT)
-#define NUM_SUFFIX llr
+#define NUM_SUFFIX Rll
 #elif defined(NUM_MPQ)
-#define NUM_SUFFIX mpq
+#define NUM_SUFFIX MPQ
 #elif defined(NUM_DOUBLE)
-#define NUM_SUFFIX dbl
+#define NUM_SUFFIX D
 #elif defined(NUM_LONGDOUBLE)
-#define NUM_SUFFIX ldbl
+#define NUM_SUFFIX Dl
 #else
 #error "HERE"
 #endif

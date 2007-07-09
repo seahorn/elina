@@ -1,3 +1,7 @@
+/* ************************************************************************* */
+/* ap_linearize_aux.h: auxiliary functions for (quasi)linearisation */
+/* ************************************************************************* */
+
 /* This file is part of the APRON Library, released under LGPL license.  Please
    read the COPYING file packaged in the distribution */
 
@@ -19,39 +23,69 @@
 extern "C" {
 #endif
 
-ap_interval_t* 
-ITVFUN(ap_linexpr0_eval)(ap_manager_t* man,
-			 ap_abstract0_t* abs,
-			 ap_linexpr0_t* expr,
+/* ********************************************************************** */
+/* I. Evaluation of interval linear expressions */
+/* ********************************************************************** */
+
+ap_interval_t*
+ITVFUN(ap_eval_linexpr0)(ap_manager_t* man,
+			 ap_abstract0_t* abs, ap_linexpr0_t* expr,
 			 bool* pexact);
 
-
-ap_linexpr0_t* 
+/* ********************************************************************** */
+/* II. Quasilinearization of interval linear expressions */
+/* ********************************************************************** */
+ap_linexpr0_t*
 ITVFUN(ap_quasilinearize_linexpr0)(ap_manager_t* man,
-				   ap_abstract0_t* abs,
-				   ap_linexpr0_t* linexpr0,
+				   ap_abstract0_t* abs, ap_linexpr0_t* linexpr0,
 				   bool* pexact);
-  
-ap_lincons0_t 
+
+ap_lincons0_t
 ITVFUN(ap_quasilinearize_lincons0)(ap_manager_t* man,
-				   ap_abstract0_t* abs,
-				   ap_lincons0_t* lincons0,
+				   ap_abstract0_t* abs, ap_lincons0_t* lincons0,
 				   bool* pexact);
-  
-ap_linexpr0_t** 
+
+ap_linexpr0_t**
 ITVFUN(ap_quasilinearize_linexpr0_array)(ap_manager_t* man,
-					 ap_abstract0_t* abs,
-					 ap_linexpr0_t** texpr, size_t size,
+					 ap_abstract0_t* abs, ap_linexpr0_t** texpr, size_t size,
 					 bool* pexact);
 
-ap_lincons0_array_t 
+ap_lincons0_array_t
 ITVFUN(ap_quasilinearize_lincons0_array)(ap_manager_t* man,
-					 ap_abstract0_t* abs,
-					 ap_lincons0_array_t* array,
-					 bool* pexact,
-					 bool convert,
+					 ap_abstract0_t* abs, ap_lincons0_array_t* array, bool* pexact,
 					 bool linearize);
 
+/* ********************************************************************** */
+/* III. Evaluation of tree expressions */
+/* ********************************************************************** */
+ap_interval_t*
+ITVFUN(ap_eval_texpr0)(ap_manager_t* man,
+		       ap_abstract0_t* abs, ap_texpr0_t* expr,
+		       bool* pexact);
+
+/* ********************************************************************** */
+/* IV. Intervcal linearization of tree expressions */
+/* ********************************************************************** */
+
+ap_linexpr0_t*
+ITVFUN(ap_intlinearize_texpr0)(ap_manager_t* man,
+			       ap_abstract0_t* abs, ap_texpr0_t* expr,
+			       bool* pexact, bool quasilinearize);
+
+ap_lincons0_t
+ITVFUN(ap_intlinearize_tcons0)(ap_manager_t* man,
+			       ap_abstract0_t* abs, ap_tcons0_t* cons,
+			       bool* pexact, bool quasilinearize);
+
+ap_linexpr0_t**
+ITVFUN(ap_intlinearize_texpr0_array)(ap_manager_t* man,
+				     ap_abstract0_t* abs, ap_texpr0_t** texpr0, size_t size,
+				     bool* pexact, bool quasilinearize);
+
+ap_lincons0_array_t
+ITVFUN(ap_intlinearize_tcons0_array)(ap_manager_t* man,
+				     ap_abstract0_t* abs, ap_tcons0_array_t* array,
+				     bool* pexact, ap_linexpr_type_t linearize);
 
 #ifdef __cplusplus
 }

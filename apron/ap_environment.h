@@ -28,9 +28,9 @@ extern "C" {
 
    We use reference counting to manage memory. Conventions are:
 
-   - a newly allocated environement has a reference count of one;
-   - environement_copy increments the counter and return its argument
-   - environement_free decrements it and free the environement
+   - a newly allocated environment has a reference count of one;
+   - environment_copy increments the counter and return its argument
+   - environment_free decrements it and free the environment
      in case of zero or negative number.
 */
 
@@ -61,7 +61,7 @@ typedef struct ap_environment_name_of_dim_t {
 /* ====================================================================== */
 
 void ap_environment_free2(ap_environment_t* e);
-  /* Free the environement
+  /* Free the environment
      (the structure itself and the memory pointed to by fields) */
 
 static inline
@@ -73,7 +73,7 @@ ap_environment_t* ap_environment_copy(ap_environment_t* e);
   /* Copy */
 
 void ap_environment_fdump(FILE* stream, ap_environment_t* env);
-  /* Print an environement under the form:
+  /* Print an environment under the form:
       environment: dim = (..,..), count = ..
       0: name0
       1: name1
@@ -84,11 +84,11 @@ ap_environment_name_of_dim_t* ap_environment_name_of_dim_alloc(ap_environment_t*
 void ap_environment_name_of_dim_free(ap_environment_name_of_dim_t*);
 
 ap_environment_t* ap_environment_alloc_empty(void);
-  /* Build an empty environement */
+  /* Build an empty environment */
 
 ap_environment_t* ap_environment_alloc(ap_var_t* name_of_intdim, size_t intdim,
 				       ap_var_t* name_of_realdim, size_t realdim);
-  /* Build an environement from an array of integer and
+  /* Build an environment from an array of integer and
      an array of real variables.
      - Variables are duplicated in the result, so it is the responsability
        of the user to free the variables he provides.
@@ -98,7 +98,7 @@ ap_environment_t* ap_environment_alloc(ap_var_t* name_of_intdim, size_t intdim,
 ap_environment_t* ap_environment_add(ap_environment_t* env,
 				     ap_var_t* name_of_intdim, size_t intdim,
 				     ap_var_t* name_of_realdim, size_t realdim);
-  /* Add variables to an environement.
+  /* Add variables to an environment.
      Same comments as for ap_environment_alloc */
 ap_environment_t* ap_environment_add_perm(ap_environment_t* env,
 					  ap_var_t* name_of_intdim, size_t intdim,
@@ -111,8 +111,8 @@ ap_environment_t* ap_environment_add_perm(ap_environment_t* env,
 ap_environment_t* ap_environment_remove(ap_environment_t* env,
 					ap_var_t* name_of_intdim, size_t intdim,
 					ap_var_t* name_of_realdim, size_t realdim);
-  /* Remove variables from an environement.
-     Same comments as for environement_alloc */
+  /* Remove variables from an environment.
+     Same comments as for environment_alloc */
 
 static inline
 bool ap_environment_mem_var(ap_environment_t* env, ap_var_t name);
@@ -142,8 +142,8 @@ bool ap_environment_is_leq(ap_environment_t* env1,
 int ap_environment_compare(ap_environment_t* env1,
                            ap_environment_t* env2);
   /* Return
-    - -2 if the environements are not compatible
-      (a variable has a different type in the 2 environements)
+    - -2 if the environments are not compatible
+      (a variable has a different type in the 2 environments)
     - -1 if env1 is a subset of env2
     - 0 if equality
     - +1 if env1 is a superset of env2
@@ -166,10 +166,10 @@ ap_environment_t* ap_environment_lce(ap_environment_t* env1,
 				     ap_dimchange_t** dimchange1,
 				     ap_dimchange_t** dimchange2);
   /*
-  Least common environment to two environements.
+  Least common environment to two environments.
 
    - If environments are not compatible
-     (a variable has different types in the 2 environements),
+     (a variable has different types in the 2 environments),
      return NULL
 
    - Compute also in dimchange1 and dimchange2 the conversion transofrmations.
@@ -182,11 +182,11 @@ ap_environment_t* ap_environment_lce_array(ap_environment_t** tenv,
 					   size_t size,
 					   ap_dimchange_t*** ptdimchange);
 /*
-  Least common environement to an array environements.
+  Least common environment to an array environments.
 
   - Assume the size of the array is at least one.
 
-  - If all input environements are the same, *ptdimchange==NULL.
+  - If all input environments are the same, *ptdimchange==NULL.
     Otherwise, compute in *ptdimchange the conversion permutations.
 
   - If no dimensions to add to tenv[i], this implies that env is actually

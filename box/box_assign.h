@@ -11,11 +11,6 @@
 extern "C" {
 #endif
 
-box_t* box_assign_linexpr(ap_manager_t* man,
-			  bool destructive,
-			  box_t* a,
-			  ap_dim_t dim, ap_linexpr0_t* linexpr,
-			  box_t* dest);
 box_t* box_assign_linexpr_array(ap_manager_t* man,
 				bool destructive,
 				box_t* a,
@@ -23,11 +18,6 @@ box_t* box_assign_linexpr_array(ap_manager_t* man,
 				ap_linexpr0_t** texpr,
 				size_t size,
 				box_t* dest);
-box_t* box_substitute_linexpr(ap_manager_t* man,
-			      bool destructive,
-			      box_t* a,
-			      ap_dim_t dim, ap_linexpr0_t* linexpr,
-			      box_t* dest);
 box_t* box_substitute_linexpr_array(ap_manager_t* man,
 				    bool destructive,
 				    box_t* a,
@@ -35,6 +25,20 @@ box_t* box_substitute_linexpr_array(ap_manager_t* man,
 				    ap_linexpr0_t** texpr,
 				    size_t size,
 				    box_t* dest);
+box_t* box_assign_texpr_array(ap_manager_t* man,
+			      bool destructive,
+			      box_t* a,
+			      ap_dim_t* tdim, 
+			      ap_texpr0_t** texpr,
+			      size_t size,
+			      box_t* dest);
+box_t* box_substitute_texpr_array(ap_manager_t* man,
+				  bool destructive,
+				  box_t* a,
+				  ap_dim_t* tdim, 
+				  ap_texpr0_t** texpr,
+				  size_t size,
+				  box_t* dest);
 
 
 #ifdef __cplusplus

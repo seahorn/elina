@@ -84,12 +84,14 @@ void ap_coeff_set_interval_frac(ap_coeff_t* coeff,
                                   long int numinf, unsigned long int deninf,
                                   long int numsup, unsigned long int densup);
 void ap_coeff_set_interval_double(ap_coeff_t* coeff, double inf, double sup);
+void ap_coeff_set_interval_top(ap_coeff_t* coeff);
   /* Assign a coefficient of type INTERVAL, with resp.
      - an interval of coeff
      - an interval of rationals of type MPQ
      - an interval of integers, converted to type MPQ
      - an interval of rationals, converted to type MPQ
      - an interval of double, converted to type DOUBLE
+     - a top interval (type not precised).
   */
 
 /* ====================================================================== */

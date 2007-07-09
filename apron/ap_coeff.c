@@ -227,8 +227,8 @@ void ap_coeff_set_interval_int(ap_coeff_t* coeff, long int inf, long int sup)
   ap_interval_set_int(coeff->val.interval,inf,sup); 
 }
 void ap_coeff_set_interval_frac(ap_coeff_t* coeff,
-				       long int numinf, unsigned long int deninf, 
-				       long int numsup, unsigned long int densup)
+				long int numinf, unsigned long int deninf, 
+				long int numsup, unsigned long int densup)
 {
   ap_coeff_reinit(coeff,AP_COEFF_INTERVAL,AP_SCALAR_MPQ); 
   ap_interval_set_frac(coeff->val.interval,numinf,deninf,numsup,densup); 
@@ -237,6 +237,12 @@ void ap_coeff_set_interval_double(ap_coeff_t* coeff, double inf, double sup)
 {
   ap_coeff_reinit(coeff,AP_COEFF_INTERVAL,AP_SCALAR_DOUBLE); 
   ap_interval_set_double(coeff->val.interval,inf,sup); 
+}
+void ap_coeff_set_interval_top(ap_coeff_t* coeff)
+{
+  if (coeff->discr == AP_COEFF_SCALAR)
+    ap_coeff_reinit(coeff,AP_COEFF_INTERVAL,AP_SCALAR_DOUBLE);
+  ap_interval_set_top(coeff->val.interval);
 }
 
 /* ====================================================================== */

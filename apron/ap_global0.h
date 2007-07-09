@@ -16,6 +16,8 @@
 #include "ap_linexpr0.h"
 #include "ap_lincons0.h"
 #include "ap_generator0.h"
+#include "ap_texpr0.h"
+#include "ap_tcons0.h"
 #include "ap_manager.h"
 #include "ap_abstract0.h"
 

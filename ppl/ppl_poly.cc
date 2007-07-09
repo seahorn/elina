@@ -18,7 +18,7 @@
 #include "ap_generic.h"
 #include "ap_linearize.h"
 
-#include "apron_ppl.h"
+#include "ap_ppl.h"
 #include "ppl_poly.hh"
 #include "ppl_user.hh"
 
@@ -317,40 +317,6 @@ PPL_Poly* ap_ppl_poly_of_box(ap_manager_t* man,
   CATCH_WITH_DIM(AP_FUNID_OF_BOX,intdim,realdim);
 }
 
-extern "C"
-PPL_Poly* ap_ppl_poly_of_lincons_array(ap_manager_t* man,
-				       size_t intdim, size_t realdim,
-				       ap_lincons0_array_t* array)
-{
-  bool exact;
-  ap_lincons0_array_t array2;
-  bool lin;
-  ppl_internal_t* intern = get_internal(man);
-  try {
-    PPL_Poly* res =  new PPL_Poly(man,intdim,realdim,UNIVERSE);
-    lin = ap_lincons0_array_is_linear(array);
-    if (lin){
-      array2 = *array;
-    }
-    else {
-      array2 = ap_quasilinearize_lincons0_array(man,res,array,AP_SCALAR_MPQ,
-						&exact,
-						false,true);
-    }
-    Constraint_System c;
-    exact = ap_ppl_of_lincons_array(intern->itv,c,&array2,get_internal(man)->strict) && exact;
-    if (!exact){
-      man->result.flag_exact = man->result.flag_best = tbool_top;
-    }
-    if (!lin){
-      ap_lincons0_array_clear(&array2);
-    }
-    res->p->add_recycled_constraints(c);
-    return res;
-  }
-  CATCH_WITH_DIM(AP_FUNID_OF_LINCONS_ARRAY,intdim,realdim);
-}  
-
 /* ============================================================ */
 /* II.2 Accessors */
 /* ============================================================ */
@@ -433,7 +399,6 @@ tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a,
       Constraint r = Constraint::zero_dim_positivity();
       Linear_Expression l;
       mpz_class den;
-      bool quasilinear = ap_linexpr0_is_quasilinear(lincons->linexpr0);
 
       switch (lincons->constyp) {
       case AP_CONS_EQ: 
@@ -444,13 +409,9 @@ tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a,
 	}
       case AP_CONS_SUPEQ:
       case AP_CONS_SUP:
-	linexpr = 
-	  (quasilinear ?
-	   lincons->linexpr0 : 
-	   ap_quasilinearize_linexpr0(man,a,lincons->linexpr0,AP_SCALAR_MPQ,&exact)
-	   );
+	linexpr = ap_quasilinearize_linexpr0(man,a,lincons->linexpr0,&exact,AP_SCALAR_MPQ);
 	ap_ppl_of_linexpr(intern->itv,l,den,linexpr,-1);
-	if (!quasilinear) ap_linexpr0_free(linexpr);
+	if (linexpr != lincons->linexpr0) ap_linexpr0_free(linexpr);
 	switch (lincons->constyp) {
 	case AP_CONS_SUPEQ: 
 	  r = (l>=0); break;
@@ -479,6 +440,13 @@ tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a,
     }
   }
   CATCH_WITH_VAL(AP_FUNID_SAT_LINCONS,tbool_top);
+}
+
+extern "C"
+tbool_t ap_ppl_poly_sat_tcons(ap_manager_t* man, PPL_Poly* a,
+			      ap_tcons0_t* cons)
+{
+  return ap_generic_sat_tcons(man,a,cons,AP_SCALAR_MPQ,true);
 }
 
 /* utility shared by _bound_dimension & _to_box, _sat_interval (exact) */
@@ -558,49 +526,44 @@ ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
       mpz_class den;
       bool ok;
       bool exact = true;
-      bool quasilinear = ap_linexpr0_is_quasilinear(expr);
-      if (quasilinear){
-	ap_ppl_of_linexpr(intern->itv,l,den,expr,+1);
-	/* sup bound */
-	if (a->p->maximize(l,sup_n,sup_d,ok)) {
-	  sup_d *= den;
-	  ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
-	}
-	else {
-	  ap_scalar_set_infty(r->sup,1);
-	}
-	/* inf bound */
-	bool linear = ap_linexpr0_is_linear(expr);
-	if (!linear){
-	  ap_ppl_of_linexpr(intern->itv,l,den,expr,-1);
-	}
-	if (a->p->minimize(l,inf_n,inf_d,ok)) {
-	  inf_d *= den;
-	  ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
-	}
-	else {
-	  ap_scalar_set_infty(r->inf,-1);
-	}
+
+      ap_linexpr0_t* linexpr0 = ap_quasilinearize_linexpr0(man,a,expr,&exact,
+							   AP_SCALAR_MPQ);
+      ap_ppl_of_linexpr(intern->itv,l,den,linexpr0,+1);
+      /* sup bound */
+      if (a->p->maximize(l,sup_n,sup_d,ok)) {
+	sup_d *= den;
+	ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
       }
       else {
-	size_t size = a->p->space_dimension();
-	ap_interval_t** tinterval = ap_ppl_poly_to_box(man,a);
-	itv_t* titv;
-	itv_t itv;
-	exact = itv_array_set_ap_interval_array(intern->itv,
-						&titv,tinterval,size) && exact;
-	itv_init(itv);
-	exact = itv_eval_ap_linexpr0(intern->itv,itv,titv,expr) && exact;
-	ap_interval_set_itv(intern->itv,r,itv);
-	itv_clear(itv);
-	itv_array_free(titv,size);
-	ap_interval_array_free(tinterval,size);
+	ap_scalar_set_infty(r->sup,1);
       }
-
+      /* inf bound */
+      if (!ap_linexpr0_is_linear(linexpr0)){
+	ap_ppl_of_linexpr(intern->itv,l,den,linexpr0,-1);
+      }
+      if (a->p->minimize(l,inf_n,inf_d,ok)) {
+	inf_d *= den;
+	ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
+      }
+      else {
+	ap_scalar_set_infty(r->inf,-1);
+      }
+      if (linexpr0!=expr){
+	ap_linexpr0_free(linexpr0);
+      }
     }
     return r;
   }
   CATCH_WITH_VAL(AP_FUNID_BOUND_LINEXPR,(ap_interval_set_top(r),r));
+}
+
+extern "C"
+ap_interval_t* ap_ppl_poly_bound_texpr(ap_manager_t* man,
+				       PPL_Poly* a,
+				       ap_texpr0_t* expr)
+{
+  return ap_generic_bound_texpr(man,a,expr,AP_SCALAR_MPQ,true);
 }
 
 extern "C"
@@ -631,6 +594,13 @@ ap_lincons0_array_t ap_ppl_poly_to_lincons_array(ap_manager_t* man,
 }
 
 extern "C"
+ap_tcons0_array_t ap_ppl_poly_to_tcons_array(ap_manager_t* man,
+					     PPL_Poly* a)
+{
+  return ap_generic_to_tcons_array(man,a);
+}
+
+extern "C"
 ap_interval_t** ap_ppl_poly_to_box(ap_manager_t* man, PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best =
@@ -650,7 +620,6 @@ ap_interval_t** ap_ppl_poly_to_box(ap_manager_t* man, PPL_Poly* a)
   }
   CATCH_WITH_VAL(AP_FUNID_TO_BOX,(ap_ppl_box_universe(in,dim),in));
 }
-
 extern "C"
 ap_generator0_array_t ap_ppl_poly_to_generator_array(ap_manager_t* man,
 						     PPL_Poly* a)
@@ -750,21 +719,14 @@ PPL_Poly* ap_ppl_poly_meet_lincons_array(ap_manager_t* man,
   try {
     PPL_Poly* r = destructive ? a : new PPL_Poly(man,*a);
     if (!a->p->is_empty()){
-      lin = ap_lincons0_array_is_linear(array);
-      if (lin){
-	array2 = *array;
-      }
-      else {
-	array2 = ap_quasilinearize_lincons0_array(man,a,array,AP_SCALAR_MPQ,
-						  &exact,
-						  false,true);
-      }
+      array2 = ap_quasilinearize_lincons0_array(man,a,array,&exact,
+						AP_SCALAR_MPQ,true);
       Constraint_System c;
       exact = ap_ppl_of_lincons_array(intern->itv,c,&array2,intern->strict) && exact;
       if (!exact){
 	man->result.flag_exact = man->result.flag_best = tbool_top;
       }
-      if (!lin){
+      if (array2.p!=array->p){
 	ap_lincons0_array_clear(&array2);
       }
       r->p->add_recycled_constraints(c);
@@ -772,6 +734,19 @@ PPL_Poly* ap_ppl_poly_meet_lincons_array(ap_manager_t* man,
     return r;
   }
   CATCH_WITH_POLY(AP_FUNID_MEET_LINCONS_ARRAY,a);
+}
+
+extern "C"
+PPL_Poly* ap_ppl_poly_meet_tcons_array(ap_manager_t* man,
+					 bool destructive,
+					 PPL_Poly* a,
+					 ap_tcons0_array_t* array)
+{
+  return (PPL_Poly*)ap_generic_meet_intlinearize_tcons_array(man,destructive, a,
+							     array,
+							     AP_SCALAR_MPQ, AP_LINEXPR_LINEAR,
+							     (void* (*)(ap_manager_t*, bool, void*, ap_lincons0_array_t*))
+							     (&ap_ppl_poly_meet_lincons_array));
 }
 
 extern "C"
@@ -813,13 +788,7 @@ PPL_Poly* ap_ppl_poly_assign_linexpr(ap_manager_t* man,
   try {
     PPL_Poly* r = destructive ? org : new PPL_Poly(man,*org);
     try {
-      ap_linexpr0_t* expr2;
-      if (!ap_linexpr0_is_quasilinear(expr)){
-	expr2 = ap_quasilinearize_linexpr0(man,org,expr,AP_SCALAR_MPQ,&exact);
-      }
-      else {
-	expr2 = expr;
-      }
+      ap_linexpr0_t* expr2 = ap_quasilinearize_linexpr0(man,org,expr,&exact,AP_SCALAR_MPQ);
       if (ap_linexpr0_is_linear(expr2)){
 	Linear_Expression e;
 	mpz_class den;
@@ -843,7 +812,7 @@ PPL_Poly* ap_ppl_poly_assign_linexpr(ap_manager_t* man,
     }
     return r;
   }
-  CATCH_WITH_POLY(AP_FUNID_ASSIGN_LINEXPR,org);
+  CATCH_WITH_POLY(AP_FUNID_ASSIGN_LINEXPR_ARRAY,org);
 }
 extern "C"
 PPL_Poly* ap_ppl_poly_substitute_linexpr(ap_manager_t* man,
@@ -866,7 +835,7 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr(ap_manager_t* man,
 	  ap_dimension_t dimension = ap_ppl_poly_dimension(man,org);
 	  dest = new PPL_Poly(man,dimension.intdim,dimension.realdim,UNIVERSE);
 	}
-	expr2 = ap_quasilinearize_linexpr0(man,dest,expr,AP_SCALAR_MPQ,&exact);
+	expr2 = ap_quasilinearize_linexpr0(man,dest,expr,&exact,AP_SCALAR_MPQ);
 	if (!has_dest){
 	  delete dest;
 	  dest = NULL;
@@ -898,7 +867,7 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr(ap_manager_t* man,
     }
     return r;
   }
-  CATCH_WITH_POLY(AP_FUNID_ASSIGN_LINEXPR,org);
+  CATCH_WITH_POLY(AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,org);
 }
 
 extern "C"
@@ -910,38 +879,27 @@ PPL_Poly* ap_ppl_poly_assign_linexpr_array(ap_manager_t* man,
 					   size_t size,
 					   PPL_Poly* dest)
 {
+  PPL_Poly* r;
   size_t i;
   bool exact = true;
-  ppl_internal_t* intern = get_internal(man);  
-  man->result.flag_exact = man->result.flag_best =
-    org->intdim ? tbool_top : tbool_true;
-  
-  ap_linexpr0_t** texpr2;
-
-  bool quasilinear = true;
-  for (i=0; i<size; i++){
-    if (!ap_linexpr0_is_quasilinear(texpr[i])){
-      quasilinear = false;
+  for (i=0;i<size;i++){
+    if (!ap_linexpr0_is_linear(texpr[i])){
+      exact = false;
       break;
     }
   }
-  texpr2 = 
-    quasilinear ? 
-    texpr :
-    ap_quasilinearize_linexpr0_array(man,org,texpr,size,AP_SCALAR_MPQ,&exact);
-
-  PPL_Poly* r = (PPL_Poly*)ap_generic_assign_linexpr_array(man, destructive, 
-							   org,
-							   tdim,texpr2,size,
-							   dest);
-  if (texpr2 != texpr){
-    for (i=0;i<size;i++){
-      ap_linexpr0_free(texpr2[i]);
-    }
-    free(texpr2);
+  if (size==1)
+    r = ap_ppl_poly_assign_linexpr(man,destructive,org,tdim[0],texpr[0],dest);
+  else {
+    r = (PPL_Poly*)ap_generic_assign_linexpr_array(man, destructive, 
+						   org,
+						   tdim,texpr,size,
+						   dest);
   }
+  man->result.flag_exact = man->result.flag_best = (!exact || org->intdim) ? tbool_top : tbool_true;
   return r;
 }
+  
 extern "C"
 PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
 					       bool destructive,
@@ -951,50 +909,54 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
 					       size_t size,
 					       PPL_Poly* dest)
 {
+  PPL_Poly* r;
   size_t i;
   bool exact = true;
-  ppl_internal_t* intern = get_internal(man);  
-  man->result.flag_exact = man->result.flag_best =
-    org->intdim ? tbool_top : tbool_true;
-  
-  ap_linexpr0_t** texpr2;
-
-  bool quasilinear = true;
-  for (i=0; i<size; i++){
-    if (!ap_linexpr0_is_quasilinear(texpr[i])){
-      quasilinear = false;
+  for (i=0;i<size;i++){
+    if (!ap_linexpr0_is_linear(texpr[i])){
+      exact = false;
       break;
     }
   }
-  if (quasilinear){
-    texpr2 = texpr;
-  }
+  if (size==1)
+    r = ap_ppl_poly_substitute_linexpr(man,destructive,org,tdim[0],texpr[0],dest);
   else {
-    bool has_dest = (dest!=NULL);
-    if (!has_dest){
-      ap_dimension_t dimension = ap_ppl_poly_dimension(man,org);
-      dest = new PPL_Poly(man,dimension.intdim,dimension.realdim,UNIVERSE);
-    }
-    texpr2 = ap_quasilinearize_linexpr0_array(man,dest,texpr,size,AP_SCALAR_MPQ,&exact);
-    if (!has_dest){
-      delete dest;
-      dest = NULL;
-    }
-  } 
-
-  PPL_Poly* r = (PPL_Poly*)ap_generic_substitute_linexpr_array(man, destructive, 
-							       org,
-							       tdim,texpr2,size,
-							       dest);
-  if (texpr2 != texpr){
-    for (i=0;i<size;i++){
-      ap_linexpr0_free(texpr2[i]);
-    }
-    free(texpr2);
+    r = (PPL_Poly*)ap_generic_substitute_linexpr_array(man, destructive, 
+						       org,
+						       tdim,texpr,size,
+						       dest);
   }
+  man->result.flag_exact = man->result.flag_best = (!exact || org->intdim) ? tbool_top : tbool_true;
   return r;
 }
-
+extern "C"
+PPL_Poly* ap_ppl_poly_assign_texpr_array(ap_manager_t* man,
+					 bool destructive,
+					 PPL_Poly* org,
+					 ap_dim_t* tdim,
+					 ap_texpr0_t** texpr,
+					 size_t size,
+					 PPL_Poly* dest)
+{
+  return (PPL_Poly*)ap_generic_assign_texpr_array(man, destructive, 
+						  org,
+						  tdim,texpr,size,
+						  dest);
+}
+extern "C"
+PPL_Poly* ap_ppl_poly_substitute_texpr_array(ap_manager_t* man,
+					     bool destructive,
+					     PPL_Poly* org,
+					     ap_dim_t* tdim,
+					     ap_texpr0_t** texpr,
+					     size_t size,
+					     PPL_Poly* dest)
+{
+  return (PPL_Poly*)ap_generic_substitute_texpr_array(man, destructive, 
+						      org,
+						      tdim,texpr,size,
+						      dest);
+}
 
 /* ============================================================ */
 /* III.3 Projections */
@@ -1285,7 +1247,6 @@ extern "C" ap_manager_t* ap_ppl_poly_manager_alloc(bool strict)
   man->funptr[AP_FUNID_BOTTOM] = (void*)ap_ppl_poly_bottom;
   man->funptr[AP_FUNID_TOP] = (void*)ap_ppl_poly_top;
   man->funptr[AP_FUNID_OF_BOX] = (void*)ap_ppl_poly_of_box;
-  man->funptr[AP_FUNID_OF_LINCONS_ARRAY] = (void*)ap_ppl_poly_of_lincons_array;
   man->funptr[AP_FUNID_DIMENSION] = (void*)ap_ppl_poly_dimension;
   man->funptr[AP_FUNID_IS_BOTTOM] = (void*)ap_ppl_poly_is_bottom;
   man->funptr[AP_FUNID_IS_TOP] = (void*)ap_ppl_poly_is_top;
@@ -1294,21 +1255,25 @@ extern "C" ap_manager_t* ap_ppl_poly_manager_alloc(bool strict)
   man->funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED] = (void*)ap_ppl_poly_is_dimension_unconstrained;
   man->funptr[AP_FUNID_SAT_INTERVAL] = (void*)ap_ppl_poly_sat_interval;
   man->funptr[AP_FUNID_SAT_LINCONS] = (void*)ap_ppl_poly_sat_lincons;
+  man->funptr[AP_FUNID_SAT_TCONS] = (void*)ap_ppl_poly_sat_tcons;
   man->funptr[AP_FUNID_BOUND_DIMENSION] = (void*)ap_ppl_poly_bound_dimension;
   man->funptr[AP_FUNID_BOUND_LINEXPR] = (void*)ap_ppl_poly_bound_linexpr;
+  man->funptr[AP_FUNID_BOUND_TEXPR] = (void*)ap_ppl_poly_bound_texpr;
   man->funptr[AP_FUNID_TO_BOX] = (void*)ap_ppl_poly_to_box;
   man->funptr[AP_FUNID_TO_LINCONS_ARRAY] = (void*)ap_ppl_poly_to_lincons_array;
+  man->funptr[AP_FUNID_TO_TCONS_ARRAY] = (void*)ap_ppl_poly_to_tcons_array;
   man->funptr[AP_FUNID_TO_GENERATOR_ARRAY] = (void*)ap_ppl_poly_to_generator_array;
   man->funptr[AP_FUNID_MEET] = (void*)ap_ppl_poly_meet;
   man->funptr[AP_FUNID_MEET_ARRAY] = (void*)ap_ppl_poly_meet_array;
   man->funptr[AP_FUNID_MEET_LINCONS_ARRAY] = (void*)ap_ppl_poly_meet_lincons_array;
+  man->funptr[AP_FUNID_MEET_TCONS_ARRAY] = (void*)ap_ppl_poly_meet_tcons_array;
   man->funptr[AP_FUNID_JOIN] = (void*)ap_ppl_poly_join;
   man->funptr[AP_FUNID_JOIN_ARRAY] = (void*)ap_ppl_poly_join_array;
   man->funptr[AP_FUNID_ADD_RAY_ARRAY] = (void*)ap_ppl_poly_add_ray_array;
-  man->funptr[AP_FUNID_ASSIGN_LINEXPR] = (void*)ap_ppl_poly_assign_linexpr;
   man->funptr[AP_FUNID_ASSIGN_LINEXPR_ARRAY] = (void*)ap_ppl_poly_assign_linexpr_array;
-  man->funptr[AP_FUNID_SUBSTITUTE_LINEXPR] = (void*)ap_ppl_poly_substitute_linexpr;
   man->funptr[AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY] = (void*)ap_ppl_poly_substitute_linexpr_array;
+  man->funptr[AP_FUNID_ASSIGN_TEXPR_ARRAY] = (void*)ap_ppl_poly_assign_texpr_array;
+  man->funptr[AP_FUNID_SUBSTITUTE_TEXPR_ARRAY] = (void*)ap_ppl_poly_substitute_texpr_array;
   man->funptr[AP_FUNID_ADD_DIMENSIONS] = (void*)ap_ppl_poly_add_dimensions;
   man->funptr[AP_FUNID_REMOVE_DIMENSIONS] = (void*)ap_ppl_poly_remove_dimensions;
   man->funptr[AP_FUNID_PERMUTE_DIMENSIONS] = (void*)ap_ppl_poly_permute_dimensions;

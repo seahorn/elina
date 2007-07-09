@@ -41,16 +41,19 @@ quote(MLI,"\n\
 (** Make a linear constraint. Modifying later the linear expression ({e not\n\
   advisable}) modifies correspondingly the linear constraint and conversely,\n\
   except for changes of environements *)\n\
-val make: Linexpr1.t -> Lincons0.typ -> t\n\
+val make: Linexpr1.t -> typ -> t\n\
 \n\
 (** Copy (deep copy) *)\n\
 val copy: t -> t\n\
+\n\
+(** Convert a constraint type to a string ([=],[>=], or [>]) *)\n\
+val string_of_typ : typ -> string\n\
 \n\
 (** Print the linear constraint *)\n\
 val print : Format.formatter -> t -> unit\n\
 \n\
 (** Get the constraint type *)\n\
-val get_typ: t -> Lincons0.typ\n\
+val get_typ: t -> typ\n\
 \n\
 (** Iter the function on the pair coefficient/variable of the underlying linear\n\
   expression *)\n\
@@ -60,7 +63,7 @@ val iter: (Coeff.t -> Var.t -> unit) -> t -> unit\n\
 val get_cst: t -> Coeff.t\n\
 \n\
 (** Set the constraint type *)\n\
-val set_typ: t -> Lincons0.typ -> unit\n\
+val set_typ: t -> typ -> unit\n\
 \n\
 (** Set simultaneously a number of coefficients.\n\
 \n\
@@ -176,6 +179,8 @@ let copy cons = {\n\
   lincons0 = Lincons0.copy cons.lincons0;\n\
   env = cons.env;\n\
 }\n\
+let string_of_typ = Lincons0.string_of_typ\n\
+\n\
 let print fmt cons = \n\
   Lincons0.print\n\
    (fun dim -> Var.to_string (Environment.var_of_dim cons.env dim)) fmt cons.lincons0;\n \

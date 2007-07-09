@@ -15,6 +15,8 @@
 #include "pk_constructor.h"
 #include "pk_extract.h"
 #include "pk_test.h"
+#include "itv_linearize.h"
+#include "ap_generic.h"
 
 /* ====================================================================== */
 /* Emptiness test */
@@ -250,9 +252,9 @@ tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* po, ap_lincons0_t* lincons0)
   if (!ap_linexpr0_is_quasilinear(lincons0->linexpr0)){
     itv_t* titv = matrix_to_box(pk,po->F);
     exact = itv_lincons_set_ap_lincons0(pk->itv,
-					     &pk->poly_itv_lincons,
+					&pk->poly_itv_lincons,
 					lincons0);
-    exact = itv_lincons_quasilinearize(pk->itv,
+    exact = itv_quasilinearize_lincons(pk->itv,
 				       &pk->poly_itv_lincons,
 				       titv)
       && exact;
@@ -282,6 +284,11 @@ tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* po, ap_lincons0_t* lincons0)
      tbool_top );
 
   return tbool_of_bool(sat);
+}
+
+tbool_t pk_sat_tcons(ap_manager_t* man, pk_t* po, ap_tcons0_t* cons)
+{
+  return ap_generic_sat_tcons(man,po,cons,AP_SCALAR_MPQ,true);
 }
 
 /* ====================================================================== */

@@ -35,7 +35,7 @@ CCSRC = box_config.h box.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = box.h
 CCBIN_TO_INSTALL =
-CCLIB_TO_INSTALL = libboxmpq.a libboxmpq_debug.a
+CCLIB_TO_INSTALL = libbox.a libbox_debug.a libboxMPQ.a libboxMPQ_debug.a
 CAML_TO_INSTALL = box.idl box.ml box.mli box.cmi box.cmx box.cma box.cmxa box.a libbox_caml.a libbox_caml_debug.a
 
 #---------------------------------------
@@ -46,9 +46,9 @@ CAML_TO_INSTALL = box.idl box.ml box.mli box.cmi box.cmx box.cma box.cmxa box.a 
 # depend doc install
 # and the following one
 
-all: allmpq
+all: libbox.a libbox_debug.a allMPQ
 
-allmpq: libboxmpq.a libboxmpq_debug.a
+allMPQ: libboxMPQ.a libboxMPQ_debug.a
 
 ml: box.mli box.ml box.cmi box.cmx box.cma box.cmxa libbox_caml.a libbox_caml_debug.a
 
@@ -94,41 +94,46 @@ dist: $(CCSRC) Makefile sedscript_caml box.texi box.idl box.ml box.mli box_caml.
 # C part
 #-----------------------------------
 
-libboxmpq.a: $(CCMODULES:%=%mpq.o)
+libbox.a: libboxMPQ.a
+	cp $^ $@
+libbox_debug.a: libboxMPQ_debug.a
+	cp $^ $@
+
+libboxMPQ.a: $(CCMODULES:%=%MPQ.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-libboxmpq_debug.a: $(CCMODULES:%=%mpq_debug.o)
+libboxMPQ_debug.a: $(CCMODULES:%=%MPQ_debug.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-%mpq.o: %.c
+%MPQ.o: %.c
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -c -o $@ $<
-%mpq_debug.o: %.c
+%MPQ_debug.o: %.c
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPQ -c -o $@ $<
 
-libboxllr.a: $(CCMODULES:%=%llr.o)
+libboxRll.a: $(CCMODULES:%=%Rll.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
-libboxllr_debug.a: $(CCMODULES:%=%llr_debug.o)
+libboxRll_debug.a: $(CCMODULES:%=%Rll_debug.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-%llr.o: %.c
+%Rll.o: %.c
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
-%llr_debug.o: %.c
+%Rll_debug.o: %.c
 	$(CC) $(CFLAGS_DEBIG) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
 
-libboxdbl.a: $(CCMODULES:%=%dbl.o)
+libboxD.a: $(CCMODULES:%=%D.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
-libboxdbl_debug.a: $(CCMODULES:%=%dbl_debug.o)
+libboxD_debug.a: $(CCMODULES:%=%D_debug.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-%dbl.o: %.c
+%D.o: %.c
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -c -o $@ $<
-%dbl_debug.o: %.c
+%D_debug.o: %.c
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_DOUBLE -c -o $@ $<
 
 #---------------------------------------
@@ -146,13 +151,13 @@ libbox_caml_debug.a: box_caml_debug.o
 # ML rules
 #---------------------------------------
 
-box.cma: box.cmo libbox_caml.a
+box.cma: box.cmo libbox_caml.a libbox.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ box.cmo \
-	-ccopt "-L$(BOX_PREFIX)/lib" -cclib "-lbox_caml"
+	-ccopt "-L$(BOX_PREFIX)/lib" -cclib "-lbox_caml -lbox"
 
-box.cmxa: box.cmx libbox_caml.a
+box.cmxa: box.cmx libbox_caml.a libbox.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ box.cmx \
-	-ccopt "-L$(BOX_PREFIX)/lib" -cclib "-lbox_caml"
+	-ccopt "-L$(BOX_PREFIX)/lib" -cclib "-lbox_caml -lbox"
 	$(RANLIB) box.a
 
 

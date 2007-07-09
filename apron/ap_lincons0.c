@@ -154,6 +154,19 @@ void ap_lincons0_array_fprint(FILE* stream,
   }
 }
 
+ap_linexpr_type_t ap_lincons0_array_type(ap_lincons0_array_t* array)
+{
+  size_t i;
+  ap_linexpr_type_t res = AP_LINEXPR_LINEAR;
+  for (i=0; i<array->size; i++){
+    ap_linexpr_type_t type = ap_linexpr0_type(array->p[i].linexpr0);
+    if (type < res) 
+      type = res;
+    if (res==AP_LINEXPR_INTLINEAR)
+      break;
+  }
+  return res;
+}
 bool ap_lincons0_array_is_quasilinear(ap_lincons0_array_t* array)
 {
   size_t i;

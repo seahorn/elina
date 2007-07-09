@@ -71,7 +71,7 @@ ap_manager_t* box_manager_alloc(void)
 #endif
 			 itv, (void (*)(void*))box_internal_free);
   funptr = man->funptr;
-  
+
   funptr[AP_FUNID_COPY] = &box_copy;
   funptr[AP_FUNID_FREE] = &box_free;
   funptr[AP_FUNID_ASIZE] = &box_size;
@@ -86,7 +86,6 @@ ap_manager_t* box_manager_alloc(void)
   funptr[AP_FUNID_BOTTOM] = &box_bottom;
   funptr[AP_FUNID_TOP] = &box_top;
   funptr[AP_FUNID_OF_BOX] = &box_of_box;
-  funptr[AP_FUNID_OF_LINCONS_ARRAY] = &box_of_lincons_array;
   funptr[AP_FUNID_DIMENSION] = &box_dimension;
   funptr[AP_FUNID_IS_BOTTOM] = &box_is_bottom;
   funptr[AP_FUNID_IS_TOP] = &box_is_top;
@@ -95,21 +94,25 @@ ap_manager_t* box_manager_alloc(void)
   funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED] = &box_is_dimension_unconstrained;
   funptr[AP_FUNID_SAT_INTERVAL] = &box_sat_interval;
   funptr[AP_FUNID_SAT_LINCONS] = &box_sat_lincons;
+  funptr[AP_FUNID_SAT_TCONS] = &box_sat_tcons;
   funptr[AP_FUNID_BOUND_DIMENSION] = &box_bound_dimension;
   funptr[AP_FUNID_BOUND_LINEXPR] = &box_bound_linexpr;
+  funptr[AP_FUNID_BOUND_TEXPR] = &box_bound_texpr;
   funptr[AP_FUNID_TO_BOX] = &box_to_box;
   funptr[AP_FUNID_TO_LINCONS_ARRAY] = &box_to_lincons_array;
+  funptr[AP_FUNID_TO_TCONS_ARRAY] = &box_to_tcons_array;
   funptr[AP_FUNID_TO_GENERATOR_ARRAY] = &box_to_generator_array;
   funptr[AP_FUNID_MEET] = &box_meet;
   funptr[AP_FUNID_MEET_ARRAY] = &box_meet_array;
   funptr[AP_FUNID_MEET_LINCONS_ARRAY] = &box_meet_lincons_array;
+  funptr[AP_FUNID_MEET_TCONS_ARRAY] = &box_meet_tcons_array;
   funptr[AP_FUNID_JOIN] = &box_join;
   funptr[AP_FUNID_JOIN_ARRAY] = &box_join_array;
   funptr[AP_FUNID_ADD_RAY_ARRAY] = &box_add_ray_array;
-  funptr[AP_FUNID_ASSIGN_LINEXPR] = &box_assign_linexpr;
-  funptr[AP_FUNID_SUBSTITUTE_LINEXPR] = &box_substitute_linexpr;
   funptr[AP_FUNID_ASSIGN_LINEXPR_ARRAY] = &box_assign_linexpr_array;
   funptr[AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY] = &box_substitute_linexpr_array;
+  funptr[AP_FUNID_ASSIGN_TEXPR_ARRAY] = &box_assign_texpr_array;
+  funptr[AP_FUNID_SUBSTITUTE_TEXPR_ARRAY] = &box_substitute_texpr_array;
   funptr[AP_FUNID_ADD_DIMENSIONS] = &box_add_dimensions;
   funptr[AP_FUNID_REMOVE_DIMENSIONS] = &box_remove_dimensions;
   funptr[AP_FUNID_PERMUTE_DIMENSIONS] = &box_permute_dimensions;

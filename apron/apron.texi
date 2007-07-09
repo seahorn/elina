@@ -49,7 +49,7 @@ numerical variables.
 
 @title APRON
 @subtitle The APRON library
-@subtitle Edition 0.9.6, March 2007
+@subtitle Edition 0.9.7, July 2007
 
 @author by Bertrand Jeannet and the APRON team
 @c Include the Distribution inside the titlepage so
@@ -240,42 +240,40 @@ with their corresponding include files @file{ap_dimension.h},
 
 Then, you should also include the header files of the underlying
 libraries you want to use it via APRON (for instance, @file{box.h},
-@file{pk.h}, @file{apron_ppl.h}).
+@file{pk.h}, @file{ap_ppl.h}).
 
 All programs using APRON must link against the @file{libapron},
-@file{libitvmpq}, @file{libitvdbl.a} (these two are required by
-functions in @file{ap_linearize}), @file{libmpfr} and @file{libgmp}
-libraries, and the underlying libraries you want to use it via APRON:
+@file{libmpfr} and @file{libgmp} libraries, and the underlying
+libraries you want to use it via APRON:
 @enumerate
 @item
 If some file @file{test.c} uses the POLKA library via APRON, the
 compilation command should look like @samp{gcc -I$ITV/include
--I$MPFR/include -I$GMP/include -I$APRON/include -L$ITV/lib -L$MPFR/lib
--L$GMP/lib -L$APRON/lib -o test test.c -lpolkag -lapron -litvmpq.a
--ltivdbl.a -lmpfr -lgmp}, assuming that the POLKA library is used in
-its 'g' version (internal number representation is GMP integer) and
+-I$MPFR/include -I$GMP/include -I$APRON/include -L$MPFR/lib
+-L$GMP/lib -L$APRON/lib -o test test.c -lpolkaMPQ -lapron -lmpfr -lgmp},
+assuming that the POLKA library is used in
+its 'MPQ' version (internal number representation is GMP rationals) and
 resides in @file{$APRON/include} and @file{$APRON/lib} directories.
 
-The @file{libpolkag.a} library is of course needed, @file{libapron.a}
-contains all the code common to all APRON library (manipulation of
-expressions, environments, ...), @file{libitvmpq.a} and
-@file{libitvdbl.a} are required when the underlying library uses the
-(quasi)linearisation facilities of APRON, last the libraries
-@code{libmpfr.a} and @code{libgmp.a} are required both by
-@sc{NewPolka}, @sc{APRON} and @sc{ITV}.
+The @file{libpolkaMPQ.a} library is of course needed,
+@file{libapron.a} contains all the code common to all APRON library
+(manipulation of expressions, environments, ...), as well as ITV
+functions (quasi)linearisation facilities of APRON,...), last the
+libraries @code{libmpfr.a} and @code{libgmp.a} are required both by
+@sc{NewPolka} and @sc{APRON} .
 @item
 If some file @file{test.c} uses the PPL library via APRON, the
 compilation command should look like @samp{g++ -I$ITV/include
 -I$MPFR/include -I$GMP/include -I$APRON/include -I$PPL/include
 -L$ITV/lib -L$MPFR/lib -L$GMP/lib -L$APRON/lib -L$PPL/lib -o test
-test.c -lapron_ppl -lppl -lgmpxx -lapron -litvmpq.a -litvdbl.a -lmpfr
+test.c -la_ppl -lppl -lgmpxx -lapron -lmpfr
 -lgmp}, assuming that PPL resides in $PPL and PPL APRON interface in
 @file{$APRON/include} and @file{$APRON/lib} directories.
 
 Notice that the PPL library (@file{libppl.a}) is a C++ library, you
 need to use @samp{g++} instead of @samp{gcc} for linking. You also
 need the C++ layer on top of GMP (@file{libgmpxx.a}). The
-@file{libapron_ppl.a} library contains the layer on top of PPL which
+@file{libap_ppl.a} library contains the layer on top of PPL which
 implements the APRON interface.
 @end enumerate
 You should look at the specific documentation of the libraries for
@@ -679,7 +677,6 @@ typedef enum ap_funid_t @{
   AP_FUNID_BOTTOM,
   AP_FUNID_TOP,
   AP_FUNID_OF_BOX,
-  AP_FUNID_OF_LINCONS_ARRAY,
   AP_FUNID_DIMENSION,
   AP_FUNID_IS_BOTTOM,
   AP_FUNID_IS_TOP,
@@ -688,21 +685,25 @@ typedef enum ap_funid_t @{
   AP_FUNID_IS_DIMENSION_UNCONSTRAINED,
   AP_FUNID_SAT_INTERVAL,
   AP_FUNID_SAT_LINCONS,
+  AP_FUNID_SAT_TCONS,
   AP_FUNID_BOUND_DIMENSION,
   AP_FUNID_BOUND_LINEXPR,
+  AP_FUNID_BOUND_TEXPR,
   AP_FUNID_TO_BOX,
   AP_FUNID_TO_LINCONS_ARRAY,
+  AP_FUNID_TO_TCONS_ARRAY,
   AP_FUNID_TO_GENERATOR_ARRAY,
   AP_FUNID_MEET,
   AP_FUNID_MEET_ARRAY,
   AP_FUNID_MEET_LINCONS_ARRAY,
+  AP_FUNID_MEET_TCONS_ARRAY,
   AP_FUNID_JOIN,
   AP_FUNID_JOIN_ARRAY,
   AP_FUNID_ADD_RAY_ARRAY,
-  AP_FUNID_ASSIGN_LINEXPR,
   AP_FUNID_ASSIGN_LINEXPR_ARRAY,
-  AP_FUNID_SUBSTITUTE_LINEXPR,
   AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,
+  AP_FUNID_ASSIGN_TEXPR_ARRAY,
+  AP_FUNID_SUBSTITUTE_TEXPR_ARRAY,
   AP_FUNID_ADD_DIMENSIONS,
   AP_FUNID_REMOVE_DIMENSIONS,
   AP_FUNID_PERMUTE_DIMENSIONS,
@@ -857,10 +858,10 @@ raised one.
 
 @c ===================================================================
 @node PPL, pkgrid, NewPolka, Managers and Abstract Domains
-@section PPL (@file{apron_ppl.h}): convex polyhedra and linear congruences abstract domains
+@section PPL (@file{ap_ppl.h}): convex polyhedra and linear congruences abstract domains
 @c ===================================================================
 
-@include apron_ppl.texi
+@include ap_ppl.texi
 
 @c ===================================================================
 @node pkgrid,  , PPL, Managers and Abstract Domains
@@ -1369,6 +1370,8 @@ This interface of level 1 is defined in @file{ap_global1.h}.
 * Linear expressions of level 1::
 * Linear constraints of level 1::
 * Generators of level 1::
+* Tree expressions of level 1::
+* Tree constraints of level 1::
 * Abstract values and operations of level 1::
 @end menu
 
@@ -1378,10 +1381,10 @@ The main functions brought by level 1 are
 @itemize
 @item
 to convert variables to dimensions, thanks to the addition of
-environements to objects;
+environments to objects;
 @item
 to redimension (abstract values), expressions, constraints and
-generators defined on different environements.
+generators defined on different environments.
 @end itemize
 
 The policy for redimensioning is the following one:
@@ -1389,15 +1392,15 @@ The policy for redimensioning is the following one:
 @itemize
 @item
 For functions taking one abstract value and one expression (or
-constraint or generator, or array of ...), the environement of the
-expression should be a sub-environement of the environement of the
-abstract value. The environement of the result is the environement of
+constraint or generator, or array of ...), the environment of the
+expression should be a sub-environment of the environment of the
+abstract value. The environment of the result is the environment of
 the argument abstract value.
 @item
-For functions taking several abstract values, their environements
+For functions taking several abstract values, their environments
 should be the same. Otherwise, it is up to the user to move them
-to a common super-environement (see @ref{Environments} and
-@ref{Change of environements of abstract values of level 1}).
+to a common super-environment (see @ref{Environments} and
+@ref{Change of environments of abstract values of level 1}).
 @end itemize
 
 @ifnothtml
@@ -1428,6 +1431,18 @@ we sum up the involved types below.
 | ap_generator0_t*  |  | ap_generator0_array_t* |
 | ap_environment_t* |  | ap_environment_t*      |
 |-------------------|  |------------------------|
+
+   ap_texpr1_t
+|-------------------|
+| ap_texpr0_t*      |
+| ap_environment_t* |
+|-------------------|
+
+   ap_tcons1_t           ap_tcons1_array_t
+|-------------------|  |----------------------|
+| ap_tcons0_t*      |  | ap_tcons0_array_t*   |
+| ap_environment_t* |  | ap_environment_t*    |
+|-------------------|  |----------------------|
 
    ap_abstract1_t
 |-------------------|
@@ -1527,7 +1542,7 @@ counters).
 @end deftypefun
 
 @deftypefun void ap_environment_fdump (FILE* @var{stream}, ap_environment_t* @var{env})
-Print an environement under the form:
+Print an environment under the form:
 @example
   environment: dim = (..,..), count = ..
   0: name0
@@ -1537,11 +1552,11 @@ Print an environement under the form:
 @end deftypefun
 
 @deftypefun ap_environment_t* ap_environment_alloc_empty ()
-Build an empty environement.
+Build an empty environment.
 @end deftypefun
 
 @deftypefun ap_environment_t* ap_environment_alloc (ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
-Build an environement from an array of integer and an array of real variables.
+Build an environment from an array of integer and an array of real variables.
 
 @var{var_of_intdim} is an array of variables of size @var{intdim},
 @var{var_of_realdim} is an array of variables of size
@@ -1556,31 +1571,31 @@ If some variables are duplicated, return @code{NULL}.
 
 @deftypefun ap_environment_t* ap_environment_add (ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
 @deftypefunx ap_environment_t* ap_environment_remove (ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
-Resp. add or remove new variables to an existing environement, with a
+Resp. add or remove new variables to an existing environment, with a
 functional semantics. Same conventions as for
 @code{ap_environment_alloc} function apply. If the result is non-sense,
 return @code{NULL}.
 @end deftypefun
 
 @deftypefun ap_dim_t ap_environment_dim_of_var (ap_environment_t* @var{env}, ap_var_t @var{var})
-Convert a variable in its corresponding dimension in the environement @var{env}. If @var{var} is unknown in @var{env}, return @code{AP_DIM_MAX}.
+Convert a variable in its corresponding dimension in the environment @var{env}. If @var{var} is unknown in @var{env}, return @code{AP_DIM_MAX}.
 @end deftypefun
 @deftypefun ap_dim_t ap_environment_var_of_dim (ap_environment_t* @var{env}, ap_dim_t @var{dim})
-Return the variable associated to the dimension @var{dim} in the environement @var{env}. There is no bound check here.
+Return the variable associated to the dimension @var{dim} in the environment @var{env}. There is no bound check here.
 @end deftypefun
 
 The remaining functions are much less useful for normal user.
 
 @deftypefun bool ap_environment_is_eq (ap_environment_t* @var{env1}, ap_environment_t* @var{env2})
 @deftypefunx bool ap_environment_is_leq (ap_environment_t* @var{env1}, ap_environment_t* @var{env2})
-Resp. test the equality and the inclusion of two environements.
+Resp. test the equality and the inclusion of two environments.
 @end deftypefun
 @deftypefun int ap_environment_compare (ap_environment_t* @var{env1}, ap_environment_t* @var{env2})
 Return:
 @table @code
 @item -2
-if the environements are not compatible (a variable has a different
-type in the 2 environements);
+if the environments are not compatible (a variable has a different
+type in the 2 environments);
 @item -1
 if @var{env1} is a subset of (included in) @var{env2};
 @item 0
@@ -1588,8 +1603,8 @@ if they are equal;
 @item +1
 if @var{env1} is a superset of @var{env2};
 @item +2
-otherwise: the least common environement exists and is a strict
-superset of both environements.
+otherwise: the least common environment exists and is a strict
+superset of both environments.
 @end table
 @end deftypefun
 
@@ -1600,13 +1615,13 @@ is not a superenvironment.
 @end deftypefun
 
 @deftypefun ap_environment_t* ap_environment_lce (ap_environment_t* @var{env1}, ap_environment_t* @var{env2}, ap_dimchange_t** @var{dimchange1}, ap_dimchange_t** @var{dimchange2})
-Least common environement to two enviroenments.
+Least common environment to two enviroenments.
 @itemize
 @item
 Assume @code{ap_environment_is_eq(env1,env2)==false}
 @item
-If environements are not compatible (a variable has different types in
-the 2 environements), return NULL
+If environments are not compatible (a variable has different types in
+the 2 environments), return NULL
 @item
 Compute also in @var{dimchange1} and @var{dimchange2} the conversion transformations to the lce.
 @item
@@ -1618,12 +1633,12 @@ actually @var{env1}. In this case,
 @end deftypefun
 
 @deftypefun ap_environment_t* ap_environment_lce_array (ap_environment_t** @var{tenv}, size_t @var{size}, ap_dimchange_t*** @var{ptdimchange})
-Least common environement to an array of environements.
+Least common environment to an array of environments.
 @itemize
 @item
 Assume the size @var{size} of the array @var{tenv} is at least one;
 @item
-If all input environements are the same, @code{*ptdimchange==NULL}.
+If all input environments are the same, @code{*ptdimchange==NULL}.
 Otherwise, compute in @code{*ptdimchange} the conversion permutations
 @item
 If no dimensions to add to @code{tenv[i]}, this implies that the
@@ -1634,13 +1649,13 @@ result is actually @code{tenv[i]}. In this case,
 @end deftypefun
 
 @deftypefun ap_environment_t* ap_environment_rename (ap_environment_t* @var{env}, ap_var_t* @var{tvar1}, ap_var_t* @var{tvar2}, size_t @var{size}, ap_dimperm_t* @var{perm})
-Rename the variables in the environement.  @var{size} is the common
+Rename the variables in the environment.  @var{size} is the common
 size of arrays @var{tvar1} and @var{tvar2}, and @var{perm} is a
 result-parameter pointing to an @emph{existing but not initialized}
 object of type @code{ap_dimperm_t}.
 
 The function applies the variable substitution @code{tvar1[i]->tvar2[i]}
-to the environement, and returns the resulting environement and the
+to the environment, and returns the resulting environment and the
 allocated transformation permutation in @code{*perm}.
 
 If the parameters are not valid, return @code{NULL} with
@@ -1651,6 +1666,44 @@ If the parameters are not valid, return @code{NULL} with
 @node Linear expressions of level 1, Linear constraints of level 1, Environments, Level 1 of the interface
 @section Linear expressions of level 1 (@file{ap_linexpr1.h})
 @c ===================================================================
+
+We manipulate here expressions of the form
+@quotation
+@math{a_0.x_0 + ... + a_n.x_n + b}
+@end quotation
+where the coefficients @math{a_0, ..., a_n, b} are of
+@code{ap_coeff_t} type (either scalars or intervals) and the variables
+@math{x_0, ... , x_n} are of type @code{ap_var_t}.
+
+The semantics of linear expressions is exact, in the sense that the
+arithmetic operations are interpreted in the real (or rational)
+numbers. However, abstract domains are free to overapproximate this
+exact semantics (this may occur when converting rational scalars to
+@code{double} type for instance).
+
+A special remark concerns integer variables. Abstract domains are
+assumed to perform the operations involving linear expressions using a
+real/rational semantics, and then possibly to reduce the result using
+the knowledge that integer variables may only take integer
+values.
+@quotation
+This semantics @emph{coincides} with the natural integer semantics of
+expressions involving only integer variables @emph{only if} the
+involved coefficients are all integers.
+@end quotation
+@quotation
+A typical counter-example to this is an assignement @math{y := 1/3 x} where
+@math{x} and @math{y} are integer variables. If this assignement is
+applied to the @sc{Box} abstract domain value @math{x in [1;1]}, it
+may lead to the bottom value, because one will first obtain @math{y in
+[1/3;1/3]} by real/rational computations, and this may be reduced to
+the empty interval because @math{y} is integer and the interval
+contains no integer values.
+@end quotation
+
+If you need expressions with a less simple semantics (mixing integer,
+real/rational and floating-point semantics with casts), you should use
+tree expressions (@pxref{Tree expressions of level 1}).
 
 @deftp datatype ap_linexpr1_t
 (Internal) type of interval linear expressions.
@@ -1680,11 +1733,11 @@ typedef struct ap_linexpr1_t @{
 @c -------------------------------------------------------------------
 
 @deftypefun ap_linexpr1_t ap_linexpr1_make (ap_environment_t* @var{env}, ap_linexpr_discr_t @var{lin_discr}, size_t @var{size})
-Build a linear expressions on the environement @var{env}, with by
+Build a linear expressions on the environment @var{env}, with by
 default coefficients of type SCALAR and DOUBLE.
 
 If @var{lin_discr} selects a dense representation, the size of the
-expression is the size of the environement. Otherwise, the initial
+expression is the size of the environment. Otherwise, the initial
 size is given by @var{size} and the expression may be resized lazily.
 @end deftypefun
 
@@ -1754,7 +1807,7 @@ Get a reference to the coefficient associated to the variable
 Do not free it. In case of sparse representation, possibly induce the
 addition of a new linear term.
 
-Return NULL if @var{var} is unknown in the environement of @var{e}.
+Return NULL if @var{var} is unknown in the environment of @var{e}.
 @end deftypefun
 
 @c -------------------------------------------------------------------
@@ -1965,7 +2018,7 @@ to modify the constraint type.
 @deftypefun ap_linexpr1_t ap_lincons1_linexpr1ref (ap_lincons1_t* @var{cons})
 Get a reference to the underlying expression of the constraint.  Do
 not free it: nothing is duplicated.  Modifying the argument or the
-result is equivalent, except for change of dimensions/environement.
+result is equivalent, except for change of dimensions/environment.
 @end deftypefun
 
 @deftypefun void ap_lincons1_get_cst (ap_coeff_t* @var{coeff}, ap_lincons1_t* @var{cons})
@@ -2003,7 +2056,7 @@ Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of di
 
 @deftypefun ap_lincons1_array_t ap_lincons1_array_make (ap_environment_t* @var{env}, size_t @var{size})
 Allocate an array of constraints of size @var{size}, defined on the
-environement @var{env}.
+environment @var{env}.
 
 The constraints are initialized with NULL pointers for underlying
 expressions.
@@ -2026,17 +2079,18 @@ Get a reference to the environment. Do not free it.
 @end deftypefun
 
 @deftypefun ap_lincons1_t ap_lincons1_array_get (ap_lincons1_array_t* @var{array}, size_t @var{index})
-Return the linear constraint of the given index Nothing is duplicated,
+Return the linear constraint of the given index. Nothing is duplicated,
 and the result should never be cleared.  Modifying the argument or the
 result is equivalent, except for change of environments
 @end deftypefun
 
 @deftypefun bool ap_lincons1_array_set (ap_lincons1_array_t* @var{array}, size_t @var{index}, ap_lincons1_t* @var{cons})
 Fill the index of the array with the constraint.  Assumes
-@code{array->env==cons->env}.  Nothing is duplicated.  The argument should
-never be cleared. (its environment is dereferenced).  If a constraint
-was already stored, it is first cleared.  Return true iff problem
-(index or @code{array->env!=cons->env})
+@code{ap_environment_is_eq(array->env,cons->env)}. Nothing is
+duplicated.  The argument should never be cleared (its environment is
+dereferenced).  If a constraint was already stored, it is first
+cleared.  Return true iff problem (index or
+@code{array->env!=cons->env})
 @end deftypefun
 
 @deftypefun void ap_lincons1_array_clear_index (ap_lincons1_array_t* @var{array}, size_t @var{index})
@@ -2049,7 +2103,7 @@ Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of di
 @end deftypefun
 
 @c ===================================================================
-@node Generators of level 1, Abstract values and operations of level 1, Linear constraints of level 1, Level 1 of the interface
+@node Generators of level 1, Tree expressions of level 1, Linear constraints of level 1, Level 1 of the interface
 @section generators of level 1 (@file{ap_generator1.h})
 @c ===================================================================
 
@@ -2139,7 +2193,7 @@ to modify the generator type.
 @deftypefun ap_linexpr1_t ap_generator1_linexpr1ref (ap_generator1_t* @var{gen})
 Get a reference to the underlying expression of the generator.  Do
 not free it: nothing is duplicated.  Modifying the argument or the
-result is equivalent, except for change of dimensions/environement.
+result is equivalent, except for change of dimensions/environment.
 @end deftypefun
 
 @deftypefun void ap_generator1_get_cst (ap_coeff_t* @var{coeff}, ap_generator1_t* @var{gen})
@@ -2178,7 +2232,7 @@ Identical to corresponding @code{ap_linexpr1_XXX} functions
 
 @deftypefun ap_generator1_array_t ap_generator1_array_make (ap_environment_t* @var{env}, size_t @var{size})
 Allocate an array of generators of size @var{size}, defined on the
-environement @var{env}.
+environment @var{env}.
 
 The generators are initialized with NULL pointers for underlying
 expressions.
@@ -2224,7 +2278,365 @@ Identical to corresponding @code{ap_linexpr1_XXX} functions (@pxref{Change of di
 @end deftypefun
 
 @c ===================================================================
-@node Abstract values and operations of level 1,  , Generators of level 1, Level 1 of the interface
+@node Tree expressions of level 1, Tree constraints of level 1, Generators of level 1, Level 1 of the interface
+@section Tree expressions of level 1 (@file{ap_texpr1.h})
+@c ===================================================================
+
+We manipulate here general expressions described by the grammar
+@quotation
+@math{expr ::= cst | var | unop e | e1 binop e2}
+@end quotation
+Such tree expressions generalize linear expressions(@pxref{Linear
+expressions of level 1}) in two ways:
+@itemize
+@item Non-linear operations are possible (multiplication, division, casts, ...)
+@item
+Semantics of operators is no longer restricted to real/rational
+semantics. Each operation is parameterized by two parameters:
+@itemize
+@item
+a rounding type parameter,
+which indicates the destination type of the operation, and influences
+how the rounding is performed;
+@item
+a rounding direction parameter, which defines the rounding mode.
+@end itemize
+@end itemize
+
+@menu
+* Datatypes for tree expressions of level 1::
+* Constructors/Destructors for tree expressions of level 1::
+* Tests on tree expressions of level 1::
+* Operations on tree expressions of level 1::
+@end menu
+
+@c -------------------------------------------------------------------
+@node Datatypes for tree expressions of level 1, Constructors/Destructors for tree expressions of level 1, Tree expressions of level 1, Tree expressions of level 1
+@subsection Datatypes for tree expressions of level 1
+@c -------------------------------------------------------------------
+
+@deftp datatype ap_texpr1_t
+Type of tree expressions.
+
+Tree expressions of level 1 are created as objects of type
+@code{ap_texpr1_t*}. They are manipulated in a functional way (except
+a few operations), unlike linear expressions on which most operations
+acts by side-effects.
+@end deftp
+
+@deftp datatype ap_texpr_op_t
+Operators (actually defined in @file{ap_texpr0.h})
+@example
+typedef enum ap_texpr_op_t @{
+  /* Binary operators */
+  AP_TEXPR_ADD, AP_TEXPR_SUB, AP_TEXPR_MUL, AP_TEXPR_DIV,
+  AP_TEXPR_MOD,  /* either integer or real, no rounding */
+  /* Unary operators */
+  AP_TEXPR_NEG   /* no rounding */,
+  AP_TEXPR_CAST, AP_TEXPR_SQRT,
+@} ap_texpr_op_t;
+@end example
+@end deftp
+
+@deftp datatype ap_texpr_rtype_t
+Destination type of the operation for rounding (actually defined in @file{ap_texpr0.h})
+@example
+typedef enum ap_texpr_rtype_t @{
+  AP_RTYPE_REAL,     /* real (no rounding) */
+  AP_RTYPE_INT,      /* integer */
+  AP_RTYPE_SINGLE,   /* IEEE 754 32-bit single precision, e.g.: C's float */
+  AP_RTYPE_DOUBLE,   /* IEEE 754 64-bit double precision, e.g.: C's double */
+  AP_RTYPE_EXTENDED, /* non-standard 80-bit double extended, e.g.: Intel's long double */
+  AP_RTYPE_QUAD,     /* non-standard 128-bit quadruple precision, e.g.: Motorola's long double */
+@} ap_texpr_rtype_t;
+@end example
+@end deftp
+
+@deftp datatype ap_texpr_rdir_t
+Rounding mode (actually defined in @file{ap_texpr0.h})
+@example
+typedef enum ap_texpr_rdir_t @{
+  AP_RDIR_NEAREST /* Nearest */
+  AP_RDIR_ZERO    /* Zero (truncation for integers) */
+  AP_RDIR_UP      /* + Infinity */
+  AP_RDIR_DOWN    /* - Infinity */
+  AP_RDIR_RND,    /* All possible mode, non deterministically */
+  AP_RDIR_SIZE    /* Not to be used ! */
+@} ap_texpr_rdir_t;
+@end example
+@end deftp
+
+@c -------------------------------------------------------------------
+@node Constructors/Destructors for tree expressions of level 1, Tests on tree expressions of level 1, Datatypes for tree expressions of level 1, Tree expressions of level 1
+@subsection Constructors/Destructors for tree expressions of level 1
+@c -------------------------------------------------------------------
+
+Parameters of constructors are not memory-managed by the constructed
+expression, with the important exception of expressions parameters
+(type @code{ap_texpr1.h}) are, which means that they should not be
+freed afterwards.
+
+@deftypefun  ap_texpr1_t* ap_texpr1_cst                 (ap_environment_t* @var{env}, ap_coeff_t* @var{coeff})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_scalar          (ap_environment_t* @var{env}, ap_scalar_t* @var{scalar})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_scalar_mpq      (ap_environment_t* @var{env}, mpq_t @var{mpq})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_scalar_int      (ap_environment_t* @var{env}, long int @var{num})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_scalar_frac     (ap_environment_t* @var{env}, long int @var{num}, unsigned long int @var{den})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_scalar_double   (ap_environment_t* @var{env}, double @var{num})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_interval        (ap_environment_t* @var{env}, ap_interval_t* @var{itv})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_interval_scalar (ap_environment_t* @var{env}, ap_scalar_t* @var{inf}, ap_scalar_t* @var{sup})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_interval_mpq    (ap_environment_t* @var{env}, mpq_t @var{inf}, mpq_t @var{sup})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_interval_int    (ap_environment_t* @var{env}, long int @var{inf}, long int @var{sup})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_interval_frac   (ap_environment_t* @var{env}, long int @var{numinf}, unsigned long int @var{deninf}, long int @var{numsup}, unsigned long int @var{densup})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_interval_double (ap_environment_t* @var{env}, double @var{inf}, double @var{sup})
+@deftypefunx ap_texpr1_t* ap_texpr1_cst_top             (ap_environment_t* @var{env})
+Create a constant expression, on the environment @var{env}.
+@end deftypefun
+
+@deftypefun ap_texpr1_t* ap_texpr1_var (ap_environment_t* @var{env}, ap_var_t @var{var})
+Create a variable expression. Return @code{NULL} in the case @var{var}
+is unknown in @var{env}.
+@end deftypefun
+
+@deftypefun ap_texpr1_t* ap_texpr1_unop (ap_texpr_op_t @var{op}, ap_texpr_rtype_t @var{type}, ap_texpr_rdir_t @var{dir}, ap_texpr1_t* @var{opA})
+@deftypefunx ap_texpr1_t* ap_texpr1_binop (ap_texpr_op_t @var{op}, ap_texpr_rtype_t @var{type}, ap_texpr_rdir_t @var{dir}, ap_texpr1_t* @var{opA}, ap_texpr1_t* @var{opB})
+Create an expression from an operator and expression operand(s). Be
+aware that @var{opA} and @var{opB} are memroy-managed by the result
+upon return.
+@end deftypefun
+
+@deftypefun ap_texpr1_t* ap_texpr1_copy (ap_texpr1_t* @var{expr})
+(Deep) copy of a tree expression.
+@end deftypefun
+
+@deftypefun ap_texpr1_t* ap_texpr1_from_linexpr1 (ap_linexpr1_t* @var{linexpr})
+Creation from a linear expression.
+@end deftypefun
+
+@deftypefun void ap_texpr1_free (ap_texpr1_t* @var{expr})
+Free (recursively) a tree expression.
+@end deftypefun
+
+@deftypefun void ap_texpr1_fprint (FILE* @var{stream}, ap_texpr1_t* @var{e})
+@deftypefunx void ap_texpr1_print (ap_texpr1_t* @var{e})
+Print the expression
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Tests on tree expressions of level 1, Operations on tree expressions of level 1, Constructors/Destructors for tree expressions of level 1, Tree expressions of level 1
+@subsection Tests on tree expressions of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun bool ap_texpr1_equal (ap_texpr1_t* @var{e1}, ap_texpr1_t* @var{e2})
+Structural (recursive) equality
+@end deftypefun
+
+@deftypefun bool ap_texpr1_has_var (ap_texpr1_t* @var{e}, ap_var_t @var{var})
+Return true if variable @var{var} appears in the expression.
+@end deftypefun
+
+The next functions classifies tree expressions.
+@deftypefun bool ap_texpr1_is_interval_cst (ap_texpr1_t* @var{e})
+No variable, only constant leaves
+@end deftypefun
+
+@deftypefun bool ap_texpr1_is_interval_linear (ap_texpr1_t* @var{e})
+Linear with possibly interval coefficients, no rounding
+@end deftypefun
+
+@deftypefun bool ap_texpr1_is_interval_polynomial (ap_texpr1_t* @var{e})
+Polynomial with possibly interval coefficients, no rounding
+@end deftypefun
+
+@deftypefun bool ap_texpr1_is_interval_polyfrac (ap_texpr1_t* @var{e})
+Polynomial fraction with possibly interval coefficients, no rounding
+@end deftypefun
+
+@deftypefun bool ap_texpr1_is_scalar (ap_texpr1_t* @var{e})
+All coefficients are scalar (non-interval)@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Operations on tree expressions of level 1,  , Tests on tree expressions of level 1, Tree expressions of level 1
+@subsection Operations on tree expressions of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_texpr1_t* ap_texpr1_substitute (ap_texpr1_t* @var{e}, ap_var_t @var{var}, ap_texpr1_t* @var{dst})
+Substitute every occurence of variable var with a copy of dst.  Return
+NULL in case of incorrect argument (w.r.t. var and/or environment
+compatibility).
+@end deftypefun
+
+@deftypefun ap_texpr1_t* ap_texpr1_extend_environment (ap_texpr1_t* @var{e}, ap_environment_t* @var{nenv})
+Change current environment with a super-environment.  Return NULL if
+@var{nenv} is not a superenvironment of @code{e->env}.
+@end deftypefun
+
+@deftypefun bool ap_texpr1_substitute_with (ap_texpr1_t* @var{e}, ap_var_t @var{var}, ap_texpr1_t* @var{dst})
+@deftypefunx bool ap_texpr1_extend_environment_with (ap_texpr1_t* @var{e}, ap_environment_t* @var{nenv})
+Side-effect versions of the previous functions. Return @code{true}
+instead of @code{NULL} in case of problem.
+@end deftypefun
+
+@c ===================================================================
+@node Tree constraints of level 1, Abstract values and operations of level 1, Tree expressions of level 1, Level 1 of the interface
+@section Tree constraints of level 1 (@file{ap_tcons1.h})
+@c ===================================================================
+
+Tree constraints are constraints built on tree expressions.
+
+@menu
+* Datatypes for tree constraints of level 1::
+* Constructors/Destructors for tree constraints of level 1::
+* Operations on tree constraints of level 1::
+* Arrays of tree constraints of level 1::
+@end menu
+
+@c -------------------------------------------------------------------
+@node Datatypes for tree constraints of level 1, Constructors/Destructors for tree constraints of level 1, Tree constraints of level 1, Tree constraints of level 1
+@subsection Datatypes for tree constraints of level 1
+@c -------------------------------------------------------------------
+
+@deftp datatype ap_tcons1_t
+Datatype for constraints.
+
+For information:
+@example
+typedef struct ap_tcons1_t @{
+  ap_tcons0_t tcons0;
+  ap_environment_t* env;
+@} ap_tcons1_t;
+@end example
+@end deftp
+
+@deftp datatype ap_tcons1_array_t
+@example
+typedef struct ap_tcons1_array_t @{
+  ap_tcons0_array_t tcons0_array;
+  ap_environment_t* env;
+@} ap_tcons1_array_t;
+@end example
+Datatype for arrays of constraints.
+
+Arrays at level 1 cannot be accessed directly, for example by writing
+@code{array->p[i]}, but should instead be accessed with functions
+@code{ap_tcons1_array_get} and @code{ap_tcons1_array_set}.
+@end deftp
+
+@c -------------------------------------------------------------------
+@node Constructors/Destructors for tree constraints of level 1, Operations on tree constraints of level 1, Datatypes for tree constraints of level 1, Tree constraints of level 1
+@subsection Constructors/Destructors for tree constraints of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_tcons1_t ap_tcons1_make (ap_constyp_t @var{constyp}, ap_texpr1_t*  @var{expr}, ap_scalar_t*  @var{scalar})
+Create a constraint of given type with the given expression.  The
+expression and the optional coefficient are not duplicated, just
+pointed to.
+@end deftypefun
+
+@deftypefun ap_tcons1_t ap_tcons1_from_lincons1 (ap_tcons1_t* @var{cons})
+Create a tree constraint from a linear constraint.
+@end deftypefun
+
+@deftypefun ap_tcons1_t ap_tcons1_copy (ap_tcons1_t* @var{cons})
+Duplication.
+@end deftypefun
+
+@deftypefun void ap_tcons1_clear (ap_tcons1_t* @var{cons})
+Clear the constraint and set pointers to NULL.
+@end deftypefun
+
+@deftypefun void ap_tcons1_fprint (FILE* @var{stream}, ap_tcons1_t* @var{cons})
+@deftypefunx void ap_tcons1_print (ap_tcons1_t* @var{cons})
+Printing
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_tcons1_envref (ap_tcons1_t* @var{cons})
+Get a reference to the environment. Do not free it.
+@end deftypefun
+
+@deftypefun ap_constyp_t* ap_tcons1_constypref (ap_tcons1_t* @var{cons})
+Get a reference to the type of constraint.
+@end deftypefun
+
+@deftypefun ap_scalar_t* ap_tcons1_scalarref (ap_tcons1_t* @var{cons})
+Get a reference to the auxiliary coefficient of the constraint.
+@end deftypefun
+
+@deftypefun ap_texpr1_t ap_tcons1_texpr1ref (ap_tcons1_t* @var{cons})
+Get a reference to the underlying expression of the constraint.  Do
+not free it: nothing is duplicated.  Modifying the argument or the
+result is equivalent, except for change of dimensions/environment.
+@end deftypefun
+
+@deftypefun ap_tcons0_t* ap_tcons1_tcons0ref (ap_tcons1_t* @var{cons})
+Return underlying constraint of level 0.  Do not free it: nothing is
+duplicated.  Modifying the argument or the result is equivalent,
+except for change of dimensions/envionment.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Operations on tree constraints of level 1, Arrays of tree constraints of level 1, Constructors/Destructors for tree constraints of level 1, Tree constraints of level 1
+@subsection Operations on tree constraints of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun bool ap_tcons1_extend_environment (ap_tcons1_t* @var{ncons}, ap_tcons1_t* @var{cons}, ap_environment_t* @var{nenv})
+@deftypefunx bool ap_tcons1_extend_environment_with (ap_tcons1_t* @var{cons}, ap_environment_t* @var{nenv})
+Change current environment with a super-environment.  Return
+@code{true} if @var{nenv} is not a superenvironment of @code{e->env}.
+@end deftypefun
+
+@c -------------------------------------------------------------------
+@node Arrays of tree constraints of level 1,  , Operations on tree constraints of level 1, Tree constraints of level 1
+@subsection Arrays of tree constraints of level 1
+@c -------------------------------------------------------------------
+
+@deftypefun ap_tcons1_array_t ap_tcons1_array_make (ap_environment_t* @var{env}, size_t @var{size})
+Allocate an array of size constraints.  The constraints are
+initialized with NULL pointers, so that @code{ap_tcons1_array_free}
+may be safely called.
+@end deftypefun
+@deftypefun void ap_tcons1_array_clear (ap_tcons1_array_t* @var{array})
+Clear the constraints of the array, and then the array itself.
+@end deftypefun
+@deftypefun void ap_tcons1_array_fprint (FILE* stream, ap_tcons1_array_t* @var{array})
+@deftypefunx void ap_tcons1_array_print (ap_tcons1_array_t* @var{array})
+Printing.
+@end deftypefun
+
+@deftypefun size_t ap_tcons1_array_size (ap_tcons1_array_t* @var{array})
+Return the size of the array.
+@end deftypefun
+
+@deftypefun ap_environment_t* ap_tcons1_array_envref (ap_tcons1_array_t* @var{array})
+Return a reference to the environment of the array. Do not free it.
+@end deftypefun
+
+@deftypefun void ap_tcons1_array_clear_index (ap_tcons1_array_t* @var{array}, size_t @var{index})
+Clear the constraint at index index and set pointers to @code{NULL}.
+@end deftypefun
+
+@deftypefun ap_tcons1_t ap_tcons1_array_get (ap_tcons1_array_t* @var{array}, size_t @var{index})
+Return the linear constraint of the given index Nothing is duplicated,
+and the result should never be cleared.  Modifying the argument or the
+result is equivalent, except for change of environments.
+@end deftypefun
+
+@deftypefun bool ap_tcons1_array_set (ap_tcons1_array_t* @var{array}, size_t @var{index}, ap_tcons1_t* @var{cons})
+Fill the index of the array with the constraint.  Assumes
+@code{ap_environment_is_eq(array->env,cons->env)}. Nothing is
+duplicated.  The argument should never be cleared (its environment
+is dereferenced).  If a constraint was already stored, it is first
+cleared.  Return @code{true} iff problem (index or @code{array->env!=cons->env})
+@end deftypefun
+
+@deftypefun bool ap_tcons1_array_extend_environment_with (ap_tcons1_array_t* @var{array}, ap_environment_t* @var{nenv})
+@deftypefunx bool ap_tcons1_array_extend_environment (ap_tcons1_array_t* narray, ap_tcons1_array_t* @var{array}, ap_environment_t* @var{nenv})
+Change current environment with a super-environment.  Return
+@code{true} if @var{nenv} is not a superenvironment of
+@code{array->env}.
+@end deftypefun
+
+@c ===================================================================
+@node Abstract values and operations of level 1,  , Tree constraints of level 1, Level 1 of the interface
 @section Abstract values and operations of level 1 (@file{ap_abstract1.h})
 @c ===================================================================
 
@@ -2262,14 +2674,14 @@ We remind the policy for redimensioning (@pxref{Level 1 of the interface}):
 @itemize
 @item
 For functions taking one abstract value and one expression (or
-constraint or generator, or array of ...), the environement of the
-expression should be a sub-environement of the environement of the
-abstract value. The environement of the result is the environement of
+constraint or generator, or array of ...), the environment of the
+expression should be a sub-environment of the environment of the
+abstract value. The environment of the result is the environment of
 the argument abstract value.
 @item
-For functions taking several abstract values, their environements
+For functions taking several abstract values, their environments
 should be the same. Otherwise, it is up to the user to move them to a
-common super-environement (@pxref{Environments}).
+common super-environment (@pxref{Environments}).
 @end itemize
 
 @menu
@@ -2288,7 +2700,7 @@ Operations
 * Meet and Join of abstract values of level 1::
 * Assignements and Substitutions of abstract values of level 1::
 * Existential quantification of abstract values of level 1::
-* Change of environements of abstract values of level 1::
+* Change of environments of abstract values of level 1::
 * Expansion and Folding of dimensions in abstract values of level 1::
 * Widening of abstract values of level 1::
 * Topological closure of abstract values of level 1::
@@ -2383,21 +2795,15 @@ read.
 @deftypefun ap_abstract1_t ap_abstract1_bottom (ap_manager_t* @var{man}, ap_environment_t* @var{env})
 @deftypefunx ap_abstract1_t ap_abstract1_top (ap_manager_t* @var{man}, ap_environment_t* @var{env})
 Create resp. a bottom (empty) value and a top (universe) value defined
-on the environement @var{env}.
+on the environment @var{env}.
 @end deftypefun
 
 @deftypefun ap_abstract1_t ap_abstract1_of_box (ap_manager_t* @var{man}, ap_environment_t* @var{env}, ap_var_t* @var{tvar}, ap_interval_t** @var{tinterval}, size_t @var{size})
 Abstract an hypercube defined by the arrays @var{tvar} and
 @var{tintnerval} of size @var{size}.
 
-If no inclusion is specified for a variable in the environement, its
+If no inclusion is specified for a variable in the environment, its
 value is no constrained in the resulting abstract value.
-@end deftypefun
-
-@deftypefun ap_abstract1_t ap_abstract1_of_lincons_array (ap_manager_t* @var{man}, ap_environment_t* @var{env}, ap_lincons1_array_t* @var{array})
-Abstract a convex polyhedra defined by the array @var{array} of
-(interval) linear constraints. The environement of the array should be
-a subset of the environement @var{env}.
 @end deftypefun
 
 @c -------------------------------------------------------------------
@@ -2405,8 +2811,8 @@ a subset of the environement @var{env}.
 @subsection Accessors for abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_dimension_t ap_abstract1_environement (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
-Get a reference to the environement of @var{a}. Do not free it.
+@deftypefun ap_dimension_t ap_abstract1_environment (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
+Get a reference to the environment of @var{a}. Do not free it.
 @end deftypefun
 
 @deftypefun ap_manager_t* ap_abstract1_manager (ap_abstract1_t* @var{a})
@@ -2442,8 +2848,9 @@ Inclusion and equality tests.
 Is the variable @var{var} included in the interval @var{interval} in the abstract value @var{a} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract1_sat_lincons (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_lincons1_t* @var{lincons})
-Does the abstract value @var{a} satisfy the (interval) linear constraint @var{lincons} ?
+@deftypefun tbool_t ap_abstract1_sat_lincons (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_lincons1_t* @var{cons})
+@deftypefunx tbool_t ap_abstract1_sat_tcons (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_tcons1_t* @var{cons})
+Does the abstract value @var{a} satisfy the constraint @var{cons} ?
 @end deftypefun
 
 @deftypefun tbool_t ap_abstract1_is_variable_unconstrained (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_var_t @var{var})
@@ -2462,11 +2869,13 @@ value @var{a}.
 @end deftypefun
 
 @deftypefun ap_interval_t* ap_abstract1_bound_linexpr (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})
-Return the interval taken by a linear expression @var{expr} over
+@deftypefunx ap_interval_t* ap_abstract1_bound_texpr (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_texpr1_t* @var{expr})
+Return the interval taken by the expression @var{expr} over
 the abstract value @var{a}.
 
-This function allows to solve a Linear Programming (LP) problem, but
-depending on the underlying domain the solution may be not optimal.
+In the case of truly linear expression, this function allows to solve
+a Linear Programming (LP) problem, but depending on the underlying
+domain the solution may be not optimal.
 @end deftypefun
 
 @deftypefun ap_box1_t ap_abstract1_to_box (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
@@ -2474,11 +2883,11 @@ Convert @var{a} to an interval/hypercube.
 @end deftypefun
 
 @deftypefun ap_lincons1_array_t ap_abstract1_to_lincons_array (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
-Convert @var{a} to a convex polyhedra (conjunction of linear
-constraints).
+@deftypefunx ap_tcons1_array_t ap_abstract1_to_tcons_array (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
+Convert @var{a} to a conjunction of linear (resp. tree)
+constraints.
 
-The constraints are normally guaranteed to be really linear
-(without intervals).
+The constraints are normally guaranteed to be without intervals.
 @end deftypefun
 
 @deftypefun ap_generator1_array_t ap_abstract1_to_generator_array (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
@@ -2504,11 +2913,12 @@ Meet and Join of the array @var{array} of abstract values of size
 @var{size}.
 
 Raise an @code{AP_EXC_INVALID_ARGUMENT} exception if
-@code{size==1} (no way to define the environement of the result
+@code{size==1} (no way to define the environment of the result
 in such a case).
 @end deftypefun
 
 @deftypefun ap_abstract1_t ap_abstract1_meet_lincons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_lincons1_array_t* @var{array})
+@deftypefunx ap_abstract1_t ap_abstract1_meet_tcons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_tcons1_array_t* @var{array})
 Meet of the abstract value @var{a} with the set of constraints
 @var{array}.
 @end deftypefun
@@ -2524,22 +2934,12 @@ Generalized time elapse operator.
 @subsection Assignements and Substitutions of abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, ap_linexpr1_t* @var{expr}, ap_abstract1_t* @var{dest})
-@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, ap_linexpr1_t* @var{expr}, ap_abstract1_t* @var{dest})
-Assignement and Substitution of the dimension @var{dim} by the (interval)
-linear expression @var{expr} in abstract value @var{org}.
-
-@var{dest} is an optional argument. If not NULL, semantically
-speaking, the result of the transformation is intersected with
-@var{dest}. This is useful for precise backward transformations in
-lattices like intervals or octagons.
-@end deftypefun
-
-
 @deftypefun ap_abstract1_t ap_abstract1_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t* @var{tvar}, ap_linexpr1_t* @var{texpr}, size_t @var{size}, ap_abstract1_t* @var{dest})
 @deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t* @var{tvar}, ap_linexpr1_t* @var{texpr}, size_t @var{size}, ap_abstract1_t* @var{dest})
+@deftypefunx ap_abstract1_t ap_abstract1_assign_texpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t* @var{tvar}, ap_texpr1_t* @var{texpr}, size_t @var{size}, ap_abstract1_t* @var{dest})
+@deftypefunx ap_abstract1_t ap_abstract1_substitute_texpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t* @var{tvar}, ap_texpr1_t* @var{texpr}, size_t @var{size}, ap_abstract1_t* @var{dest})
 Parallel Assignement and Substitution of several variables by
-linear expressions in abstract value @var{org}.
+expressions in abstract value @var{org}.
 
 @var{dest} is an optional argument. If not NULL, semantically speaking,
 the result of the transformation is intersected with @var{dest}. This is
@@ -2548,7 +2948,7 @@ octagons.
 @end deftypefun
 
 @c -------------------------------------------------------------------
-@node Existential quantification of abstract values of level 1, Change of environements of abstract values of level 1, Assignements and Substitutions of abstract values of level 1, Abstract values and operations of level 1
+@node Existential quantification of abstract values of level 1, Change of environments of abstract values of level 1, Assignements and Substitutions of abstract values of level 1, Abstract values and operations of level 1
 @subsection Existential quantification of abstract values of level 1
 @c -------------------------------------------------------------------
 
@@ -2559,12 +2959,12 @@ value @var{a}.
 @end deftypefun
 
 @c -------------------------------------------------------------------
-@node Change of environements of abstract values of level 1, Expansion and Folding of dimensions in abstract values of level 1, Existential quantification of abstract values of level 1, Abstract values and operations of level 1
-@subsection Change of environements of abstract values of level 1
+@node Change of environments of abstract values of level 1, Expansion and Folding of dimensions in abstract values of level 1, Existential quantification of abstract values of level 1, Abstract values and operations of level 1
+@subsection Change of environments of abstract values of level 1
 @c -------------------------------------------------------------------
 
 @deftypefun ap_abstract1_t ap_abstract1_change_environment (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_environment_t* @var{nenv}, bool @var{project})
-Change the environement of the abstract values.  Variables that are
+Change the environment of the abstract values.  Variables that are
 removed are first existentially quantified, and variables that are
 introduced are either unconstrained (@code{project==false}) or
 initialized to 0 (@code{project==false}).
@@ -2582,7 +2982,7 @@ renamed.
 @end deftypefun
 
 @c -------------------------------------------------------------------
-@node Expansion and Folding of dimensions in abstract values of level 1, Widening of abstract values of level 1, Change of environements of abstract values of level 1, Abstract values and operations of level 1
+@node Expansion and Folding of dimensions in abstract values of level 1, Widening of abstract values of level 1, Change of environments of abstract values of level 1, Abstract values and operations of level 1
 @subsection Expansion and Folding of dimensions of abstract values of level 1
 @c -------------------------------------------------------------------
 
@@ -2599,7 +2999,7 @@ Expand the variable @var{var} into itself + the @var{size} additional
 variables of the array @var{tvar}, which are given the same type as
 @var{var}.  The additional variables are added to the environment of
 the argument for making the environment of the result, so they should
-not belong to the initial environement.
+not belong to the initial environment.
 
 It results in @code{size+1} unrelated variables having same relations
 with other dimensions.
@@ -2608,7 +3008,7 @@ with other dimensions.
 @deftypefun ap_abstract1_t ap_abstract1_fold (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a}, ap_var_t* @var{tvar}, size_t @var{size})
 Fold the variables in the array @var{tvar} of size @var{size}>=1 and
 put the result in the first variable in the array. The other variables
-of the array are then forgot and removed from the environement.
+of the array are then forgot and removed from the environment.
 @end deftypefun
 
 @c -------------------------------------------------------------------
@@ -2643,9 +3043,36 @@ Relax strict constraints into non strict constraints.
 @subsection Additional functions on abstract values of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_linexpr1_t ap_abstract1_quasilinear_of_intervallinear (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})
+@deftypefun ap_abstract1_t ap_abstract1_of_lincons_array (ap_manager_t* @var{man}, ap_environment_t* @var{env}, ap_lincons1_array_t* @var{array})
+@deftypefunx ap_abstract1_t ap_abstract1_of_tcons_array (ap_manager_t* @var{man}, ap_environment_t* @var{env}, ap_tcons1_array_t* @var{array})
+Abstract a conjunction of constraints. The environment of the array should be
+a subset of the environment @var{env}.
+@end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, ap_linexpr1_t* @var{expr}, ap_abstract1_t* @var{dest})
+@deftypefunx ap_abstract1_t ap_abstract1_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, ap_linexpr1_t* @var{expr}, ap_abstract1_t* @var{dest})
+@deftypefunx ap_abstract1_t ap_abstract1_assign_texpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, ap_texpr1_t* @var{expr}, ap_abstract1_t* @var{dest})
+@deftypefunx ap_abstract1_t ap_abstract1_substitute_texpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{org}, ap_var_t @var{var}, ap_texpr1_t* @var{expr}, ap_abstract1_t* @var{dest})
+Assignement and Substitution of the dimension @var{dim} by the
+expression @var{expr} in abstract value @var{org}.
+
+@var{dest} is an optional argument. If not NULL, semantically
+speaking, the result of the transformation is intersected with
+@var{dest}. This is useful for precise backward transformations in
+lattices like intervals or octagons.
+@end deftypefun
+
+@deftypefun ap_linexpr1_t ap_abstract1_quasilinear_of_intlinear (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})
 Evaluate the interval linear expression @var{expr} on the abstract
 value @var{a} and approximate it by a quasilinear expression.
+
+This implies calls to @code{ap_abstract0_bound_dimension}.
+@end deftypefun
+
+@deftypefun ap_linexpr1_t ap_abstract1_intlinear_of_tree (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_texpr1_t* @var{expr}, bool quasilinear)
+Evaluate the tree expression @var{expr} on the abstract value @var{a}
+and approximate it by an interval linear (resp. quasilinear if
+@var{quasilinear} is true) expression.
 
 This implies calls to @code{ap_abstract0_bound_dimension}.
 @end deftypefun
@@ -2664,11 +3091,13 @@ new library/abstract domain, or who want to build a composite domain
 from existing ones.
 
 @menu
-* Dimensions and related operations::
-* Linear expressions of level 0::
-* Linear constraints of level 0::
-* Generators of level 0::
-* Abstract values and operations of level 0::
+* Dimensions and related operations::  
+* Linear expressions of level 0::  
+* Linear constraints of level 0::  
+* Generators of level 0::       
+* Tree expressions of level 0::  
+* Tree constraints of level 0::  
+* Abstract values and operations of level 0::  
 @end menu
 
 @ifnothtml
@@ -3295,7 +3724,7 @@ Extension to arrays of the corresponding functions on constraints.
 @end deftypefun
 
 @c ===================================================================
-@node Generators of level 0, Abstract values and operations of level 0, Linear constraints of level 0, Level 0 of the interface
+@node Generators of level 0, Tree expressions of level 0, Linear constraints of level 0, Level 0 of the interface
 @section Generators of level 0 (@file{ap_generator0.h})
 @c ===================================================================
 
@@ -3422,7 +3851,17 @@ Extension to arrays of the corresponding functions on generators.
 @end deftypefun
 
 @c ===================================================================
-@node Abstract values and operations of level 0,  , Generators of level 0, Level 0 of the interface
+@node Tree expressions of level 0, Tree constraints of level 0, Generators of level 0, Level 0 of the interface
+@section Tree expressions of level 0 (@file{ap_texpr0.h})
+@c ===================================================================
+
+@c ===================================================================
+@node Tree constraints of level 0, Abstract values and operations of level 0, Tree expressions of level 0, Level 0 of the interface
+@section Tree constraints of level 0 (@file{ap_tcons0.h})
+@c ===================================================================
+
+@c ===================================================================
+@node Abstract values and operations of level 0,  , Tree constraints of level 0, Level 0 of the interface
 @section Abstract values and operations of level 0 (@file{ap_abstract0.h})
 @c ===================================================================
 
@@ -3572,12 +4011,6 @@ Abstract an hypercube defined by the array of intervals
 @var{array} of size @var{intdim}+@var{realdim}.
 @end deftypefun
 
-@deftypefun ap_abstract0_t* ap_abstract0_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, ap_lincons0_array_t* @var{array})
-Abstract a convex polyhedra defined by the array @var{array} of
-(interval) linear constraints. The constraints in the array should
-have exactly the dimensions (@var{intdim},@var{realdim}).
-@end deftypefun
-
 @c -------------------------------------------------------------------
 @node Accessors for abstract values of level 0, Tests on abstract values of level 0, Constructors for abstract values of level 0, Abstract values and operations of level 0
 @subsection Accessors for abstract values of level 0
@@ -3610,8 +4043,9 @@ Inclusion and equality tests.
 Is the dimension @var{dim} included in the interval @var{interval} in the abstract value @var{a} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract0_sat_lincons (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_lincons0_t* @var{lincons})
-Does the abstract value @var{a} satisfy the (interval) linear constraint @var{lincons} ?
+@deftypefun tbool_t ap_abstract0_sat_lincons (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_lincons0_t* @var{cons})
+@deftypefunx tbool_t ap_abstract0_sat_tcons (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_tcons0_t* @var{cons})
+Does the abstract value @var{a} satisfy the constraint @var{cons} ?
 @end deftypefun
 
 @deftypefun tbool_t ap_abstract0_is_dimension_unconstrained (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_dim_t @var{dim})
@@ -3630,6 +4064,7 @@ abstract value@var{a}
 @end deftypefun
 
 @deftypefun ap_interval_t* ap_abstract0_bound_linexpr (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_linexpr0_t* @var{expr})
+@deftypefunx ap_interval_t* ap_abstract0_bound_texpr (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_texpr0_t* @var{expr})
 Return the interval taken by a linear expression @var{expr} over
 the abstract value @var{a}.
 
@@ -3643,11 +4078,11 @@ The size of the resulting array is ap_abstract0_dimension(man,a).
 @end deftypefun
 
 @deftypefun ap_lincons0_array_t ap_abstract0_to_lincons_array (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
-Convert @var{a} to a convex polyhedra (conjunction of linear
-constraints).
+@deftypefunx ap_tcons0_array_t ap_abstract0_to_tcons_array (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
+Convert @var{a} to a conjunction of constraints.
 
-The constraints are normally guaranteed to be really linear
-(without intervals)
+The constraints are normally guaranteed to be scalar (without
+intervals)
 @end deftypefun
 
 @deftypefun ap_generator0_array_t ap_abstract0_to_generator_array (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
@@ -3679,6 +4114,7 @@ in such a case).
 
 
 @deftypefun ap_abstract0_t* ap_abstract0_meet_lincons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_lincons0_array_t* @var{array})
+@deftypefunx ap_abstract0_t* ap_abstract0_meet_tcons_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_tcons0_array_t* @var{array})
 Meet of the abstract value @var{a} with the set of constraints
 @var{array}.
 
@@ -3700,22 +4136,12 @@ Generalized time elapse operator.
 @subsection Assignements and Substitutions of abstract values of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun ap_abstract0_t* ap_abstract0_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, ap_linexpr0_t* @var{expr}, ap_abstract0_t* @var{dest})
-@deftypefunx ap_abstract0_t* ap_abstract0_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, ap_linexpr0_t* @var{expr}, ap_abstract0_t* @var{dest})
-Assignement and Substitution of the dimension @var{dim} by the (interval)
-linear expression @var{expr} in abstract value @var{org}.
-
-@var{dest} is an optional argument. If not NULL, semantically
-speaking, the result of the transformation is intersected with
-@var{dest}. This is useful for precise backward transformations in
-lattices like intervals or octagons.
-@end deftypefun
-
-
 @deftypefun ap_abstract0_t* ap_abstract0_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t* @var{tdim}, ap_linexpr0_t** @var{texpr}, size_t @var{size}, ap_abstract0_t* @var{dest})
 @deftypefunx ap_abstract0_t* ap_abstract0_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t* @var{tdim}, ap_linexpr0_t** @var{texpr}, size_t @var{size}, ap_abstract0_t* @var{dest})
+@deftypefunx ap_abstract0_t* ap_abstract0_assign_texpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t* @var{tdim}, ap_texpr0_t** @var{texpr}, size_t @var{size}, ap_abstract0_t* @var{dest})
+@deftypefunx ap_abstract0_t* ap_abstract0_substitute_texpr_array (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t* @var{tdim}, ap_texpr0_t** @var{texpr}, size_t @var{size}, ap_abstract0_t* @var{dest})
 Parallel Assignement and Substitution of several dimensions by
-linear expressions in abstract value @var{org}.
+expressions in abstract value @var{org}.
 
 @var{dest} is an optional argument. If not NULL, semantically speaking,
 the result of the transformation is intersected with @var{dest}. This is
@@ -3817,6 +4243,26 @@ Return a reference to the manager contained in @var{a}.
 The reference should not be freed.
 @end deftypefun
 
+@deftypefun ap_abstract0_t* ap_abstract0_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, ap_lincons0_array_t* @var{array})
+@deftypefunx ap_abstract0_t* ap_abstract0_of_tcons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, ap_tcons0_array_t* @var{array})
+Abstract a conjunction of constraints. The constraints in the array should
+have exactly the dimensions (@var{intdim},@var{realdim}).
+@end deftypefun
+
+@deftypefun ap_abstract0_t* ap_abstract0_assign_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, ap_linexpr0_t* @var{expr}, ap_abstract0_t* @var{dest})
+@deftypefunx ap_abstract0_t* ap_abstract0_substitute_linexpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, ap_linexpr0_t* @var{expr}, ap_abstract0_t* @var{dest})
+@deftypefunx ap_abstract0_t* ap_abstract0_assign_texpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, ap_texpr0_t* @var{expr}, ap_abstract0_t* @var{dest})
+@deftypefunx ap_abstract0_t* ap_abstract0_substitute_texpr (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{org}, ap_dim_t @var{dim}, ap_texpr0_t* @var{expr}, ap_abstract0_t* @var{dest})
+Assignement and Substitution of the dimension @var{dim} by the
+expression @var{expr} in abstract value @var{org}.
+
+@var{dest} is an optional argument. If not NULL, semantically
+speaking, the result of the transformation is intersected with
+@var{dest}. This is useful for precise backward transformations in
+lattices like intervals or octagons.
+@end deftypefun
+
+
 @deftypefun ap_abstract0_t* ap_abstract0_widening_threshold (ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2}, ap_lincons0_array_t* @var{array})
 Widening with threshold.
 
@@ -3830,20 +4276,9 @@ constraints in @var{array} that are satisfied by both @var{a1} and
 @chapter Functions for implementors
 @c *******************************************************************
 
-The signatures of the functions described in this chapter are
-provided by the files @file{ap_generic.h}, 
-@file{ap_linearize.h} and @file{ap_reducedproduct.h}
-
-@menu
-* Generic implementations::
-* Linearization functions::
-* Generic reduced product::
-@end menu
-
-@c ===================================================================
-@node Generic implementations, Linearization functions, Functions for implementors, Functions for implementors
-@section Generic implementations of functions of the API
-@c ===================================================================
+The signatures and documentation of these functions are
+provided by the files @file{ap_generic.h},
+@file{ap_linearize.h} and @file{ap_reducedproduct.h}.
 
 These functions are dedicated to implementors of underlying
 libraries. They offer generic default implementations for some of
@@ -3858,113 +4293,6 @@ the virtual table to such a generic implementation.
 They manipulated "unboxed" abstract values, which are native to
 the underlying library: they are not yet boxed with the manager in
 the type @code{ap_abstract0_t}.
-
-@deftypefun void* ap_generic_of_lincons_array (ap_manager_t* @var{man}, size_t @var{intdim}, size_t @var{realdim}, ap_lincons0_array_t* @var{array})
-Implements a generic @code{of_lincons_array} function using
-@code{top} and @code{meet_lincons_array} operations.
-@end deftypefun
-
-@deftypefun void* ap_generic_meet_array (ap_manager_t* @var{man}, void** @var{tab}, size_t @var{size})
-@deftypefunx void* ap_generic_join_array (ap_manager_t* @var{man}, void** @var{tab}, size_t @var{size})
-Implements a generic @code{meet_array} (resp. @code{join_array})
-operation using @code{copy} and @code{meet} (resp. @code{join})
-operations.
-@end deftypefun
-
-@deftypefun void* ap_generic_assign_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, ap_dim_t* @var{tdim}, ap_linexpr0_t** @var{texpr}, size_t @var{size}, void* @var{dest})
-@deftypefunx void* ap_generic_substitute_linexpr_array (ap_manager_t* @var{man}, bool @var{destructive}, void* abs, ap_dim_t* @var{tdim}, ap_linexpr0_t** @var{texpr}, size_t @var{size}, void* @var{dest})
-Implements generic parallel assignement (resp. substitution) function by
-@enumerate
-@item introducing primed dimensions for assigned dimensions;
-@item transforming linear expressions into equality constraints relating
-the assigned primed dimension and the linear expression;
-@item in the case of substitution, exchanging primed and unprimed dimensions;
-@item if @var{dest} is not NULL, introduce primed dimensions, exchange
-primed and unprimed dimensions in the case of assignement, and
-intersect the current abstract value with the result;
-@item intersecting the obtained abstract value with the constraints;
-@item in the case of assignement, exchanging primed and unprimed dimensions;
-@item removing the introduced (primed) dimensions
-@end enumerate
-@noindent
-It relies on: @code{is_bottom}, @code{ copy}, @code{ dimension},
-@code{add_dimensions}, @code{permute_dimensions},
-@code{remove_dimensions}, @code{meet_lincons_array} and
-@code{meet} functions.
-@end deftypefun
-
-@c ===================================================================
-@node Linearization functions, Generic reduced product, Generic implementations, Functions for implementors
-@section Linearization functions
-@c ===================================================================
-
-The following functions use the given abstract value for
-transforming interval linear expressions (resp. constraints,
-arrays of expressions, arrays od constraints) in quasilinear
-corresponding objects.
-
-They use to_box and dimension (and is_bottom if NDEBUG is undefined) generic
-functions.
-@itemize
-@item 
-@var{discr} allows to choose the type of scalars used for computations
-and for the result.
-@item 
-@var{pexact} is a pointer to a Boolean, which is set to true if
-all the conversions and computations were exact.
-@end itemize
-   
-Calling ap_linearize_tlinexpr0 is more efficient than calling N
-times ap_linearize_linexpr0 because the conversion of abstrat
-value to bounding boxes is done only once, as well as other
-internal allocations.
-
-@deftypefun ap_linexpr0_t* ap_quasilinearize_linexpr0 (ap_manager_t* @var{man}, void* @var{abs}, ap_linexpr0_t* @var{linexpr0}, ap_scalar_discr_t @var{discr}, bool* @var{pexact})
-@deftypefunx ap_lincons0_t ap_quasilinearize_lincons0 (ap_manager_t* @var{man}, void* @var{abs}, ap_lincons0_t* @var{lincons0}, ap_scalar_discr_t @var{discr}, bool* @var{pexact})
-@deftypefunx ap_linexpr0_t** ap_quasilinearize_tlinexpr0 (ap_manager_t* @var{man}, void* @var{abs}, ap_linexpr0_t** @var{tlinexpr0}, size_t @var{size}, ap_scalar_discr_t @var{discr}, bool* @var{pexact})
-@deftypefunx ap_lincons0_array_t ap_quasilinearize_lincons0_array (ap_manager_t* @var{man}, void* @var{abs}, ap_lincons0_array_t* @var{array}, ap_scalar_discr_t @var{discr}, bool* @var{pexact}, bool @var{convert}, bool @var{linearize})
-If @var{linearize} is true, also translates quasilinear
-constraints into linear constraints for @code{>0,>=0,=0}
-constraint types. If @var{convert} is true, the scalars in the
-result are guaranteed to be of type @var{discr}. Otherwise, some
-constraints may simply be copied from the input to the output.
-@end deftypefun
-
-@c ===================================================================
-@node Generic reduced product, ,Linearization functions, Functions for implementors
-@section Generic reduced product
-@c ===================================================================
-
-TO BE COMPLETED
-
-@deftp datatype ap_reducedproduct_t
-(internal) abstract value for a product
-@example
-typedef struct ap_reducedproduct_t @{
-  bool reduced; /* is the product reduced ? */
-  void* p[0];   /* array of internal abstract values, 
-		   the size of which is specified in the associated 
-		   ap_reducedproduct_internal_t */
-@} ap_reducedproduct_t;
-@end example
-@end deftp
-
-@deftp datatype ap_reducedproduct_internal_t
-internal field of a manager for generic reduced products
-@example
-typedef struct ap_reducedproduct_internal_t @{
-  void (*reduce)(ap_manager_t*, ap_reducedproduct_t*);             
-    /* reduce function */
-  void (*approximate)(ap_manager_t*, ap_reducedproduct_t*, int n); 
-    /* approximate function */
-  size_t size;                 /* size of the product */
-  ap_manager_t* tmanagers[0];  /* of size size */
-@} ap_reducedproduct_internal_t;
-@end example
-@end deftp
-
-@deftypefun ap_manager_t* ap_reducedproduct_manager_alloc (ap_manager_t** @var{tab}, size_t @var{size}, void (*@var{reduce})(ap_manager_t*, ap_reducedproduct_t*), void (*@var{approximate})(ap_manager_t*, ap_reducedproduct_t*, int n))
-@end deftypefun
 
 @c *******************************************************************
 @node Examples, Appendices, Functions for implementors, Top

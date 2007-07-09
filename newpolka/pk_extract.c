@@ -13,6 +13,7 @@
 #include "pk_user.h"
 #include "pk_representation.h"
 #include "pk_extract.h"
+#include "ap_generic.h"
 
 /* Bounding the value of a dimension in a matrix of generators. */
 
@@ -300,6 +301,13 @@ ap_interval_t* pk_bound_linexpr(ap_manager_t* man,
   return interval;
 }
 
+ap_interval_t* pk_bound_texpr(ap_manager_t* man,
+			      pk_t* po,
+			      ap_texpr0_t* expr)
+{
+  return ap_generic_bound_texpr(man,po,expr,AP_SCALAR_MPQ,true);
+}
+
 /* ====================================================================== */
 /* Bounding the value of a dimension in a polyhedra */
 /* ====================================================================== */
@@ -377,6 +385,12 @@ ap_lincons0_array_t pk_to_lincons_array(ap_manager_t* man,
   }
   array.size = k;
   return array;
+}
+
+ap_tcons0_array_t pk_to_tcons_array(ap_manager_t* man,
+				    pk_t* po)
+{
+  return ap_generic_to_tcons_array(man,po);
 }
 
 /* ====================================================================== */

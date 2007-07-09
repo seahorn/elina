@@ -20,7 +20,7 @@
 
 #include "ap_global0.h"
 #include "pk.h"
-#include "apron_ppl.h"
+#include "ap_ppl.h"
 
 ap_manager_t* ppl;
 ap_manager_t* pk;

@@ -17,6 +17,7 @@
 
 #include "itv.h"
 #include "itv_linexpr.h"
+#include "ap_generic.h"
 
 /* ********************************************************************** */
 /* I. Constructors */
@@ -235,27 +236,6 @@ pk_t* pk_of_box(ap_manager_t* man,
 
   assert(poly_check(pk,po));
   man->result.flag_exact = man->result.flag_best = tbool_true;
-  return po;
-}
-
-/* ====================================================================== */
-/* Polyhedron from a set of (interval) linear constraints */
-/* ====================================================================== */
-
-/*
-Abstract a convex polyhedra defined by the array of linear constraints.
-*/
-
-pk_t* pk_of_lincons_array(ap_manager_t* man,
-			  size_t intdim, size_t realdim,
-			  ap_lincons0_array_t* array)
-{
-  pk_t* po;
-  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_OF_LINCONS_ARRAY);
-  pk_internal_realloc_lazy(pk,intdim+realdim);
-  
-  po = pk_top(man,intdim,realdim);
-  poly_meet_lincons_array(true,man,po,po,array);
   return po;
 }
 

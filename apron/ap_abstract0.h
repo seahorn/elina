@@ -129,12 +129,6 @@ ap_abstract0_t* ap_abstract0_of_box(ap_manager_t* man,
   /* Abstract an hypercube defined by the array of intervals
      of size intdim+realdim */
 
-ap_abstract0_t* ap_abstract0_of_lincons_array(ap_manager_t* man,
-					      size_t intdim, size_t realdim,
-					      ap_lincons0_array_t* array);
-  /* Abstract a convex polyhedra defined by the array of (interval) linear
-     constraints of size size */
-
 /* ============================================================ */
 /* II.2 Accessors */
 /* ============================================================ */
@@ -162,7 +156,8 @@ tbool_t ap_abstract0_is_eq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t
   /* equality check */
 
 tbool_t ap_abstract0_sat_lincons(ap_manager_t* man, ap_abstract0_t* a, ap_lincons0_t* lincons);
-  /* does the abstract value satisfy the (interval) linear constraint ? */
+tbool_t ap_abstract0_sat_tcons(ap_manager_t* man, ap_abstract0_t* a, ap_tcons0_t* tcons);
+  /* does the abstract value satisfy the constraint ? */
 tbool_t ap_abstract0_sat_interval(ap_manager_t* man, ap_abstract0_t* a,
 			      ap_dim_t dim, ap_interval_t* interval);
   /* is the dimension included in the interval in the abstract value ? */
@@ -178,7 +173,9 @@ tbool_t ap_abstract0_is_dimension_unconstrained(ap_manager_t* man,
 
 ap_interval_t* ap_abstract0_bound_linexpr(ap_manager_t* man,
 					  ap_abstract0_t* a, ap_linexpr0_t* expr);
-  /* Returns the interval taken by a linear expression
+ap_interval_t* ap_abstract0_bound_texpr(ap_manager_t* man,
+					ap_abstract0_t* a, ap_texpr0_t* expr);
+  /* Returns the interval taken by the expression
      over the abstract value */
 
 
@@ -194,6 +191,10 @@ ap_lincons0_array_t ap_abstract0_to_lincons_array(ap_manager_t* man, ap_abstract
 
      The constraints are normally guaranteed to be really linear (without intervals) */
 
+ap_tcons0_array_t ap_abstract0_to_tcons_array(ap_manager_t* man, ap_abstract0_t* a);
+  /* Converts an abstract value to conjunction of tree expressions constraints.
+
+     The constraints are normally guaranteed to be scalar (without intervals) */
 
 ap_interval_t** ap_abstract0_to_box(ap_manager_t* man, ap_abstract0_t* a);
   /* Converts an abstract value to an interval/hypercube.
@@ -235,8 +236,10 @@ ap_abstract0_t* ap_abstract0_join_array(ap_manager_t* man,
 ap_abstract0_t*
 ap_abstract0_meet_lincons_array(ap_manager_t* man,
 				bool destructive, ap_abstract0_t* a, ap_lincons0_array_t* array);
+ap_abstract0_t*
+ap_abstract0_meet_tcons_array(ap_manager_t* man,
+				bool destructive, ap_abstract0_t* a, ap_tcons0_array_t* array);
   /* Meet of an abstract value with a set of constraints */
-
 
 ap_abstract0_t*
 ap_abstract0_add_ray_array(ap_manager_t* man,
@@ -247,43 +250,33 @@ ap_abstract0_add_ray_array(ap_manager_t* man,
 /* III.2 Assignement and Substitutions */
 /* ============================================================ */
 
-
-ap_abstract0_t* ap_abstract0_assign_linexpr(ap_manager_t* man,
-					    bool destructive,
-					    ap_abstract0_t* org,
-					    ap_dim_t dim, ap_linexpr0_t* expr,
-					    ap_abstract0_t* dest);
-
-ap_abstract0_t* ap_abstract0_substitute_linexpr(ap_manager_t* man,
-						bool destructive,
-						ap_abstract0_t* org,
-						ap_dim_t dim, ap_linexpr0_t* expr,
-						ap_abstract0_t* dest);
-  /* Assignement and Substitution of a single dimension by a (interval)
-     linear expression in abstract value org.
-
-     dest is an optional argument. If not NULL, semantically speaking,
-     the result of the transformation is intersected with dest. This is
-     useful for precise backward transformations in lattices like intervals or
-     octagons.
- */
-
-
 ap_abstract0_t*
 ap_abstract0_assign_linexpr_array(ap_manager_t* man,
 				  bool destructive,
 				  ap_abstract0_t* org,
 				  ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
 				  ap_abstract0_t* dest);
-
+ap_abstract0_t*
+ap_abstract0_assign_texpr_array(ap_manager_t* man,
+				bool destructive,
+				ap_abstract0_t* org,
+				ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
+				ap_abstract0_t* dest);
 ap_abstract0_t* 
 ap_abstract0_substitute_linexpr_array(ap_manager_t* man,
 				      bool destructive,
 				      ap_abstract0_t* org,
 				      ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
 				      ap_abstract0_t* dest);
+ap_abstract0_t* 
+ap_abstract0_substitute_texpr_array(ap_manager_t* man,
+				    bool destructive,
+				    ap_abstract0_t* org,
+				    ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
+				    ap_abstract0_t* dest);
+
   /* Parallel Assignement and Substitution of several dimensions by
-     linear expressions in abstract value org.
+     linear/tree expressions in abstract value org.
 
      dest is an optional argument. If not NULL, semantically speaking,
      the result of the transformation is intersected with dest. This is
@@ -375,6 +368,43 @@ ap_manager_t* ap_abstract0_manager(ap_abstract0_t* a)
   /* Return a reference to the manager contained in the abstract value.
      The reference should not be freed */
 
+ap_abstract0_t* ap_abstract0_of_lincons_array(ap_manager_t* man,
+					      size_t intdim, size_t realdim,
+					      ap_lincons0_array_t* array);
+ap_abstract0_t* ap_abstract0_of_tcons_array(ap_manager_t* man,
+					    size_t intdim, size_t realdim,
+					    ap_tcons0_array_t* array);
+  /* Abstract a conjunction of tree constraints */
+
+ap_abstract0_t* ap_abstract0_assign_linexpr(ap_manager_t* man,
+					    bool destructive,
+					    ap_abstract0_t* org,
+					    ap_dim_t dim, ap_linexpr0_t* expr,
+					    ap_abstract0_t* dest);
+ap_abstract0_t* ap_abstract0_assign_texpr(ap_manager_t* man,
+					  bool destructive,
+					  ap_abstract0_t* org,
+					  ap_dim_t dim, ap_texpr0_t* expr,
+					  ap_abstract0_t* dest);
+ap_abstract0_t* ap_abstract0_substitute_linexpr(ap_manager_t* man,
+						bool destructive,
+						ap_abstract0_t* org,
+						ap_dim_t dim, ap_linexpr0_t* expr,
+						ap_abstract0_t* dest);
+ap_abstract0_t* ap_abstract0_substitute_texpr(ap_manager_t* man,
+					      bool destructive,
+					      ap_abstract0_t* org,
+					      ap_dim_t dim, ap_texpr0_t* expr,
+					      ap_abstract0_t* dest);
+  /* Assignement and Substitution of a single dimension by an expression in
+     abstract value org.
+
+     dest is an optional argument. If not NULL, semantically speaking,
+     the result of the transformation is intersected with dest. This is
+     useful for precise backward transformations in lattices like intervals or
+     octagons.
+ */
+
 /* Widening with threshold */
 
 ap_abstract0_t*
@@ -409,6 +439,22 @@ ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
 				  ap_abstract0_t* a,
 				  ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
 				  ap_abstract0_t* dest);
+ap_abstract0_t* 
+ap_abstract0_asssub_texpr(ap_funid_t funid,
+			    /* either assign or substitute */
+			  ap_manager_t* man,
+			  bool destructive,
+			  ap_abstract0_t* a,
+			  ap_dim_t dim, ap_texpr0_t* expr,
+			  ap_abstract0_t* dest);
+ap_abstract0_t* 
+ap_abstract0_asssub_texpr_array(ap_funid_t funid,
+				/* either assign or substitute */
+				ap_manager_t* man,
+				bool destructive,
+				ap_abstract0_t* a,
+				ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
+				ap_abstract0_t* dest);
 #ifdef __cplusplus
 }
 #endif

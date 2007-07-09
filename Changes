@@ -1,3 +1,47 @@
+Version 0.9.7 (in preparation)
+
+Many changes !
+
+General:
+
+- Addition of the reduced product of linear inequalities (from
+  Polka library) and linear congruences (from PPL library).
+
+- Addition of tree expressions and constraints, generalizing
+  linear expressions and constraints with
+  * non-linear operations (multiplication, division, square root, ...)
+  * integer, rational/real and floating-point semantics
+
+C interface:
+
+- some (redundant) functions removed from the API requested from
+  underlying domains, but still provided through the APRON
+  interface (level 0 and 1) for compatibility reasons:
+  * of_lincons_array
+  * assign_linexpr, substitute_linexpr (superseded by
+    assign_linexpr_array, substitute_linexpr_array).
+
+- Suffixes of C libraries names indicating internal number
+  representation made more systematic and uniform among various
+  underlying libraries:
+
+  * Il, Ill, MPZ: denotes resp. long int, long long int, mpz_t (GMP)
+  * Rl, Rll, MPQ: denotes resp. rationals using long int, long
+                  long int, and mpq_t (GMP)
+  * D, Dl: denotes resp. double and long double
+
+  C library name without suffix (eg, libpolka.a) corresponds to
+  the default suffix MPQ.
+
+- Other changes in library organisation:
+
+  * libitv.a integrated in libapron.a 
+  * libapron_ppl.a renamed in libap_ppl.a,
+    libppl_caml.a  renamed in libap_ppl_caml.a 
+
+OCaml interface
+- Linking simplified thanks to the change in C libraries (see above).
+
 Version 0.9.6
 
 OCaml interface

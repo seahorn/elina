@@ -12,11 +12,14 @@
 extern "C" {
 #endif
 
+/* ********************************************************************** */
+/* Interval linear expressions and derived types */
+/* ********************************************************************** */
 
   /* evaluate to interval */
-ap_interval_t* ap_linexpr0_eval(ap_manager_t* man,
+ap_interval_t* ap_eval_linexpr0(ap_manager_t* man,
 				ap_abstract0_t* abs,
-				ap_linexpr0_t* expr, 
+				ap_linexpr0_t* expr,
 				ap_scalar_discr_t discr,
 				bool* pexact);
 
@@ -47,47 +50,85 @@ ap_interval_t* ap_linexpr0_eval(ap_manager_t* man,
    - pexact is a pointer to a Boolean, which is set to true if all the
      conversions and computations were exact.
 
+   For ap_quasilinearize_XXX functions, if the argument does not need any modification,
+   then it is returned itself.
+
    Calling ap_linearize_linexpr0_array is more efficient than calling N times
-   ap_linearize_linexpr0 because the conversion of abstrat value to bounding
+   ap_linearize_linexpr0 because the conversion of abstract value to bounding
    boxes is done only once, as well as other internal allocations.
 */
 
-ap_linexpr0_t* 
+ap_linexpr0_t*
 ap_quasilinearize_linexpr0(ap_manager_t* man,
 			   void* abs,
 			   ap_linexpr0_t* linexpr0,
-			   ap_scalar_discr_t discr,
-			   bool* pexact);
+			   bool* pexact,
+			   ap_scalar_discr_t discr);
 
-ap_lincons0_t 
+ap_lincons0_t
 ap_quasilinearize_lincons0(ap_manager_t* man,
 			   void* abs,
 			   ap_lincons0_t* lincons0,
-			   ap_scalar_discr_t discr,
-			   bool* pexact);
+			   bool* pexact,
+			   ap_scalar_discr_t discr);
 
-ap_linexpr0_t** 
+ap_linexpr0_t**
 ap_quasilinearize_linexpr0_array(ap_manager_t* man,
 				 void* abs,
 				 ap_linexpr0_t** texpr, size_t size,
-				 ap_scalar_discr_t discr,
-				 bool* pexact);
+				 bool* pexact,
+				 ap_scalar_discr_t discr);
 
-ap_lincons0_array_t 
+ap_lincons0_array_t
 ap_quasilinearize_lincons0_array(ap_manager_t* man,
 				 void* abs,
 				 ap_lincons0_array_t* array,
-				 ap_scalar_discr_t discr,
 				 bool* pexact,
-				 bool convert,
+				 ap_scalar_discr_t discr,
 				 bool linearize);
-  
-  
+
+
 /* For internal use by ap_linearize_aux */
-void ap_linearize_quasilincons0(ap_lincons0_array_t* array, size_t* pindex, 
+void ap_linearize_quasilincons0(ap_lincons0_array_t* array, size_t* pindex,
 				ap_lincons0_t* cons);
 
+/* ********************************************************************** */
+/* Tree expressions and derived types */
+/* ********************************************************************** */
 
+ap_interval_t* ap_eval_texpr0(ap_manager_t* man,
+			      ap_abstract0_t* abs,
+			      ap_texpr0_t* expr,
+			      ap_scalar_discr_t discr,
+			      bool* pexact);
+
+ap_linexpr0_t* ap_intlinearize_texpr0(ap_manager_t* man,
+				      ap_abstract0_t* abs,
+				      ap_texpr0_t* expr,
+				      bool* pexact,
+				      ap_scalar_discr_t discr,
+				      bool quasilinearize);
+
+ap_lincons0_t ap_intlinearize_tcons0(ap_manager_t* man,
+				     ap_abstract0_t* abs,
+				     ap_tcons0_t* cons,
+				     bool* pexact,
+				     ap_scalar_discr_t discr,
+				     bool quasilinearize);
+
+ap_linexpr0_t** ap_intlinearize_texpr0_array(ap_manager_t* man,
+					     ap_abstract0_t* abs,
+					     ap_texpr0_t** texpr, size_t size,
+					     bool* pexact,
+					     ap_scalar_discr_t discr,
+					     bool quasilinearize);
+
+ap_lincons0_array_t ap_intlinearize_tcons0_array(ap_manager_t* man,
+						 ap_abstract0_t* abs,
+						 ap_tcons0_array_t* array,
+						 bool* pexact,
+						 ap_scalar_discr_t discr,
+						 ap_linexpr_type_t type);
 
 #ifdef __cplusplus
 }

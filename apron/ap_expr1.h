@@ -11,5 +11,7 @@
 #include "ap_linexpr1.h"
 #include "ap_lincons1.h"
 #include "ap_generator1.h"
+#include "ap_texpr1.h"
+#include "ap_tcons1.h"
 
 #endif

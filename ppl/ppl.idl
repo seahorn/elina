@@ -19,7 +19,7 @@ quote(C,"/*\n This file is part of the APRON Library, released under LGPL licens
 quote(MLMLI,"(*\n This file is part of the APRON Library, released under LGPL license.\n Please read the COPYING file packaged in the distribution.\n*)\n")
 
 
-quote(C,"#include \"apron_ppl.h\"")
+quote(C,"#include \"ap_ppl.h\"")
 quote(C,"#include \"apron_caml.h\"")
 
 quote(C,"#define I0_CHECK_EXC(man) if (man->result.exn!=AP_EXC_NONE){ value v = camlidl_c2ml_manager_struct_ap_exclog_t(man->result.exclog,_ctx); caml_raise_with_arg(*caml_named_value(\"apron exception\"),v); } ")
@@ -102,7 +102,7 @@ custom runtime executable should be done with
 
 [ocamlc -I $APRON_PREFIX/lib -noautolink -make-runtime -o myrun -cc \"g++\" 
 bigarray.cma gmp.cma apron.cma ppl.cma -ccopt \"-L$GMP_PREFIX/lib ...\" 
--cclib \"-lppl_caml -lapron_ppl -lppl -lgmpxx -lapron_caml -lapron -lgmp_caml 
+-cclib \"-lap_ppl_caml -lap_ppl -lppl -lgmpxx -lapron_caml -lapron -lgmp_caml 
 -lmpfr -lgmp -lbigarray -lcamlidl\"]
 
 {3 Native-code compilation}
@@ -114,5 +114,5 @@ You compile and link with
 
 {b Comments:} Same as for bytecode compilation. Do not forget the [-cc \"g++\"] option. With the [-noautolink] option, the linking command becomes
 
-[ocamlopt -I $APRON_PREFIX/lib -o X -cc \"g++\" bigarray.cmxa gmp.cmxa apron.cmxa ppl.cmxa -ccopt \"-L$GMP_PREFIX/lib ...\" -cclib \"-lppl_caml -lapron_ppl -lppl -lgmpxx -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl\" X.cmx]
+[ocamlopt -I $APRON_PREFIX/lib -o X -cc \"g++\" bigarray.cmxa gmp.cmxa apron.cmxa ppl.cmxa -ccopt \"-L$GMP_PREFIX/lib ...\" -cclib \"-lap_ppl_caml -lap_ppl -lppl -lgmpxx -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl\" X.cmx]
 *)")

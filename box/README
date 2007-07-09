@@ -37,15 +37,15 @@ You might also have to modify the Makefile for executables
 
 type 'make', and then 'make install' 
 
-The library is named libboxmpq.a, libboxllr.a, libboxdbl.a (and
-libboxmpq_debug.a, ...). 
+The library is named libboxMPQ.a, libboxRll.a, libboxD.a (and
+libboxMPQ_debug.a, ...). 
 
-mpq, llr, dbl, stands for mpq_t, rationals on long long int, and double, which
+MPQ, Rll, D, stands for mpq_t, rationals on long long int, and double, which
 indicates the underlying representation of numbers.
 
 For use via APRON, the include files to consider is box.h.
 
-When linking, libboxXXX.a requires libitvXXX.a.
+When linking, libboxXXX.a requires libapron.a
 
 2. OCaml Library
 ----------------

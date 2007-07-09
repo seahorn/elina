@@ -5,7 +5,7 @@
 /* This file is part of the APRON Library, released under LGPL license.  Please
    read the COPYING file packaged in the distribution */
 
-/* normally included from expr0.h */
+/* normally included from ap_expr1.h */
 
 #ifndef _AP_LINEXPR1_H_
 #define _AP_LINEXPR1_H_
@@ -32,9 +32,20 @@ typedef struct ap_linexpr1_t {
   ap_environment_t* env;
 } ap_linexpr1_t;
 
+
 /* ====================================================================== */
 /* I. Memory management and printing */
 /* ====================================================================== */
+
+/* For internal use */
+static inline
+ap_linexpr1_t ap_linexpr1_of_linexpr0(ap_environment_t* env, ap_linexpr0_t* linexpr0)
+{
+  ap_linexpr1_t res;
+  res.linexpr0 = linexpr0;
+  res.env = ap_environment_copy(env);
+  return res;
+}
 
 ap_linexpr1_t ap_linexpr1_make(ap_environment_t* env,
 			       ap_linexpr_discr_t lin_discr, size_t size);
@@ -75,6 +86,9 @@ static inline
 bool ap_linexpr1_is_real(ap_linexpr1_t* e);
   /* Does the expression depends only on real variables ? */
 
+static inline
+ap_linexpr_type_t ap_linexpr1_type(ap_linexpr1_t* a);
+  /* Return the type of the linear expression */
 static inline
 bool ap_linexpr1_is_linear(ap_linexpr1_t* e);
   /* Return true iff all involved coefficients are scalars */
@@ -202,6 +216,10 @@ bool ap_linexpr1_is_integer(ap_linexpr1_t* e){
 static inline
 bool ap_linexpr1_is_real(ap_linexpr1_t* e){
   return ap_linexpr0_is_real(e->linexpr0,e->env->intdim);
+}
+static inline
+ap_linexpr_type_t ap_linexpr1_type(ap_linexpr1_t* e){
+  return ap_linexpr0_type(e->linexpr0);
 }
 static inline
 bool ap_linexpr1_is_linear(ap_linexpr1_t* e){

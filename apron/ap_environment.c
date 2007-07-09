@@ -35,7 +35,7 @@ static int vardim_cmp(const void* a, const void* b)
 /* ************************************************************************* */
 
 /* The env_t internal type store the binding name to dimension for one type.
-   We use this type to factorize most operations on environements.
+   We use this type to factorize most operations on environments.
 */
 
 /* ========================================================================= */
@@ -120,7 +120,7 @@ static bool env_check(env_t* env)
 /* Tests */
 /* ========================================================================= */
 
-/* Return true iff the 2 environements share some variables */
+/* Return true iff the 2 environments share some variables */
 static bool env_is_inter_empty(env_t* env1 ,env_t* env2)
 {
   size_t i1,i2;
@@ -162,13 +162,13 @@ static bool env_is_leq(env_t* env1,
 /* Operations */
 /* ========================================================================= */
 
-/* Add an array of new names to the environement and return the resulting
-   environement.
+/* Add an array of new names to the environment and return the resulting
+   environment.
 
    - The new names are duplicated, so it is the responsability of the user to
    free the new names he provides.
 
-   - If a new name is already present in the initial environement, the result
+   - If a new name is already present in the initial environment, the result
    does not satisfy the datatype invariant.
 
    - If perm!=NULL, fill already allocated and initialized perm with the
@@ -192,7 +192,7 @@ static env_t env_add(env_t* env, ap_var_t* var_of_dim, size_t size, ap_dim_t* pe
   return nenv;
 }
 
-/* Remove from an environement an array of names.
+/* Remove from an environment an array of names.
 
 - If a name to be removed was not present, return { NULL, UINT_MAX }.
 */

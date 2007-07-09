@@ -19,206 +19,214 @@
 #include "ap_linearize_aux.h"
 #undef  NUM_LONGDOUBLE
 
-
 /* ********************************************************************** */
+/* Interval linear expressions and derived types */
+/* ********************************************************************** */
+
+/* ============================================================ */
 /* Evaluation */
-/* ********************************************************************** */
+/* ============================================================ */
 
-ap_interval_t* 
-ap_linexpr0_eval(ap_manager_t* man,
+ap_interval_t*
+ap_eval_linexpr0(ap_manager_t* man,
 		 ap_abstract0_t* abs,
-		 ap_linexpr0_t* expr, 
+		 ap_linexpr0_t* expr,
 		 ap_scalar_discr_t discr,
 		 bool* pexact)
 {
   switch (discr){
   case AP_SCALAR_MPQ:
-    return ap_linexpr0_eval_mpq(man,abs,expr,pexact);
+    return ap_eval_linexpr0_MPQ(man,abs,expr,pexact);
   case AP_SCALAR_DOUBLE:
-    return ap_linexpr0_eval_dbl(man,abs,expr,pexact);
+    return ap_eval_linexpr0_D(man,abs,expr,pexact);
   default:
     assert(false);
-    return NULL; 
+    return NULL;
   }
 }
 
-/* ********************************************************************** */
+/* ============================================================ */
 /* Quasilinearization */
-/* ********************************************************************** */
+/* ============================================================ */
 
-/* Evaluate a interval linear expression on the abstract
-   value such as to transform it into a quasilinear expression.
+/* If the interval linear expression is already quasilinear, then return it.
+   Otherwise, evaluate an interval linear expression on the abstract
+   value such as to transform it into a new quasilinear expression.
 
    discr allows to choose the type of scalars used for computations and for the
-   result.  pexact is a pointer to a Boolean, which is set to true if all
+   result.  
+
+   pexact is a pointer to a Boolean, which is set to true if all
    the conversions and computations were exact.
 */
-
 
 ap_linexpr0_t* ap_quasilinearize_linexpr0(ap_manager_t* man,
 					  void* abs,
 					  ap_linexpr0_t* linexpr0,
-					  ap_scalar_discr_t discr,
-					  bool* pexact)
+					  bool* pexact,
+					  ap_scalar_discr_t discr)
 {
-  switch (discr){
-  case AP_SCALAR_MPQ:
-    return ap_quasilinearize_linexpr0_mpq(man,abs,linexpr0,pexact);
-  case AP_SCALAR_DOUBLE:
-    return ap_quasilinearize_linexpr0_dbl(man,abs,linexpr0,pexact);
-  default:
-    abort();
+  if (ap_linexpr0_is_quasilinear(linexpr0)){
+    *pexact = true;
+    return linexpr0;
+  }
+  else {
+    switch (discr){
+    case AP_SCALAR_MPQ:
+      return ap_quasilinearize_linexpr0_MPQ(man,abs,linexpr0,pexact);
+    case AP_SCALAR_DOUBLE:
+      return ap_quasilinearize_linexpr0_D(man,abs,linexpr0,pexact);
+    default:
+      abort();
+    }
   }
 }
-
 /* Same for ap_lincons0_t */
 ap_lincons0_t ap_quasilinearize_lincons0(ap_manager_t* man,
 					 void* abs,
 					 ap_lincons0_t* lincons0,
-					 ap_scalar_discr_t discr,
-					 bool* pexact)
+					 bool* pexact,
+					 ap_scalar_discr_t discr)
 {
-  switch (discr){
-  case AP_SCALAR_MPQ:
-    return ap_quasilinearize_lincons0_mpq(man,abs,lincons0,pexact);
-  case AP_SCALAR_DOUBLE:
-    return ap_quasilinearize_lincons0_dbl(man,abs,lincons0,pexact);
-  default:
-    abort();
+  if (ap_linexpr0_is_quasilinear(lincons0->linexpr0)){
+    *pexact = true;
+    return *lincons0;
+  }
+  else {
+    switch (discr){
+    case AP_SCALAR_MPQ:
+      return ap_quasilinearize_lincons0_MPQ(man,abs,lincons0,pexact);
+    case AP_SCALAR_DOUBLE:
+      return ap_quasilinearize_lincons0_D(man,abs,lincons0,pexact);
+    default:
+      abort();
+    }
   }
 }
 
 /* Same for arrays of ap_linexpr0_t */
-ap_linexpr0_t** 
+ap_linexpr0_t**
 ap_quasilinearize_linexpr0_array(ap_manager_t* man,
 				 void* abs,
 				 ap_linexpr0_t** texpr, size_t size,
-				 ap_scalar_discr_t discr,
-				 bool* pexact)
+				 bool* pexact,
+				 ap_scalar_discr_t discr)
 {
-  switch (discr){
-  case AP_SCALAR_MPQ:
-    return ap_quasilinearize_linexpr0_array_mpq(man,abs,texpr,size,pexact);
-  case AP_SCALAR_DOUBLE:
-    return ap_quasilinearize_linexpr0_array_dbl(man,abs,texpr,size,pexact);
-  default:
-    abort();
+  if (ap_linexpr0_array_is_quasilinear(texpr,size)){
+    *pexact = true;
+    return texpr;
+  }
+  else {
+    switch (discr){
+    case AP_SCALAR_MPQ:
+      return ap_quasilinearize_linexpr0_array_MPQ(man,abs,texpr,size,pexact);
+    case AP_SCALAR_DOUBLE:
+      return ap_quasilinearize_linexpr0_array_D(man,abs,texpr,size,pexact);
+    default:
+      abort();
+    }
   }
 }
-
 /* Same for ap_lincons0_array_t */
-ap_lincons0_array_t 
+ap_lincons0_array_t
 ap_quasilinearize_lincons0_array(ap_manager_t* man,
 				 void* abs,
 				 ap_lincons0_array_t* array,
-				 ap_scalar_discr_t discr,
 				 bool* pexact,
-				 bool convert,
+				 ap_scalar_discr_t discr,
 				 bool linearize)
+{
+  ap_linexpr_type_t type = ap_lincons0_array_type(array);
+  if ((linearize && type==AP_LINEXPR_LINEAR) ||
+      type==AP_LINEXPR_QUASILINEAR){
+    *pexact = true;
+    return *array;
+  }
+  else {
+    switch (discr){
+    case AP_SCALAR_MPQ:
+      return ap_quasilinearize_lincons0_array_MPQ(man,abs,array,pexact,linearize);
+    case AP_SCALAR_DOUBLE:
+      return ap_quasilinearize_lincons0_array_D(man,abs,array,pexact,linearize);
+    default:
+      abort();
+    }
+  }
+}
+
+/* ********************************************************************** */
+/* Tree expressions and derived types */
+/* ********************************************************************** */
+
+ap_linexpr0_t* 
+ap_intlinearize_texpr0(ap_manager_t* man,
+		       ap_abstract0_t* abs,
+		       ap_texpr0_t* expr,
+		       bool* pexact, 
+		       ap_scalar_discr_t discr,
+		       bool quasilinearize)
 {
   switch (discr){
   case AP_SCALAR_MPQ:
-    return ap_quasilinearize_lincons0_array_mpq(man,abs,array,pexact,convert,linearize);
+    return ap_intlinearize_texpr0_MPQ(man,abs,expr,pexact,quasilinearize);
   case AP_SCALAR_DOUBLE:
-    return ap_quasilinearize_lincons0_array_dbl(man,abs,array,pexact,convert,linearize);
+    return ap_intlinearize_texpr0_D(man,abs,expr,pexact,quasilinearize);
   default:
-    abort();
+    assert(false);
+    return NULL;
   }
 }
-
-/* ********************************************************************** */
-/* Linearization of array of constraints*/
-/* ********************************************************************** */
-
-/* Transform a quasilinear constraint as follows:
-   e.x + [a,b] >= 0 ==> e.x + b >= 0
-   e.x + [a,b] > 0  ==> e.x + b > 0
-   e.x + [a,b] = 0  ==> e.x + b >= 0 and e.x + a <= 0
-   e.x + [a,b] = 0 mod k ==> unchanged
-   
-   Also removes trivially true constraints e.x + oo >= 0
-
-   Resulting constraints are written in the array of constraint, with pindex a
-   pointer to the current index, which is incremented accordingly.
-
-   The initial constraint remains unchanged (and unfreed).
-*/
-
-void ap_linearize_quasilincons0(ap_lincons0_array_t* array, size_t* pindex, 
-				ap_lincons0_t* cons)
+ 
+ap_interval_t* 
+ap_eval_texpr0(ap_manager_t* man,
+	       struct ap_abstract0_t* abs,
+	       ap_texpr0_t* expr, 
+	       ap_scalar_discr_t discr,
+	       bool* pexact)
 {
-  ap_linexpr0_t* linexpr0; 
-  ap_coeff_t* pcst;
-  size_t index;
-  size_t k;
-  ap_dim_t dim;
-  ap_coeff_t* pcoeff;
-  
-  index = *pindex;
-  linexpr0 = cons->linexpr0;  
-  pcst = ap_linexpr0_cstref(linexpr0);
-  switch (cons->constyp){
-  case AP_CONS_EQ:
-    switch (pcst->discr){
-    case AP_COEFF_INTERVAL:
-      {
-	if (!ap_scalar_infty(pcst->val.interval->inf)){
-	  ap_linexpr0_t* expr = ap_linexpr0_copy(linexpr0);
-	  ap_coeff_set_scalar(ap_linexpr0_cstref(expr),
-			      pcst->val.interval->inf);
-	  ap_coeff_neg(ap_linexpr0_cstref(expr),ap_linexpr0_cstref(expr));
-	  ap_linexpr0_ForeachLinterm(expr,k,dim,pcoeff){
-	    ap_coeff_neg(pcoeff,pcoeff);
-	  }
-	  array->p[index].linexpr0 = expr;
-	  array->p[index].constyp = AP_CONS_SUPEQ;
-	  array->p[index].scalar = NULL;
-	  index++;
-	}
-	if (!ap_scalar_infty(pcst->val.interval->sup)){
-	  ap_linexpr0_t* expr = ap_linexpr0_copy(linexpr0);
-	  ap_coeff_set_scalar(ap_linexpr0_cstref(expr),
-			      pcst->val.interval->sup);
-	  array->p[index].linexpr0 = expr;
-	  array->p[index].constyp = AP_CONS_SUPEQ;
-	  array->p[index].scalar = NULL;
-	  index++;
-	}
-      }
-      break;
-    case AP_COEFF_SCALAR:
-      goto _ap_quasilinearize_lincons0_array_std;
-      break;
-    }
-    break;
-  case AP_CONS_SUPEQ:
-  case AP_CONS_SUP:
-    switch (pcst->discr){
-    case AP_COEFF_INTERVAL:
-      if (!ap_scalar_infty(pcst->val.interval->sup)){
-	ap_linexpr0_t* expr = ap_linexpr0_copy(linexpr0);
-	ap_coeff_set_scalar(ap_linexpr0_cstref(expr),
-			      pcst->val.interval->sup);
-	array->p[index].linexpr0 = expr;
-	array->p[index].constyp = cons->constyp;
-	array->p[index].scalar = NULL;
-	index++;
-      }
-      break;
-    case AP_COEFF_SCALAR:
-      goto _ap_quasilinearize_lincons0_array_std;
-      break;
-    }
+  switch (discr){
+  case AP_SCALAR_MPQ:
+    return ap_eval_texpr0_MPQ(man,abs,expr,pexact);
+  case AP_SCALAR_DOUBLE:
+    return ap_eval_texpr0_D(man,abs,expr,pexact);
   default:
-  _ap_quasilinearize_lincons0_array_std:
-    array->p[index] = ap_lincons0_copy(cons);
-    break;
+    assert(false);
+    return NULL; 
   }
-  *pindex = index;
+ }
+
+ap_lincons0_t ap_intlinearize_tcons0(ap_manager_t* man,
+				     ap_abstract0_t* abs,
+				     ap_tcons0_t* cons,
+				     bool* pexact,
+				     ap_scalar_discr_t discr,
+				     bool quasilinearize)
+{
+  switch (discr){
+  case AP_SCALAR_MPQ:
+    return ap_intlinearize_tcons0_MPQ(man,abs,cons,pexact,quasilinearize);
+  case AP_SCALAR_DOUBLE:
+    return ap_intlinearize_tcons0_D(man,abs,cons,pexact,quasilinearize);
+  default:
+    assert(false);
+    return ap_lincons0_make(AP_CONS_EQ,NULL,NULL);
+  }
 }
 
-			  
-
-
-
-
+ap_lincons0_array_t ap_intlinearize_tcons0_array(ap_manager_t* man,
+						 ap_abstract0_t* abs,
+						 ap_tcons0_array_t* array,
+						 bool* pexact,
+						 ap_scalar_discr_t discr,
+						 ap_linexpr_type_t linearize)
+{
+  switch (discr){
+  case AP_SCALAR_MPQ:
+    return ap_intlinearize_tcons0_array_MPQ(man,abs,array,pexact,linearize);
+  case AP_SCALAR_DOUBLE:
+    return ap_intlinearize_tcons0_array_D(man,abs,array,pexact,linearize);
+  default:
+    assert(false);
+    return ap_lincons0_array_make(0);
+  }
+}

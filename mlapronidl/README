@@ -17,6 +17,8 @@ Dimension  : dimensions and related operations
 Linexpr0   : (interval) linear expressions, level 0
 Lincons0   : (interval) linear constraints, level 0
 Generator0 : generators, level 0
+Texpr0     : tree expressions, level 0
+Tcons0     : tree constraints, level 0
 Manager    : managers
 Abstract0: : abstract values, level 0
 Var        : variables 
@@ -24,6 +26,8 @@ Environment: environment binding variables to dimensions
 Linexpr1   : (interval) linear expressions, level 1
 Lincons1   : interval) linear constraints, level 1
 Generator1 : generators, level 1
+Texpr0     : tree expressions, level 1
+Tcons0     : tree constraints, level 1
 Abstract1  : abstract values, level 1
 Parser     : parsing of expressions, constraints and generators
 
@@ -32,6 +36,7 @@ REQUIREMENTS
 M4 preprocessor (standard on any UNIX system)
 APRON library
 GMP library (tested with version 4.0 and up)
+MPFR library (tested with version 2.2 and up)
 mlgmpidl package (included)
 OCaml 3.0 or up (tested with 3.09)
 Camlidl (tested with 1.05)
@@ -69,34 +74,34 @@ COMPILATION AND LINKING
 
 To make things clearer, we assume an example file 'example.ml' which uses both
 NewPolka (convex polyhedra) and Box (intervals) libraries, in their versions
-where integers (resp. rationals) are GMP integers (resp.  rationals). We assume
+where numbers are GMP rationals (the default). We assume
 that C and OCaml interface and library files are located in directory
 $APRON/lib.
 
 The native-code compilation command looks like
 
-ocamlopt -I $APRON/lib -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -lboxmpq"
+ocamlopt -I $APRON/lib -o exampleMPQ.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkaMPQ -lboxMPQ"
 
 Comments:
 
 1. You need at least the libraries 'bigarray' (standard OCaml
   distribution), 'gmp', and 'apron' (standard APRON distribution),
   plus the one implementing an effective abstract domains: here,
-  'box', and 'polka'.
+  'boxMPQ', and 'polkaMPQ'.
 
 2. The C libraries associated to those OCaml libraries
   ('gmp_caml', 'box_caml', ...)  are automatically looked for,
   with the exception of the libraries implementing abstract
-  domains ('polkag', 'boxmpq'). The reason is that most of these
+  domains ('polkaMPQ', 'boxMPQ'). The reason is that most of these
   libraries may be compiled with different internal
   representations and/or options, while their interface remains
   the same.
 
 The byte-code compilation process looks like
 
-ocamlc -I $APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq"
+ocamlc -I $APRON/lib -make-runtime -o myrunMPQ bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkaMPQ -lboxMPQ"
  
-ocamlc -I $APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkag -lboxmpq" example.ml
+ocamlc -I $APRON/lib -use-runtime myrunMPQ -o exampleMPQ bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkaMPQ -lboxMPQ" example.ml
 
 Comments:
 1. One first build a custom bytecode interpreter that includes the
@@ -108,7 +113,7 @@ libraries can be disabled by the option '-noautolink' supported by
 both 'ocamlc' and 'ocamlopt' commands. For instance, the command
 for native-code compilation can alternatively looks like:
 
-ocamlopt -I $APRON/lib -noautolink -o exampleg.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkag -polka_caml -lboxmpq -lbox_caml -lapron_caml -lapron -litvmpq -litvdbl -lgmp_caml -LGMP/lib -lgmp" 
+ocamlopt -I $APRON/lib -noautolink -o exampleMPQ.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkaMPQ -lpolka_caml -lboxMPQ -lbox_caml -lapron_caml -lapron -lgmp_caml -LMPFR/lib -lmpfr -LGMP/lib -lgmp" 
 
 The option '-verbose' helps to understand what is happening in
 case of problem.

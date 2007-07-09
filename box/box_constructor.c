@@ -10,6 +10,7 @@
 #include "ap_generic.h"
 
 #include "itv_linexpr.h"
+#include "itv_linearize.h"
 
 /* ********************************************************************** */
 /* 1. Basic constructors */
@@ -62,13 +63,6 @@ box_t* box_of_box(ap_manager_t* man,
   man->result.flag_best = tbool_true;
   man->result.flag_exact = tbool_true;
   return a;
-}
-
-box_t* box_of_lincons_array(ap_manager_t* man,
-			    size_t intdim, size_t realdim,
-			    ap_lincons0_array_t* array)
-{
-  return (box_t*)ap_generic_of_lincons_array(man,intdim,realdim,array);
 }
 
 /* ********************************************************************** */
@@ -191,89 +185,54 @@ tbool_t box_sat_interval(ap_manager_t* man,
 }
 
 /* does the abstract value satisfy the linear constraint ? */
-tbool_t box_sat_lincons(ap_manager_t* man, 
+tbool_t box_sat_lincons(ap_manager_t* man,
 			box_t* a, ap_lincons0_t* cons)
 {
+  itv_lincons_t lincons;
+  bool exact;
   tbool_t res;
   box_internal_t* intern = box_init_from_manager(man,AP_FUNID_SAT_LINCONS);
   
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = man->result.flag_exact = tbool_true;
+  
+  if (a->p==NULL)
+    return tbool_true;
+
+  itv_lincons_init(&lincons);
+  itv_lincons_set_ap_lincons0(intern->itv,&lincons,cons);
+  exact = itv_eval_ap_linexpr0(intern->itv,
+			       lincons.linexpr.cst, cons->linexpr0, a->p);
+  lincons.linexpr.equality = itv_is_point(intern->itv,lincons.linexpr.cst);
+  itv_linexpr_reinit(&lincons.linexpr,0);
+  res = itv_eval_cstlincons(intern->itv,&lincons);
+  itv_lincons_clear(&lincons);
+  
+  man->result.flag_exact = exact ? tbool_true : tbool_top;
+  
+  return res;
+}
+
+/* does the abstract value satisfy the tree constraint ? */
+tbool_t box_sat_tcons(ap_manager_t* man, 
+		      box_t* a, ap_tcons0_t* cons)
+{
+  itv_lincons_t lincons;
+  bool exact;
+  tbool_t res;
+  box_internal_t* intern = box_init_from_manager(man,AP_FUNID_SAT_TCONS);
+  
+  man->result.flag_best = man->result.flag_exact = tbool_true;
   
   if (a->p==NULL)
     return tbool_true;
   
-  bool exact = itv_eval_ap_linexpr0(intern->itv,
-				    intern->sat_lincons_itv, 
-				    (itv_t*)a->p, 
-				    cons->linexpr0);
-
-  man->result.flag_exact = man->result.flag_best = 
-    exact ? tbool_true : tbool_top;
-
-  switch (cons->constyp){
-  case AP_CONS_EQ:
-    res =
-      (bound_sgn(intern->sat_lincons_itv->inf)==0 &&
-       bound_sgn(intern->sat_lincons_itv->sup)==0) ?
-      tbool_true :
-      tbool_false;
-    break;
-  case AP_CONS_DISEQ:
-    res =
-      (bound_sgn(intern->sat_lincons_itv->inf)<0 ||
-       bound_sgn(intern->sat_lincons_itv->sup)<0) ?
-      tbool_true :
-      tbool_top;
-    break;
-  case AP_CONS_SUPEQ:
-    res = 
-      (bound_sgn(intern->sat_lincons_itv->inf)<=0) ? 
-      tbool_true :
-      tbool_false;
-    break;
-  case AP_CONS_SUP:
-    res = 
-      (bound_sgn(intern->sat_lincons_itv->inf)<0) ? 
-      tbool_true :
-      tbool_false;
-    break;
-  case AP_CONS_EQMOD:
-    assert(cons->scalar!=NULL);
-    if (itv_is_point(intern->itv,intern->sat_lincons_itv)){
-      if (num_sgn(intern->sat_lincons_itv->sup)==0){
-	return true;
-      }
-      else {
-#if defined(NUM_NUMINT) || defined(NUM_NUMRAT)
-	bool exact = num_set_ap_scalar(intern->sat_lincons_num,cons->scalar);
-	if (!exact) return tbool_top;
-#if defined(NUM_NUMINT)
-	numint_mod(intern->sat_lincons_num,intern->sat_lincons_itv->sup,intern->sat_lincons_num);
-	return (numint_sgn(intern->sat_lincons_num)==0) ? tbool_true : tbool_top;
-#else
-	numrat_div(intern->sat_lincons_num,intern->sat_lincons_itv->sup,intern->sat_lincons_num);
-	return (numint_cmp_int(numrat_denref(intern->sat_lincons_num),1)==0) ? tbool_true : tbool_top;
-#endif
-#else
-	return tbool_top;
-#endif
-      }
-    }
-    else {
-      man->result.flag_exact = man->result.flag_best = tbool_top;
-      return tbool_top;
-      /* could be improved: if we have only integers variables, 
-	 rational scalar coefficients, the constraint is satisfied if
-	 the modulo is an integer fraction of the common denominator
-	 of all coefficients */
-    }
-    break;
-  default:
-    abort();
-    res = tbool_top;
-  }
-  if (res==tbool_false && man->result.flag_exact != tbool_true) res = tbool_top;
+  man->result.flag_exact = tbool_top;
+  itv_lincons_init(&lincons);
+  itv_eval_ap_texpr0(intern->itv,
+		     lincons.linexpr.cst, cons->texpr0, a->p);
+  lincons.linexpr.equality = itv_is_point(intern->itv,lincons.linexpr.cst);
+  res = itv_eval_cstlincons(intern->itv,&lincons);
+  itv_lincons_clear(&lincons);
   return res;
 }
 
@@ -285,7 +244,7 @@ ap_interval_t* box_bound_dimension(ap_manager_t* man,
 				   box_t* a, ap_dim_t dim)
 {
   bool exact;
-  box_internal_t* intern = (box_internal_t*)man->internal;
+  box_internal_t* intern = box_init_from_manager(man,AP_FUNID_BOUND_DIMENSION);
   ap_interval_t* interval = ap_interval_alloc();
   if (a->p==NULL){
     ap_interval_set_bottom(interval);
@@ -307,7 +266,7 @@ ap_interval_t* box_bound_linexpr(ap_manager_t* man,
 {
   bool exact;
   ap_interval_t* interval = ap_interval_alloc();
-  box_internal_t* intern = (box_internal_t*)man->internal;
+  box_internal_t* intern =  box_init_from_manager(man,AP_FUNID_BOUND_LINEXPR);
 
   if (a->p==NULL){
     ap_interval_set_bottom(interval);
@@ -315,13 +274,36 @@ ap_interval_t* box_bound_linexpr(ap_manager_t* man,
   }
   else {
     exact = itv_eval_ap_linexpr0(intern->itv,
-				 intern->bound_linexpr_itv,
-				 (itv_t*)a->p,
-				 expr);
+				 intern->bound_linexpr_itv,expr,a->p);
+				 
     ap_interval_set_itv(intern->itv, interval,intern->bound_linexpr_itv);
   }
   man->result.flag_best = tbool_true;
   man->result.flag_exact = exact ? tbool_true : tbool_top;
+  return interval;
+}
+
+/* Returns the interval taken by a tree expression
+   over the abstract value */
+ap_interval_t* box_bound_texpr(ap_manager_t* man,
+			       box_t* a, ap_texpr0_t* expr)
+{
+  bool exact;
+  ap_interval_t* interval;
+  box_internal_t* intern =  box_init_from_manager(man,AP_FUNID_BOUND_TEXPR);
+
+  interval = ap_interval_alloc();
+  if (a->p==NULL){
+    ap_interval_set_bottom(interval);
+    exact = true;
+  }
+  else {
+    itv_eval_ap_texpr0(intern->itv,
+		       intern->bound_linexpr_itv,expr,a->p);
+    ap_interval_set_itv(intern->itv, interval, intern->bound_linexpr_itv);
+  }
+  man->result.flag_best = tbool_true;
+  man->result.flag_exact = tbool_top;
   return interval;
 }
 
@@ -389,6 +371,11 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, box_t* a)
     }
   }
   return array;
+}
+
+ap_tcons0_array_t box_to_tcons_array(ap_manager_t* man, box_t* a)
+{
+  return ap_generic_to_tcons_array(man,a);
 }
 
 ap_generator0_array_t box_to_generator_array(ap_manager_t* man, box_t* a)

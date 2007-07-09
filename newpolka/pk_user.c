@@ -10,6 +10,7 @@
 #include "pk_matrix.h"
 #include "pk_internal.h"
 #include "pk_user.h"
+#include "itv_linearize.h"
 
 static void ap_coeff_set_scalar_numint(ap_coeff_t* coeff, numint_t num){
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPQ);
@@ -462,7 +463,7 @@ bool matrix_append_ap_intlincons0_array(pk_internal_t* pk,
 					&pk->poly_itv_lincons,
 					&array->p[index])
       && exact;
-    exact = itv_lincons_quasilinearize(pk->itv,&pk->poly_itv_lincons,titv)
+    exact = itv_quasilinearize_lincons(pk->itv,&pk->poly_itv_lincons,titv)
       && exact;
     j += vector_set_itv_lincons(pk,&mat->p[j],&pk->poly_itv_lincons,
 				intdim,realdim,integer);

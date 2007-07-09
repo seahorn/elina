@@ -284,6 +284,24 @@ bool ap_linexpr0_is_integer(ap_linexpr0_t* a, size_t intdim)
   return true;
 }
 
+/* Return the rtype of an expression */
+ap_linexpr_type_t ap_linexpr0_type(ap_linexpr0_t* expr)
+{
+  size_t i;
+  ap_dim_t dim;
+  ap_coeff_t* coeff;
+  ap_linexpr_type_t res = AP_LINEXPR_LINEAR;
+  ap_linexpr0_ForeachLinterm(expr,i,dim,coeff){
+    if (coeff->discr!=AP_COEFF_SCALAR){
+      res = AP_LINEXPR_INTLINEAR;
+      break;
+    }
+  }
+  if (res==AP_LINEXPR_LINEAR && expr->cst.discr!=AP_COEFF_SCALAR){
+    res = AP_LINEXPR_QUASILINEAR;
+  }
+  return res;   
+}
 /* Return true iff all involved coefficients are scalars */
 bool ap_linexpr0_is_linear(ap_linexpr0_t* expr)
 {
@@ -316,6 +334,38 @@ bool ap_linexpr0_is_quasilinear(ap_linexpr0_t* expr)
   }
   return res;
 }
+ap_linexpr_type_t ap_linexpr0_array_type(ap_linexpr0_t** texpr, size_t size)
+{
+  size_t i;
+  ap_linexpr_type_t res = AP_LINEXPR_LINEAR;
+  for (i=0; i<size; i++){
+    ap_linexpr_type_t type = ap_linexpr0_type(texpr[i]);
+    if (type<res) res = type;
+    if (res==AP_LINEXPR_INTLINEAR) break;
+  }
+  return res;
+}
+bool ap_linexpr0_array_is_linear(ap_linexpr0_t** texpr, size_t size)
+{
+  size_t i;
+  bool res = true;
+  for (i=0; i<size; i++){
+    res = ap_linexpr0_is_linear(texpr[i]);
+    if (!res) break;
+  }
+  return res;
+}
+bool ap_linexpr0_array_is_quasilinear(ap_linexpr0_t** texpr, size_t size)
+{
+  size_t i;
+  bool res = true;
+  for (i=0; i<size; i++){
+    res = ap_linexpr0_is_quasilinear(texpr[i]);
+    if (!res) break;
+  }
+  return res;
+}
+
 
 /* ====================================================================== */
 /* III. Access */
@@ -808,4 +858,20 @@ int ap_linexpr0_compare(ap_linexpr0_t* expr1,
   }
   ap_coeff_free(coeffzero);
   return res;
+}
+
+/* ====================================================================== */
+/* Vb. Array of expressions */
+/* ====================================================================== */
+
+void ap_linexpr0_array_free(ap_linexpr0_t** texpr, size_t size)
+{
+  size_t i;
+  for (i=0;i<size;i++){
+    if (texpr[i]){
+      ap_linexpr0_free(texpr[i]);
+      texpr[i] = NULL;
+    }
+  }
+  free(texpr);
 }

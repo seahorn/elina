@@ -99,15 +99,14 @@ libpolkaGrid_caml_debug.a: polkaGrid_caml_debug.o
 # ML rules
 #---------------------------------------
 
-polkaGrid.cma: polkaGrid.cmo libpolkaGrid_caml.a
+polkaGrid.cma: polkaGrid.cmo libpolkaGrid_caml.a libap_pkgrid.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ polkaGrid.cmo \
-	-ccopt "-L$(POLKAGRID_PREFIX)/lib" -cclib "-lpolkaGrid_caml"
+	-ccopt "-L$(APRON_PREFIX)/lib -L$(POLKA_PREFIX)/lib -L$(AP_PPL_PREFIX)/lib -L$(PPL_PREFIX)/lib" -cclib "-lpolkaGrid_caml -lap_pkgrid -lap_ppl -lppl -lpolka"
 
-polkaGrid.cmxa: polkaGrid.cmx libpolkaGrid_caml.a
+polkaGrid.cmxa: polkaGrid.cmx libpolkaGrid_caml.a libap_pkgrid.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ polkaGrid.cmx \
-	-ccopt "-L$(POLKAGRID_PREFIX)/lib" -cclib "-lpolkaGrid_caml"
+	-ccopt "-L$(APRON_PREFIX)/lib -L$(POLKA_PREFIX)/lib -L$(AP_PPL_PREFIX)/lib -L$(PPL_PREFIX)/lib" -cclib "-lpolkaGrid_caml -lap_pkgrid -lap_ppl -lppl -lpolka"
 	$(RANLIB) polkaGrid.a
-
 
 #---------------------------------------
 # IDL rules

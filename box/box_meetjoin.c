@@ -11,6 +11,7 @@
 #include "box_meetjoin.h"
 
 #include "itv_linexpr.h"
+#include "itv_linearize.h"
 
 /* ============================================================ */
 /* Meet and Join */
@@ -205,9 +206,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
     *peq = true;
     /* 2. evaluate e' */
     itv_eval_linexpr(intern->itv,
-		     intern->meet_lincons_internal_itv3,
-		     (itv_t*)a->p,
-		     expr);
+		     intern->meet_lincons_internal_itv3,expr,a->p);
     change = false;
     if (!itv_is_top(intern->meet_lincons_internal_itv3)){
       if (equality){
@@ -222,8 +221,8 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 	    we can deduce x=-e'/a, or inf(-e'/a)<= x <= sup(-e'/a)
 	  */
 	  if (sgn>0 || cons->constyp == AP_CONS_EQ){
-	    /* 
-	       If we have a>0, we compute sup(e')/a=sup(e'/a)=-inf(-e'/a) 
+	    /*
+	       If we have a>0, we compute sup(e')/a=sup(e'/a)=-inf(-e'/a)
 	       If we have a<0, we compute -inf(e')/(-a)=-inf(-e'/a)
 	    */
 	    if (sgn>0){
@@ -243,7 +242,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 	    }
 	  }
 	  if (sgn<0 || cons->constyp == AP_CONS_EQ){
-	    /* 
+	    /*
 	       If we have a<0, we compute sup(e')/(-a)=sup(e'/-a)
 	       If we have a>0, we compute -inf(e')/a=-inf(e'/a)=sup(e'/-a)
 	    */
@@ -284,7 +283,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
 	    * inf(-e')>=0: x>=inf(e')/-M
 	    * inf(-e')<=0: x>=inf(e')/-m
 	*/
-	int sgncoeff = 
+	int sgncoeff =
 	  bound_sgn(intern->meet_lincons_internal_itv2->inf)<0 ?
 	  1 :
 	  ( bound_sgn(intern->meet_lincons_internal_itv2->sup)<0 ?
@@ -371,7 +370,7 @@ bool box_meet_lincons_internal(box_internal_t* intern,
     else
       globalchange = false;
   }
- _box_meet_box_lincons_exit:  
+ _box_meet_box_lincons_exit:
   return globalchange;
 }
 
@@ -384,9 +383,9 @@ void box_meet_lincons_array_internal(box_internal_t* intern,
   size_t i,k;
   bool change;
   itv_lincons_t cons;
-  
+
   if (kmax<1) kmax=2;
-  
+
   /* We initialize stuff */
   itv_lincons_init(&cons);
 
@@ -398,7 +397,7 @@ void box_meet_lincons_array_internal(box_internal_t* intern,
 	  array->p[i].constyp==AP_CONS_SUPEQ ||
 	  array->p[i].constyp==AP_CONS_SUP){
 	itv_lincons_set_ap_lincons0(intern->itv,&cons,&array->p[i]);
-	change = 
+	change =
 	  box_meet_lincons_internal(intern,a,&cons)
 	  ||
 	  change
@@ -431,6 +430,66 @@ box_t* box_meet_lincons_array(ap_manager_t* man,
     kmax = man->option.funopt[AP_FUNID_MEET_LINCONS_ARRAY].algorithm;
     if (kmax<1) kmax=2;
     box_meet_lincons_array_internal(intern,res,array,kmax);
+  }
+  return res;
+}
+
+/* Meet of an abstract value with an array of constraint */
+void box_meet_tcons_array_internal(box_internal_t* intern,
+				   box_t* a,
+				   ap_tcons0_array_t* array,
+				   size_t kmax)
+{
+  size_t i,k;
+  bool change;
+  itv_lincons_t cons;
+
+  if (kmax<1) kmax=2;
+
+  /* We initialize stuff */
+  itv_lincons_init(&cons);
+
+  /* we possibly perform kmax passes */
+  for (k=0;k<kmax;k++){
+    change = false;
+    for (i=0; i<array->size; i++){
+      if (array->p[i].constyp==AP_CONS_EQ ||
+	  array->p[i].constyp==AP_CONS_SUPEQ ||
+	  array->p[i].constyp==AP_CONS_SUP){
+	itv_intlinearize_ap_tcons0(intern->itv,&cons,&array->p[i],a->p,a->intdim,false);
+	change =
+	  box_meet_lincons_internal(intern,a,&cons)
+	  ||
+	  change
+	  ;
+	if (a->p==NULL) break;
+      }
+    }
+    if (!change || a->p==NULL) break;
+  }
+  itv_lincons_clear(&cons);
+}
+
+box_t* box_meet_tcons_array(ap_manager_t* man,
+			    bool destructive,
+			    box_t* a,
+			    ap_tcons0_array_t* array)
+{
+  box_t* res;
+  size_t kmax;
+  box_internal_t* intern = (box_internal_t*)man->internal;
+
+  res = destructive ? a : box_copy(man,a);
+  if (a->p==NULL){
+    man->result.flag_best = tbool_true;
+    man->result.flag_exact = tbool_true;
+  }
+  else {
+    man->result.flag_best = array->size>1 ? tbool_top : tbool_true;
+    man->result.flag_exact = tbool_top;
+    kmax = man->option.funopt[AP_FUNID_MEET_TCONS_ARRAY].algorithm;
+    if (kmax<1) kmax=2;
+    box_meet_tcons_array_internal(intern,res,array,kmax);
   }
   return res;
 }

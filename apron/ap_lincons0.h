@@ -126,6 +126,7 @@ void ap_lincons0_array_fprint(FILE* stream,
 			      char** name_of_dim);
   /* Printing */
 
+ap_linexpr_type_t ap_lincons0_array_type(ap_lincons0_array_t* array);
 bool ap_lincons0_array_is_linear(ap_lincons0_array_t* array);
 bool ap_lincons0_array_is_quasilinear(ap_lincons0_array_t* array);
   /* Are all the expressions involved linear (resp. quasilinear) */

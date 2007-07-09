@@ -31,12 +31,12 @@ ICFLAGS = \
 
 IDLMODULES = \
 scalar interval coeff \
-dim linexpr0 lincons0 generator0 manager abstract0 \
-var environment linexpr1 lincons1 generator1 abstract1
+dim linexpr0 lincons0 generator0 texpr0 tcons0 manager abstract0 \
+var environment linexpr1 lincons1 generator1 texpr1 tcons1 abstract1
 
 IDLMODULEStex = ocamldoc.tex \
 Scalar.tex Interval.tex Coeff.tex \
-Dim.tex Linexpr0.tex Lincons0.tex Generator0.tex Manager.tex Abstract0.tex \
+Dim.tex Linexpr0.tex Lincons0.tex Generator0.tex  Texpr0.tex Tcons0.tex Texpr1.tex Tcons1.tex Manager.tex Abstract0.tex \
 Var.tex Environment.tex Linexpr1.tex Lincons1.tex Generator1.tex Abstract1.tex \
 Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Gmp_random.tex Mpfr.tex Box.tex Polka.tex Oct.tex
 
@@ -114,18 +114,16 @@ libapron_caml_debug.a: $(CCMODULES:%=%_debug.o)
 apron.cma: apron.cmo libapron_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ apron.cmo \
 	-ccopt "-L$(APRON_PREFIX)/lib -L$(MLAPRONIDL_PREFIX)/lib" \
-	-cclib "-lapron_caml" -cclib "-lapron" \
-	-ccopt "-L$(ITV_PREFIX)/lib" -cclib "-litvmpq -litvdbl"
+	-cclib "-lapron_caml" -cclib "-lapron"
 
 apron.cmxa: apron.cmx libapron_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -for-pack Apron -a -o $@ apron.cmx \
 	-ccopt "-L$(APRON_PREFIX)/lib -L$(MLAPRONIDL_PREFIX)/lib" \
-	-cclib "-lapron_caml" -cclib "-lapron" \
-	-ccopt "-L$(ITV_PREFIX)/lib" -cclib "-litvmpq -litvdbl"
+	-cclib "-lapron_caml" -cclib "-lapron" 
 	$(RANLIB) apron.a
 
 apron.cmo apron.cmi: $(MLOBJ) $(MLINT)
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -pack -o $@ $(MLOBJ)
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -i -pack -o $@ $(MLOBJ)
 
 apron.cmx apron.o: $(MLOBJx)
 	$(OCAMLOPT) -pack -o $@ $(MLOBJx)
@@ -211,26 +209,12 @@ rebuild: mpz.idl mpq.idl
 #---------------------------------------
 # Dependencies
 #---------------------------------------
-scalar.cmi: scalar.cmi mpz.idl mpq.idl
-scalar.cmo: scalar.cmi mpz.idl mpq.idl
-scalar.cmx: scalar.cmi mpz.idl mpq.idl
-interval.cmi: scalar.cmi
-coeff.cmi: scalar.cmi interval.cmi
-linexpr0.cmi: dim.cmi coeff.cmi
-lincons0.cmi: linexpr0.cmi dim.cmi
-generator0.cmi: linexpr0.cmi dim.cmi
-abstract0.cmi: manager.cmi linexpr0.cmi lincons0.cmi interval.cmi \
-    generator0.cmi dim.cmi
-environment.cmi: var.cmi dim.cmi
-linexpr1.cmi: var.cmi linexpr0.cmi environment.cmi coeff.cmi
-lincons1.cmi: var.cmi linexpr1.cmi lincons0.cmi environment.cmi coeff.cmi
-generator1.cmi: var.cmi linexpr1.cmi generator0.cmi environment.cmi coeff.cmi
-abstract1.cmi: var.cmi manager.cmi linexpr1.cmi lincons1.cmi interval.cmi \
-    generator1.cmi environment.cmi abstract0.cmi
-apron_parser.cmi: lincons0.cmi generator0.cmi coeff.cmi
-apron_lexer.cmi: apron_parser.cmi
-parser.cmi: manager.cmi linexpr1.cmi lincons1.cmi generator1.cmi \
-    environment.cmi abstract1.cmi
+
+depend: $(MLMODULES:%=%.ml) $(MLMODULES:%=%.mli)
+	$(OCAMLDEP) $^
+
+scalar.cmo: scalar.cmi
+scalar.cmx: scalar.cmi
 interval.cmo: scalar.cmi interval.cmi
 interval.cmx: scalar.cmx interval.cmi
 coeff.cmo: scalar.cmi interval.cmi coeff.cmi
@@ -239,34 +223,48 @@ dim.cmo: dim.cmi
 dim.cmx: dim.cmi
 linexpr0.cmo: scalar.cmi interval.cmi dim.cmi coeff.cmi linexpr0.cmi
 linexpr0.cmx: scalar.cmx interval.cmx dim.cmx coeff.cmx linexpr0.cmi
-lincons0.cmo: linexpr0.cmi lincons0.cmi
-lincons0.cmx: linexpr0.cmx lincons0.cmi
+lincons0.cmo: scalar.cmi linexpr0.cmi lincons0.cmi
+lincons0.cmx: scalar.cmx linexpr0.cmx lincons0.cmi
 generator0.cmo: linexpr0.cmi generator0.cmi
 generator0.cmx: linexpr0.cmx generator0.cmi
+texpr0.cmo: linexpr0.cmi dim.cmi coeff.cmi texpr0.cmi
+texpr0.cmx: linexpr0.cmx dim.cmx coeff.cmx texpr0.cmi
+tcons0.cmo: texpr0.cmi scalar.cmi lincons0.cmi tcons0.cmi
+tcons0.cmx: texpr0.cmx scalar.cmx lincons0.cmx tcons0.cmi
 manager.cmo: manager.cmi
 manager.cmx: manager.cmi
-abstract0.cmo: manager.cmi linexpr0.cmi lincons0.cmi interval.cmi \
-    generator0.cmi dim.cmi abstract0.cmi
-abstract0.cmx: manager.cmx linexpr0.cmx lincons0.cmx interval.cmx \
-    generator0.cmx dim.cmx abstract0.cmi
+abstract0.cmo: texpr0.cmi tcons0.cmi manager.cmi linexpr0.cmi lincons0.cmi \
+    interval.cmi generator0.cmi dim.cmi abstract0.cmi
+abstract0.cmx: texpr0.cmx tcons0.cmx manager.cmx linexpr0.cmx lincons0.cmx \
+    interval.cmx generator0.cmx dim.cmx abstract0.cmi
 var.cmo: var.cmi
 var.cmx: var.cmi
 environment.cmo: var.cmi dim.cmi environment.cmi
 environment.cmx: var.cmx dim.cmx environment.cmi
 linexpr1.cmo: var.cmi linexpr0.cmi environment.cmi coeff.cmi linexpr1.cmi
 linexpr1.cmx: var.cmx linexpr0.cmx environment.cmx coeff.cmx linexpr1.cmi
-lincons1.cmo: var.cmi linexpr1.cmi linexpr0.cmi lincons0.cmi environment.cmi \
-    coeff.cmi abstract0.cmi lincons1.cmi
-lincons1.cmx: var.cmx linexpr1.cmx linexpr0.cmx lincons0.cmx environment.cmx \
-    coeff.cmx abstract0.cmx lincons1.cmi
+lincons1.cmo: var.cmi scalar.cmi linexpr1.cmi linexpr0.cmi lincons0.cmi \
+    environment.cmi coeff.cmi abstract0.cmi lincons1.cmi
+lincons1.cmx: var.cmx scalar.cmx linexpr1.cmx linexpr0.cmx lincons0.cmx \
+    environment.cmx coeff.cmx abstract0.cmx lincons1.cmi
 generator1.cmo: var.cmi linexpr1.cmi linexpr0.cmi generator0.cmi \
     environment.cmi coeff.cmi abstract0.cmi generator1.cmi
 generator1.cmx: var.cmx linexpr1.cmx linexpr0.cmx generator0.cmx \
     environment.cmx coeff.cmx abstract0.cmx generator1.cmi
-abstract1.cmo: var.cmi manager.cmi linexpr1.cmi lincons1.cmi interval.cmi \
-    generator1.cmi environment.cmi abstract0.cmi abstract1.cmi
-abstract1.cmx: var.cmx manager.cmx linexpr1.cmx lincons1.cmx interval.cmx \
-    generator1.cmx environment.cmx abstract0.cmx abstract1.cmi
+texpr1.cmo: var.cmi texpr0.cmi linexpr1.cmi environment.cmi dim.cmi coeff.cmi \
+    texpr1.cmi
+texpr1.cmx: var.cmx texpr0.cmx linexpr1.cmx environment.cmx dim.cmx coeff.cmx \
+    texpr1.cmi
+tcons1.cmo: var.cmi texpr1.cmi texpr0.cmi tcons0.cmi scalar.cmi lincons0.cmi \
+    environment.cmi coeff.cmi abstract0.cmi tcons1.cmi
+tcons1.cmx: var.cmx texpr1.cmx texpr0.cmx tcons0.cmx scalar.cmx lincons0.cmx \
+    environment.cmx coeff.cmx abstract0.cmx tcons1.cmi
+abstract1.cmo: var.cmi texpr1.cmi tcons1.cmi manager.cmi linexpr1.cmi \
+    lincons1.cmi interval.cmi generator1.cmi environment.cmi abstract0.cmi \
+    abstract1.cmi
+abstract1.cmx: var.cmx texpr1.cmx tcons1.cmx manager.cmx linexpr1.cmx \
+    lincons1.cmx interval.cmx generator1.cmx environment.cmx abstract0.cmx \
+    abstract1.cmi
 apron_parser.cmo: scalar.cmi lincons0.cmi interval.cmi generator0.cmi \
     coeff.cmi apron_parser.cmi
 apron_parser.cmx: scalar.cmx lincons0.cmx interval.cmx generator0.cmx \
@@ -279,3 +277,25 @@ parser.cmo: var.cmi manager.cmi linexpr1.cmi lincons1.cmi lincons0.cmi \
 parser.cmx: var.cmx manager.cmx linexpr1.cmx lincons1.cmx lincons0.cmx \
     generator1.cmx generator0.cmx environment.cmx coeff.cmx apron_parser.cmx \
     apron_lexer.cmx abstract1.cmx parser.cmi
+interval.cmi: scalar.cmi
+coeff.cmi: scalar.cmi interval.cmi
+linexpr0.cmi: dim.cmi coeff.cmi
+lincons0.cmi: scalar.cmi linexpr0.cmi dim.cmi
+generator0.cmi: linexpr0.cmi dim.cmi
+texpr0.cmi: linexpr0.cmi dim.cmi coeff.cmi
+tcons0.cmi: texpr0.cmi scalar.cmi lincons0.cmi dim.cmi
+abstract0.cmi: texpr0.cmi tcons0.cmi manager.cmi linexpr0.cmi lincons0.cmi \
+    interval.cmi generator0.cmi dim.cmi
+environment.cmi: var.cmi dim.cmi
+linexpr1.cmi: var.cmi linexpr0.cmi environment.cmi coeff.cmi
+lincons1.cmi: var.cmi scalar.cmi linexpr1.cmi lincons0.cmi environment.cmi \
+    coeff.cmi
+generator1.cmi: var.cmi linexpr1.cmi generator0.cmi environment.cmi coeff.cmi
+texpr1.cmi: var.cmi texpr0.cmi linexpr1.cmi environment.cmi dim.cmi coeff.cmi
+tcons1.cmi: texpr1.cmi tcons0.cmi scalar.cmi lincons0.cmi environment.cmi
+abstract1.cmi: var.cmi texpr1.cmi tcons1.cmi manager.cmi linexpr1.cmi \
+    lincons1.cmi interval.cmi generator1.cmi environment.cmi abstract0.cmi
+apron_parser.cmi: lincons0.cmi generator0.cmi coeff.cmi
+apron_lexer.cmi: apron_parser.cmi
+parser.cmi: manager.cmi linexpr1.cmi lincons1.cmi generator1.cmi \
+    environment.cmi abstract1.cmi

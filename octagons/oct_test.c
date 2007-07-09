@@ -575,7 +575,8 @@ void test_lincons_conversion(exprmode mode)
       tt.p[i] = random_from_lincons(t.p[i]);
     }
     p  = ap_abstract0_of_lincons_array(mp,0,dim,&tt);
-    o  = oct_of_lincons_array(mo,0,dim,&t); FLAG(mo);
+    o = oct_top(mo,0,dim);
+    o  = oct_meet_lincons_array(mo,true,o,&t); FLAG(mo);
     p2 = poly_of_oct(o);
     oo = oct_of_poly(p);
     RESULT(check(o));
@@ -1393,7 +1394,7 @@ void test_assign(int subst, exprmode mode)
     ap_linexpr0_t* ll = random_from_linexpr(l);
     random_poly_oct(dim, .1, &o, &p);
     if (lrand48()%10>=5) oct_close(pr,o);
-    o1 = subst ? oct_substitute_linexpr(mo,false,o,d,l,NULL) : oct_assign_linexpr(mo,false,o,d,l,NULL);
+    o1 = subst ? oct_substitute_linexpr_array(mo,false,o,&d,&l,1,NULL) : oct_assign_linexpr_array(mo,false,o,&d,&l,1,NULL);
     FLAG(mo);
     p1 = subst ? ap_abstract0_substitute_linexpr(mp,false,p,d,ll,NULL) : ap_abstract0_assign_linexpr(mp,false,p,d,ll,NULL);;
     FLAG(mp);
@@ -1490,7 +1491,7 @@ void test_par_assign2(int subst, exprmode mode)
     ap_linexpr0_t* l = random_linexpr(mode,dim);
     o = random_oct(dim,.1);
     if (lrand48()%10>=8) oct_close(pr,o);
-    o1 = subst ? oct_substitute_linexpr(mo,false,o,d,l,NULL) : oct_assign_linexpr(mo,false,o,d,l,NULL);
+    o1 = subst ? oct_substitute_linexpr_array(mo,false,o,&d,&l,1,NULL) : oct_assign_linexpr_array(mo,false,o,&d,&l,1,NULL);
     FLAG(mo);
     o2 = subst ? 
       oct_substitute_linexpr_array(mo,false,o,&d,&l,1,NULL) :

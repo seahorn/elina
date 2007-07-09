@@ -63,43 +63,43 @@ OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
 
 CXXSOURCES = ppl_user.cc ppl_poly.cc ppl_grid.cc
 CSOURCES = ppl_test.c
-CCINC = ppl_user.hh ppl_poly.hh ppl_grid.hh apron_ppl.h
+CCINC = ppl_user.hh ppl_poly.hh ppl_grid.hh ap_ppl.h
 
 #---------------------------------------
 # Rules
 #---------------------------------------
 
-all: libapron_ppl.a libapron_ppl_debug.a apron_ppl_test
+all: libap_ppl.a libap_ppl_debug.a ap_ppl_test
 
 clean:
-	/bin/rm -f *.[ao] *.so apron_ppl_test
+	/bin/rm -f *.[ao] *.so ap_ppl_test
 	/bin/rm -f *.cm[ioax] *.cmxa pplrun ppltop
 	/bin/rm -fr *~ \#*\# tmp
 
 mostlyclean:
-	/bin/rm -f ppl_caml.c ppl.ml ppl.mli
+	/bin/rm -f ap_ppl_caml.c ppl.ml ppl.mli
 
 install:
 	$(INSTALLd) $(INCDIR) $(LIBDIR) $(BINDIR) $(CAMLDIR)
-	$(INSTALL) apron_ppl.h $(INCDIR)
-	$(INSTALL) libapron_ppl.a $(LIBDIR)
-	$(INSTALL) libapron_ppl_debug.a $(LIBDIR)
-	for i in apron_ppl_test pplrun ppltop; do \
+	$(INSTALL) ap_ppl.h $(INCDIR)
+	$(INSTALL) libap_ppl.a $(LIBDIR)
+	$(INSTALL) libap_ppl_debug.a $(LIBDIR)
+	for i in ap_ppl_test pplrun ppltop; do \
 		if test -f $$i; then $(INSTALL) $$i $(BINDIR); fi; \
 	done
-	for i in libppl_caml.a ppl.idl ppl.cmi ppl.cma ppl.cmxa ppl.a; do \
+	for i in libap_ppl_caml.a ppl.idl ppl.cmi ppl.cma ppl.cmxa ppl.a; do \
 		if test -f $$i; then $(INSTALL) $$i $(CAMLDIR); fi; \
 	done
 
 uninstall:
-	/bin/rm -f $(INCDIR)/*apron_ppl*
-	/bin/rm -f $(LIBDIR)/*apron_ppl* $(LIBDIR)/ppl.a $(LIBDIR)/ppl.idl $(LIBDIR)/ppl.cm*
-	/bin/rm -f $(BINDIR)/*apron_ppl*
-	/bin/rm -f $(CAMLDIR)/*apron_ppl*
+	/bin/rm -f $(INCDIR)/*ap_ppl*
+	/bin/rm -f $(LIBDIR)/*ap_ppl* $(LIBDIR)/ppl.a $(LIBDIR)/ppl.idl $(LIBDIR)/ppl.cm*
+	/bin/rm -f $(BINDIR)/*ap_ppl*
+	/bin/rm -f $(CAMLDIR)/*ap_ppl*
 
 distclean: uninstall
 
-dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) ppl.idl sedscript_caml ppl_caml.c ppl.ml ppl.mli ppl.patch
+dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) ppl.idl sedscript_caml ap_ppl_caml.c ppl.ml ppl.mli ppl.patch
 	(cd ..; tar zcvf ppl.tgz $(^:%=ppl/%))
 
 #---------------------------------------
@@ -112,19 +112,18 @@ dist: Makefile COPYING README $(CXXSOURCES) $(CSOURCES) $(CCINC) ppl.idl sedscri
 # C / C++ part
 #-----------------------------------
 
-libapron_ppl.a: $(subst .cc,.o,$(CXXSOURCES))
+libap_ppl.a: $(subst .cc,.o,$(CXXSOURCES))
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
-libapron_ppl_debug.a: $(subst .cc,_debug.o,$(CXXSOURCES))
+libap_ppl_debug.a: $(subst .cc,_debug.o,$(CXXSOURCES))
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-apron_ppl_test: libapron_ppl_debug.a ppl_test_debug.o
+ap_ppl_test: libap_ppl_debug.a ppl_test_debug.o
 	$(CXX) $(CXXFLAGS) -o $@ ppl_test_debug.o \
-	-L. -lapron_ppl_debug \
-	-L../newpolka -L$(POLKA_PREFIX)/lib -lpolkag_debug \
+	-L. -lap_ppl_debug \
+	-L../newpolka -L$(POLKA_PREFIX)/lib -lpolkaMPQ_debug \
 	-L../apron -L$(APRON_PREFIX)/lib -lapron \
-	-L../itv -L$(ITV_PREFIX)/lib -litvmpq_debug -litvdbl_debug \
 	-L$(PPL_PREFIX)/lib -lppl \
 	-L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib -lgmpxx -lmpfr -lgmp -lm
 
@@ -146,34 +145,34 @@ apron_ppl_test: libapron_ppl_debug.a ppl_test_debug.o
 
 ml: ppl.cma ppl.cmxa ppltop pplrun
 
-ppltop: ppl.cma libppl_caml.a libapron_ppl.a
+ppltop: ppl.cma libap_ppl_caml.a libap_ppl.a
 	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -cc $(CXX) -custom \
 	bigarray.cma gmp.cma apron.cma ppl.cma \
 	-ccopt "-L. -L../apron  -L../itv -L../mlgmpidl -L../mlapronidl"
 
-pplrun: ppl.cma libppl_caml.a
+pplrun: ppl.cma libap_ppl_caml.a
 	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime -cc $(CXX) \
 	bigarray.cma gmp.cma apron.cma ppl.cma \
 	-ccopt "-L.  -L../apron -L../itv -L../mlgmpidl -L../mlapronidl"
 
-ppl.cma: ppl.cmi ppl.cmo libppl_caml.a
+ppl.cma: ppl.cmi ppl.cmo libap_ppl_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ \
 	ppl.cmo \
 	-ccopt "-L$(PPL_PREFIX)/lib" \
-	-cclib "-lppl_caml -lapron_ppl -lppl -lgmpxx"
+	-cclib "-lap_ppl_caml -lap_ppl -lppl -lgmpxx"
 
-ppl.cmxa: ppl.cmi ppl.cmx libppl_caml.a
+ppl.cmxa: ppl.cmi ppl.cmx libap_ppl_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
 	ppl.cmx \
 	-ccopt "-L$(PPL_PREFIX)/lib" \
-	-cclib "-lppl_caml -lapron_ppl -lppl -lgmpxx"
+	-cclib "-lap_ppl_caml -lap_ppl -lppl -lgmpxx"
 	$(RANLIB) ppl.a
 
-libppl_caml.a: ppl_caml.o
+libap_ppl_caml.a: ap_ppl_caml.o
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-libppl_caml.so: ppl_caml.o
+libap_ppl_caml.so: ap_ppl_caml.o
 	$(SHARED) -o $@ $^
 
 manager.idl: ../mlapronidl/manager.idl
@@ -183,11 +182,11 @@ rebuild: manager.idl ppl.idl
 	mkdir -p tmp
 	cp ppl.idl tmp/
 	$(CAMLIDL) -no-include -nocpp tmp/ppl.idl
-	cp tmp/ppl_stubs.c ppl_caml.c
+	cp tmp/ppl_stubs.c ap_ppl_caml.c
 	sed -f sedscript_caml tmp/ppl.ml >ppl.ml
 	sed -f sedscript_caml tmp/ppl.mli >ppl.mli
 
-.PRECIOUS: %_caml.c %.ml %.mli %.cmi libppl_caml.a libppl_caml.so ppl.cmx ppl.cmo
+.PRECIOUS: %_caml.c %.ml %.mli %.cmi libap_ppl_caml.a libap_ppl_caml.so ppl.cmx ppl.cmo
 
 
 #---------------------------------------

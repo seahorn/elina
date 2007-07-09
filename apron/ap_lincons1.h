@@ -5,7 +5,7 @@
 /* This file is part of the APRON Library, released under LGPL license.  Please
    read the COPYING file packaged in the distribution */
 
-/* normally included from expr0.h */
+/* normally included from ap_expr1.h */
 
 #ifndef _AP_LINCONS1_H_
 #define _AP_LINCONS1_H_
@@ -43,12 +43,23 @@ typedef struct ap_lincons1_array_t {
 /* I. ap_lincons1_t */
 /* ********************************************************************** */
 
+/* For internal use */
+static inline
+ap_lincons1_t ap_lincons1_of_lincons0(ap_environment_t* env, ap_lincons0_t lincons0)
+{
+  ap_lincons1_t res;
+  res.lincons0 = lincons0;
+  res.env = ap_environment_copy(env);
+  return res;
+}
+
+
 /* ====================================================================== */
 /* I.1 Memory management and printing */
 /* ====================================================================== */
 
 static inline
-ap_lincons1_t ap_lincons1_make(ap_constyp_t constyp, 
+ap_lincons1_t ap_lincons1_make(ap_constyp_t constyp,
 			       ap_linexpr1_t* expr,
 			       ap_scalar_t* scalar);
   /* Create a constraint of given type with the given expression.
@@ -190,7 +201,7 @@ ap_lincons1_t ap_lincons1_array_get(ap_lincons1_array_t* array,
 bool ap_lincons1_array_set(ap_lincons1_array_t* array,
 			      size_t index, ap_lincons1_t* cons);
   /* Fill the index of the array with the constraint.
-     Assumes array->env==cons->env.
+     Assumes ap_environment_is_eq(array->env,cons->env).
      Nothing is duplicated.
      The argument should never be cleared. (its environment is dereferenced).
      If a constraint was already stored, it is first cleared.
@@ -214,7 +225,7 @@ ap_lincons1_array_extend_environment(ap_lincons1_array_t* narray,
 /* ********************************************************************** */
 
 static inline
-ap_lincons1_t ap_lincons1_make(ap_constyp_t constyp, 
+ap_lincons1_t ap_lincons1_make(ap_constyp_t constyp,
 			       ap_linexpr1_t* expr,
 			       ap_scalar_t* scalar)
 {

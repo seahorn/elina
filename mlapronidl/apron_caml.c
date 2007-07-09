@@ -51,6 +51,7 @@ value camlidl_apron_dimchange_c2ml(ap_dimchange_t* dimchange)
   Field(v,0) = vdim;
   return v;
 }
+
 /* ********************************************************************** */
 /* linexpr0 */
 /* ********************************************************************** */
@@ -81,6 +82,40 @@ struct custom_operations camlidl_apron_custom_linexpr0_ptr = {
   camlidl_apron_linexpr0_ptr_finalize,
   camlidl_apron_linexpr0_ptr_compare,
   camlidl_apron_linexpr0_ptr_hash,
+  custom_serialize_default,
+  custom_deserialize_default
+};
+
+/* ********************************************************************** */
+/* texpr0 */
+/* ********************************************************************** */
+
+static
+void camlidl_apron_texpr0_ptr_finalize(value v)
+{
+  ap_texpr0_t* p = *(ap_texpr0_ptr *) Data_custom_val(v);
+  ap_texpr0_free(p);
+}
+
+static
+long camlidl_apron_texpr0_ptr_hash(value v)
+{
+  ap_texpr0_t* p = *(ap_texpr0_ptr *) Data_custom_val(v);
+  return ap_texpr0_hash(p);
+}
+static
+int camlidl_apron_texpr0_ptr_compare(value v1, value v2)
+{
+  ap_texpr0_t* p1 = *(ap_texpr0_ptr *) Data_custom_val(v1);
+  ap_texpr0_t* p2 = *(ap_texpr0_ptr *) Data_custom_val(v2);
+  return ap_texpr0_equal(p1,p2) ? 0 : (p1<p2 ? (-1) : 1); 
+}
+
+struct custom_operations camlidl_apron_custom_texpr0_ptr = {
+  "apl0",
+  camlidl_apron_texpr0_ptr_finalize,
+  camlidl_apron_texpr0_ptr_compare,
+  camlidl_apron_texpr0_ptr_hash,
   custom_serialize_default,
   custom_deserialize_default
 };

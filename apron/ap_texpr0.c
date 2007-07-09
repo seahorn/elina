@@ -6,6 +6,7 @@
    read the COPYING file packaged in the distribution */
 
 #include "ap_texpr0.h"
+#include "ap_linearize.h"
 
 #include <stdarg.h>
 
@@ -109,7 +110,7 @@ ap_texpr0_t* ap_texpr0_cst_interval_double(double inf, double sup)
   ap_coeff_set_interval_double(&res->val.cst, inf, sup);
   return res;
 }
-ap_texpr0_t* ap_texpr0_cst_top(void)
+ap_texpr0_t* ap_texpr0_cst_interval_top(void)
 {
   ap_texpr0_t* res = (ap_texpr0_t*) malloc(sizeof(ap_texpr0_t));
   res->discr = AP_TEXPR_CST;
@@ -139,7 +140,7 @@ ap_texpr0_t* ap_texpr0_node(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rd
 }
 ap_texpr0_t* ap_texpr0_unop(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rdir_t dir, ap_texpr0_t* opA)
 {
-  if (!ap_texpr0_is_unop(op)){
+  if (!ap_texpr_is_unop(op)){
     fprintf(stderr,"ap_texpr0.c: ap_texpr0_unop: unary operator expected\n");
     abort();
   }
@@ -147,7 +148,7 @@ ap_texpr0_t* ap_texpr0_unop(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rd
 }
 ap_texpr0_t* ap_texpr0_binop(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rdir_t dir, ap_texpr0_t* opA, ap_texpr0_t* opB)
 {
-  if (!ap_texpr0_is_binop(op)){
+  if (!ap_texpr_is_binop(op)){
     fprintf(stderr,"ap_texpr0.c: ap_texpr0_binop: binary operator expected\n");
     abort();
   }
@@ -586,14 +587,14 @@ bool ap_texpr0_is_interval_polyfrac(ap_texpr0_t* a)
 /* IV. Operations */
 /* ====================================================================== */
 
-ap_texpr0_t* ap_texpr0_subst(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst)
+ap_texpr0_t* ap_texpr0_substitute(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst)
 {
   ap_texpr0_t* res = ap_texpr0_copy(a);
-  ap_texpr0_subst_with(res, dim, dst);
+  ap_texpr0_substitute_with(res, dim, dst);
   return res;
 }
 
-void ap_texpr0_subst_with(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst)
+void ap_texpr0_substitute_with(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst)
 {
   if (!a) return;
   switch(a->discr) {
@@ -606,58 +607,11 @@ void ap_texpr0_subst_with(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst)
     free(dst);
     return;    
   case AP_TEXPR_NODE:
-    ap_texpr0_subst_with(a->val.node->exprA, dim, dst);
-    ap_texpr0_subst_with(a->val.node->exprB, dim, dst);
+    ap_texpr0_substitute_with(a->val.node->exprA, dim, dst);
+    ap_texpr0_substitute_with(a->val.node->exprB, dim, dst);
     break;
   default:
     assert(0);
-  }
-}
-
-/* linearization / evaluation */
-
-#define NUM_MPQ
-#include "ap_texpr0_aux.h"
-#undef  NUM_MPQ
-
-#define NUM_DOUBLE
-#include "ap_texpr0_aux.h"
-#undef  NUM_DOUBLE
-
-ap_linexpr0_t* 
-ap_texpr0_linearize(ap_manager_t* man,
-		    ap_abstract0_t* abs,
-		    ap_texpr0_t* expr, 
-		    ap_scalar_discr_t discr,
-		    bool quasilinearize,
-		    bool* pexact)
-{
-  switch (discr){
-  case AP_SCALAR_MPQ:
-    return ap_texpr0_linearize_mpq(man,abs,expr,quasilinearize,pexact);
-  case AP_SCALAR_DOUBLE:
-    return ap_texpr0_linearize_dbl(man,abs,expr,quasilinearize,pexact);
-  default:
-    assert(false);
-    return NULL; 
-  }
-}
-
-ap_interval_t* 
-ap_texpr0_eval(ap_manager_t* man,
-	       ap_abstract0_t* abs,
-	       ap_texpr0_t* expr, 
-	       ap_scalar_discr_t discr,
-	       bool* pexact)
-{
-  switch (discr){
-  case AP_SCALAR_MPQ:
-    return ap_texpr0_eval_mpq(man,abs,expr,pexact);
-  case AP_SCALAR_DOUBLE:
-    return ap_texpr0_eval_dbl(man,abs,expr,pexact);
-  default:
-    assert(false);
-    return NULL; 
   }
 }
 

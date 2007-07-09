@@ -16,7 +16,7 @@
  */
 
 /* APRON includes */
-#include "apron_ppl.h"
+#include "ap_ppl.h"
 #include "ppl_poly.hh"
 
 #define NUM_MPQ

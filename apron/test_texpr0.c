@@ -5,7 +5,7 @@
  */
 
 /* Compile with:
-   gcc test_texpr0.c -g  -DDEBUG -O0 -I. -L../box -lboxmpq_debug -L. -lapron_debug -L../itv -litv_debug -lgmp -lmpfr -lm
+   gcc test_texpr0.c -Wall -I$GMP_INSTALL/include -L$GMP_INSTALL/lib -I$MPFR_INSTALL/include -L$MPFR_INSTALL/lib -g  -DDEBUG -O0 -I. -L../box -lbox_debug -L. -lapron_debug -lmpfr -lgmp -lm
 */
 
 #include <stdio.h>
@@ -106,11 +106,11 @@ void testlinearize_discr(ap_texpr0_t* a, ap_interval_t**inter, int intdim,
   abs = ap_abstract0_of_box(man, dim<intdim ? dim : intdim, 
 			    dim>intdim ? dim-intdim : 0, inter);
 
-  l = ap_texpr0_linearize(man, abs, a, discr, false, &exact);
-  q = ap_texpr0_linearize(man, abs, a, discr, true, &exact);
-  itv = ap_texpr0_eval(man, abs, a, discr, &exact);
-  itvl = ap_linexpr0_eval(man, abs, l, discr, &exact);
-  itvq = ap_linexpr0_eval(man, abs, q, discr, &exact);
+  l = ap_intlinearize_texpr0(man, abs, a, &exact, discr, false);
+  q = ap_intlinearize_texpr0(man, abs, a, &exact, discr, true);
+  itv = ap_eval_texpr0(man, abs, a, discr, &exact);
+  itvl = ap_eval_linexpr0(man, abs, l, discr, &exact);
+  itvq = ap_eval_linexpr0(man, abs, q, discr, &exact);
 
   printf("  lin:  "); ap_linexpr0_fprint(stdout, l, NULL); printf("\n");
   printf("  qlin: "); ap_linexpr0_fprint(stdout, q, NULL); printf("\n");
@@ -122,9 +122,9 @@ void testlinearize_discr(ap_texpr0_t* a, ap_interval_t**inter, int intdim,
     ap_interval_t** pt = random_point(inter,dim,j);
     ap_abstract0_t* ab = ap_abstract0_of_box(man, dim<intdim ? dim : intdim, 
 					     dim>intdim ? dim-intdim : 0, pt);
-    ap_interval_t* pe = ap_texpr0_eval(man, ab, a, discr, &exact);
-    ap_interval_t* pl = ap_linexpr0_eval(man, ab, l, discr, &exact);
-    ap_interval_t* pq = ap_linexpr0_eval(man, ab, q, discr, &exact);
+    ap_interval_t* pe = ap_eval_texpr0(man, ab, a, discr, &exact);
+    ap_interval_t* pl = ap_eval_linexpr0(man, ab, l, discr, &exact);
+    ap_interval_t* pq = ap_eval_linexpr0(man, ab, q, discr, &exact);
     printf("  eval ");
     for (i=0;i<dim;i++) {
       printf("%sx%i=",i?" ":"",i);
@@ -213,8 +213,8 @@ void test_op()
   x = DIV(V(1),MUL(SQRT(ADD(V(4),I(1,1))),C(3)));
   y = ADD(C(1),V(1));
   print_info(x);
-  ap_texpr0_subst_with(x, 1, y);
-  ap_texpr0_subst_with(x, 1, y);
+  ap_texpr0_substitute_with(x, 1, y);
+  ap_texpr0_substitute_with(x, 1, y);
   print_info(x);
   ap_texpr0_free(x);   
   ap_texpr0_free(y);

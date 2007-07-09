@@ -10,7 +10,7 @@
  *
  */
 
-/* This file is part of the APRON Library, released under LGPL license.  
+/* This file is part of the APRON Library, released under LGPL license.
    Please read the COPYING file packaged in the distribution.
 */
 
@@ -150,13 +150,18 @@ oct_t* oct_of_box(ap_manager_t* man,
      of size intdim+realdim */
 
 oct_t* oct_of_lincons_array(ap_manager_t* man,
-                              size_t intdim, size_t realdim,
-                              ap_lincons0_array_t* array);
+			      size_t intdim, size_t realdim,
+			      ap_lincons0_array_t* array);
   /* Abstract a convex polyhedra defined by an array of linear constraints */
 
+oct_t* oct_of_tcons_array(ap_manager_t* man,
+			  size_t intdim, size_t realdim,
+			  ap_tcons0_array_t* array);
+  /* Abstract a conjunction of tree expressions constraints */
+
 oct_t* oct_of_generator_array(ap_manager_t* man,
-                              size_t intdim, size_t realdim,
-                              ap_generator0_array_t* array);
+			      size_t intdim, size_t realdim,
+			      ap_generator0_array_t* array);
   /* Abstract a convex polyhedra defined an array of generators */
 
 
@@ -187,8 +192,11 @@ tbool_t oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2);
   /* equality check */
 
 /* NOT IMPLEMENTED */
-tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a, ap_lincons0_t* lincons);
+tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a, ap_lincons0_t* cons);
   /* does the abstract value satisfy the linear constraint ? */
+
+tbool_t oct_sat_tcons(ap_manager_t* man, oct_t* a, ap_tcons0_t* cons);
+  /* does the abstract value satisfy the tree expression constraint ? */
 
 tbool_t oct_sat_interval(ap_manager_t* man, oct_t* a,
 			 ap_dim_t dim, ap_interval_t* interval);
@@ -207,6 +215,11 @@ ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
   /* Returns the interval taken by a linear expression
      over the abstract value */
 
+ap_interval_t* oct_bound_texpr(ap_manager_t* man,
+			       oct_t* a, ap_texpr0_t* expr);
+  /* Returns the interval taken by a tree expression
+     over the abstract value */
+
 ap_interval_t* oct_bound_dimension(ap_manager_t* man,
 				   oct_t* a, ap_dim_t dim);
   /* Returns the interval taken by the dimension
@@ -215,6 +228,10 @@ ap_interval_t* oct_bound_dimension(ap_manager_t* man,
 ap_lincons0_array_t oct_to_lincons_array(ap_manager_t* man, oct_t* a);
   /* Converts an abstract value to a polyhedra
      (conjunction of linear constraints). */
+
+ap_tcons0_array_t oct_to_tcons_array(ap_manager_t* man, oct_t* a);
+  /* Converts an abstract value to a conjunction
+     of tree expressions constraints */
 
 ap_interval_t** oct_to_box(ap_manager_t* man, oct_t* a);
   /* Converts an abstract value to an interval/hypercube.
@@ -249,6 +266,12 @@ oct_t* oct_meet_lincons_array(ap_manager_t* man,
   /* Meet of an abstract value with a set of constraints
      (generalize oct_of_lincons_array) */
 
+oct_t* oct_meet_tcons_array(ap_manager_t* man,
+			    bool destructive, oct_t* a,
+			    ap_tcons0_array_t* array);
+  /* Meet of an abstract value with a set of tree expressions constraints.
+     (generalize oct_of_tcons_array) */
+
 oct_t* oct_add_ray_array(ap_manager_t* man,
 			 bool destructive, oct_t* a,
 			 ap_generator0_array_t* array);
@@ -262,26 +285,6 @@ oct_t* oct_add_ray_array(ap_manager_t* man,
 /* III.2 Assignement and Substitutions */
 /* ============================================================ */
 
-oct_t* oct_assign_linexpr(ap_manager_t* man,
-			  bool destructive, oct_t* a,
-			  ap_dim_t dim, ap_linexpr0_t* expr,
-			  oct_t* dest);
-
-oct_t* oct_substitute_linexpr(ap_manager_t* man,
-			      bool destructive, oct_t* a,
-			      ap_dim_t dim, ap_linexpr0_t* expr,
-			      oct_t* dest);
-
-  /* Assignement and Substitution of a single dimension by a (interval)
-     linear expression in abstract value org.
-
-     dest is an optional argument. If not NULL, semantically speaking,
-     the result of the transformation is intersected with dest. This is
-     useful for precise backward transformations in lattices like intervals or
-     octagons.
-  */
-
-
 oct_t* oct_assign_linexpr_array(ap_manager_t* man,
 				bool destructive, oct_t* a,
 				ap_dim_t* tdim,
@@ -294,15 +297,27 @@ oct_t* oct_substitute_linexpr_array(ap_manager_t* man,
 				    ap_linexpr0_t** texpr,
 				    size_t size,
 				    oct_t* dest);
+oct_t* oct_assign_texpr_array(ap_manager_t* man,
+			      bool destructive, oct_t* a,
+			      ap_dim_t* tdim,
+			      ap_texpr0_t** texpr,
+			      size_t size,
+			      oct_t* dest);
+oct_t* oct_substitute_texpr_array(ap_manager_t* man,
+				  bool destructive, oct_t* a,
+				  ap_dim_t* tdim,
+				  ap_texpr0_t** texpr,
+				  size_t size,
+				  oct_t* dest);
+  
 
   /* Parallel Assignement and Substitution of several dimensions by
-     linear expressions in abstract value org.
+     expressions in abstract value org.
 
      dest is an optional argument. If not NULL, semantically speaking,
      the result of the transformation is intersected with dest. This is
      useful for precise backward transformations in lattices like intervals or
      octagons. */
-
 
 /* ============================================================ */
 /* III.3 Projections */
@@ -364,7 +379,7 @@ oct_t* oct_fold(ap_manager_t* man,
 
 oct_t* oct_widening(ap_manager_t* man, oct_t* a1, oct_t* a2);
   /* Standard widening: set unstable constraints to +oo */
-  
+
 oct_t* oct_widening_thresholds(ap_manager_t* man,
 			       oct_t* a1, oct_t* a2,
 			       ap_scalar_t** array,
@@ -376,12 +391,12 @@ oct_t* oct_narrowing(ap_manager_t* man, oct_t* a1, oct_t* a2);
   /* Standard narrowing: refine only +oo constraint */
 
 oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, ap_scalar_t* epsilon);
-  /* Enlarge each bound by epsilon times the maximum finite bound in 
+  /* Enlarge each bound by epsilon times the maximum finite bound in
      the octagon */
 
-oct_t* oct_add_epsilon_bin(ap_manager_t* man, oct_t* a1, oct_t* a2, 
+oct_t* oct_add_epsilon_bin(ap_manager_t* man, oct_t* a1, oct_t* a2,
 			   ap_scalar_t* epsilon);
-  /* Enlarge each bound from a1 by epsilon times the maximum finite bound in 
+  /* Enlarge each bound from a1 by epsilon times the maximum finite bound in
      a2. Only bounds in a1 that are not stable in a2 are enlared. */
 
 

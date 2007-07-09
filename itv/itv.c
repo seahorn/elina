@@ -8,6 +8,43 @@
 /* The macro ITVFUN(itv_name) (defined in itv.h) expands name 
    with itvNUM_SUFFIX_ */
 
+static void make_float_const(int frac_bits, int exp_bits, int exp_bias,
+			     float_const* cst)
+{
+  bound_t b,c;
+  bound_init(b); bound_init(c);
+  itv_init(cst->ulp); itv_init(cst->min); itv_init(cst->min_normal);
+  itv_init(cst->max); itv_init(cst->max_exact);
+
+  bound_set_int(b,1);
+  bound_mul_2exp(b,b,-frac_bits);
+  itv_set_unit_bound(cst->ulp,b);
+
+  bound_set_int(b,1);
+  bound_mul_2exp(b,b,1-exp_bias-frac_bits);
+  itv_set_unit_bound(cst->min,b);
+
+  bound_set_int(b,1);
+  bound_mul_2exp(b,b,1-exp_bias);
+  itv_set_unit_bound(cst->min_normal,b);
+
+  bound_set_int(b,2);
+  bound_set_int(c,1);
+  bound_mul_2exp(c,c,-frac_bits);
+  bound_sub(b,b,c);
+  bound_mul_2exp(b,b,(1<<exp_bits)-2-exp_bias);
+  itv_set_unit_bound(cst->max,b);
+
+  bound_set_int(b,1);
+  bound_mul_2exp(b,b,frac_bits);
+  itv_set_unit_bound(cst->max_exact,b);
+
+  bound_clear(b); bound_clear(c);
+}
+static void float_const_clear(float_const* cst)
+{
+  itv_clear(cst->ulp); itv_clear(cst->min); itv_clear(cst->min_normal); itv_clear(cst->max); itv_clear(cst->max_exact);
+}
 void ITVFUN(itv_internal_init)(itv_internal_t* intern)
 {
   num_init(intern->canonicalize_num);
@@ -25,6 +62,15 @@ void ITVFUN(itv_internal_init)(itv_internal_t* intern)
   itv_init(intern->eval_itv2);
   itv_init(intern->eval_itv3);
   num_init(intern->quasi_num);
+
+  make_float_const(10,5,15,&intern->cst_half);         /* 16-bit */
+  make_float_const(23,8,127,&intern->cst_single);      /* 32-bit */
+  make_float_const(52,11,1023,&intern->cst_double);    /* 64-bit */
+  make_float_const(63,15,16383,&intern->cst_extended); /* 80-bit, no hidden bit */
+  make_float_const(112,15,16383,&intern->cst_quad);    /* 128-bit */
+  itv_init(intern->itv_half);
+  itv_set_int2(intern->itv_half,-1,1);
+  itv_mul_2exp(intern->itv_half,intern->itv_half,-1);
 }
 void ITVFUN(itv_internal_clear)(itv_internal_t* intern)
 {
@@ -43,6 +89,12 @@ void ITVFUN(itv_internal_clear)(itv_internal_t* intern)
   itv_clear(intern->eval_itv2);
   itv_clear(intern->eval_itv3);
   num_clear(intern->quasi_num);
+  float_const_clear(&intern->cst_half);
+  float_const_clear(&intern->cst_single);
+  float_const_clear(&intern->cst_double);
+  float_const_clear(&intern->cst_extended);
+  float_const_clear(&intern->cst_quad);
+  itv_clear(intern->itv_half);
 }
 
 itv_internal_t* ITVFUN(itv_internal_alloc)(void)

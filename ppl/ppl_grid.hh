@@ -62,7 +62,7 @@ void ap_ppl_grid_free(ap_manager_t* man, PPL_Grid* a);
   /* Free all the memory used by the abstract value */
 
 size_t ap_ppl_grid_size(ap_manager_t* man, PPL_Grid* a);
-  /* Return the abstract size of a polyhedron, which is the number of
+  /* Return the abstract size of an abstract value, which is the number of
      coefficients of its current representation, possibly redundant. */
 
 
@@ -155,6 +155,11 @@ PPL_Grid* ap_ppl_grid_of_lincons_array(ap_manager_t* man,
   /* Abstract a convex polyhedra defined by the array of linear constraints
      of size size */
 
+PPL_Grid* ap_ppl_grid_of_tcons_array(ap_manager_t* man,
+			size_t intdim, size_t realdim,
+			ap_tcons0_array_t* array);
+  /* Abstract a conjunction of tree expressions constraints
+     of size size */
 
 /* ============================================================ */
 /* II.2 Accessors */
@@ -186,6 +191,9 @@ tbool_t ap_ppl_grid_is_eq(ap_manager_t* man, PPL_Grid* a1, PPL_Grid* a2);
 tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, PPL_Grid* a, ap_lincons0_t* lincons);
   /* Satisfiability of a linear constraint */
 
+tbool_t ap_ppl_grid_sat_tcons(ap_manager_t* man, PPL_Grid* a, ap_tcons0_t* cons);
+  /* Satisfiability of a tree expression constraint. */
+
 tbool_t ap_ppl_grid_sat_interval(ap_manager_t* man, PPL_Grid* a,
 				 ap_dim_t dim, ap_interval_t* interval);
   /* Inclusion of a dimension in an interval */
@@ -203,14 +211,23 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
   /* Returns the interval taken by a linear expression
      over the abstract value. */
 
+ap_interval_t* ap_ppl_grid_bound_texpr(ap_manager_t* man,
+			      PPL_Grid* a, ap_texpr0_t* expr);
+  /* Returns the interval taken by a tree expression
+     over the abstract value. */
+
 ap_interval_t* ap_ppl_grid_bound_dimension(ap_manager_t* man,
 					   PPL_Grid* a, ap_dim_t dim);
   /* Returns the interval taken by the dimension
      over the abstract value. */
 
 ap_lincons0_array_t ap_ppl_grid_to_lincons_array(ap_manager_t* man, PPL_Grid* a);
-  /* Converts an abstract value to a polyhedra
+  /* Converts an abstract value to a gridhedra
      (conjunction of linear constraints). */
+
+ap_tcons0_array_t ap_ppl_grid_to_tcons_array(ap_manager_t* man, PPL_Grid* a);
+  /* Converts an abstract value to a 
+     conjunction of tree expressions constraints. */
 
 ap_interval_t** ap_ppl_grid_to_box(ap_manager_t* man, PPL_Grid* a);
   /* Converts an abstract value to an interval/hypercube.
@@ -242,6 +259,11 @@ PPL_Grid* ap_ppl_grid_meet_lincons_array(ap_manager_t* man,
 			    ap_lincons0_array_t* array);
   /* Meet of an abstract value with a set of constraints
      (generalize ap_ppl_grid_of_lincons_array) */
+
+PPL_Grid* ap_ppl_grid_meet_tcons_array(ap_manager_t* man,
+			  bool destructive, PPL_Grid* a,
+			  ap_tcons0_array_t* array);
+  /* Meet of an abstract value with a set of tree expressionsconstraints. */
 
 PPL_Grid* ap_ppl_grid_add_ray_array(ap_manager_t* man,
 		       bool destructive, PPL_Grid* a,
@@ -277,6 +299,32 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr_array(ap_manager_t* man,
 				  PPL_Grid* dest);
   /* Parallel Assignement and Substitution of several dimensions by
      linear expressons. */
+
+PPL_Grid* ap_ppl_grid_assign_texpr(ap_manager_t* man,
+		      bool destructive, PPL_Grid* a,
+		      ap_dim_t dim, ap_texpr0_t* expr,
+		      PPL_Grid* dest);
+PPL_Grid* ap_ppl_grid_substitute_texpr(ap_manager_t* man,
+			  bool destructive, PPL_Grid* a,
+			  ap_dim_t dim, ap_texpr0_t* expr,
+			  PPL_Grid* dest);
+  /* Assignement and Substitution of a single dimension by
+     a tree expression */
+
+PPL_Grid* ap_ppl_grid_assign_texpr_array(ap_manager_t* man,
+			    bool destructive, PPL_Grid* a,
+			    ap_dim_t* tdim,
+			    ap_texpr0_t** texpr,
+			    size_t size,
+			    PPL_Grid* dest);
+PPL_Grid* ap_ppl_grid_substitute_texpr_array(ap_manager_t* man,
+				bool destructive, PPL_Grid* a,
+				ap_dim_t* tdim,
+				ap_texpr0_t** texpr,
+				size_t size,
+				PPL_Grid* dest);
+  /* Parallel Assignement and Substitution of several dimensions by
+     tree expressions. */
 
 /* ============================================================ */
 /* III.3 Projections */

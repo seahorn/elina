@@ -132,12 +132,6 @@ ap_abstract1_t ap_abstract1_of_box(ap_manager_t* man,
      is no constrained in the resulting abstract value.
   */
 
-ap_abstract1_t ap_abstract1_of_lincons_array(ap_manager_t* man,
-					     ap_environment_t* env,
-					     ap_lincons1_array_t* array);
-  /* Abstract a convex polyhedra defined on the environment
-     by the array of linear constraints
-  */
 
 /* ============================================================ */
 /* II.2 Accessors */
@@ -165,7 +159,8 @@ tbool_t ap_abstract1_is_eq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t
   /* equality check */
 
 tbool_t ap_abstract1_sat_lincons(ap_manager_t* man, ap_abstract1_t* a, ap_lincons1_t* lincons);
-  /* does the abstract value satisfy the linear constraint ? */
+tbool_t ap_abstract1_sat_tcons(ap_manager_t* man, ap_abstract1_t* a, ap_tcons1_t* tcons);
+  /* does the abstract value satisfy the constraint ? */
 
 tbool_t ap_abstract1_sat_interval(ap_manager_t* man, ap_abstract1_t* a,
 				  ap_var_t var, ap_interval_t* interval);
@@ -184,8 +179,10 @@ tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_t* man, ap_abstract1_t
 
 ap_interval_t* ap_abstract1_bound_linexpr(ap_manager_t* man,
 					  ap_abstract1_t* a, ap_linexpr1_t* expr);
-  /* Returns the interval taken by a linear expression
-     over the abstract value */
+ap_interval_t* ap_abstract1_bound_texpr(ap_manager_t* man,
+					ap_abstract1_t* a, ap_texpr1_t* expr);
+  /* Returns the interval taken by the expression
+     over the abstract value. */
 
 ap_interval_t* ap_abstract1_bound_variable(ap_manager_t* man,
 					   ap_abstract1_t* a, ap_var_t var);
@@ -195,10 +192,10 @@ ap_interval_t* ap_abstract1_bound_variable(ap_manager_t* man,
   */
 
 ap_lincons1_array_t ap_abstract1_to_lincons_array(ap_manager_t* man, ap_abstract1_t* a);
-  /* Converts an abstract value to a polyhedra
-     (conjunction of linear constraints).
-     - The environment of the result is a copy of the environment of the abstract value.
-  */
+ap_tcons1_array_t ap_abstract1_to_tcons_array(ap_manager_t* man, ap_abstract1_t* a);
+  /* Converts an abstract value to conjunction of constraints.  The environment
+     of the result is a copy of the environment of the abstract value. */
+
 
 ap_box1_t ap_abstract1_to_box(ap_manager_t* man, ap_abstract1_t* a);
   /* Converts an abstract value to an interval/hypercube. */
@@ -236,8 +233,10 @@ ap_abstract1_t ap_abstract1_meet_lincons_array(ap_manager_t* man,
 					       bool destructive,
 					       ap_abstract1_t* a,
 					       ap_lincons1_array_t* array);
-  /* Meet of an abstract value with a set of constraints
-     (generalize ap_abstract1_of_lincons_array) */
+ap_abstract1_t
+ap_abstract1_meet_tcons_array(ap_manager_t* man,
+			      bool destructive, ap_abstract1_t* a, ap_tcons1_array_t* array);
+  /* Meet of an abstract value with a set of constraints. */
 
 ap_abstract1_t ap_abstract1_add_ray_array(ap_manager_t* man,
 					  bool destructive,
@@ -249,19 +248,8 @@ ap_abstract1_t ap_abstract1_add_ray_array(ap_manager_t* man,
 /* III.2 Assignement and Substitutions */
 /* ============================================================ */
 
-/* Assignement and Substitution of a single
-   dimension by a interval linear expression */
-ap_abstract1_t ap_abstract1_assign_linexpr(ap_manager_t* man,
-					   bool destructive, ap_abstract1_t* a,
-					   ap_var_t var, ap_linexpr1_t* expr,
-					   ap_abstract1_t* dest);
-ap_abstract1_t ap_abstract1_substitute_linexpr(ap_manager_t* man,
-					       bool destructive, ap_abstract1_t* a,
-					       ap_var_t var, ap_linexpr1_t* expr,
-					       ap_abstract1_t* dest);
-
 /* Parallel Assignement and Substitution of several dimensions by
-   linear expressons. */
+   expressions. */
 ap_abstract1_t 
 ap_abstract1_assign_linexpr_array(ap_manager_t* man,
 				  bool destructive, ap_abstract1_t* a,
@@ -272,6 +260,16 @@ ap_abstract1_substitute_linexpr_array(ap_manager_t* man,
 				      bool destructive, ap_abstract1_t* a,
 				      ap_var_t* tvar, ap_linexpr1_t* texpr, size_t size,
 				      ap_abstract1_t* dest);
+ ap_abstract1_t 
+ap_abstract1_assign_texpr_array(ap_manager_t* man,
+				bool destructive, ap_abstract1_t* a,
+				ap_var_t* tvar, ap_texpr1_t* texpr, size_t size,
+				ap_abstract1_t* dest);
+ap_abstract1_t 
+ap_abstract1_substitute_texpr_array(ap_manager_t* man,
+				    bool destructive, ap_abstract1_t* a,
+				    ap_var_t* tvar, ap_texpr1_t* texpr, size_t size,
+				    ap_abstract1_t* dest);
   
 /* ============================================================ */
 /* III.3 Projections */
@@ -353,8 +351,55 @@ ap_abstract1_t ap_abstract1_widening_threshold(ap_manager_t* man,
 
 ap_abstract1_t ap_abstract1_closure(ap_manager_t* man, bool destructive, ap_abstract1_t* a);
 
+/* ============================================================ */
+/* IV. Additional functions */
+/* ============================================================ */
+
+ap_abstract1_t ap_abstract1_of_lincons_array(ap_manager_t* man,
+					     ap_environment_t* env,
+					     ap_lincons1_array_t* array);
+ap_abstract1_t ap_abstract1_of_tcons_array(ap_manager_t* man,
+					   ap_environment_t* env,
+					   ap_tcons1_array_t* array);
+  /* Abstract a conjunction of constraints and return an abstract value 
+     defined on the given environment. */
+
+ap_abstract1_t ap_abstract1_assign_linexpr(ap_manager_t* man,
+					   bool destructive, ap_abstract1_t* a,
+					   ap_var_t var, ap_linexpr1_t* expr,
+					   ap_abstract1_t* dest);
+ap_abstract1_t ap_abstract1_substitute_linexpr(ap_manager_t* man,
+					       bool destructive, ap_abstract1_t* a,
+					       ap_var_t var, ap_linexpr1_t* expr,
+					       ap_abstract1_t* dest);
+ap_abstract1_t ap_abstract1_assign_texpr(ap_manager_t* man,
+					 bool destructive, ap_abstract1_t* a,
+					 ap_var_t var, ap_texpr1_t* expr,
+					 ap_abstract1_t* dest);
+ap_abstract1_t ap_abstract1_substitute_texpr(ap_manager_t* man,
+					     bool destructive, ap_abstract1_t* a,
+					     ap_var_t var, ap_texpr1_t* expr,
+					     ap_abstract1_t* dest);
+  /* Assignement and Substitution of a single
+     dimension by an expression */
+
+ap_linexpr1_t ap_abstract1_quasilinear_of_intlinear(ap_manager_t* man, ap_abstract1_t* a, ap_linexpr1_t* expr, ap_scalar_discr_t discr);
+  /* Evaluate the interval linear expression expr on the abstract value a and
+     approximate it by a quasilinear expression. discr indicates which type of
+     numbers should be used for computations.
+
+     This implies calls to ap_abstract0_bound_dimension. */
+
+ap_linexpr1_t ap_abstract1_intlinear_of_tree (ap_manager_t* man, ap_abstract1_t* a, ap_texpr1_t* expr, ap_scalar_discr_t discr, bool quasilinearize);
+  /* Evaluate the tree expression expr on the abstract value a and approximate
+     it by an interval linear (resp. quasilinear if quasilinearize is true)
+     expression. discr indicates which type of numbers should be used for
+     computations.
+     
+     This implies calls to ap_abstract0_bound_dimension. */
+
 #ifdef __cplusplus
-}
+
 #endif
 
 #endif

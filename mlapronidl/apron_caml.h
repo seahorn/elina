@@ -45,6 +45,7 @@ struct ap_scalar_array_t {
 typedef struct ap_interval_t* ap_interval_ptr;
 typedef struct ap_scalar_t* ap_scalar_ptr;
 typedef struct ap_linexpr0_t* ap_linexpr0_ptr;
+typedef struct ap_texpr0_t* ap_texpr0_ptr;
 typedef struct ap_manager_t* ap_manager_ptr;
 typedef struct ap_manager_t* ap_manager_opt_ptr;
 
@@ -64,6 +65,7 @@ typedef struct apron_var_t {
 typedef struct apron_var_t* apron_var_ptr;
 
 typedef struct ap_environment_t* ap_environment_ptr;
+
 
 typedef ap_abstract0_t* ap_abstract0_ptr;
 
@@ -87,6 +89,13 @@ void camlidl_apron_scalar_ml2c(value v, struct ap_scalar_t* scalar);
 value camlidl_apron_scalar_c2ml(struct ap_scalar_t* scalar);
 
 /* ********************************************************************** */
+/* coefficients */
+/* ********************************************************************** */
+
+void camlidl_ml2c_coeff_struct_ap_coeff_t(value _v1, struct ap_coeff_t * _c2, struct camlidl_ctx_struct* _ctx);
+value camlidl_c2ml_coeff_struct_ap_coeff_t(struct ap_coeff_t * _c1, struct camlidl_ctx_struct* _ctx);
+
+/* ********************************************************************** */
 /* linexpr0 */
 /* ********************************************************************** */
 
@@ -106,6 +115,62 @@ value camlidl_apron_linexpr0_ptr_c2ml(ap_linexpr0_ptr* p)
   *((ap_linexpr0_ptr *) Data_custom_val(v)) = *p;
   return v;
 }
+
+/* ********************************************************************** */
+/* texpr0 */
+/* ********************************************************************** */
+
+typedef ap_texpr_op_t ap_texpr_unop_t;
+typedef ap_texpr_op_t ap_texpr_binop_t;
+
+extern struct custom_operations camlidl_apron_custom_texpr0_ptr;
+
+static inline
+void camlidl_apron_texpr0_ptr_ml2c(value v, ap_texpr0_ptr* p)
+{
+  *p = *((ap_texpr0_ptr *) Data_custom_val(v));
+}
+
+static inline
+value camlidl_apron_texpr0_ptr_c2ml(ap_texpr0_ptr* p)
+{
+  value v;
+  v = alloc_custom(&camlidl_apron_custom_texpr0_ptr, sizeof(ap_texpr0_ptr), 0,1);
+  *((ap_texpr0_ptr *) Data_custom_val(v)) = *p;
+  return v;
+}
+
+static inline 
+void camlidl_apron_texpr_unop_t_ml2c(value v, ap_texpr_op_t* op)
+{ 
+  *op = AP_TEXPR_NEG + Int_val(v); assert(*op>=AP_TEXPR_NEG && *op<=AP_TEXPR_SQRT); 
+}
+static inline
+value camlidl_apron_texpr_unop_t_c2ml(ap_texpr_op_t* op)
+{
+  assert(*op>=AP_TEXPR_NEG && *op<=AP_TEXPR_SQRT); return Val_int((*op)-AP_TEXPR_NEG);
+}
+static inline 
+void camlidl_apron_texpr_binop_t_ml2c(value v, ap_texpr_op_t* op)
+{ 
+  *op = Int_val(v); assert(*op<=AP_TEXPR_MOD); }
+static inline
+value camlidl_apron_texpr_binop_t_c2ml(ap_texpr_op_t* op)
+{
+  assert(*op<=AP_TEXPR_MOD); return Val_int((*op));
+}
+static inline 
+void camlidl_apron_texpr_rtype_t_ml2c(value v, ap_texpr_rtype_t* op)
+{ *op = Int_val(v); assert(*op<=AP_RTYPE_QUAD); }
+static inline
+value camlidl_apron_texpr_rtype_t_c2ml(ap_texpr_rtype_t* op)
+{ assert(*op<=AP_RTYPE_QUAD); return Val_int(*op); }
+static inline 
+void camlidl_apron_texpr_rdir_t_ml2c(value v, ap_texpr_rdir_t* op)
+{ *op = Int_val(v); assert(*op<=AP_RDIR_RND); }
+static inline
+value camlidl_apron_texpr_rdir_t_c2ml(ap_texpr_rdir_t* op)
+{ assert(*op<=AP_RDIR_RND); return Val_int(*op); }
 
 /* ********************************************************************** */
 /* manager */
@@ -178,6 +243,8 @@ void ap_var_free(ap_var_t pp){
     free(p->name);
     free(p);
   }
+  else
+    p->count--;
 }
 static inline
 char* ap_var_to_string(ap_var_t pp)

@@ -21,10 +21,10 @@
 #include "oct.h"
 #include "pk.h"
 #include "pkeq.h"
-#include "apron_ppl.h"
+#include "ap_ppl.h"
 #include "ap_pkgrid.h"
 
-ap_linexpr0_t* random_linexpr_std(int);
+ap_linexpr0_t* random_linexpr_linear(int);
 ap_abstract0_t* random_abstract_std(ap_manager_t* man, int dim);
 void random_abstract2_std(ap_manager_t*, ap_manager_t*, int,
 			  ap_abstract0_t**, ap_abstract0_t**);
@@ -34,7 +34,7 @@ ap_manager_t* manprec;
 ap_manager_t* manrough;
 int intdim;
 
-ap_linexpr0_t* (*random_linexpr)(int) = &random_linexpr_std;
+ap_linexpr0_t* (*random_linexpr)(int) = &random_linexpr_linear;
 ap_abstract0_t* (*random_abstract)(ap_manager_t*, int) = &random_abstract_std;
 void (*random_abstract2)(ap_manager_t*, ap_manager_t*, int,
 			 ap_abstract0_t**, ap_abstract0_t**) = &random_abstract2_std;
@@ -61,8 +61,8 @@ void random_interval(ap_interval_t* i)
   ap_interval_set_frac(i,n1,d,n2,d);
 }
 
-/* random affine expression */
-ap_linexpr0_t* random_linexpr_std(int dim)
+/* random affine expression, linear */
+ap_linexpr0_t* random_linexpr_linear(int dim)
 {
   ap_linexpr0_t* l = ap_linexpr0_alloc(AP_LINEXPR_DENSE,dim);
   int i;
@@ -72,21 +72,42 @@ ap_linexpr0_t* random_linexpr_std(int dim)
   return l;
 }
 
-/* random affine expression with scalar constant coefficient */
-ap_linexpr0_t* random_linexpr_inter(int dim)
+/* random affine expression, quasilinear */
+ap_linexpr0_t* random_linexpr_quasilinear(int dim)
 {
-  ap_linexpr0_t* l = random_linexpr_std(dim);
+  ap_linexpr0_t* l = random_linexpr_linear(dim);
   int n1 = rand()%20-10;
   int n2 = n1 + rand()%20;
-  int d  = rand()%4+1;
-  ap_linexpr0_set_cst_interval_frac(l,n1,d,n2,d);
+  int d1  = rand()%4+1;
+  int d2  = rand()%4+1;
+  ap_linexpr0_set_cst_interval_frac(l,n1,d1,n2,d2);
+  return l;
+}
+
+/* random affine expression, intlinear */
+ap_linexpr0_t* random_linexpr_intlinear(int dim)
+{
+  ap_linexpr0_t* l = ap_linexpr0_alloc(AP_LINEXPR_DENSE,dim);
+  int i,n1,n2,d1,d2;
+  for (i=0;i<dim;i++){
+    n1 = rand()%20-10;
+    n2 = n1 + rand()%20;
+    d1 = rand()%4+1;
+    d2 = rand()%4+1;
+    ap_coeff_set_interval_frac(l->p.coeff+i,n1,d1,n2,d2);
+  }
+  n1 = rand()%20-10;
+  n2 = n1 + rand()%20;
+  d1 = rand()%4+1;
+  d2 = rand()%4+1;
+  ap_coeff_set_interval_frac(&l->cst,n1,d1,n2,d2);
   return l;
 }
 
 /* random generator of specified type */
 ap_generator0_t random_generator(int dim, ap_gentyp_t g)
 {
-  ap_linexpr0_t* l = random_linexpr_std(dim);
+  ap_linexpr0_t* l = random_linexpr_linear(dim);
   ap_coeff_set_scalar_int(&l->cst,0);
   return ap_generator0_make(g,l);
 }
@@ -1012,14 +1033,10 @@ int main(int argc, char** argv)
 
   /* First serie */
   intdim = 0;
-  random_linexpr = &random_linexpr_std;
+  random_linexpr = &random_linexpr_linear;
   random_abstract = &random_abstract_std;
   for (i=0; i<1; i++){
     random_abstract2 = i==0 ? &random_abstract2_std : &random_abstract2_inv;
-
-    // manpkgrid 
-    test(manpkgrid,manpplgrid);
-    test(manpkgrid,manpkl);
 
     // box/polyhedra
     test(manpkl,manbox);
@@ -1042,13 +1059,19 @@ int main(int argc, char** argv)
     random_abstract = &random_abstract_eqmod;
     test(manpplgrid,manpkeq);
 
+    // manpkgrid 
+    test(manpkgrid,manpplgrid);
+    test(manpkgrid,manpkl);
+
     // Oct/Box and Oct/Poly
+    /*
     random_abstract = &random_abstract_std;
     test(manoct,manbox);
     test(manpkl,manoct);
     test(manpks,manoct);
     test(manppll,manoct);
     test(manppls,manoct);
+    */
   }
 
 

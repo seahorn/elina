@@ -18,6 +18,8 @@
 
 #include "pkeq.h"
 
+#include "ap_generic.h"
+
 
 /* ********************************************************************** */
 /* I. General management */
@@ -190,64 +192,6 @@ pkeq_t* pkeq_of_box(ap_manager_t* man,
   return po;
 }
 
-/*
-Abstract a convex polyhedra defined by the array of linear constraints.
-*/
-
-pkeq_t* pkeq_of_lincons_array(ap_manager_t* man,
-			      size_t intdim, size_t realdim,
-			      ap_lincons0_array_t* cons)
-{
-  size_t i;
-  size_t row, dim;
-  matrix_t* C;
-  pkeq_t* po;
-
-  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_OF_LINCONS_ARRAY);
-  pk_internal_realloc_lazy(pk,intdim+realdim);
-
-  man->result.flag_exact = man->result.flag_best =
-    (intdim==0) ? tbool_true : tbool_top;
-
-  if (pk->funopt->algorithm>=1){
-    po = pk_of_lincons_array(man,intdim,realdim,cons);
-    equality_reduce(man,po);
-    return po;
-  }
-  /* initialization */
-  po = poly_alloc(intdim,realdim);
-  po->status =
-    pk_status_conseps;
-  dim = intdim + realdim;
-  C = matrix_alloc(pk->dec-1 + cons->size, pk->dec + dim, false);
-  
-  /* constraints */
-  row = 0;
-  for (i=0; i<cons->size; i++){
-    if (ap_lincons0_is_unsat(&cons->p[i])){
-      matrix_free(C);
-      return po;
-    }
-    if (cons->p[i].constyp == AP_CONS_EQ && 
-	ap_linexpr0_is_linear(cons->p[i].linexpr0)){
-      itv_lincons_set_ap_lincons0(pk->itv,
-				  &pk->poly_itv_lincons,
-				  &cons->p[i]);
-      row += vector_set_itv_lincons(pk,
-				    &C->p[row],
-				    &pk->poly_itv_lincons,
-				    intdim, realdim, true);
-    }
-  }
-  matrix_fill_constraint_top(pk,C,row);
-  C->nbrows = row + pk->dec-1;
-  matrix_reduce(C);
-  po->C = C;
-  poly_chernikova(man,po,"of the result");
-  assert(equality_check(pk,po));
-  return po;
-}
-
 /* ============================================================ */
 /* II.3 Tests */
 /* ============================================================ */
@@ -324,6 +268,17 @@ pkeq_t* pkeq_meet_lincons_array(ap_manager_t* man, bool destructive, pkeq_t* pa,
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET_LINCONS_ARRAY);
   pk->funopt->algorithm = 1;
   po = pk_meet_lincons_array(man,destructive,pa,array);
+  equality_reduce(man,po);
+  assert(equality_check(pk,po));
+  return po;
+}
+
+pkeq_t* pkeq_meet_tcons_array(ap_manager_t* man, bool destructive, pkeq_t* pa, ap_tcons0_array_t* array)
+{
+  pkeq_t* po;
+  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET_TCONS_ARRAY);
+  pk->funopt->algorithm = 1;
+  po = pk_meet_tcons_array(man,destructive,pa,array);
   equality_reduce(man,po);
   assert(equality_check(pk,po));
   return po;
@@ -413,36 +368,6 @@ pkeq_t* equality_asssub_linexpr(bool assign,
   pk->exn = AP_EXC_NONE;
   poly_set_top(pk,po);
   man->result.flag_best = man->result.flag_exact = tbool_false;
-  return po;
-}
-
-pkeq_t* pkeq_assign_linexpr(ap_manager_t* man,
-			    bool destructive, pkeq_t* pa, 
-			    ap_dim_t dim, ap_linexpr0_t* linexpr,
-			    pkeq_t* pb)
-{
-  pk_init_from_manager(man,AP_FUNID_ASSIGN_LINEXPR);
-  pkeq_t* po;
-  po = equality_asssub_linexpr(true,
-			       man,destructive,pa,dim,linexpr);
-  if (pb!=NULL){
-    po = pkeq_meet(man,true,po,pb);
-  }
-  return po;
-}
-
-pkeq_t* pkeq_substitute_linexpr(ap_manager_t* man,
-				    bool destructive, pkeq_t* pa, 
-				    ap_dim_t dim, ap_linexpr0_t* linexpr,
-				    pkeq_t* pb)
-{
-  pk_init_from_manager(man,AP_FUNID_SUBSTITUTE_LINEXPR);
-  pkeq_t* po;
-  po = equality_asssub_linexpr(false,
-			       man,destructive,pa,dim,linexpr);
-  if (pb!=NULL){
-    po = pkeq_meet(man,true,po,pb);
-  }
   return po;
 }
 
@@ -537,8 +462,13 @@ pkeq_t* pkeq_assign_linexpr_array(ap_manager_t* man,
 {
   pk_init_from_manager(man,AP_FUNID_ASSIGN_LINEXPR_ARRAY);
   pkeq_t* po;
-  po = equality_asssub_linexpr_array(true,
-				     man,destructive,pa,tdim,texpr,size);
+  po = 
+    size==1 ?
+    equality_asssub_linexpr(true,
+			    man,destructive,pa,tdim[0],texpr[0])
+    :
+    equality_asssub_linexpr_array(true,
+				  man,destructive,pa,tdim,texpr,size);
   if (pb!=NULL){
     po = pkeq_meet(man,true,po,pb);
   }
@@ -553,13 +483,37 @@ pkeq_t* pkeq_substitute_linexpr_array(ap_manager_t* man,
 {
   pk_init_from_manager(man,AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY);
   pkeq_t* po;
-  po = equality_asssub_linexpr_array(false,
-				     man,destructive,pa,tdim,texpr,size);
+  po = 
+    size==1 ?
+    equality_asssub_linexpr(false,
+			    man,destructive,pa,tdim[0],texpr[0])
+    :
+    equality_asssub_linexpr_array(false,
+				  man,destructive,pa,tdim,texpr,size);
   if (pb!=NULL){
     po = pkeq_meet(man,true,po,pb);
   }
   return po;
 }
+pkeq_t* pkeq_assign_texpr_array(ap_manager_t* man,
+				bool destructive, pkeq_t* a,
+				ap_dim_t* tdim,
+				ap_texpr0_t** texpr,
+				size_t size,
+				pkeq_t* dest)
+{
+  return ap_generic_assign_texpr_array(man,destructive,a,tdim,texpr,size,dest);
+}
+pkeq_t* pkeq_substitute_texpr_array(ap_manager_t* man,
+				    bool destructive, pkeq_t* a,
+				    ap_dim_t* tdim,
+				    ap_texpr0_t** texpr,
+				    size_t size,
+				    pkeq_t* dest)
+{
+  return ap_generic_substitute_texpr_array(man,destructive,a,tdim,texpr,size,dest);
+}
+
 
 /* ============================================================ */
 /* III.3 Projections */
@@ -669,7 +623,6 @@ ap_manager_t* pkeq_manager_alloc(void)
   // funptr[AP_FUNID_BOTTOM] = &poly_bottom;
   // funptr[AP_FUNID_TOP] = &poly_top;
   funptr[AP_FUNID_OF_BOX] = &pkeq_of_box;
-  funptr[AP_FUNID_OF_LINCONS_ARRAY] = &pkeq_of_lincons_array;
   // funptr[AP_FUNID_DIMENSION] = &poly_dimension;
   // funptr[AP_FUNID_IS_BOTTOM] = &poly_is_bottom;
   // funptr[AP_FUNID_IS_TOP] = &poly_is_top;
@@ -678,21 +631,25 @@ ap_manager_t* pkeq_manager_alloc(void)
   // funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED] = &poly_is_dimension_unconstrained;
   // funptr[AP_FUNID_SAT_INTERVAL] = &poly_sat_interval;
   // funptr[AP_FUNID_SAT_LINCONS] = &poly_sat_lincons;
+  // funptr[AP_FUNID_SAT_TCONS] = &poly_sat_tcons;
   // funptr[AP_FUNID_BOUND_DIMENSION] = &poly_bound_dimension;
   // funptr[AP_FUNID_BOUND_LINEXPR] = &poly_bound_linexpr;
+  // funptr[AP_FUNID_BOUND_TEXPR] = &poly_bound_texpr;
   // funptr[AP_FUNID_TO_BOX] = &poly_to_box;
   // funptr[AP_FUNID_TO_LINCONS_ARRAY] = &poly_to_lincons_array;
+  // funptr[AP_FUNID_TO_TCONS_ARRAY] = &poly_to_tcons_array;
   // funptr[AP_FUNID_TO_GENERATOR_ARRAY] = &poly_to_generator_array;
   funptr[AP_FUNID_MEET] = &pkeq_meet;
   funptr[AP_FUNID_MEET_ARRAY] = &pkeq_meet_array;
   funptr[AP_FUNID_MEET_LINCONS_ARRAY] = &pkeq_meet_lincons_array;
+  funptr[AP_FUNID_MEET_TCONS_ARRAY] = &pkeq_meet_tcons_array;
   funptr[AP_FUNID_JOIN] = &pkeq_join;
   funptr[AP_FUNID_JOIN_ARRAY] = &pkeq_join_array;
   funptr[AP_FUNID_ADD_RAY_ARRAY] = &pkeq_add_ray_array;
-  funptr[AP_FUNID_ASSIGN_LINEXPR] = &pkeq_assign_linexpr;
-  funptr[AP_FUNID_SUBSTITUTE_LINEXPR] = &pkeq_substitute_linexpr;
   funptr[AP_FUNID_ASSIGN_LINEXPR_ARRAY] = &pkeq_assign_linexpr_array;
   funptr[AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY] = &pkeq_substitute_linexpr_array;
+  funptr[AP_FUNID_ASSIGN_TEXPR_ARRAY] = &pkeq_assign_texpr_array;
+  funptr[AP_FUNID_SUBSTITUTE_TEXPR_ARRAY] = &pkeq_substitute_texpr_array;
   //funptr[AP_FUNID_ADD_DIMENSIONS] = &poly_add_dimensions;
   funptr[AP_FUNID_REMOVE_DIMENSIONS] = &pkeq_remove_dimensions;
   //funptr[AP_FUNID_PERMUTE_DIMENSIONS] = &poly_permute_dimensions;

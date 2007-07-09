@@ -17,6 +17,8 @@
 #include "pk_resize.h"
 #include "pk_meetjoin.h"
 #include "pk_assign.h"
+#include "ap_generic.h"
+#include "itv_linearize.h"
 
 /* ********************************************************************** */
 /* I. Matrix operations */
@@ -468,7 +470,7 @@ matrix_t* matrix_relation_of_assign_array(pk_internal_t* pk,
 				&pk->poly_itv_lincons.linexpr,
 				expr);
     if (titv){
-      itv_linexpr_quasilinearize(pk->itv,&pk->poly_itv_lincons.linexpr,titv);
+      itv_quasilinearize_linexpr(pk->itv,&pk->poly_itv_lincons.linexpr,titv);
     }
     pk->poly_itv_lincons.constyp = AP_CONS_EQ;
     num_set_int(pk->poly_itv_lincons.num,0);
@@ -947,20 +949,6 @@ pk_t* poly_asssub_linexpr(bool assign,
 /* V. Assignement/Substitution: interface */
 /* ********************************************************************** */
 
-pk_t* pk_assign_linexpr(ap_manager_t* man,
-			bool destructive, pk_t* pa, 
-			ap_dim_t dim, ap_linexpr0_t* linexpr,
-			pk_t* pb)
-{
-  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_ASSIGN_LINEXPR);
-  pk_t* po;
-  po = poly_asssub_linexpr(true,
-			   pk->funopt->algorithm<=0,
-			   man,destructive,pa,dim,linexpr,pb);
-  return po;
-}
-
-
 pk_t* pk_assign_linexpr_array(ap_manager_t* man,
 			      bool destructive, pk_t* pa,
 			      ap_dim_t* tdim, ap_linexpr0_t** texpr,
@@ -969,25 +957,17 @@ pk_t* pk_assign_linexpr_array(ap_manager_t* man,
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_ASSIGN_LINEXPR_ARRAY);
   pk_t* po;
-  po = poly_asssub_linexpr_array(true,
-				 pk->funopt->algorithm<=0,
-				 man,destructive,pa,tdim,texpr,size,pb);
+  po = 
+    size==1 ?
+    poly_asssub_linexpr(true,
+			pk->funopt->algorithm<=0,
+			man,destructive,pa,tdim[0],texpr[0],pb)
+    :
+    poly_asssub_linexpr_array(true,
+			      pk->funopt->algorithm<=0,
+			      man,destructive,pa,tdim,texpr,size,pb);
   return po;
 }
-
-pk_t* pk_substitute_linexpr(ap_manager_t* man,
-			    bool destructive, pk_t* pa, 
-			    ap_dim_t dim, ap_linexpr0_t* linexpr,
-			    pk_t* pb)
-{
-  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_SUBSTITUTE_LINEXPR);
-  pk_t* po;
-  po = poly_asssub_linexpr(false,
-			   pk->funopt->algorithm<=0,
-			   man,destructive,pa,dim,linexpr,pb);
-  return po;
-}
-
 
 pk_t* pk_substitute_linexpr_array(ap_manager_t* man,
 				  bool destructive, pk_t* pa,
@@ -997,8 +977,34 @@ pk_t* pk_substitute_linexpr_array(ap_manager_t* man,
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY);
   pk_t* po;
-  po = poly_asssub_linexpr_array(false,
-				 pk->funopt->algorithm<=0,
-				 man,destructive,pa,tdim,texpr,size,pb);
+  po = 
+    size==1 ?
+    poly_asssub_linexpr(false,
+			pk->funopt->algorithm<=0,
+			man,destructive,pa,tdim[0],texpr[0],pb)
+    :
+    poly_asssub_linexpr_array(false,
+			      pk->funopt->algorithm<=0,
+			      man,destructive,pa,tdim,texpr,size,pb);
   return po;
 }
+
+pk_t* pk_assign_texpr_array(ap_manager_t* man,
+			    bool destructive, pk_t* a,
+			    ap_dim_t* tdim,
+			    ap_texpr0_t** texpr,
+			    size_t size,
+			    pk_t* dest)
+{
+  return ap_generic_assign_texpr_array(man,destructive,a,tdim,texpr,size,dest);
+}
+pk_t* pk_substitute_texpr_array(ap_manager_t* man,
+				bool destructive, pk_t* a,
+				ap_dim_t* tdim,
+				ap_texpr0_t** texpr,
+				size_t size,
+				pk_t* dest)
+{
+  return ap_generic_substitute_texpr_array(man,destructive,a,tdim,texpr,size,dest);
+}
+

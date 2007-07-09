@@ -17,6 +17,8 @@
 #include "pk_extract.h"
 #include "pk_cherni.h"
 #include "pk_meetjoin.h"
+#include "ap_generic.h"
+
 
 /* ********************************************************************** */
 /* I. Meet/Join */
@@ -610,6 +612,13 @@ pk_t* pk_meet_lincons_array(ap_manager_t* man, bool destructive, pk_t* pa, ap_li
   poly_meet_lincons_array(pk->funopt->algorithm<0,
 			   man,po,pa,array);
   return po;
+}
+
+pk_t* pk_meet_tcons_array(ap_manager_t* man, bool destructive, pk_t* pa, ap_tcons0_array_t* array)
+{
+  return ap_generic_meet_intlinearize_tcons_array(man,destructive,pa,array,
+						  AP_SCALAR_MPQ, AP_LINEXPR_LINEAR,
+						  &pk_meet_lincons_array);
 }
 
 /* ********************************************************************** */

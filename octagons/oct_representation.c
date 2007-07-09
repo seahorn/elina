@@ -9,12 +9,13 @@
  *
  */
 
-/* This file is part of the APRON Library, released under LGPL license.  
+/* This file is part of the APRON Library, released under LGPL license.
    Please read the COPYING file packaged in the distribution.
 */
 
 #include "oct.h"
 #include "oct_internal.h"
+#include "ap_generic.h"
 
 
 /* ============================================================ */
@@ -43,7 +44,7 @@ inline void oct_free_internal(oct_internal_t* pr, oct_t* a)
 {
   if (a->m) hmat_free(pr,a->m,a->dim);
   if (a->closed) hmat_free(pr,a->closed,a->dim);
-  a->closed = a->m = NULL;  
+  a->closed = a->m = NULL;
   free(a);
 }
 
@@ -76,19 +77,19 @@ size_t oct_size(ap_manager_t* man, oct_t* a)
 
 /* If destructive, returns a with fields m and closed updated
    (former fields of a, if not reused in m or closed, are destroyed).
-   If not destructive, returns a new octagon with same dimensions as a 
+   If not destructive, returns a new octagon with same dimensions as a
    and m and closed as half-matrices.
    m and closed can safely alias fields in a
  */
-oct_t* oct_set_mat(oct_internal_t* pr, oct_t* a, bound_t* m, bound_t* closed, 
+oct_t* oct_set_mat(oct_internal_t* pr, oct_t* a, bound_t* m, bound_t* closed,
 		   bool destructive)
 {
   oct_t* r;
   if (destructive) {
     /* free non-aliased matrices */
-    if (a->m && a->m!=m && a->m!=closed) 
+    if (a->m && a->m!=m && a->m!=closed)
       hmat_free(pr,a->m,a->dim);
-    if (a->closed && a->closed!=m && a->closed!=closed) 
+    if (a->closed && a->closed!=m && a->closed!=closed)
       hmat_free(pr,a->closed,a->dim);
     r = a;
   }
@@ -96,7 +97,7 @@ oct_t* oct_set_mat(oct_internal_t* pr, oct_t* a, bound_t* m, bound_t* closed,
     /* copy aliased matrices */
     r = oct_alloc_internal(pr,a->dim,a->intdim);
     if (m && (a->m==m || a->closed==m)) m = hmat_copy(pr,m,a->dim);
-    if (closed && (a->m==closed || a->closed==closed)) 
+    if (closed && (a->m==closed || a->closed==closed))
       closed = hmat_copy(pr,closed,a->dim);
   }
   r->m = m;
@@ -140,49 +141,20 @@ oct_t* oct_of_box(ap_manager_t* man, size_t intdim, size_t realdim,
 		       r->closed[matpos(2*i+1,2*i)],
 		       t[i],true);
   /* a S step is sufficient to ensure clsoure */
-  if (hmat_s_step(r->closed,r->dim)){ 
+  if (hmat_s_step(r->closed,r->dim)){
     /* definitively empty */
-    hmat_free(pr,r->closed,r->dim); 
-    r->closed = NULL; 
+    hmat_free(pr,r->closed,r->dim);
+    r->closed = NULL;
   }
 
   /* exact, except for conversion errors */
   if (pr->conv) flag_conv;
-  return r; 
-}
-
-oct_t* oct_of_lincons_array(ap_manager_t* man,
-			    size_t intdim, size_t realdim,
-			    ap_lincons0_array_t* ar)
-{
-  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_OF_LINCONS_ARRAY,
-					     2*(intdim+realdim+6));
-  oct_t* r = oct_alloc_internal(pr,intdim+realdim,intdim);
-  bool respect_closure = true, exact;
-  if (!ar->size) { r->closed = hmat_alloc_top(pr,r->dim); return r; } /* full */
-  r->m = hmat_alloc_top(pr,r->dim);
-  if (hmat_add_lincons(pr,r->m,r->dim,ar,&exact,&respect_closure)) {
-    /* empty result */
-    hmat_free(pr,r->m,r->dim);
-    r->m = NULL;
-  }
-  else {
-    /* exact on Q if octagonal constraints & no conversion error */
-    if (num_incomplete || !exact || intdim) flag_incomplete;
-    else if (pr->conv) flag_conv;
-
-    /* do we have a closed result ? */
-    if (respect_closure) {
-      r->closed = r->m;
-      r->m = NULL;
-    }
-  }
   return r;
 }
 
 oct_t* oct_of_generator_array(ap_manager_t* man,
-                              size_t intdim, size_t realdim,
-                              ap_generator0_array_t* ar)
+			      size_t intdim, size_t realdim,
+			      ap_generator0_array_t* ar)
 {
   size_t dim = intdim+realdim;
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_ADD_RAY_ARRAY,
@@ -196,7 +168,7 @@ oct_t* oct_of_generator_array(ap_manager_t* man,
     if (ar->p[i].gentyp!=AP_GEN_VERTEX) continue;
     bounds_of_generator(pr,pr->tmp,ar->p[i].linexpr0,dim);
     r->m = hmat_alloc_top(pr,dim);
-    for (b=r->m,j=0;j<2*dim;j++) 
+    for (b=r->m,j=0;j<2*dim;j++)
       for (k=0;k<=(j|1);k++,b++) bound_sub(*b,pr->tmp[j],pr->tmp[k]);
     break;
   }
@@ -211,7 +183,7 @@ oct_t* oct_of_generator_array(ap_manager_t* man,
   return r;
 }
 
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_oct_of_generator_array(ap_manager_t* man,
 				    size_t intdim, size_t realdim,
 				    ap_generator0_array_t* array)
@@ -259,13 +231,13 @@ void oct_cache_closure(oct_internal_t* pr, oct_t* a)
 /* Unlike oct_cache_closure, this frees the a->m representation, forcing
    all further transfer functions to work on the closed version...
    => this changes the semantics of functions such as widening
-   
+
 */
 void oct_close(oct_internal_t* pr, oct_t* a)
 {
   if (!a->m) return;
   if (a->closed) {
-    hmat_free(pr,a->m,a->dim); 
+    hmat_free(pr,a->m,a->dim);
     a->m = NULL;
     return;
   }
@@ -372,32 +344,33 @@ ap_manager_t* oct_manager_alloc(void)
   man->funptr[AP_FUNID_BOTTOM] = &oct_bottom;
   man->funptr[AP_FUNID_TOP] = &oct_top;
   man->funptr[AP_FUNID_OF_BOX] = &oct_of_box;
-  man->funptr[AP_FUNID_OF_LINCONS_ARRAY] = &oct_of_lincons_array;
   man->funptr[AP_FUNID_DIMENSION] = &oct_dimension;
   man->funptr[AP_FUNID_IS_BOTTOM] = &oct_is_bottom;
   man->funptr[AP_FUNID_IS_TOP] = &oct_is_top;
   man->funptr[AP_FUNID_IS_LEQ] = &oct_is_leq;
   man->funptr[AP_FUNID_IS_EQ] = &oct_is_eq;
-  man->funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED] = 
-    &oct_is_dimension_unconstrained;
+  man->funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED] = &oct_is_dimension_unconstrained;
   man->funptr[AP_FUNID_SAT_INTERVAL] = &oct_sat_interval;
   man->funptr[AP_FUNID_SAT_LINCONS] = &oct_sat_lincons;
+  man->funptr[AP_FUNID_SAT_TCONS] = &oct_sat_tcons;
   man->funptr[AP_FUNID_BOUND_DIMENSION] = &oct_bound_dimension;
   man->funptr[AP_FUNID_BOUND_LINEXPR] = &oct_bound_linexpr;
+  man->funptr[AP_FUNID_BOUND_TEXPR] = &oct_bound_texpr;
   man->funptr[AP_FUNID_TO_BOX] = &oct_to_box;
   man->funptr[AP_FUNID_TO_LINCONS_ARRAY] = &oct_to_lincons_array;
+  man->funptr[AP_FUNID_TO_TCONS_ARRAY] = &oct_to_tcons_array;
   man->funptr[AP_FUNID_TO_GENERATOR_ARRAY] = &oct_to_generator_array;
   man->funptr[AP_FUNID_MEET] = &oct_meet;
   man->funptr[AP_FUNID_MEET_ARRAY] = &oct_meet_array;
   man->funptr[AP_FUNID_MEET_LINCONS_ARRAY] = &oct_meet_lincons_array;
+  man->funptr[AP_FUNID_MEET_TCONS_ARRAY] = &oct_meet_tcons_array;
   man->funptr[AP_FUNID_JOIN] = &oct_join;
   man->funptr[AP_FUNID_JOIN_ARRAY] = &oct_join_array;
   man->funptr[AP_FUNID_ADD_RAY_ARRAY] = &oct_add_ray_array;
-  man->funptr[AP_FUNID_ASSIGN_LINEXPR] = &oct_assign_linexpr;
   man->funptr[AP_FUNID_ASSIGN_LINEXPR_ARRAY] = &oct_assign_linexpr_array;
-  man->funptr[AP_FUNID_SUBSTITUTE_LINEXPR] = &oct_substitute_linexpr;
-  man->funptr[AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY] = 
-    &oct_substitute_linexpr_array;
+  man->funptr[AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY] = &oct_substitute_linexpr_array;
+  man->funptr[AP_FUNID_ASSIGN_TEXPR_ARRAY] = &oct_assign_texpr_array;
+  man->funptr[AP_FUNID_SUBSTITUTE_TEXPR_ARRAY] = &oct_substitute_texpr_array;
   man->funptr[AP_FUNID_ADD_DIMENSIONS] = &oct_add_dimensions;
   man->funptr[AP_FUNID_REMOVE_DIMENSIONS] = &oct_remove_dimensions;
   man->funptr[AP_FUNID_PERMUTE_DIMENSIONS] = &oct_permute_dimensions;

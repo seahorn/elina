@@ -15,17 +15,16 @@ quote(C, "\n\
 void camlidl_apron_manager_funid_ml2c(value _v, enum ap_funid_t* res)\n\
 {\n\
   int v = Int_val(_v);\n\
-  if (v+2>=AP_FUNID_CHANGE_ENVIRONMENT)\n\
-    *res = v+2;\n\
-  else\n\
+  if (v+1>=AP_FUNID_CHANGE_ENVIRONMENT)\n\
     *res = v+1;\n\
+  else\n\
+    *res = v;\n\
 }\n\
 value camlidl_apron_manager_funid_c2ml(enum ap_funid_t* arg)\n\
 {\n\
   int n = *arg;\n\
-  if (n>AP_FUNID_UNKNOWN && n<AP_FUNID_SIZE2 && n!=AP_FUNID_SIZE){\n\
-    if (n<AP_FUNID_SIZE) n--;\n\
-    else n -= 2;\n\
+  if (n>=0 && n<AP_FUNID_SIZE2 && n!=AP_FUNID_SIZE){\n\
+    if (n>AP_FUNID_SIZE) n--;\n\
   }\n\
   else {\n\
     invalid_argument(\"enum ap_funid_t: bad enum value\");\n\
@@ -56,6 +55,7 @@ typedef [abstract,
 	 ml2c(camlidl_apron_manager_funid_ml2c),
 	 c2ml(camlidl_apron_manager_funid_c2ml),
 	 mltype("\n\
+  | Funid_unknown\n\
   | Funid_copy\n\
   | Funid_free\n\
   | Funid_asize\n\
@@ -71,6 +71,7 @@ typedef [abstract,
   | Funid_top\n\
   | Funid_of_box\n\
   | Funid_of_lincons_array\n\
+  | Funid_of_tcons_array\n\
   | Funid_dimension\n\
   | Funid_is_bottom\n\
   | Funid_is_top\n\
@@ -79,14 +80,18 @@ typedef [abstract,
   | Funid_is_dimension_unconstrained\n\
   | Funid_sat_interval\n\
   | Funid_sat_lincons\n\
+  | Funid_sat_tcons\n\
   | Funid_bound_dimension\n\
   | Funid_bound_linexpr\n\
+  | Funid_bound_texpr\n\
   | Funid_to_box\n\
   | Funid_to_lincons_array\n\
+  | Funid_to_tcons_array\n\
   | Funid_to_generator_array\n\
   | Funid_meet\n\
   | Funid_meet_array\n\
   | Funid_meet_lincons_array\n\
+  | Funid_meet_tcons_array\n\
   | Funid_join\n\
   | Funid_join_array\n\
   | Funid_add_ray_array\n\
@@ -94,6 +99,10 @@ typedef [abstract,
   | Funid_assign_linexpr_array\n\
   | Funid_substitute_linexpr\n\
   | Funid_substitute_linexpr_array\n\
+  | Funid_assign_texpr\n\
+  | Funid_assign_texpr_array\n\
+  | Funid_substitute_texpr\n\
+  | Funid_substitute_texpr_array\n\
   | Funid_add_dimensions\n\
   | Funid_remove_dimensions\n\
   | Funid_permute_dimensions\n\
@@ -221,6 +230,7 @@ let string_of_tbool = function\n\
 | True -> \"True\"\n\
 | Top -> \"Top\"\n\
 let string_of_funid = function\n\
+| Funid_unknown -> \"Funid_unknown\"\n\
 | Funid_copy -> \"Funid_copy\"\n\
 | Funid_free -> \"Funid_free\"\n\
 | Funid_asize -> \"Funid_asize\"\n\
@@ -236,6 +246,7 @@ let string_of_funid = function\n\
 | Funid_top -> \"Funid_top\"\n\
 | Funid_of_box -> \"Funid_of_box\"\n\
 | Funid_of_lincons_array -> \"Funid_of_lincons_array\"\n\
+| Funid_of_tcons_array -> \"Funid_of_tcons_array\"\n\
 | Funid_dimension -> \"Funid_dimension\"\n\
 | Funid_is_bottom -> \"Funid_is_bottom\"\n\
 | Funid_is_top -> \"Funid_is_top\"\n\
@@ -244,14 +255,18 @@ let string_of_funid = function\n\
 | Funid_is_dimension_unconstrained -> \"Funid_is_dimension_unconstrained\"\n\
 | Funid_sat_interval -> \"Funid_sat_interval\"\n\
 | Funid_sat_lincons -> \"Funid_sat_lincons\"\n\
+| Funid_sat_tcons -> \"Funid_sat_tcons\"\n\
 | Funid_bound_dimension -> \"Funid_bound_dimension\"\n\
 | Funid_bound_linexpr -> \"Funid_bound_linexpr\"\n\
+| Funid_bound_texpr -> \"Funid_bound_texpr\"\n\
 | Funid_to_box -> \"Funid_to_box\"\n\
 | Funid_to_lincons_array -> \"Funid_to_lincons_array\"\n\
+| Funid_to_tcons_array -> \"Funid_to_tcons_array\"\n\
 | Funid_to_generator_array -> \"Funid_to_generator_array\"\n\
 | Funid_meet -> \"Funid_meet\"\n\
 | Funid_meet_array -> \"Funid_meet_array\"\n\
 | Funid_meet_lincons_array -> \"Funid_meet_lincons_array\"\n\
+| Funid_meet_tcons_array -> \"Funid_meet_tcons_array\"\n\
 | Funid_join -> \"Funid_join\"\n\
 | Funid_join_array -> \"Funid_join_array\"\n\
 | Funid_add_ray_array -> \"Funid_add_ray_array\"\n\
@@ -259,6 +274,10 @@ let string_of_funid = function\n\
 | Funid_assign_linexpr_array -> \"Funid_assign_linexpr_array\"\n\
 | Funid_substitute_linexpr -> \"Funid_substitute_linexpr\"\n\
 | Funid_substitute_linexpr_array -> \"Funid_substitute_linexpr_array\"\n\
+| Funid_assign_texpr -> \"Funid_assign_texpr\"\n\
+| Funid_assign_texpr_array -> \"Funid_assign_texpr_array\"\n\
+| Funid_substitute_texpr -> \"Funid_substitute_texpr\"\n\
+| Funid_substitute_texpr_array -> \"Funid_substitute_texpr_array\"\n\
 | Funid_add_dimensions -> \"Funid_add_dimensions\"\n\
 | Funid_remove_dimensions -> \"Funid_remove_dimensions\"\n\
 | Funid_permute_dimensions -> \"Funid_permute_dimensions\"\n\

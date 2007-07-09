@@ -3,11 +3,12 @@
 /* This file is part of the APRON Library, released under LGPL license.
    Please read the COPYING file packaged in the distribution  */
 
-quote(MLI,"(** APRON Linear constraints of level 0 *)")
+quote(MLI,"(** APRON tree expressions constraints of level 0 *)")
 
 quote(C, "\n\
 #include <limits.h>\n\
 #include \"ap_lincons0.h\"\n\
+#include \"ap_texpr0.h\"\n\
 #include \"apron_caml.h\"\n\
 \n\
 ")
@@ -16,9 +17,10 @@ import "scalar.idl";
 import "interval.idl";
 import "coeff.idl";
 import "dim.idl";
-import "linexpr0.idl";
+import "lincons0.idl";
+import "texpr0.idl";
 
-/* For ap_lincons0_t, 
+/* For ap_tcons0_t, 
 
 - the conversion from ML to C may use allocation, but it is automatically freed 
   by Camlidl mechanisms
@@ -27,14 +29,14 @@ import "linexpr0.idl";
 */
 
 quote(C,"\n\
-void camlidl_apron_lincons0_ml2c(value v,ap_lincons0_t* cons, camlidl_ctx _ctx)\n\
+void camlidl_apron_tcons0_ml2c(value v,ap_tcons0_t* cons, camlidl_ctx _ctx)\n\
 {\n\
-  value _v_linexpr0;\n\
+  value _v_texpr0;\n\
   value _v_constyp;\n\
   value _v_scalar;\n\
 \n\
-  _v_linexpr0 = Field(v,0);\n\
-  camlidl_apron_linexpr0_ptr_ml2c(_v_linexpr0,&cons->linexpr0);\n\
+  _v_texpr0 = Field(v,0);\n\
+  camlidl_apron_texpr0_ptr_ml2c(_v_texpr0,&cons->texpr0);\n\
   _v_constyp = Field(v,1);\n\
   if (Is_long(_v_constyp)){\n\
     switch (Int_val(_v_constyp)){
@@ -64,14 +66,14 @@ void camlidl_apron_lincons0_ml2c(value v,ap_lincons0_t* cons, camlidl_ctx _ctx)\
     }\n\
   }\n\
 }\n\
-value camlidl_apron_lincons0_c2ml(ap_lincons0_t* cons)\n\
+value camlidl_apron_tcons0_c2ml(ap_tcons0_t* cons)\n\
 {\n\
   value vres;\n\
   value _v[3];\n\
   _v[0] = _v[1] = _v[2] = 0;\n\
 \n\
   Begin_roots_block(_v, 3)\n\
-    _v[0] = camlidl_apron_linexpr0_ptr_c2ml(&cons->linexpr0);\n\
+    _v[0] = camlidl_apron_texpr0_ptr_c2ml(&cons->texpr0);\n\
     switch(cons->constyp){\n\
     case AP_CONS_EQ:\n\
     case AP_CONS_SUPEQ:\n\
@@ -98,24 +100,31 @@ value camlidl_apron_lincons0_c2ml(ap_lincons0_t* cons)\n\
 ")
 
 
-typedef [mltype("{\n  mutable linexpr0 : Linexpr0.t;\n  mutable typ : typ;\n}"),
+typedef [mltype("{\n  mutable texpr0 : Texpr0.t;\n  mutable typ : Lincons0.typ;\n}"),
 	 abstract,
-	 ml2c(camlidl_apron_lincons0_ml2c),
-	 c2ml(camlidl_apron_lincons0_c2ml)]
-struct ap_lincons0_t ap_lincons0_t;
-quote(MLMLI,"and typ =\n  | EQ\n  | SUPEQ\n  | SUP\n  | DISEQ\n  | EQMOD of Scalar.t\n")
+	 ml2c(camlidl_apron_tcons0_ml2c),
+	 c2ml(camlidl_apron_tcons0_c2ml)]
+struct ap_tcons0_t ap_tcons0_t;
+quote(MLMLI,"\n\
+type typ = Lincons0.typ =\n\
+  | EQ\n\
+  | SUPEQ\n\
+  | SUP\n\
+  | DISEQ\n\
+  | EQMOD of Scalar.t\n\
+")
 
-struct ap_lincons0_array_t {
-  [size_is(size)] ap_lincons0_t* p;
+struct ap_tcons0_array_t {
+  [size_is(size)] ap_tcons0_t* p;
   int size;
 };
 
 quote(MLI,"\n\
-(** Make a linear constraint. Modifying later the linear expression\n\
-  modifies correspondingly the linear constraint and conversely *)\n\
-val make : Linexpr0.t -> typ -> t\n\
+(** Make a tree expression constraint. Modifying later the tree expression expression\n\
+  modifies correspondingly the tree expression constraint and conversely *)\n\
+val make : Texpr0.t -> typ -> t\n\
 \n\
-(** Copy a linear constraint (deep copy) *)\n\
+(** Copy a tree expression constraint (deep copy) *)\n\
 val copy : t -> t\n\
 \n\
 (** Convert a constraint type to a string ([=],[>=], or [>]) *)\n\
@@ -126,24 +135,20 @@ val print : (Dim.t -> string) -> Format.formatter -> t -> unit\n\
 ")
 
 quote(ML,"\n\
-let string_of_typ = function\n\
-| EQ | EQMOD _ -> \"=\"\n\
-| SUPEQ -> \">=\"\n\
-| SUP -> \">\"\n\
-| DISEQ -> \"<>\"\n\
+let string_of_typ = Lincons0.string_of_typ\n\
 \n\
 let print assoc fmt cons = \n\
-  Linexpr0.print assoc fmt cons.linexpr0;\n\
-  Format.fprintf fmt \"%s0\" (string_of_typ cons.typ);\n\
+  Texpr0.print assoc fmt cons.texpr0;\n\
+  Format.fprintf fmt \" %s 0\" (string_of_typ cons.typ);\n\
   begin match cons.typ with\n\
   | EQMOD x -> Format.fprintf fmt \" mod %a\" Scalar.print x;\n\
   | _ -> ()\n\
   end;\n\
   ()\n\
 let make expr typ = {\n\
-linexpr0 = expr; typ = typ \n\
+texpr0 = expr; typ = typ \n\
 }\n\
 let copy cons = {\n\
-linexpr0 = Linexpr0.copy cons.linexpr0; typ = cons.typ\n\
+texpr0 = Texpr0.copy cons.texpr0; typ = cons.typ\n\
 }\n\
 ")

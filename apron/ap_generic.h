@@ -27,79 +27,185 @@ extern "C" {
 */
 
 /* ********************************************************************** */
-/* I. General management */
+/* I. Constructors, accessors, tests and property extraction */
 /* ********************************************************************** */
 
+tbool_t ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
+			     ap_scalar_discr_t discr, bool quasilinearize);
+  /* This function implements a generic sat_tcons operation using
+     ap_linearize_texpr0 and sat_lincons operations. */
+
+ap_interval_t* ap_generic_bound_texpr(ap_manager_t* man, void* abs, ap_texpr0_t* expr,
+				      ap_scalar_discr_t discr, bool quasilinearize);
+  /* This function implements a generic bound_texpr operation using to_box and 
+     ap_eval_texpr0 operations. */
+  
+ap_tcons0_array_t ap_generic_to_tcons_array(ap_manager_t* man,
+					    void* abs);
+  /* This function implements a generic to_tcons_array operation using
+     to_lincons_array operation. */
+
 /* ********************************************************************** */
-/* II. Constructors */
+/* II. Operations */
 /* ********************************************************************** */
 
-void*
-ap_generic_of_lincons_array(ap_manager_t* man,
-			    size_t intdim, size_t realdim,
-			    ap_lincons0_array_t* array);
-  /* This function implements a generic of_lincons_array operation using top and
-     meet_lincons_array operations.
-  */
+/* ============================================================ */
+/*  Meet/Join on arrays of abstract values */
+/* ============================================================ */
 
-/* ********************************************************************** */
-/* III. Operations */
-/* ********************************************************************** */
+void* ap_generic_meetjoin_array(bool meet,
+				ap_manager_t* man,
+				void** tab, size_t size);
+  /* This function implements a generic meet/join_array operation using copy and
+     meet/join operations. */
+
+static inline
+void* ap_generic_meet_array(ap_manager_t* man,
+			    void** tab, size_t size);
+  /* This function implements a generic meet_array operation using copy and
+     meet operations. */
+static inline
+void* ap_generic_join_array(ap_manager_t* man,
+			    void** tab, size_t size);
+  /* This function implements a generic join_array operation using copy and
+     meet operations. */
+
+/* ============================================================ */
+/*  Meet with array of constraints */
+/* ============================================================ */
+
+void* ap_generic_meet_quasilinearize_lincons_array(ap_manager_t* man,
+						   bool destructive, void* abs, ap_lincons0_array_t* array,
+						   ap_scalar_discr_t discr, bool linearize,
+						   void* (*meet_lincons_array)(ap_manager_t*, 
+									       bool, void*,ap_lincons0_array_t*));
 
 void*
-ap_generic_meet_array(ap_manager_t* man,
-		      void** tab, size_t size);
-  /* This function implements a generic meet_array operation using copy and meet
-     operations. */
+ap_generic_meet_intlinearize_tcons_array(ap_manager_t* man,
+					 bool destructive, void* abs, ap_tcons0_array_t* array,
+					 ap_scalar_discr_t discr, ap_linexpr_type_t linearize,
+					 void* (*meet_lincons_array)(ap_manager_t*,
+								     bool, void*,
+								     ap_lincons0_array_t*));
 
-void*
-ap_generic_join_array(ap_manager_t* man,
-		      void** tab, size_t size);
-  /* This function implements a generic join_array operation using copy and meet
-     operations. */
+/* ============================================================ */
+/*  Assignemens/Substitutions */
+/* ============================================================ */
 
-void*
-ap_generic_assign_linexpr_array(ap_manager_t* man,
-				bool destructive,
-				void* abs,
-				ap_dim_t* tdim,
-				ap_linexpr0_t** texpr,
-				size_t size,
-				void* dest);
-  /*
-     This function implements generic parallel assignement operation by
-     1. introducing primed dimensions
-     2. transforming linear expressions into equality constraints relating the
-	assigned primed dimension and the linear expression
-     3. intersecting the obtained abstract value with the constraints
-     4. exchanging primed and unprimed dimensions
-     5. removing the introduced (primed) dimensions
-
-     It relies on: is_bottom, copy, dimension, add_dimensions,
-     permute_dimensions, remove_dimensions, meet_lincons_array abstract
-     operations.
-  */
-void*
-ap_generic_substitute_linexpr_array(ap_manager_t* man,
-				    bool destructive,
-				    void* abs,
-				    ap_dim_t* tdim,
-				    ap_linexpr0_t** texpr,
-				    size_t size,
+void* ap_generic_asssub_linexpr_array(bool assign,
+				      ap_manager_t* man,
+				      bool destructive, void* abs, ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
+				      void* dest);
+void* ap_generic_asssub_texpr_array(bool assign,
+				    ap_manager_t* man,
+				    bool destructive, void* abs, ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
 				    void* dest);
   /*
-     This function implements generic parallel substitution operation by
-     1. introducing primed dimensions
-     2. transforming linear expressions into equality constraints relating the
-        assigned primed dimension and the linear expression
-     3. exchanging primed and unprimed dimensions
-     4. intersecting the obtained abstract value with the constraints
-     5. removing the introduced (primed) dimensions
-
-     It relies on: is_bottom, copy, dimension, add_dimensions,
-     permute_dimensions, remove_dimensions, meet_lincons_array abstract
+    These functions implement generic parallel assignement/substitution
+    operations by:
+    1. introducing primed dimensions
+    2. transforming linear expressions into equality constraints relating the
+    assigned primed dimension and the linear expression
+    If dest!=NULL
+      3. introducing primed dimensions in dest
+      4. exchanging primed and unprimed dimensions in dest
+      5. intersecting the abstract value with the modified dest
+    6. intersecting the obtained abstract value with the constraints
+    7. exchanging primed and unprimed dimensions
+    8. removing the introduced (primed) dimensions
+    
+   It relies on: is_bottom, copy, dimension, add_dimensions,
+   permute_dimensions, remove_dimensions, meet_lincons_array/meet_tcons_array, meet and free
+   abstract operations.
+   
+   Meaning of parameters:
+   - assign selects the operation: true means assignement, false substitution
+   - The other parameters have the meaning they have for parallel
+     assignement/substitution
+*/
+static inline
+void* ap_generic_assign_linexpr_array(ap_manager_t* man,
+				      bool destructive, void* abs, ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
+				      void* dest);
+static inline
+void* ap_generic_assign_texpr_array(ap_manager_t* man,
+				    bool destructive, void* abs, ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
+				    void* dest);
+  /*
+     These functions implement generic parallel assignement operations by
+     relying on is_bottom, copy, dimension, add_dimensions, permute_dimensions,
+     remove_dimensions, meet_lincons_array or meet_tcons_array abstract
      operations.
   */
+static inline
+void* ap_generic_substitute_linexpr_array(ap_manager_t* man,
+					  bool destructive, void* abs, ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
+					  void* dest);
+static inline
+void* ap_generic_substitute_texpr_array(ap_manager_t* man,
+					bool destructive, void* abs, ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
+					void* dest);
+  /*
+     These functions implement generic parallel assignement operations by
+     relying on is_bottom, copy, dimension, add_dimensions, permute_dimensions,
+     remove_dimensions, meet_lincons_array or meet_tcons_array abstract
+     operations.
+  */
+
+/* ********************************************************************** */
+/* III. Inline functions definitions */
+/* ********************************************************************** */
+static inline 
+void* ap_generic_meet_array(ap_manager_t* man,
+			    void** tab, size_t size)
+{ return ap_generic_meetjoin_array(true,man,tab,size); }
+
+static inline 
+void* ap_generic_join_array(ap_manager_t* man,
+			    void** tab, size_t size)
+{ return ap_generic_meetjoin_array(false,man,tab,size); }
+
+static inline
+void* ap_generic_assign_linexpr_array(ap_manager_t* man,
+				      bool destructive, void* abs, ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
+				      void* dest)
+{
+  return ap_generic_asssub_linexpr_array(true,
+					 man, destructive, abs, tdim, texpr, size,
+					 dest);
+}
+static inline
+void* ap_generic_substitute_linexpr_array(ap_manager_t* man,
+					  bool destructive, void* abs, ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
+					  void* dest)
+{
+  return ap_generic_asssub_linexpr_array(false,
+					 man, destructive, abs, tdim, texpr, size,
+					 dest);
+}
+
+static inline
+void* ap_generic_assign_texpr_array(ap_manager_t* man,
+				    bool destructive, void* abs, ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
+				    void* dest)
+{
+  return ap_generic_asssub_texpr_array(true,
+				       man, destructive, abs, tdim, texpr, size,
+				       dest);
+}
+static inline
+void* ap_generic_substitute_texpr_array(ap_manager_t* man,
+					bool destructive,
+					void* abs,
+					ap_dim_t* tdim,
+					ap_texpr0_t** texpr,
+					size_t size,
+					void* dest)
+{
+  return ap_generic_asssub_texpr_array(false,
+				       man, destructive, abs, tdim, texpr, size,
+				       dest);
+}
 
 #ifdef __cplusplus
 }

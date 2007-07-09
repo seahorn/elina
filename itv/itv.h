@@ -30,6 +30,16 @@ typedef __itv_struct* itv_ptr;
 
 /* Workspace to avoid temporary allocation and deallocation when num_t and
    bound_t are multiprecision numbers */
+
+/* some useful local constant for linearization */
+typedef struct {
+  itv_t ulp;        /* [-1;1] * unit in the least place */
+  itv_t min;        /* [-1;1] * minimum positive denormal */
+  itv_t min_normal; /* [-1;1] * minimum positive normal */
+  itv_t max;        /* [-1;1] * maximum non +oo  */
+  itv_t max_exact;  /* [-1;1] * maximum exactly representable integer */
+} float_const;
+
 typedef struct itv_internal_t {
   num_t canonicalize_num;
   bound_t muldiv_bound;
@@ -46,6 +56,8 @@ typedef struct itv_internal_t {
   itv_t eval_itv2;
   itv_t eval_itv3;
   num_t quasi_num;
+  float_const cst_half, cst_single, cst_double, cst_extended, cst_quad;
+  itv_t itv_half; /* [-0.5,0.5] */
 } itv_internal_t;
 
 
@@ -83,14 +95,13 @@ static inline void itv_swap(itv_t a, itv_t b);
 
 /* a = [-b,b] */
 static inline void itv_set_unit_num(itv_t a, num_t b);
- static inline void itv_set_unit_bound(itv_t a, bound_t b);
+static inline void itv_set_unit_bound(itv_t a, bound_t b);
 
 /* a = b + [-c,c] */
 static inline void itv_enlarge_bound(itv_t a, itv_t b, bound_t c);
 
 /* Normalization and tests */
-static inline bool itv_canonicalize(itv_internal_t* intern,
-				    itv_t a, bool integer);
+static inline bool itv_canonicalize(itv_internal_t* intern, itv_t a, bool integer);
   /* Canonicalize an interval:
      - if integer is true, narrows bound to integers
      - return true if the interval is bottom
@@ -121,26 +132,19 @@ static inline void itv_range_rel(itv_internal_t* intern, bound_t a, itv_t b);
   /* a=(max b - min b) / (|a+b|/2) */ 
 
 /* Lattice operations */
-static inline bool itv_meet(itv_internal_t* intern,
-			    itv_t a, itv_t b, itv_t c);
+static inline bool itv_meet(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
   /* Assign a with the intersection of b and c */
 static inline void itv_join(itv_t a, itv_t b, itv_t c);
   /* Assign a with the union of b and c */
 static inline void itv_widening(itv_t a, itv_t b, itv_t c);
   /* Assign a with the standard interval widening of b by c */
 
-static inline void itv_meet_pos(itv_t a, itv_t b);
-static inline void itv_meet_neg(itv_t a, itv_t b);
-  /* Intersection with [0;+oo], [-oo;0] */
-
 /* Arithmetic operations */
 static inline void itv_add(itv_t a, itv_t b, itv_t c);
 static inline void itv_sub(itv_t a, itv_t b, itv_t c);
 static inline void itv_neg(itv_t a, itv_t b);
-static inline void itv_mul(itv_internal_t* intern,
-			   itv_t a, itv_t b, itv_t c);
-static inline void itv_div(itv_internal_t* intern,
-			   itv_t a, itv_t b, itv_t c);
+static inline void itv_mul(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
+static inline void itv_div(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
 static inline void itv_add_num(itv_t a, itv_t b, num_t c);
 static inline void itv_sub_num(itv_t a, itv_t b, num_t c);
 static inline void itv_mul_num(itv_t a, itv_t b, num_t c);
@@ -154,8 +158,7 @@ static inline void itv_mul_2exp(itv_t a, itv_t b, int c);
 static inline void itv_magnitude(bound_t a, itv_t b);
   /* get the absolute value of maximal bound */
 
-static inline void itv_mod(itv_internal_t* intern, itv_t a, itv_t b, itv_t c,
-			   bool is_int);
+static inline void itv_mod(itv_internal_t* intern, itv_t a, itv_t b, itv_t c, bool is_int);
   /* x mod y = x - y*trunc(x/y) */
 
 /* Integer casts (rounding towards +oo, -oo, 0, or worst-case) */
@@ -168,37 +171,28 @@ static inline void itv_to_int(itv_t a, itv_t b);
 static inline void itv_to_float(itv_t a, itv_t b);
 static inline void itv_to_double(itv_t a, itv_t b);
 
-
 /* Printing */
 static inline int itv_snprint(char* s, size_t size, itv_t a);
 static inline void itv_fprint(FILE* stream, itv_t a);
 static inline void itv_print(itv_t a);
 
 /* All these functions return true if the conversion is exact */
-static inline bool itv_set_ap_scalar(itv_internal_t* intern,
-				     itv_t a, ap_scalar_t* b);
+static inline bool itv_set_ap_scalar(itv_internal_t* intern, itv_t a, ap_scalar_t* b);
   /* Convert a ap_scalar_t into a itv_t.
      Assumes the scalar is finite.
      If it returns true, the interval is a single point */
-static inline bool itv_set_ap_interval(itv_internal_t* intern,
-				       itv_t a, ap_interval_t* b);
+static inline bool itv_set_ap_interval(itv_internal_t* intern, itv_t a, ap_interval_t* b);
   /* Convert a ap_interval_t into a itv_t */
-static inline bool itv_set_ap_coeff(itv_internal_t* intern,
-				    itv_t a, ap_coeff_t* b);
+static inline bool itv_set_ap_coeff(itv_internal_t* intern, itv_t a, ap_coeff_t* b);
   /* Convert a ap_coeff_t into a itv_t. */
 
-static inline bool ap_interval_set_itv(itv_internal_t* intern,
-				       ap_interval_t* a, itv_t b);
+static inline bool ap_interval_set_itv(itv_internal_t* intern, ap_interval_t* a, itv_t b);
   /* Convert a itv_t into a ap_interval_t */
 
-static inline bool ap_coeff_set_itv(itv_internal_t* intern,
-				    ap_coeff_t* a, itv_t b);
+static inline bool ap_coeff_set_itv(itv_internal_t* intern, ap_coeff_t* a, itv_t b);
   /* Convert a itv_t into a ap_coeff_t */
 
-static inline bool itv_array_set_ap_interval_array(itv_internal_t* intern,
-						   itv_t** ptitv,
-						   ap_interval_t** array,
-						   size_t size);
+static inline bool itv_array_set_ap_interval_array(itv_internal_t* intern, itv_t** ptitv, ap_interval_t** array, size_t size);
   /* Convert an array of ap_interval_t into an array of itv_t.
      The paramater ptitv is a result parameter.
      The result is to be found in *ptitv */
@@ -211,8 +205,7 @@ void ITVFUN(itv_internal_init)(itv_internal_t* intern);
 void ITVFUN(itv_internal_clear)(itv_internal_t* intern);
 itv_internal_t* ITVFUN(itv_internal_alloc)(void);
 void ITVFUN(itv_internal_free)(itv_internal_t* intern);
-bool ITVFUN(itv_canonicalize)(itv_internal_t* intern,
-			      itv_t a, bool integer);
+bool ITVFUN(itv_canonicalize)(itv_internal_t* intern, itv_t a, bool integer);
 void ITVFUN(itv_mul_num)(itv_t a, itv_t b, num_t c);
 void ITVFUN(itv_div_num)(itv_t a, itv_t b, num_t c);
 void ITVFUN(itv_div_num)(itv_t a, itv_t b, num_t c);
@@ -224,27 +217,16 @@ void ITVFUN(itv_mul)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
 void ITVFUN(itv_div)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c);
 bool ITVFUN(itv_sqrt)(itv_internal_t* intern, itv_t a, itv_t b);
 void ITVFUN(itv_abs)(itv_t a, itv_t b);
-void ITVFUN(itv_mod)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c, 
-		     bool is_int);
+void ITVFUN(itv_mod)(itv_internal_t* intern, itv_t a, itv_t b, itv_t c,  bool is_int);
 void ITVFUN(itv_fprint)(FILE* stream, itv_t a);
 int  ITVFUN(itv_snprint)(char* s, size_t size, itv_t a);
 
-
-
-bool ITVFUN(itv_set_ap_scalar)(itv_internal_t* intern,
-			       itv_t a, ap_scalar_t* b);
-bool ITVFUN(itv_set_ap_interval)(itv_internal_t* intern,
-				 itv_t a, ap_interval_t* b);
-bool ITVFUN(itv_set_ap_coeff)(itv_internal_t* intern,
-			      itv_t itv, ap_coeff_t* coeff);
-bool ITVFUN(ap_interval_set_itv)(itv_internal_t* intern,
-				 ap_interval_t* a, itv_t b);
-bool ITVFUN(ap_coeff_set_itv)(itv_internal_t* intern,
-				ap_coeff_t* a, itv_t b);
-bool ITVFUN(itv_array_set_ap_interval_array)(itv_internal_t* intern,
-					     itv_t** ptitv,
-					     ap_interval_t** array,
-					     size_t size);
+bool ITVFUN(itv_set_ap_scalar)(itv_internal_t* intern, itv_t a, ap_scalar_t* b);
+bool ITVFUN(itv_set_ap_interval)(itv_internal_t* intern, itv_t a, ap_interval_t* b);
+bool ITVFUN(itv_set_ap_coeff)(itv_internal_t* intern, itv_t itv, ap_coeff_t* coeff);
+bool ITVFUN(ap_interval_set_itv)(itv_internal_t* intern,  ap_interval_t* a, itv_t b);
+bool ITVFUN(ap_coeff_set_itv)(itv_internal_t* intern, ap_coeff_t* a, itv_t b);
+bool ITVFUN(itv_array_set_ap_interval_array)(itv_internal_t* intern, itv_t** ptitv, ap_interval_t** array, size_t size);
 
 static inline void itv_internal_init(itv_internal_t* intern)
 { ITVFUN(itv_internal_init)(intern); }
@@ -259,7 +241,7 @@ static inline void itv_internal_free(itv_internal_t* intern)
 { ITVFUN(itv_internal_free)(intern); }
 
 static inline bool itv_canonicalize(itv_internal_t* intern,
-				    itv_t a, bool integer)
+ itv_t a, bool integer)
 { return ITVFUN(itv_canonicalize)(intern,a,integer); }
 
 static inline void itv_mul_num(itv_t a, itv_t b, num_t c)
@@ -292,30 +274,22 @@ static inline void itv_fprint(FILE* stream, itv_t a)
 static inline int itv_snprint(char* s, size_t size, itv_t a)
 { return ITVFUN(itv_snprint)(s,size,a); }
 
-static inline bool itv_set_ap_scalar(itv_internal_t* intern,
-				itv_t a, ap_scalar_t* b)
+static inline bool itv_set_ap_scalar(itv_internal_t* intern, itv_t a, ap_scalar_t* b)
 { return ITVFUN(itv_set_ap_scalar)(intern,a,b); }
 
-static inline bool itv_set_ap_interval(itv_internal_t* intern,
-				  itv_t a, ap_interval_t* b)
+static inline bool itv_set_ap_interval(itv_internal_t* intern, itv_t a, ap_interval_t* b)
 { return ITVFUN(itv_set_ap_interval)(intern,a,b); }
 
-static inline bool itv_set_ap_coeff(itv_internal_t* intern,
-			       itv_t itv, ap_coeff_t* coeff)
+static inline bool itv_set_ap_coeff(itv_internal_t* intern, itv_t itv, ap_coeff_t* coeff)
 { return ITVFUN(itv_set_ap_coeff)(intern,itv,coeff); }
 
-static inline bool ap_interval_set_itv(itv_internal_t* intern,
-				       ap_interval_t* a, itv_t b)
+static inline bool ap_interval_set_itv(itv_internal_t* intern, ap_interval_t* a, itv_t b)
 { return ITVFUN(ap_interval_set_itv)(intern,a,b); }
 
-static inline bool ap_coeff_set_itv(itv_internal_t* intern,
-				    ap_coeff_t* a, itv_t b)
+static inline bool ap_coeff_set_itv(itv_internal_t* intern, ap_coeff_t* a, itv_t b)
 { return ITVFUN(ap_coeff_set_itv)(intern,a,b); }
 
-static inline bool itv_array_set_ap_interval_array(itv_internal_t* intern,
-						   itv_t** ptitv,
-						   ap_interval_t** array,
-						   size_t size)
+static inline bool itv_array_set_ap_interval_array(itv_internal_t* intern, itv_t** ptitv, ap_interval_t** array, size_t size)
 { return ITVFUN(itv_array_set_ap_interval_array)(intern,ptitv,array,size); }
 
 static inline void itv_init(itv_t a)
@@ -367,7 +341,7 @@ static inline void itv_set_num(itv_t a, num_t b)
   bound_set_num(a->sup,b);
   bound_neg(a->inf,a->sup);
 }
-  static inline void itv_set_num2(itv_t a, num_t b, num_t c)
+static inline void itv_set_num2(itv_t a, num_t b, num_t c)
 {
   bound_set_num(a->sup,b);
   num_neg(c,c);
@@ -442,8 +416,7 @@ static inline bool itv_is_eq(itv_t a, itv_t b)
   return bound_equal(a->sup,b->sup) && bound_equal(a->inf,b->inf);
 }
 
-static inline bool itv_meet(itv_internal_t* intern,
-			    itv_t a, itv_t b, itv_t c)
+static inline bool itv_meet(itv_internal_t* intern, itv_t a, itv_t b, itv_t c)
 {
   bound_min(a->sup,b->sup,c->sup);
   bound_min(a->inf,b->inf,c->inf);
@@ -463,8 +436,7 @@ static inline void bound_widening(bound_t a, bound_t b, bound_t c)
     bound_set(a,b);
   }
 }
-static inline void itv_widening(itv_t a,
-				itv_t b, itv_t c)
+static inline void itv_widening(itv_t a, itv_t b, itv_t c)
 {
   bound_widening(a->sup,b->sup,c->sup);
   bound_widening(a->inf,b->inf,c->inf);
@@ -490,13 +462,11 @@ static inline bool itv_sqrt(itv_internal_t* intern, itv_t a, itv_t b)
 static inline void itv_abs(itv_t a, itv_t b)
 { ITVFUN(itv_abs)(a,b); }
 
-static inline void itv_mod(itv_internal_t* intern, itv_t a, itv_t b, itv_t c,
-			   bool is_int)
+static inline void itv_mod(itv_internal_t* intern, itv_t a, itv_t b, itv_t c, bool is_int)
 { ITVFUN(itv_mod)(intern,a,b,c,is_int); }
 
 static inline void itv_print(itv_t itv)
 { itv_fprint(stdout,itv); }
-
 
 static inline void itv_ceil(itv_t a, itv_t b)
 { bound_ceil(a->sup,b->sup); bound_floor(a->inf,b->inf); }
@@ -525,18 +495,6 @@ static inline bool itv_is_pos(itv_t a)
 static inline bool itv_is_neg(itv_t a)
 { return (bound_sgn(a->sup)<=0); }
 
-static inline void itv_meet_pos(itv_t a, itv_t b)
-{ 
-  bound_set_int(a->inf,0);
-  if (a!=b) bound_set(a->sup,b->sup);
-}
- 
-static inline void itv_meet_neg(itv_t a, itv_t b)
-{ 
-  bound_set_int(a->sup,0);
-  if (a!=b) bound_set(a->inf,b->inf);
-}
-
 static inline void itv_magnitude(bound_t a, itv_t b)
 {
   if (bound_sgn(b->inf)<=0) bound_set(a,b->sup);
@@ -564,6 +522,7 @@ static inline bool itv_is_int(itv_internal_t* intern, itv_t a)
   bound_trunc(intern->muldiv_bound,a->inf);
   return !bound_cmp(intern->muldiv_bound,a->inf);
 }
+
 
 #ifdef __cplusplus
 }

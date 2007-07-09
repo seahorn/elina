@@ -12,14 +12,14 @@ OCAMLINC = \
 -I mlgmpidl -I mlapronidl -I box -I octagons -I newpolka -I ppl -I products
 
 ifdef HAS_PPL
-OCAMLLDFLAGS_PPL = polkaGrid.cma ppl.cma -cclib "-lpolkaGrid_caml -lap_pkgrid_debug -lppl_caml -lapron_ppl -lppl -lgmpxx" -cc "g++"
+OCAMLLDFLAGS_PPL = polkaGrid.cma ppl.cma -cclib "-lpolkaGrid_caml -lap_pkgrid_debug -lap_ppl_caml -lap_ppl -lppl -lgmpxx" -cc "g++"
 endif
 
 OCAMLLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS)" \
 bigarray.cma gmp.cma apron.cma box.cma oct.cma polka.cma \
 $(OCAMLLDFLAGS_PPL) \
--cclib "-lpolka_caml -lpolkag_debug -loct_caml -loctQg_debug -lbox_caml -lboxmpq_debug -lapron_caml_debug -lapron_debug -litvmpq_debug -litvdbl_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
+-cclib "-lpolka_caml -lpolkaMPQ_debug -loct_caml -loctMPQ_debug -lbox_caml -lboxMPQ_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
 
 ifdef HAS_OCAML
 all: c ml aprontop apronrun
@@ -28,12 +28,12 @@ all: c
 endif
 
 c:
-	(cd apron; make all)
 	(cd num; make all)
 	(cd itv; make all)
-	(cd newpolka; make allg)
+	(cd apron; make all)
+	(cd newpolka; make all)
 	(cd box; make all)
-	(cd octagons; make Qg Fd)
+	(cd octagons; make MPQ D)
 ifdef HAS_PPL
 	(cd ppl; make)
 	(cd products; make)
@@ -44,7 +44,7 @@ ml:
 	(cd mlapronidl; make all)
 	(cd newpolka; make ml)
 	(cd box; make ml)
-	(cd octagons; make mlQg mlFd)
+	(cd octagons; make mlMPQ mlD)
 ifdef HAS_PPL
 	(cd ppl; make ml)
 	(cd products; make ml)
@@ -70,9 +70,9 @@ ifdef HAS_OCAML
 endif
 
 install:
-	(cd apron; make install)
 	(cd num; make install)
 	(cd itv; make install)
+	(cd apron; make install)
 	(cd newpolka; make install)
 	(cd box; make install)
 	(cd octagons; make install)
@@ -90,16 +90,17 @@ ifdef HAS_OCAML
 endif
 
 clean:
+	(cd num; make clean)
+	(cd itv; make clean)
 	(cd apron; make clean)
 	(cd mlgmpidl; make clean)
 	(cd mlapronidl; make clean)
-	(cd num; make clean)
-	(cd itv; make clean)
 	(cd box; make clean)
 	(cd newpolka; make clean)
 	(cd octagons; make clean)
-	(cd examples; make clean)
 	(cd ppl; make clean)
+	(cd products; make clean)
+	(cd examples; make clean)
 	rm -fr online tmp apronrun aprontop
 
 mostlyclean: clean
@@ -109,18 +110,20 @@ mostlyclean: clean
 	(cd octagons; make mostlyclean)
 	(cd newpolka; make mostlyclean)
 	(cd ppl; make mostlyclean)
+	(cd products; make mostlyclean)
 
 distclean:
+	(cd num; make distclean)
+	(cd itv; make distclean)
 	(cd apron; make distclean)
 	(cd mlgmpidl; make distclean)
 	(cd mlapronidl; make distclean)
-	(cd num; make distclean)
-	(cd itv; make distclean)
 	(cd box; make distclean)
 	(cd newpolka; make distclean)
 	(cd octagons; make distclean)
 	(cd examples; make distclean)
 	(cd ppl; make distclean)
+	(cd products; make distclean)
 
 doc:
 	(cd apron; make html apron.pdf)
@@ -131,9 +134,9 @@ endif
 
 # make distribution, update to reflect current version
 
-PKGNAME  = apron-0.9.6
+PKGNAME  = apron-0.9.7
 PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model Changes
-PKGDIRS  = apron num itv octagons box newpolka ppl mlgmpidl mlapronidl examples test
+PKGDIRS  = apron num itv octagons box newpolka ppl products mlgmpidl mlapronidl examples test
 
 dist:
 	$(MAKE) all

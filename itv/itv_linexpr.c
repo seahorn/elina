@@ -16,17 +16,50 @@ void ITVFUN(itv_linexpr_init)(itv_linexpr_t* expr, size_t size)
   expr->equality = true;
   itv_linexpr_reinit(expr,size);
 }
+void ITVFUN(itv_linexpr_init_set)(itv_linexpr_t* res, itv_linexpr_t* expr)
+{
+  size_t i;
+
+  itv_init_set(res->cst,expr->cst);
+  res->equality = expr->equality;
+  res->linterm = expr->size ? malloc(expr->size*sizeof(itv_linterm_t)) : NULL;
+  for (i=0;i<expr->size;i++){
+    itv_linterm_init_set(&res->linterm[i],&expr->linterm[i]);
+  }
+  res->size = expr->size;
+}
+void ITVFUN(itv_linexpr_set)(itv_linexpr_t* res, itv_linexpr_t* expr)
+{
+  size_t i,size;
+
+  if (res==expr) return;
+
+  itv_set(res->cst,expr->cst);
+  res->equality = expr->equality;
+  for  (i=expr->size; i<res->size; i++){
+    itv_linterm_clear(&res->linterm[i]);
+  }
+  res->linterm = realloc(res->linterm,expr->size*sizeof(itv_linterm_t));
+  size = res->size < expr->size ? res->size : expr->size;
+  for (i=0;i<size;i++){
+    itv_linterm_set(&res->linterm[i],&expr->linterm[i]);
+  }
+  for (i=size; i<expr->size;i++){
+    itv_linterm_init_set(&res->linterm[i],&expr->linterm[i]);
+  }
+  res->size = expr->size;
+}
+
 void ITVFUN(itv_linexpr_reinit)(itv_linexpr_t* expr, size_t size)
 {
   size_t i;
 
   for  (i=size; i<expr->size; i++){
-    itv_clear(expr->linterm[i].itv);
+    itv_linterm_clear(&expr->linterm[i]);
   }
   expr->linterm = realloc(expr->linterm,size*sizeof(itv_linterm_t));
   for (i=expr->size;i<size;i++){
-    itv_init(expr->linterm[i].itv);
-    expr->linterm[i].equality = true;
+    itv_linterm_init(&expr->linterm[i]);
   }
   expr->size = size;
   return;
@@ -36,7 +69,7 @@ void ITVFUN(itv_linexpr_clear)(itv_linexpr_t* expr)
   size_t i;
   if (expr->linterm){
     for (i=0;i<expr->size;i++){
-      itv_clear(expr->linterm[i].itv);
+      itv_linterm_clear(&expr->linterm[i]);
     }
     free(expr->linterm);
     expr->linterm = NULL;
@@ -75,6 +108,50 @@ void ITVFUN(itv_lincons_fprint)(FILE* stream, itv_lincons_t* cons, char** name)
   if (cons->constyp == AP_CONS_EQMOD){
     fprintf(stream," mod ");
     num_fprint(stream,cons->num);
+  }
+}
+
+void ITVFUN(itv_lincons_array_init)(itv_lincons_array_t* array, size_t size)
+{
+  size_t i;
+  array->size = size;
+  array->p = malloc(size*sizeof(itv_lincons_t));
+  for (i=0; i<size; i++) itv_lincons_init(&array->p[i]);
+}
+void ITVFUN(itv_lincons_array_reinit)(itv_lincons_array_t* array, size_t size)
+{
+  size_t i;
+  if (size == array->size) return;
+  if (size < array->size){
+    for (i=size; i<array->size; i++){
+      itv_lincons_clear(&array->p[i]);
+    }
+    array->p = realloc(array->p,size*sizeof(itv_lincons_t));
+  }
+  else { /* size > array->size */
+    array->p = realloc(array->p,size*sizeof(itv_lincons_t));
+    for (i=array->size; i<size; i++){
+      itv_lincons_init(&array->p[i]);
+    }
+  }
+  array->size = size;
+  return;
+}
+void ITVFUN(itv_lincons_array_clear)(itv_lincons_array_t* array)
+{
+  size_t i;
+  for (i=0; i<array->size; i++) itv_lincons_clear(&array->p[i]);
+  free(array->p);
+  array->size = 0;
+  array->p = NULL;
+}
+void ITVFUN(itv_lincons_array_fprint)(FILE* stream, itv_lincons_array_t* array, char** name)
+{
+  size_t i;
+  fprintf(stream,"array of size %d_n",(int)array->size);
+  for (i=0; i<array->size; i++){
+    itv_lincons_fprint(stream,&array->p[i],name);
+    fprintf(stream,"\n");
   }
 }
 
@@ -118,10 +195,10 @@ bool ITVFUN(itv_linexpr_set_ap_linexpr0)(itv_internal_t* intern,
 }
 
 bool ITVFUN(itv_lincons_set_ap_lincons0)(itv_internal_t* intern,
-					 itv_lincons_t* cons, 
+					 itv_lincons_t* cons,
 					 ap_lincons0_t* lincons0)
 {
-  bool exact1 = itv_linexpr_set_ap_linexpr0(intern, 
+  bool exact1 = itv_linexpr_set_ap_linexpr0(intern,
 					    &cons->linexpr,
 					    lincons0->linexpr0);
   cons->constyp = lincons0->constyp;
@@ -133,6 +210,20 @@ bool ITVFUN(itv_lincons_set_ap_lincons0)(itv_internal_t* intern,
     num_set_int(cons->num,0);
     return exact1;
   }
+}
+
+bool ITVFUN(itv_lincons_array_set_ap_lincons0_array)(itv_internal_t* intern,
+						     itv_lincons_array_t* tcons,
+						     ap_lincons0_array_t* tlincons0)
+{
+  size_t i;
+  bool exact = true;
+
+  itv_lincons_array_reinit(tcons,tlincons0->size);
+  for (i=0; i<tlincons0->size; i++){
+    exact = itv_lincons_set_ap_lincons0(intern,&tcons->p[i],&tlincons0->p[i]) && exact;
+  }
+  return exact;
 }
 
 void ITVFUN(ap_linexpr0_set_itv_linexpr)(itv_internal_t* intern,
@@ -184,156 +275,8 @@ void ITVFUN(ap_lincons0_set_itv_lincons)(itv_internal_t* intern,
 }
 
 
-
 /* ********************************************************************** */
-/* III. Evaluation of expressions  */
-/* ********************************************************************** */
-
-/* Evaluate an interval linear expression */
-void ITVFUN(itv_eval_linexpr)(itv_internal_t* intern,
-			      itv_t itv,
-			      itv_t* p,
-			      itv_linexpr_t* expr)
-{
-  size_t i;
-  ap_dim_t dim;
-  itv_ptr pitv;
-  bool* peq;
-  assert(p);
-
-  itv_set(intern->eval_itv2, expr->cst);
-  itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq){
-    if (*peq){
-      if (bound_sgn(pitv->sup)!=0){
-	itv_mul_bound(intern->eval_itv,
-		      p[dim],
-		      pitv->sup);
-	itv_add(intern->eval_itv2, intern->eval_itv2, intern->eval_itv);
-      }
-    }
-    else {
-      itv_mul(intern,
-	      intern->eval_itv,
-	      p[dim],
-	      pitv);
-      itv_add(intern->eval_itv2, intern->eval_itv2, intern->eval_itv);
-    }
-    if (itv_is_top(intern->eval_itv2))
-      break;
-  }
-  itv_set(itv,intern->eval_itv2);
-}
-
-/* Evaluate an interval linear expression */
-bool ITVFUN(itv_eval_ap_linexpr0)(itv_internal_t* intern,
-				  itv_t itv,
-				  itv_t* p,
-				  ap_linexpr0_t* expr)
-{
-  size_t i;
-  ap_dim_t dim;
-  ap_coeff_t* pcoeff;
-  bool exact,res;
-  assert(p);
-
-  exact = itv_set_ap_coeff(intern, intern->eval_itv3, &expr->cst);
-  res = exact;
-  ap_linexpr0_ForeachLinterm(expr,i,dim,pcoeff){
-    exact = itv_set_ap_coeff(intern,intern->eval_itv2,pcoeff);
-    res = res && exact;
-    bool eq = exact && pcoeff->discr==AP_COEFF_SCALAR;
-    if (eq){
-      if (bound_sgn(intern->eval_itv2->sup)!=0){
-	itv_mul_bound(intern->eval_itv,
-		      p[dim],
-		      intern->eval_itv2->sup);
-	itv_add(intern->eval_itv3, intern->eval_itv3, intern->eval_itv);
-      }
-    }
-    else {
-      itv_mul(intern,
-	      intern->eval_itv,
-	      p[dim],
-	      intern->eval_itv2);
-      itv_add(intern->eval_itv3, intern->eval_itv3, intern->eval_itv);
-    }
-    if (itv_is_top(intern->eval_itv3))
-      break;
-  }
-  itv_set(itv,intern->eval_itv3);
-  return res;
-}
-
-/* ********************************************************************** */
-/* IV. (Quasi)linearisation */
-/* ********************************************************************** */
-
-bool ITVFUN(itv_linexpr_quasilinearize)(itv_internal_t* intern, itv_linexpr_t* linexpr, itv_t* titv)
-{
-  size_t i,k;
-  ap_dim_t dim;
-  itv_ptr itv;
-  bool* peq;
-
-  k = 0;
-  itv_linexpr_ForeachLinterm(linexpr,i,dim,itv,peq){
-    if (*peq == false){
-      /* Compute the middle of the interval */
-      if (bound_infty(itv->inf)){
-	if (bound_infty(itv->sup))
-	  num_set_int(intern->quasi_num,0);
-	else 
-	  num_set(intern->quasi_num,
-		  bound_numref(itv->sup));
-      }
-      else if (bound_infty(itv->sup))
-	num_neg(intern->quasi_num,
-		bound_numref(itv->inf));
-      else {
-	num_sub(intern->quasi_num,
-		bound_numref(itv->sup),
-		bound_numref(itv->inf));
-	num_div_2(intern->quasi_num,
-		  intern->quasi_num);
-      }
-      /* Residue (interval-middle) */
-      itv_sub_num(intern->eval_itv2,itv,intern->quasi_num);
-      /* Multiplication */
-      itv_mul(intern,
-	      intern->eval_itv,
-	      intern->eval_itv2,
-	      titv[dim]);
-      /* Addition to the constant coefficient */
-      itv_add(linexpr->cst,linexpr->cst,intern->eval_itv);
-      if (itv_is_top(linexpr->cst)){
-	k = 0;
-	break;
-      }
-      /* Addition of the linear term */
-      if (num_sgn(intern->quasi_num)!=0){
-	linexpr->linterm[k].equality = true;
-	linexpr->linterm[k].dim = dim;
-	itv_set_num(linexpr->linterm[k].itv,intern->quasi_num);
-	k++;
-      }
-    }
-    else k++;
-  }
-  itv_linexpr_reinit(linexpr,k);
-#if defined(NUM_FLOAT) || defined(NUM_DOUBLE) || defined(NUM_LONGDOUBLE)
-  return false;
-#else
-  return true;
-#endif
-}
-
-bool ITVFUN(itv_lincons_quasilinearize)(itv_internal_t* intern, itv_lincons_t* lincons, itv_t* titv)
-{
-  return itv_linexpr_quasilinearize(intern,&lincons->linexpr,titv);
-}
-
-/* ********************************************************************** */
-/* V. Arithmetic */
+/* III. Arithmetic */
 /* ********************************************************************** */
 
 void ITVFUN(itv_linexpr_neg)(itv_linexpr_t* expr)
@@ -361,7 +304,7 @@ void ITVFUN(itv_linexpr_scale)(itv_internal_t* intern,
     itv_set(expr->cst,coeff);
     itv_linexpr_reinit(expr,0);
     return;
-  }  
+  }
   itv_mul(intern,expr->cst,expr->cst,coeff);
   if (itv_is_top(expr->cst)){
     itv_linexpr_reinit(expr,0);
@@ -391,60 +334,82 @@ void ITVFUN(itv_linexpr_div)(itv_internal_t* intern,
   return;
 }
 
-itv_linexpr_t ITVFUN(itv_linexpr_add)(itv_internal_t* intern,
-				      itv_linexpr_t* exprA,
-				      itv_linexpr_t* exprB)
+void ITVFUN(itv_linexpr_add)(itv_internal_t* intern,
+			     itv_linexpr_t* res, 
+			     itv_linexpr_t* exprA,
+			     itv_linexpr_t* exprB)
 {
   size_t i,j,k;
-  itv_linexpr_t res;
+  itv_linexpr_t expr;
   bool endA,endB;
 
-  itv_linexpr_init(&res,exprA->size+exprB->size);
+  if (res==exprA || res==exprB){
+    itv_linexpr_init(&expr,exprA->size+exprB->size);
+  }
+  else {
+    expr = *res;
+    itv_linexpr_reinit(&expr,exprA->size+exprB->size);
+  }
   i = j = k = 0;
   endA = endB = false;
-  itv_add(res.cst,exprA->cst,exprB->cst);
-  if (itv_is_top(res.cst))
+  itv_add(expr.cst,exprA->cst,exprB->cst);
+  expr.equality = exprA->equality && exprB->equality && itv_is_point(intern,expr.cst);
+  if (itv_is_top(expr.cst))
     goto _itv_linexpr_add_return;
   while (true){
     endA = endA || (i==exprA->size) || exprA->linterm[i].dim == AP_DIM_MAX;
     endB = endB || (j==exprB->size) || exprB->linterm[j].dim == AP_DIM_MAX;
-    if (endA && endB) 
+    if (endA && endB)
       break;
     if (endA || (!endB && exprB->linterm[i].dim < exprA->linterm[i].dim)){
-      itv_set(res.linterm[k].itv, exprB->linterm[j].itv);
-      res.linterm[k].equality = exprB->linterm[j].equality;
-      res.linterm[k].dim = exprB->linterm[j].dim;
+      itv_set(expr.linterm[k].itv, exprB->linterm[j].itv);
+      expr.linterm[k].equality = exprB->linterm[j].equality;
+      expr.linterm[k].dim = exprB->linterm[j].dim;
       k++; j++;
     }
     else if (endB || (!endA && exprA->linterm[i].dim < exprB->linterm[j].dim)){
-      itv_set(res.linterm[k].itv, exprA->linterm[i].itv);
-      res.linterm[k].equality = exprA->linterm[i].equality;
-      res.linterm[k].dim = exprA->linterm[i].dim;
+      itv_set(expr.linterm[k].itv, exprA->linterm[i].itv);
+      expr.linterm[k].equality = exprA->linterm[i].equality;
+      expr.linterm[k].dim = exprA->linterm[i].dim;
       k++; i++;
     }
     else {
-      itv_add(res.linterm[k].itv, exprA->linterm[i].itv,exprB->linterm[j].itv);
-      res.linterm[k].equality = 
+      itv_add(expr.linterm[k].itv, exprA->linterm[i].itv,exprB->linterm[j].itv);
+      expr.linterm[k].equality =
 	exprA->linterm[i].equality && exprB->linterm[i].equality && /* speed-up */
-	itv_is_point(intern,res.linterm[k].itv);
-      res.linterm[k].dim = exprA->linterm[i].dim;
-      if (!itv_is_zero(res.linterm[k].itv)){
+	itv_is_point(intern,expr.linterm[k].itv);
+      expr.linterm[k].dim = exprA->linterm[i].dim;
+      if (!itv_is_zero(expr.linterm[k].itv)){
 	k++;
       }
       i++; j++;
     }
   }
  _itv_linexpr_add_return:
-  itv_linexpr_reinit(&res,k);
-  return res;
+  itv_linexpr_reinit(&expr,k);
+  if (res==exprA || res==exprB){
+    itv_linexpr_clear(res);
+  }
+  *res = expr;
+  return;
 }
-itv_linexpr_t ITVFUN(itv_linexpr_sub)(itv_internal_t* intern,
-				      itv_linexpr_t* exprA,
-				      itv_linexpr_t* exprB)
+void ITVFUN(itv_linexpr_sub)(itv_internal_t* intern,
+			     itv_linexpr_t* res,
+			     itv_linexpr_t* exprA,
+			     itv_linexpr_t* exprB)
 {
-  itv_linexpr_t res;
-  itv_linexpr_neg(exprB);
-  res = itv_linexpr_add(intern,exprA,exprB);
-  itv_linexpr_neg(exprB);
-  return res;
+  if (exprA==exprB){
+    itv_linexpr_t expr;
+    itv_linexpr_init_set(&expr,exprB);
+    itv_linexpr_neg(&expr);
+    itv_linexpr_add(intern,res,exprA,&expr);
+    itv_linexpr_clear(&expr);
+  }
+  else {
+    itv_linexpr_neg(exprB);
+    itv_linexpr_add(intern,res,exprA,exprB);
+    if (exprB!=res){
+      itv_linexpr_neg(exprB);
+    }
+  }
 }

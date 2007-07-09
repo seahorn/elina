@@ -64,6 +64,18 @@ typedef struct ap_linexpr0_t {
 /* Comment: we do not inline the array in the structure, because this allows to
    redimension (with realloc) the array in a transparent way for the user. */
 
+/* - An interval linear expression is the more general form.
+   - A quasilinear expression is such that the only non-scalar
+     coefficient is the constant coefficient.
+
+   - A linear expression contains no non-scalar coefficients
+*/ 
+typedef enum ap_linexpr_type_t {
+  AP_LINEXPR_INTLINEAR,
+  AP_LINEXPR_QUASILINEAR,
+  AP_LINEXPR_LINEAR
+} ap_linexpr_type_t;
+
 /* ====================================================================== */
 /* I. Memory management and printing */
 /* ====================================================================== */
@@ -103,11 +115,17 @@ bool ap_linexpr0_is_real(ap_linexpr0_t* a, size_t intdim);
   /* Does the expression depends only on real variables ? assuming
      that the first intdim dimensions are integer */
 
+ap_linexpr_type_t ap_linexpr0_type(ap_linexpr0_t* a);
+  /* Return the type of the linear expression */
 bool ap_linexpr0_is_linear(ap_linexpr0_t* a);
   /* Return true iff all involved coefficients are scalars */
 bool ap_linexpr0_is_quasilinear(ap_linexpr0_t* a);
   /* Return true iff all involved coefficients but the constant are scalars */
 
+  ap_linexpr_type_t ap_linexpr0_array_type(ap_linexpr0_t** texpr, size_t size);
+  bool ap_linexpr0_array_is_linear(ap_linexpr0_t** texpr, size_t size);
+  bool ap_linexpr0_array_is_quasilinear(ap_linexpr0_t** texpr, size_t size);
+  /* Idem for arrays */
 
 /* ====================================================================== */
 /* III. Access */
@@ -267,6 +285,13 @@ bool ap_linexpr0_equal(ap_linexpr0_t* expr1,
 /* Lexicographic ordering, terminating by constant coefficients */
 int ap_linexpr0_compare(ap_linexpr0_t* expr1,
 		     ap_linexpr0_t* expr2);
+
+/* ====================================================================== */
+/* Vb. Array of expressions */
+/* ====================================================================== */
+
+/* Free the array of expressions of size size */
+void ap_linexpr0_array_free(ap_linexpr0_t** texpr, size_t size);
 
 /* ====================================================================== */
 /* VI. Inline function definitions */

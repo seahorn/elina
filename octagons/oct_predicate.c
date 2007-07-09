@@ -15,6 +15,7 @@
 
 #include "oct.h"
 #include "oct_internal.h"
+#include "ap_generic.h"
 
 
 
@@ -311,6 +312,18 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
   }
 }
 
+tbool_t oct_sat_tcons(ap_manager_t* man, oct_t* a, 
+		      ap_tcons0_t* cons)
+{
+  return ap_generic_sat_tcons(man,a,cons,
+#if defined(NUM_NUMFLT)
+			      AP_SCALAR_DOUBLE
+#else
+			      AP_SCALAR_MPQ
+#endif
+			      ,
+			      false);
+}
 
 /* ============================================================ */
 /* Extraction of properties */
@@ -387,6 +400,19 @@ ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
   return r;
 }
 
+ap_interval_t* oct_bound_texpr(ap_manager_t* man,
+			       oct_t* a, ap_texpr0_t* expr)
+{
+  return ap_generic_bound_texpr(man,a,expr,
+#if defined(NUM_NUMFLT)
+				AP_SCALAR_DOUBLE
+#else
+				AP_SCALAR_MPQ
+#endif
+				,
+				false);
+}
+
 ap_interval_t* oct_bound_dimension(ap_manager_t* man,
 				   oct_t* a, ap_dim_t dim)
 {
@@ -440,6 +466,11 @@ ap_lincons0_array_t oct_to_lincons_array(ap_manager_t* man, oct_t* a)
     if (pr->conv) flag_conv;
   }
   return ar;
+}
+
+ap_tcons0_array_t oct_to_tcons_array(ap_manager_t* man, oct_t* a)
+{
+  return ap_generic_to_tcons_array(man,a);
 }
 
 ap_interval_t** oct_to_box(ap_manager_t* man, oct_t* a)

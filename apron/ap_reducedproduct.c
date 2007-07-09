@@ -346,28 +346,6 @@ ap_reducedproduct_t* ap_reducedproduct_of_box(ap_manager_t* manager,
   return res;
 }
 
-ap_reducedproduct_t* ap_reducedproduct_of_lincons_array(ap_manager_t* manager,
-							size_t intdim, size_t realdim,
-							ap_lincons0_array_t* array)
-{
-  ap_reducedproduct_internal_t* intern = get_internal_init0(manager);
-  size_t i;
-  ap_reducedproduct_t* res = ap_reducedproduct_alloc(intern->size);
-
-  for (i=0;i<intern->size;i++){
-    ap_manager_t* man = intern->tmanagers[i];
-    void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_OF_LINCONS_ARRAY];
-    res->p[i] = ptr(man,intdim,realdim,array);
-    tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-    if (is_bottom(man,res->p[i])==tbool_true){
-      set_bottom(intern,false,res,i);
-      break;
-    }
-  }
-  collect_results1(manager,AP_FUNID_OF_LINCONS_ARRAY,res);
-  return res;
-}
-
 ap_dimension_t ap_reducedproduct_dimension(ap_manager_t* manager, ap_reducedproduct_t* a)
 {
   ap_reducedproduct_internal_t* intern = get_internal_init0(manager);
@@ -456,6 +434,22 @@ tbool_t ap_reducedproduct_sat_lincons(ap_manager_t* manager, ap_reducedproduct_t
   collect_results0(manager);
   return gres;
 }
+tbool_t ap_reducedproduct_sat_tcons(ap_manager_t* manager, ap_reducedproduct_t* a, ap_tcons0_t* tcons)
+{
+  ap_reducedproduct_internal_t* intern = get_internal_init1(manager,AP_FUNID_SAT_TCONS,a);
+  size_t i;
+  tbool_t gres = tbool_false;
+
+  for (i=0;i<intern->size;i++){
+    ap_manager_t* man = intern->tmanagers[i];
+    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_TCONS];
+    tbool_t res = ptr(man,a->p[i],tcons);
+    gres = tbool_or(gres,res);
+    if (gres==tbool_true) break;
+  }
+  collect_results0(manager);
+  return gres;
+}
 tbool_t ap_reducedproduct_sat_interval(ap_manager_t* manager, ap_reducedproduct_t* a,
 				       ap_dim_t dim, ap_interval_t* interval)
 {
@@ -528,6 +522,27 @@ ap_interval_t* ap_reducedproduct_bound_linexpr(ap_manager_t* manager,
   collect_results0(manager);
   return gres;
 }
+ap_interval_t* ap_reducedproduct_bound_texpr(ap_manager_t* manager,
+					       ap_reducedproduct_t* a, ap_texpr0_t* expr)
+{
+  ap_reducedproduct_internal_t* intern = 
+    get_internal_init1(manager,AP_FUNID_BOUND_TEXPR,a);
+  size_t i;
+  ap_interval_t* gres = ap_interval_alloc();
+  ap_interval_set_top(gres);
+
+  for (i=0;i<intern->size;i++){
+    ap_manager_t* man = intern->tmanagers[i];
+    ap_interval_t* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_BOUND_TEXPR];
+    ap_interval_t* res = ptr(man,a->p[i],expr);
+    ap_interval_meet_with(gres,res);
+    ap_interval_free(res);
+    if (ap_interval_is_bottom(gres))
+      break;
+  }
+  collect_results0(manager);
+  return gres;
+}
 ap_interval_t* ap_reducedproduct_bound_dimension(ap_manager_t* manager,
 						 ap_reducedproduct_t* a, ap_dim_t dim)
 {
@@ -563,6 +578,29 @@ ap_lincons0_array_t ap_reducedproduct_to_lincons_array(ap_manager_t* manager, ap
     ap_lincons0_array_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_TO_LINCONS_ARRAY];
     ap_lincons0_array_t array = ptr(man,a->p[i]);
     garray.p = realloc(garray.p, (garray.size + array.size) * sizeof(ap_lincons0_t));
+    for (j=0;j<array.size;j++){
+      garray.p[garray.size + j] = array.p[j];
+    }
+    garray.size += array.size;
+    free(array.p);
+  }
+  collect_results0(manager);
+  return garray;
+}
+ap_tcons0_array_t ap_reducedproduct_to_tcons_array(ap_manager_t* manager, ap_reducedproduct_t* a)
+{
+  ap_reducedproduct_internal_t* intern = 
+    get_internal_init1(manager,AP_FUNID_TO_TCONS_ARRAY,a);
+  size_t i,j;
+  ap_tcons0_array_t garray;
+
+  garray.p = NULL;
+  garray.size = 0;
+  for (i=0;i<intern->size;i++){
+    ap_manager_t* man = intern->tmanagers[i];
+    ap_tcons0_array_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_TO_TCONS_ARRAY];
+    ap_tcons0_array_t array = ptr(man,a->p[i]);
+    garray.p = realloc(garray.p, (garray.size + array.size) * sizeof(ap_tcons0_t));
     for (j=0;j<array.size;j++){
       garray.p[garray.size + j] = array.p[j];
     }
@@ -743,6 +781,31 @@ ap_reducedproduct_t* ap_reducedproduct_meet_lincons_array(ap_manager_t* manager,
   collect_results1(manager,AP_FUNID_MEET_LINCONS_ARRAY,res);
   return res;
 }
+ap_reducedproduct_t* ap_reducedproduct_meet_tcons_array(ap_manager_t* manager,
+							bool destructive, ap_reducedproduct_t* a,
+							ap_tcons0_array_t* array)
+{
+  ap_reducedproduct_internal_t* intern = 
+    get_internal_init1(manager,AP_FUNID_MEET_TCONS_ARRAY,a);
+  size_t i;
+  ap_reducedproduct_t* res;
+
+  res = destructive ? a : ap_reducedproduct_alloc(intern->size);
+
+  for (i=0;i<intern->size;i++){
+    ap_manager_t* man = intern->tmanagers[i];
+    void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_TCONS_ARRAY];
+    res->p[i] = ptr(man,destructive,a->p[i],array);
+    tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+    if (is_bottom(man,res->p[i])==tbool_true){
+      set_bottom(intern,destructive,res,i);
+      break;
+    }
+  }
+  res->reduced = false;
+  collect_results1(manager,AP_FUNID_MEET_TCONS_ARRAY,res);
+  return res;
+}
 ap_reducedproduct_t* ap_reducedproduct_add_ray_array(ap_manager_t* manager,
 							   bool destructive, ap_reducedproduct_t* a,
 							   ap_lincons0_array_t* array)
@@ -767,57 +830,6 @@ ap_reducedproduct_t* ap_reducedproduct_add_ray_array(ap_manager_t* manager,
 /* ============================================================ */
 /* III.2 Assignement and Substitutions */
 /* ============================================================ */
-
-ap_reducedproduct_t*
-ap_reducedproduct_asssub_linexpr(ap_funid_t funid,
-				 /* either assign or substitute */
-				 ap_manager_t* manager,
-				 bool destructive,
-				 ap_reducedproduct_t* a,
-				 ap_dim_t dim, ap_linexpr0_t* expr,
-				 ap_reducedproduct_t* dest)
-{
-  ap_reducedproduct_internal_t* intern = get_internal_init2(manager,funid,a,dest);
-  size_t i;
-  ap_reducedproduct_t* res;
-
-  res = destructive ? a : ap_reducedproduct_alloc(intern->size);
-
-  for (i=0;i<intern->size;i++){
-    ap_manager_t* man = intern->tmanagers[i];
-    void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
-    res->p[i] = ptr(man,destructive,a->p[i],dim,expr,dest ? dest->p[i] : NULL);
-    if (dest || funid==AP_FUNID_SUBSTITUTE_LINEXPR){
-      tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-      if (is_bottom(man,res->p[i])==tbool_true){
-	set_bottom(intern,destructive,res,i);
-	break;
-      }
-    }
-  }
-  res->reduced = false;
-  collect_results1(manager,funid,res);
-  return res;
-}
-ap_reducedproduct_t* ap_reducedproduct_assign_linexpr(ap_manager_t* man,
-						      bool destructive,
-						      ap_reducedproduct_t* org,
-						      ap_dim_t dim, ap_linexpr0_t* expr,
-						      ap_reducedproduct_t* dest)
-{
-  return ap_reducedproduct_asssub_linexpr(AP_FUNID_ASSIGN_LINEXPR,man,destructive,
-					  org,dim,expr,dest);
-}
-
-ap_reducedproduct_t* ap_reducedproduct_substitute_linexpr(ap_manager_t* man,
-							  bool destructive,
-							  ap_reducedproduct_t* org,
-							  ap_dim_t dim, ap_linexpr0_t* expr,
-							  ap_reducedproduct_t* dest)
-{
-  return ap_reducedproduct_asssub_linexpr(AP_FUNID_SUBSTITUTE_LINEXPR,man,destructive,
-					  org,dim,expr,dest);
-}
 
 ap_reducedproduct_t*
 ap_reducedproduct_asssub_linexpr_array(ap_funid_t funid,
@@ -870,6 +882,60 @@ ap_reducedproduct_t* ap_reducedproduct_substitute_linexpr_array(ap_manager_t* ma
 								ap_reducedproduct_t* dest)
 {
   return ap_reducedproduct_asssub_linexpr_array(AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,
+					   man,destructive,a,tdim,texpr,size,dest);
+}
+
+ap_reducedproduct_t*
+ap_reducedproduct_asssub_texpr_array(ap_funid_t funid,
+				       /* either assign or substitute */
+				       ap_manager_t* manager,
+				       bool destructive,
+				       ap_reducedproduct_t* a,
+				       ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
+				       ap_reducedproduct_t* dest)
+{
+  ap_reducedproduct_internal_t* intern = get_internal_init2(manager,funid,a,dest);
+  size_t i;
+  ap_reducedproduct_t* res;
+
+  res = destructive ? a : ap_reducedproduct_alloc(intern->size);
+
+  for (i=0;i<intern->size;i++){
+    ap_manager_t* man = intern->tmanagers[i];
+    void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
+    res->p[i] = ptr(man,destructive,a->p[i],tdim,texpr,size, dest ? dest->p[i] : NULL);
+    if (dest || funid==AP_FUNID_SUBSTITUTE_TEXPR_ARRAY){
+      tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+      if (is_bottom(man,res->p[i])==tbool_true){
+	set_bottom(intern,destructive,res,i);
+	break;
+      }
+    }
+  }
+  res->reduced = false;
+  collect_results1(manager,funid,res);
+  return res;
+}
+ap_reducedproduct_t* ap_reducedproduct_assign_texpr_array(ap_manager_t* man,
+							    bool destructive,
+							    ap_reducedproduct_t* a,
+							    ap_dim_t* tdim,
+							    ap_texpr0_t** texpr,
+							    size_t size,
+							    ap_reducedproduct_t* dest)
+{
+  return ap_reducedproduct_asssub_texpr_array(AP_FUNID_ASSIGN_TEXPR_ARRAY,
+					   man,destructive,a,tdim,texpr,size,dest);
+}
+ap_reducedproduct_t* ap_reducedproduct_substitute_texpr_array(ap_manager_t* man,
+								bool destructive,
+								ap_reducedproduct_t* a,
+								ap_dim_t* tdim,
+								ap_texpr0_t** texpr,
+								size_t size,
+								ap_reducedproduct_t* dest)
+{
+  return ap_reducedproduct_asssub_texpr_array(AP_FUNID_SUBSTITUTE_TEXPR_ARRAY,
 					   man,destructive,a,tdim,texpr,size,dest);
 }
 
@@ -1139,11 +1205,14 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   man->option.funopt[AP_FUNID_IS_LEQ].algorithm = 0x1;
   man->option.funopt[AP_FUNID_IS_EQ].algorithm = 0x1;
   man->option.funopt[AP_FUNID_SAT_LINCONS].algorithm = 0x1;
+  man->option.funopt[AP_FUNID_SAT_TCONS].algorithm = 0x1;
   man->option.funopt[AP_FUNID_SAT_INTERVAL].algorithm = 0x1;
   man->option.funopt[AP_FUNID_IS_DIMENSION_UNCONSTRAINED].algorithm = 0x1;
   man->option.funopt[AP_FUNID_BOUND_LINEXPR].algorithm = 0x1;
+  man->option.funopt[AP_FUNID_BOUND_TEXPR].algorithm = 0x1;
   man->option.funopt[AP_FUNID_BOUND_DIMENSION].algorithm = 0x1;
   man->option.funopt[AP_FUNID_TO_LINCONS_ARRAY].algorithm = 0x1;
+  man->option.funopt[AP_FUNID_TO_TCONS_ARRAY].algorithm = 0x1;
   man->option.funopt[AP_FUNID_TO_BOX].algorithm = 0x1;
   man->option.funopt[AP_FUNID_TO_GENERATOR_ARRAY].algorithm = 0x1;
   man->option.funopt[AP_FUNID_JOIN].algorithm = 0x1;
@@ -1173,7 +1242,6 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   funptr[AP_FUNID_BOTTOM] = &ap_reducedproduct_bottom;
   funptr[AP_FUNID_TOP] = &ap_reducedproduct_top;
   funptr[AP_FUNID_OF_BOX] = &ap_reducedproduct_of_box;
-  funptr[AP_FUNID_OF_LINCONS_ARRAY] = &ap_reducedproduct_of_lincons_array;
   funptr[AP_FUNID_DIMENSION] = &ap_reducedproduct_dimension;
   funptr[AP_FUNID_IS_BOTTOM] = &ap_reducedproduct_is_bottom;
   funptr[AP_FUNID_IS_TOP] = &ap_reducedproduct_is_top;
@@ -1182,21 +1250,25 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED] = &ap_reducedproduct_is_dimension_unconstrained;
   funptr[AP_FUNID_SAT_INTERVAL] = &ap_reducedproduct_sat_interval;
   funptr[AP_FUNID_SAT_LINCONS] = &ap_reducedproduct_sat_lincons;
+  funptr[AP_FUNID_SAT_TCONS] = &ap_reducedproduct_sat_tcons;
   funptr[AP_FUNID_BOUND_DIMENSION] = &ap_reducedproduct_bound_dimension;
   funptr[AP_FUNID_BOUND_LINEXPR] = &ap_reducedproduct_bound_linexpr;
+  funptr[AP_FUNID_BOUND_TEXPR] = &ap_reducedproduct_bound_texpr;
   funptr[AP_FUNID_TO_BOX] = &ap_reducedproduct_to_box;
   funptr[AP_FUNID_TO_LINCONS_ARRAY] = &ap_reducedproduct_to_lincons_array;
+  funptr[AP_FUNID_TO_TCONS_ARRAY] = &ap_reducedproduct_to_tcons_array;
   funptr[AP_FUNID_TO_GENERATOR_ARRAY] = &ap_reducedproduct_to_generator_array;
   funptr[AP_FUNID_MEET] = &ap_reducedproduct_meet;
   funptr[AP_FUNID_MEET_ARRAY] = &ap_reducedproduct_meet_array;
   funptr[AP_FUNID_MEET_LINCONS_ARRAY] = &ap_reducedproduct_meet_lincons_array;
+  funptr[AP_FUNID_MEET_TCONS_ARRAY] = &ap_reducedproduct_meet_tcons_array;
   funptr[AP_FUNID_JOIN] = &ap_reducedproduct_join;
   funptr[AP_FUNID_JOIN_ARRAY] = &ap_reducedproduct_join_array;
   funptr[AP_FUNID_ADD_RAY_ARRAY] = &ap_reducedproduct_add_ray_array;
-  funptr[AP_FUNID_ASSIGN_LINEXPR] = &ap_reducedproduct_assign_linexpr;
-  funptr[AP_FUNID_SUBSTITUTE_LINEXPR] = &ap_reducedproduct_substitute_linexpr;
   funptr[AP_FUNID_ASSIGN_LINEXPR_ARRAY] = &ap_reducedproduct_assign_linexpr_array;
   funptr[AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY] = &ap_reducedproduct_substitute_linexpr_array;
+  funptr[AP_FUNID_ASSIGN_TEXPR_ARRAY] = &ap_reducedproduct_assign_texpr_array;
+  funptr[AP_FUNID_SUBSTITUTE_TEXPR_ARRAY] = &ap_reducedproduct_substitute_texpr_array;
   funptr[AP_FUNID_ADD_DIMENSIONS] = &ap_reducedproduct_add_dimensions;
   funptr[AP_FUNID_REMOVE_DIMENSIONS] = &ap_reducedproduct_remove_dimensions;
   funptr[AP_FUNID_PERMUTE_DIMENSIONS] = &ap_reducedproduct_permute_dimensions;

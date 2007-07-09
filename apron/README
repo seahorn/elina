@@ -8,27 +8,22 @@
 Source for APRON commoninterface files.
 
   To compile and/or to generate the doc, you need:
-  * the NOWEB litterate programming tools
-  * the GMP library, for multiprecision arithmetic
-  * the ITV library (mpq and dbl versions, required by ap_linearize)
+  * the GMP and MPFR libraries, for multiprecision arithmetic)
+  * the ITV library (included)
 
   You need to generate a Makefile.config file from the
   Makefile.config.model in the parent directory of this file.
 
 Most useful make targets:
 
-  all: clib ps
-    everything
+  all: 
+    C library (libapron.a libapron_debug.a)
   apronrationale.ps:
     le rationale pour l'interface
   apron.ps
   apron.info:
   apron.html:
     the documentation
-  clib: 
-    C library (libapron.a libapron_debug.a)
-  csrc: 
-    C source (some are generated from Noweb)
 
   clean:
   distclean:
@@ -41,6 +36,8 @@ Header files associated to C files and considered as modules:
   ap_linexpr0.h   : (interval) linear expressions, level 0
   ap_lincons0.h   : (interval) linear constraints, level 0
   ap_generator0.h : generators, level 0
+  ap_texpr0.h     : tree expressions, level 0
+  ap_tcons0.h     : tree constraints, level 0
   ap_manager.h    : managers
   ap_abstract0.h: : abstract values, level 0
   ap_var.h        : variables 
@@ -48,10 +45,12 @@ Header files associated to C files and considered as modules:
   ap_linexpr1.h   : (interval) linear expressions, level 1
   ap_lincons1.h   : (interval) linear constraints, level 1
   ap_generator1.h : generators, level 1
+  ap_texpr0.h     : tree expressions, level 1
+  ap_tcons0.h     : tree constraints, level 1
   ap_abstract1.h  : abstract values, level 1
   ap_generic.h    : generic functions for library adaptors/implementors
   ap_linearize.h  : generic functions for (quasi)linearisation of interval
-                    expressions
+                    expressions and tree expressions.
 
 Additional header files:
   ap_config.h  : miscellaneous stuff (booleans, ...)
@@ -61,4 +60,4 @@ Additional header files:
   ap_global1.h : all stuff relevant for level 1
 
 * When linking objects against APRON, APRON requires:
-  libitvmpq(.a), libitvdbl(.a), libmpfr(.a) and libgmp(.a) libraries.
+  libitv(.a), libmpfr(.a) and libgmp(.a) libraries.

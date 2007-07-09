@@ -82,16 +82,17 @@ and then you compile and link your example [X.ml] with
 
 [ocamlc -I $APRON_PREFIX/lib -use-runtime myrun -o X bigarray.cma gmp.cma apron.cma polka.cma X.cmo]
 
-{b Comments:} The C libraries related to [gmp.cma] and [apron.cma]
-are automatically looked for (thanks to the auto-linking feature
-provided by [ocamlc]). This is only partially the case for
-[polka.cma] because it may be linked against different C versions
-(depending on the underlying representation of numbers). See the C
-documentation of [Polka] library for details. With the
-[-noautolink] option, the generation of the custom runtime
-executable should be done with
+{b Comments:} The C libraries related to [gmp.cma] and [apron.cma] are
+automatically looked for (thanks to the auto-linking feature provided by
+[ocamlc]). For [polka.cma], the library [libpolka.a], identic to
+[libpolkaMPQ.a], is selected by default. The [-noautolink] option should be
+used to select a differetn version. See the C documentation of [Polka] library
+for details. 
 
-[ocamlc -I $APRON_PREFIX/lib -noautolink -make-runtime -o myrun bigarray.cma gmp.cma apron.cma polka.cma -ccopt \"-L$GMP_PREFIX/lib ...\" -cclib \"-lpolka_caml -lpolkag -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl\"]
+With the [-noautolink] option, the generation of the custom
+runtime executable should be done with
+
+[ocamlc -I $APRON_PREFIX/lib -noautolink -make-runtime -o myrun bigarray.cma gmp.cma apron.cma polka.cma -ccopt \"-L$GMP_PREFIX/lib ...\" -cclib \"-lpolka_caml -lpolka -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl\"]
 
 {3 Native-code compilation}
 You compile and link with
@@ -103,5 +104,5 @@ You compile and link with
 {b Comments:} Same as for bytecode compilation. With the
 [-noautolink] option, the linking command becomes
 
-[ocamlopt -I $APRON_PREFIX/lib -o X bigarray.cmxa gmp.cmxa apron.cmxa polka.cmxa -ccopt \"-L$GMP_PREFIX/lib ...\" -cclib \"-lpolka_caml -lpolkag -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl\" X.cmx]
+[ocamlopt -I $APRON_PREFIX/lib -o X bigarray.cmxa gmp.cmxa apron.cmxa polka.cmxa -ccopt \"-L$GMP_PREFIX/lib ...\" -cclib \"-lpolka_caml -lpolkaMPQ -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl\" X.cmx]
 *)")
