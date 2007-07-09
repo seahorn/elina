@@ -2397,8 +2397,8 @@ Create a variable expression. Return @code{NULL} in the case @var{var}
 is unknown in @var{env}.
 @end deftypefun
 
-@deftypefun ap_texpr1_t* ap_texpr1_unop (ap_texpr_op_t @var{op}, ap_texpr_rtype_t @var{type}, ap_texpr_rdir_t @var{dir}, ap_texpr1_t* @var{opA})
-@deftypefunx ap_texpr1_t* ap_texpr1_binop (ap_texpr_op_t @var{op}, ap_texpr_rtype_t @var{type}, ap_texpr_rdir_t @var{dir}, ap_texpr1_t* @var{opA}, ap_texpr1_t* @var{opB})
+@deftypefun ap_texpr1_t* ap_texpr1_unop (ap_texpr_op_t @var{op}, ap_texpr1_t* @var{opA}, ap_texpr_rtype_t @var{type}, ap_texpr_rdir_t @var{dir})
+@deftypefunx ap_texpr1_t* ap_texpr1_binop (ap_texpr_op_t @var{op}, ap_texpr1_t* @var{opA}, ap_texpr1_t* @var{opB}, ap_texpr_rtype_t @var{type}, ap_texpr_rdir_t @var{dir})
 Create an expression from an operator and expression operand(s). Be
 aware that @var{opA} and @var{opB} are memroy-managed by the result
 upon return.

@@ -278,14 +278,14 @@ quote(MLMLI,"external to_expr : t -> expr = \"camlidl_texpr1_ap_texpr1_to_expr_c
 quote(MLI,"\n(** {3 Incremental constructors} *)\n")
 [ref]struct ap_texpr1_t* ap_texpr1_cst(ap_environment_ptr env, [ref]struct ap_coeff_t* coeff);
 [ref]struct ap_texpr1_t* ap_texpr1_var(ap_environment_ptr env, ap_var_t var);
-[ref]struct ap_texpr1_t* ap_texpr1_unop(ap_texpr_unop_t op, 
-			     ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
-			     [ref]struct ap_texpr1_t* expr)
-quote(call,"_res = ap_texpr1_unop(op,type,dir,ap_texpr1_copy(expr));");
-[ref]struct ap_texpr1_t* ap_texpr1_binop(ap_texpr_binop_t op, 
-			      ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
-			      [ref]struct ap_texpr1_t* exprA, [ref]struct ap_texpr1_t* exprB)
-quote(call,"_res = ap_texpr1_binop(op,type,dir,ap_texpr1_copy(exprA),ap_texpr1_copy(exprB));");
+[ref]struct ap_texpr1_t* ap_texpr1_unop(ap_texpr_unop_t op,
+			     [ref]struct ap_texpr1_t* expr, 
+			     ap_texpr_rtype_t type, ap_texpr_rdir_t dir)
+quote(call,"_res = ap_texpr1_unop(op,ap_texpr1_copy(expr),type,dir);");
+[ref]struct ap_texpr1_t* ap_texpr1_binop(ap_texpr_binop_t op,
+			      [ref]struct ap_texpr1_t* exprA, [ref]struct ap_texpr1_t* exprB, 
+			      ap_texpr_rtype_t type, ap_texpr_rdir_t dir)
+quote(call,"_res = ap_texpr1_binop(op,ap_texpr1_copy(exprA),ap_texpr1_copy(exprB),type,dir);");
 
 
 quote(MLMLI,"\n(** {2 Tests} *)\n")

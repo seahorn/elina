@@ -112,11 +112,11 @@ ap_texpr1_t* ap_texpr1_node(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rd
   }
   return texpr1;
 }
-ap_texpr1_t* ap_texpr1_unop(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rdir_t dir, ap_texpr1_t* opA)
+ap_texpr1_t* ap_texpr1_unop(ap_texpr_op_t op, ap_texpr1_t* opA, ap_texpr_rtype_t type, ap_texpr_rdir_t dir)
 {
   return ap_texpr1_node(op,type,dir,opA,NULL);
 }
-ap_texpr1_t* ap_texpr1_binop(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rdir_t dir, ap_texpr1_t* opA, ap_texpr1_t* opB)
+ap_texpr1_t* ap_texpr1_binop(ap_texpr_op_t op, ap_texpr1_t* opA, ap_texpr1_t* opB, ap_texpr_rtype_t type, ap_texpr_rdir_t dir)
 {
   return ap_texpr1_node(op,type,dir,opA,opB);
 }

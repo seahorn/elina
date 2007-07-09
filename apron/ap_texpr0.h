@@ -111,14 +111,14 @@ ap_texpr0_t* ap_texpr0_cst_interval_top    (void);
 ap_texpr0_t* ap_texpr0_dim(ap_dim_t dim);
   /* Create a dimension (variable) leaf expression */
 
-ap_texpr0_t* ap_texpr0_unop(ap_texpr_op_t op, 
-			    ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
-			    ap_texpr0_t* opA);
+ap_texpr0_t* ap_texpr0_unop(ap_texpr_op_t op,
+			    ap_texpr0_t* opA, 
+			    ap_texpr_rtype_t type, ap_texpr_rdir_t dir);
   /* Create unary operator node */
 
 ap_texpr0_t* ap_texpr0_binop(ap_texpr_op_t op,
-			     ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
-			     ap_texpr0_t* opA, ap_texpr0_t* opB);
+			     ap_texpr0_t* opA, ap_texpr0_t* opB,
+			     ap_texpr_rtype_t type, ap_texpr_rdir_t dir);
   /* Create binary operator node */
 
 ap_texpr0_t* ap_texpr0_copy(ap_texpr0_t* expr);

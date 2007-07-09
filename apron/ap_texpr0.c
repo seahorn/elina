@@ -138,7 +138,7 @@ ap_texpr0_t* ap_texpr0_node(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rd
   res->val.node = node;
   return res;
 }
-ap_texpr0_t* ap_texpr0_unop(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rdir_t dir, ap_texpr0_t* opA)
+ap_texpr0_t* ap_texpr0_unop(ap_texpr_op_t op, ap_texpr0_t* opA, ap_texpr_rtype_t type, ap_texpr_rdir_t dir)
 {
   if (!ap_texpr_is_unop(op)){
     fprintf(stderr,"ap_texpr0.c: ap_texpr0_unop: unary operator expected\n");
@@ -146,7 +146,7 @@ ap_texpr0_t* ap_texpr0_unop(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rd
   }
   return ap_texpr0_node(op,type,dir,opA,NULL);
 }
-ap_texpr0_t* ap_texpr0_binop(ap_texpr_op_t op, ap_texpr_rtype_t type, ap_texpr_rdir_t dir, ap_texpr0_t* opA, ap_texpr0_t* opB)
+ap_texpr0_t* ap_texpr0_binop(ap_texpr_op_t op, ap_texpr0_t* opA, ap_texpr0_t* opB, ap_texpr_rtype_t type, ap_texpr_rdir_t dir)
 {
   if (!ap_texpr_is_binop(op)){
     fprintf(stderr,"ap_texpr0.c: ap_texpr0_binop: binary operator expected\n");
@@ -212,11 +212,12 @@ ap_texpr0_t* ap_texpr0_from_linexpr0(ap_linexpr0_t* e)
   ap_dim_t d;
   ap_coeff_t* c;
   ap_linexpr0_ForeachLinterm(e, i, d, c) {
-    res = ap_texpr0_binop(AP_TEXPR_ADD, AP_RTYPE_REAL, AP_RDIR_RND,
+    res = ap_texpr0_binop(AP_TEXPR_ADD,
 			  res,
-			  ap_texpr0_binop(AP_TEXPR_MUL, 
-					  AP_RTYPE_REAL, AP_RDIR_RND,
-					  ap_texpr0_cst(c), ap_texpr0_dim(d)));
+			  ap_texpr0_binop(AP_TEXPR_MUL,
+					  ap_texpr0_cst(c), ap_texpr0_dim(d), 
+					  AP_RTYPE_REAL, AP_RDIR_RND), 
+			  AP_RTYPE_REAL, AP_RDIR_RND);
   }
   return res;
 }

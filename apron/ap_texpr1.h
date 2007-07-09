@@ -60,14 +60,14 @@ ap_texpr1_t* ap_texpr1_cst_interval_top    (ap_environment_t* env);
 ap_texpr1_t* ap_texpr1_var(ap_environment_t* env, ap_var_t var);
   /* Create a variable leaf expression */
 
-ap_texpr1_t* ap_texpr1_unop(ap_texpr_op_t op, 
-			    ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
-			    ap_texpr1_t* opA);
+ap_texpr1_t* ap_texpr1_unop(ap_texpr_op_t op,
+			    ap_texpr1_t* opA, 
+			    ap_texpr_rtype_t type, ap_texpr_rdir_t dir);
   /* Create unary operator node */
 
 ap_texpr1_t* ap_texpr1_binop(ap_texpr_op_t op,
-			     ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
-			     ap_texpr1_t* opA, ap_texpr1_t* opB);
+			     ap_texpr1_t* opA, ap_texpr1_t* opB,
+			     ap_texpr_rtype_t type, ap_texpr_rdir_t dir);
   /* Create binary operator node */
 
 ap_texpr1_t* ap_texpr1_copy(ap_texpr1_t* expr);

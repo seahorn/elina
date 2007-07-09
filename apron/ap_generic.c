@@ -422,8 +422,8 @@ void* ap_generic_asssub_texpr_array(bool assign,
     ap_dim_t dim = tdim[i];
     ap_dim_t dimp = permutation.dim[dim];
     ap_texpr0_t* expr = ap_texpr0_add_dimensions(texpr[i],&dimchange);
-    expr = ap_texpr0_binop(AP_TEXPR_SUB, AP_RTYPE_REAL, AP_RDIR_RND,
-			   expr,ap_texpr0_dim(dimp));
+    expr = ap_texpr0_binop(AP_TEXPR_SUB, expr,ap_texpr0_dim(dimp), 
+			   AP_RTYPE_REAL, AP_RDIR_RND);
     ap_tcons0_t cons = ap_tcons0_make(AP_CONS_EQ,expr,NULL);
     array.p[i] = cons;
   }

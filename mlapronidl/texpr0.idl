@@ -216,13 +216,13 @@ quote(MLI,"\n(** {3 Incremental constructors} *)\n")
 ap_texpr0_ptr ap_texpr0_cst([ref]struct ap_coeff_t* coeff);
 ap_texpr0_ptr ap_texpr0_dim(ap_dim_t dim);
 ap_texpr0_ptr ap_texpr0_unop(ap_texpr_unop_t op,
-			     ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
-			     ap_texpr0_ptr expr)
-quote(call,"_res = ap_texpr0_unop(op,type,dir,ap_texpr0_copy(expr));");
+			     ap_texpr0_ptr expr,
+			     ap_texpr_rtype_t type, ap_texpr_rdir_t dir)
+quote(call,"_res = ap_texpr0_unop(op,ap_texpr0_copy(expr),type,dir);");
 ap_texpr0_ptr ap_texpr0_binop(ap_texpr_binop_t op,
 			      ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
 			      ap_texpr0_ptr exprA, ap_texpr0_ptr exprB)
-quote(call,"_res = ap_texpr0_binop(op,type,dir,ap_texpr0_copy(exprA),ap_texpr0_copy(exprB));");
+quote(call,"_res = ap_texpr0_binop(op,ap_texpr0_copy(exprA),ap_texpr0_copy(exprB),type,dir);");
 
 
 
