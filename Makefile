@@ -1,5 +1,8 @@
 include Makefile.config
 
+MLREQUESTED = mlgmpidl/Makefile.config
+
+
 LCFLAGS = \
 -L$(GMP_PREFIX)/lib \
 -L$(MPFR_PREFIX)/lib \
@@ -22,10 +25,13 @@ $(OCAMLLDFLAGS_PPL) \
 -cclib "-lpolka_caml -lpolkaMPQ_debug -loct_caml -loctMPQ_debug -lbox_caml -lboxMPQ_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
 
 ifdef HAS_OCAML
-all: c ml aprontop apronrun
+all: $(REQUESTED) c ml aprontop apronrun
 else
 all: c
 endif
+
+mlgmpidl/Makefile.config: Makefile.config Makefile
+	$(SED) -e '1 aHAS_MPFR=1\n' Makefile.config >$@
 
 c:
 	(cd num; make all)
@@ -39,7 +45,7 @@ ifdef HAS_PPL
 	(cd products; make)
 endif
 
-ml:
+ml: $(MLREQUESTED) 
 	(cd mlgmpidl; make all)
 	(cd mlapronidl; make all)
 	(cd newpolka; make ml)
@@ -52,13 +58,13 @@ endif
 
 .PHONY: apronrun aprontop
 
-apronrun:
+apronrun: $(MLREQUESTED) 
 	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ $(OCAMLLDFLAGS)
 
-aprontop:
+aprontop: $(MLREQUESTED) 
 	$(OCAMLMKTOP) $(OCAMLINC) -verbose -custom -o $@ $(OCAMLLDFLAGS)
 
-rebuild:
+rebuild: $(MLREQUESTED) 
 ifdef HAS_OCAML
 	(cd mlgmpidl; make rebuild)
 	(cd mlapronidl; make rebuild)
@@ -80,7 +86,6 @@ ifdef HAS_PPL
 	(cd ppl; make install)
 	(cd products; make install)
 endif
-
 ifdef HAS_OCAML
 	(cd mlgmpidl; make install)
 	(cd mlapronidl; make install)
