@@ -3,7 +3,7 @@
 oct_doc.html
 APRON Library / Octagonal Domain
 Documentation
-Copyright (C) Antoine Mine' 2006
+Copyright (C) Antoine Mine' 2006-2007
 -->
 <!--
 This file is part of the APRON Library, released under LGPL license.  
@@ -52,11 +52,11 @@ common interface for various numerical abstract domains with various
 expressiveness and cost versus precision trade-offs.
 This document describes the octagon domain implementation available
 within APRON.
-The octagon domain allows manipulating and representing conjunction
+The octagon domain allows manipulating and representing conjunctions
 of invariants of the form
 &plusmn;<i>x</i> &plusmn;<i>y</i> &le; <i>c</i>, where <i>x</i> and
 <i>y</i> range among a finite set of numerical program variables.
-In dimension two, such invariants have an octagonal shape, hence the name.
+In two dimensions, such invariants have an octagonal shape, hence the name.
 
 <p>
 Familiarity is assumed with the generic APRON framework as well as
@@ -72,17 +72,18 @@ distribution for installation instructions.
 <h2><a name="c">Access to the Library from C and C++</a></h2>
 
 <p>
-You C or C++ program must be linked with the following libraries:
+Your C or C++ program must be linked with the following libraries:
 <ul>
-<li> the octagon library <code>-loctXx</code>
-(where <code>Xx</code> denotes the chosen numeric set;
-<code>Qg</code> for instance);
+<li> the octagon library <code>-loctX</code>
+(where <code>X</code> denotes the chosen numeric set;
+<code>MPQ</code> for instance);
 <li> the APRON library <code>-lapron</code>;
 <li> the GMP library <code>-lgmp</code>;
+<li> the MPFR library <code>-lmpfr</code>;
 <li> the standard mathematical library <code>-lm</code>.
 </ul>
 It is possible to use additional libraries, such as the POLKA module
-<code>-lpolkag</code>.
+<code>-lpolkaMPQ</code>.
 
 <p>
 The standard way to access to the octagon library is through an
@@ -98,8 +99,9 @@ are available on octagons through <code>man</code>.
 <p>
 Note that, when using a floating-point implementation of the octagon library,
 creating a manager will automatically put the floating-point unit into
-<i>rounding towards +oo</i> mode, as it is required to ensure the soundness of 
-the transfer functions.
+<i>rounding towards +oo</i> mode
+(using <code>ap_fpu_init</code> provided by APRON), 
+as it is required to ensure the soundness of the transfer functions.
 Beware that this setting is global: it affects all the computations of the
 process, not only those occurring in the octagon library.
 
@@ -108,22 +110,16 @@ process, not only those occurring in the octagon library.
 
 <p>
 The octagon library is compiled with a variety of underlying numeric set,
-distinguished using a two-letter suffix:
+distinguished using a suffix:
 <ul>
-<li> a capital letter denoting a mathematical set:
-<ul>
-<li> <code>Z</code> for positive and negative integers,
-<li> <code>Q</code> for rationals,
-<li> <code>F</code> for reals;
-</ul>
-<li> a small letter denoting the computer representation used internally:
-<ul> 
-<li> <code>i</code> for <code>int</code>,
-<li> <code>d</code> for <code>double</code>,
-<li> <code>l</code> for <code>long</code> or <code>long double</code>,
-<li> <code>g</code> for arbitrary precision numbers, using the 
-<a href="http://www.swox.com/gmp/"><code>GMP</code></a> library.
-</ul>
+<li> <code>I</code>: integers with a plain "long int" representation;
+<li> <code>Ill</code>: integers with a "long long int" representation;
+<li> <code>MPZ</code>: arbitrary precision integers using GMP;
+<li> <code>Rl</code>: rationals with a "long int" representation;
+<li> <code>Rll</code>: rationals with a "long long int" representation;
+<li> <code>MPQ</code>: arbitrary precision rationals using GMP;
+<li> <code>D</code>: reals with a "double" representation;
+<li> <code>Dl</code>:   reals with a "long double" representation.
 </ul>
 
 <p>
@@ -142,9 +138,9 @@ rounding is always performed towards +oo, which ensures soundness;
 using numbers in <code>Z</code>,
 <li> <code>GMP</code> types are much slower than native types.
 </ul>
-For best precision, the <code>Qg</code> combination is recommended.
-For a fast and versatile yet sound analysis, the <code>Fd</code> 
-combination is recommended.
+For best precision, <code>MPQ</code> is recommended.
+For a fast and versatile yet sound analysis, <code>D</code> 
+is recommended.
 
 <p>
 Note that the underlying numeric set chosen for octagons is not
@@ -191,7 +187,7 @@ Best transfer functions are provided in the following cases:
 </ul>
 
 <p>
-The following transfer functions use some approximate polynomial algorithm
+The following transfer functions use some approximate polynomial algorithms
 and have no precision guarantees:
 <ul>
 <li> conversions from or conjunctions with arbitrary constraints
@@ -200,17 +196,17 @@ and have no precision guarantees:
 (a weakly relational approximation is used),
 <li> conversions to generator sets (the whole universe is always returned),
 <li> getting the bound of arbitrary expressions
-(interval arithmetics is used),
+(interval arithmetics is used).
 </ul>
 
 <p>
 Additionally, the exactness or best-precision feature of an abstract transfer
-function is often lost when the <code>Qg</code> underlying numeric set
-is not used, or the arguments have integer dimensions, or the user set
+function is often lost when the <code>MPQ</code> underlying numeric set
+is not used, or the arguments have integer dimensions, or the user sets
 the <code>algorithm</code> parameter to a strictly negative value.
 Finally, the exactness or best-precision feature can be lost due to
 conversion between the underlying numeric type and 
-user-provided <code> ap_scalar_t</code> types.
+user-provided <code>ap_scalar_t</code> types.
 The octagon library will set the <code>flag_exact</code> and
 <code>flag_best</code> manager flags accordingly in all cases.
 
@@ -230,9 +226,9 @@ non-deterministic set.
 <p>
 The following predicates are exact, <i>i.e.</i>, they always return
 either <code>tbool_true</code> or <code>tbool_false</code> 
-(provided that <code>algorithm</code> greater or equal than 0,
+(provided that <code>algorithm</code> is greater than or equal to 0,
 that the octagon has no integer dimension, and that the 
-<code>Qg</code> underlying domain is selected):
+<code>MPQ</code> underlying domain is selected):
 <ul>
 <li> testing for inclusion, equality, emptiness, or universality,
 <li> testing whether a dimension is unbounded or saturated by a
@@ -244,7 +240,7 @@ given interval,
 
 <p>
 Note that, for non-deterministic expressions, <code>tbool_false</code> is 
-returned as long as the saturation is not satisfied for one expression.
+returned as long as the saturation is not satisfied for at least one expression.
 
 <p>
 Testing for the saturation by an arbitrary expression is very imprecise.
@@ -252,8 +248,8 @@ It always return <code>tbool_top</code>.
 
 <p>
 When <code>algorithm</code> is set to a strictly negative value, the
-octagon has an integer dimension, the <code>Qg</code> underlying domain is 
-selected, or the conversion from user-specified <code>scalar_t</code> types
+octagon has an integer dimension, the <code>MPQ</code> underlying domain is 
+selected, or the conversion from user-specified <code>ap_scalar_t</code> types
 to internal types resulted in an over-approximation, the predicate is sound
 but not exact: it is a <i>semi-test</i>.
 That is, it mainly returns either
@@ -427,7 +423,7 @@ Your OCaml program must be linked with the following modules, in order:
 <li> the octagon OCaml wrapper: <code>oct.cmxa</code>
 (or <code>oct.cma</code> for byte-code);
 <li> the C octagon library for the chosen numerical type, <i>e.g.</i>,
-<code>-cclib -loctQg</code>;
+<code>-cclib -loctMPQ</code>;
 <li> the C apron library: <code>-cclib -lapron</code>.
 </ul>
 You may need the specify the include path with <code>-I</code>, depending
@@ -437,9 +433,9 @@ on your installation.
 Examples:
 <ul>
 <li>
-<code>ocamlc -I $HOME/lib gmp.cma apron.cma oct.cma mltest.ml -cclib -loctQg -cclib -lapron</code>
+<code>ocamlc -I $HOME/lib gmp.cma apron.cma oct.cma mltest.ml -cclib -loctMPQ -cclib -lapron</code>
 <li>
-<code>ocamlopt -I $HOME/lib gmp.cmxa apron.cmxa oct.cmxa mltest.ml -cclib -loctQg -cclib -lapron</code>
+<code>ocamlopt -I $HOME/lib gmp.cmxa apron.cmxa oct.cmxa mltest.ml -cclib -loctMPQ -cclib -lapron</code>
 </ul>
 
 
