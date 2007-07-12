@@ -19,22 +19,31 @@ let rec neg acc = function
 
 %token TK_VERTEX TK_RAY TK_LINE TK_RAYMOD TK_LINEMOD
 
-%token TK_MUL TK_ADD TK_SUB TK_DIV
-
 %token TK_SUPEG TK_INFEG TK_SUP TK_INF TK_EG TK_DISEG TK_MOD
 
-%token TK_LBRACKET TK_RBRACKET TK_SEMICOLON
+%token TK_LBRACKET TK_RBRACKET TK_SEMICOLON TK_LPAR TK_RPAR
+
+%token <(Texpr1.typ * Texpr1.round)> TK_MUL
+%token <(Texpr1.typ * Texpr1.round)> TK_ADD
+%token <(Texpr1.typ * Texpr1.round)> TK_SUB
+%token <(Texpr1.typ * Texpr1.round)> TK_DIV
+%token <(Texpr1.typ * Texpr1.round)> TK_MODULO
+%token <(Texpr1.typ * Texpr1.round)> TK_CAST
+%token <(Texpr1.typ * Texpr1.round)> TK_SQRT
+
 
 %token <Mpqf.t> TK_MPQF
 %token <float> TK_FLOAT
 %token <string> TK_VAR
 
 
-%start lincons generator linexpr
+%start lincons generator linexpr tcons texpr
 
 %type <Lincons0.typ * (string*Coeff.t) list> lincons
 %type <Generator0.typ * (string*Coeff.t) list> generator
 %type <(string*Coeff.t) list> linexpr
+%type <Tcons0.typ * Texpr1.expr> tcons
+%type <Texpr1.expr> texpr
 
 %%
 
@@ -60,9 +69,9 @@ linexpr:
   linexpr0 TK_EOF { $1 }
 
 linexpr0:
-  linexpr0 TK_ADD term 
+  linexpr0 TK_ADD term
     { $3::$1 }
-| linexpr0 TK_SUB term 
+| linexpr0 TK_SUB term
 { let (var,coeff) = $3 in (var,Coeff.neg coeff)::$1 }
 | term { [$1] }
 term:
@@ -71,6 +80,55 @@ term:
 | coeff { ("",$1) }
 | id { ($1, Coeff.s_of_int 1) }
 | TK_SUB id { ($2, Coeff.s_of_int (-1)) }
+
+tcons:
+  tcons0 TK_EOF { $1 }
+
+tcons0: 
+  texpr0 TK_EG texpr0 { (Tcons0.EQ, (Texpr1.Binop (Texpr1.Sub,$1,$3,Texpr1.Real,Texpr1.Rnd))) }
+| texpr0 TK_EG texpr0 TK_MOD scalar0 { (Tcons0.EQMOD($5), (Texpr1.Binop (Texpr1.Sub,$1,$3,Texpr1.Real,Texpr1.Rnd))) }
+| texpr0 TK_DISEG texpr0 { failwith "!= not yet supported" }
+| texpr0 TK_SUP texpr0 { (Tcons0.SUP, (Texpr1.Binop (Texpr1.Sub,$1,$3,Texpr1.Real,Texpr1.Rnd))) }
+| texpr0 TK_SUPEG texpr0 { (Tcons0.SUPEQ, (Texpr1.Binop (Texpr1.Sub,$1,$3,Texpr1.Real,Texpr1.Rnd))) }
+| texpr0 TK_INFEG texpr0 { (Tcons0.SUPEQ, (Texpr1.Binop (Texpr1.Sub,$3,$1,Texpr1.Real,Texpr1.Rnd))) }
+| texpr0 TK_INF texpr0 { (Tcons0.SUP, (Texpr1.Binop (Texpr1.Sub,$3,$1,Texpr1.Real,Texpr1.Rnd))) }
+
+texpr:
+  texpr0 TK_EOF { $1 }
+
+texpr0:
+  texpr0 TK_ADD texpr0_1 
+    { let (t,r) = $2 in Texpr1.Binop(Texpr1.Add,$1,$3,t,r) }
+| texpr0 TK_SUB texpr0_1
+    { let (t,r) = $2 in Texpr1.Binop(Texpr1.Sub,$1,$3,t,r) }
+| texpr0_1
+    { $1 }
+
+texpr0_1:
+  texpr0_1 TK_MUL texpr0_2
+    { let (t,r) = $2 in Texpr1.Binop(Texpr1.Mul,$1,$3,t,r) }
+| texpr0_1 TK_DIV texpr0_2
+    { let (t,r) = $2 in Texpr1.Binop(Texpr1.Div,$1,$3,t,r) }
+| texpr0_1 TK_MODULO texpr0_2
+    { let (t,r) = $2 in Texpr1.Binop(Texpr1.Div,$1,$3,t,r) }
+| texpr0_2
+    { $1 }
+texpr0_2:
+  TK_SUB texpr0_2 
+    { let (t,r) = $1 in Texpr1.Unop(Texpr1.Neg,$2,t,r) }
+| texpr0_3
+    { $1 }
+texpr0_3:
+  TK_CAST texpr0_3 
+    { let (t,r) = $1 in Texpr1.Unop(Texpr1.Cast,$2,t,r) }
+| TK_SQRT texpr0_3 
+    { let (t,r) = $1 in Texpr1.Unop(Texpr1.Sqrt,$2,t,r) }
+| TK_LPAR texpr0 TK_RPAR
+    { $2 }
+| coeff0
+    { Texpr1.Cst($1) }
+| id
+    { Texpr1.Var(Var.of_string $1) }
 
 id:
   TK_VAR { $1 }
@@ -82,11 +140,10 @@ scalar:
   scalar0 { $1 }
 | TK_SUB scalar0 { Scalar.neg $2 }
 coeff0:
-  scalar0 
+  scalar0
     { Coeff.Scalar $1 }
-| TK_LBRACKET scalar TK_SEMICOLON scalar TK_RBRACKET 
+| TK_LBRACKET scalar TK_SEMICOLON scalar TK_RBRACKET
     { Coeff.Interval(Interval.of_infsup $2 $4) }
 coeff:
   coeff0 { $1 }
 | TK_SUB coeff0 { Coeff.neg $2 }
-

@@ -13,15 +13,15 @@
 
   [gen ::= ('V:' | 'R:' | 'L:' | 'RM:' | 'LM:') expr]
 
-  [expr ::= expr '+' term | expr '-' term | term] 
-  
+  [expr ::= expr '+' term | expr '-' term | term]
+
   [term ::= coeff ['*'] identifier | coeff | ['-'] identifier]
 
   [coeff ::= scalar | ['-'] '['scalar ';' scalar ']']
 
   [scalar ::= ['-'] (integer | rational | floating_point_number)]
 
-  There is the possibility to parse directly from a lexing buffer, 
+  There is the possibility to parse directly from a lexing buffer,
   or from a string (from which one can generate a buffer with the
   function [Lexing.from_string].
 
@@ -41,20 +41,20 @@ let raise_error str = raise (Error str)
 let rec check_list = function
   | (var1,_)::(((var2,_)::_) as l)->
       if (String.compare var1 var2)=0 then
-	raise (Error (Format.sprintf "%s appears twice in an expression" 
-	  (if var1="" 
+	raise (Error (Format.sprintf "%s appears twice in an expression"
+	  (if var1=""
 	  then "Constant coefficient"
 	  else ("Variable "^var1))))
       else
 	check_list l
   | _ -> ()
 
-let linexpr1_of_linexpr (env:Environment.t) (list:(string*Coeff.t) list) 
+let linexpr1_of_linexpr (env:Environment.t) (list:(string*Coeff.t) list)
   :
   Linexpr1.t
   =
-  let list = 
-    List.sort 
+  let list =
+    List.sort
       (fun (var1,_) (var2,_) -> String.compare var1 var2)
       list
   in
@@ -89,26 +89,46 @@ let generator1_of_generator (env:Environment.t) (generator:Generator0.typ * (str
 (** {2 Exported functions: using lexbuf} *)
 (*  **********************************************************************)
 
-let linexpr1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf) 
-  : 
+let linexpr1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf)
+  :
   Linexpr1.t
   =
   let x = Apron_parser.linexpr Apron_lexer.lex lexbuf in
   linexpr1_of_linexpr env x
 
-let lincons1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf) 
-  : 
+let lincons1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf)
+  :
   Lincons1.t
   =
   let x = Apron_parser.lincons Apron_lexer.lex lexbuf in
   lincons1_of_lincons env x
 
-let generator1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf) 
-  : 
+let generator1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf)
+  :
   Generator1.t
   =
   let x = Apron_parser.generator Apron_lexer.lex lexbuf in
   generator1_of_generator env x
+
+let texpr1expr_of_lexbuf (lexbuf:Lexing.lexbuf)
+  :
+  Texpr1.expr
+  =
+  Apron_parser.texpr Apron_lexer.lex lexbuf
+
+let texpr1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf)
+  :
+  Texpr1.t
+  =
+  let x = texpr1expr_of_lexbuf lexbuf in
+  Texpr1.of_expr env x
+
+let tcons1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf)
+  :
+  Tcons1.t
+  =
+  let (t,x) = Apron_parser.tcons Apron_lexer.lex lexbuf in
+  Tcons1.make (Texpr1.of_expr env x) t
 
 (*  **********************************************************************)
 (** {2 Exported functions: using strings} *)
@@ -116,61 +136,102 @@ let generator1_of_lexbuf (env:Environment.t) (lexbuf:Lexing.lexbuf)
 
 let linexpr1_of_string (env:Environment.t) (str:string) : Linexpr1.t
   =
-  try 
-    let lexbuf = Lexing.from_string str in 
+  try
+    let lexbuf = Lexing.from_string str in
     try linexpr1_of_lexbuf env lexbuf
-    with Parsing.Parse_error -> 
-      raise_error 
-      (Format.sprintf 
-	"Syntaxical error, characters %d-%d in constraint %s" 
-	(Lexing.lexeme_start lexbuf) 
-	(Lexing.lexeme_end lexbuf) 
-	str) 
-    with Apron_lexer.Error (s,e) -> 
-      raise_error 
-      (Format.sprintf 
-	"Lexical error, characters %d-%d in constraint %s" 
-	s e str) 
-      
+    with Parsing.Parse_error ->
+      raise_error
+      (Format.sprintf
+	"Syntaxical error, characters %d-%d in expression %s"
+	(Lexing.lexeme_start lexbuf)
+	(Lexing.lexeme_end lexbuf)
+	str)
+    with Apron_lexer.Error (s,e) ->
+      raise_error
+      (Format.sprintf
+	"Lexical error, characters %d-%d in expression %s"
+	s e str)
+
 let lincons1_of_string (env:Environment.t) (str:string) : Lincons1.t
   =
-  try 
-    let lexbuf = Lexing.from_string str in 
+  try
+    let lexbuf = Lexing.from_string str in
     try lincons1_of_lexbuf env lexbuf
-    with Parsing.Parse_error -> 
-      raise_error 
-      (Format.sprintf 
-	"Syntaxical error, characters %d-%d in constraint %s" 
-	(Lexing.lexeme_start lexbuf) 
-	(Lexing.lexeme_end lexbuf) 
-	str) 
-    with Apron_lexer.Error (s,e) -> 
-      raise_error 
-      (Format.sprintf 
-	"Lexical error, characters %d-%d in constraint %s" 
-	s e str) 
+    with Parsing.Parse_error ->
+      raise_error
+      (Format.sprintf
+	"Syntaxical error, characters %d-%d in constraint %s"
+	(Lexing.lexeme_start lexbuf)
+	(Lexing.lexeme_end lexbuf)
+	str)
+    with Apron_lexer.Error (s,e) ->
+      raise_error
+      (Format.sprintf
+	"Lexical error, characters %d-%d in constraint %s"
+	s e str)
 
 let generator1_of_string (env:Environment.t) (str:string) : Generator1.t
   =
-  try 
-    let lexbuf = Lexing.from_string str in 
-    try 
+  try
+    let lexbuf = Lexing.from_string str in
+    try
       generator1_of_lexbuf env lexbuf
-    with Parsing.Parse_error -> 
-      raise_error 
-      (Format.sprintf 
-	"Syntaxical error, characters %d-%d in constraint %s" 
-	(Lexing.lexeme_start lexbuf) 
-	(Lexing.lexeme_end lexbuf) 
-	str) 
-    with Apron_lexer.Error (s,e) -> 
-      raise_error 
-      (Format.sprintf 
-	"Lexical error, characters %d-%d in constraint %s" 
-	s e str) 
+    with Parsing.Parse_error ->
+      raise_error
+      (Format.sprintf
+	"Syntaxical error, characters %d-%d in generator %s"
+	(Lexing.lexeme_start lexbuf)
+	(Lexing.lexeme_end lexbuf)
+	str)
+    with Apron_lexer.Error (s,e) ->
+      raise_error
+      (Format.sprintf
+	"Lexical error, characters %d-%d in generator %s"
+	s e str)
 
-let lincons1_of_lstring (env:Environment.t) (lstr:string list) 
-  : 
+let texpr1expr_of_string (str:string) : Texpr1.expr
+  =
+  try
+    let lexbuf = Lexing.from_string str in
+    try texpr1expr_of_lexbuf lexbuf
+    with Parsing.Parse_error ->
+      raise_error
+      (Format.sprintf
+	"Syntaxical error, characters %d-%d in expression %s"
+	(Lexing.lexeme_start lexbuf)
+	(Lexing.lexeme_end lexbuf)
+	str)
+    with Apron_lexer.Error (s,e) ->
+      raise_error
+      (Format.sprintf
+	"Lexical error, characters %d-%d in expression %s"
+	s e str)
+
+let texpr1_of_string (env:Environment.t) (str:string) : Texpr1.t
+  =
+  let expr = texpr1expr_of_string str in
+  Texpr1.of_expr env expr
+
+let tcons1_of_string (env:Environment.t) (str:string) : Tcons1.t
+  =
+  try
+    let lexbuf = Lexing.from_string str in
+    try tcons1_of_lexbuf env lexbuf
+    with Parsing.Parse_error ->
+      raise_error
+      (Format.sprintf
+	"Syntaxical error, characters %d-%d in constraint %s"
+	(Lexing.lexeme_start lexbuf)
+	(Lexing.lexeme_end lexbuf)
+	str)
+    with Apron_lexer.Error (s,e) ->
+      raise_error
+      (Format.sprintf
+	"Lexical error, characters %d-%d in constraint %s"
+	s e str)
+
+let lincons1_of_lstring (env:Environment.t) (lstr:string list)
+  :
   Lincons1.earray
   =
   let length = List.length lstr in
@@ -186,8 +247,8 @@ let lincons1_of_lstring (env:Environment.t) (lstr:string list)
   ;
   res
 
-let generator1_of_lstring (env:Environment.t) (lstr:string list) 
-  : 
+let generator1_of_lstring (env:Environment.t) (lstr:string list)
+  :
   Generator1.earray
   =
   let length = List.length lstr in
@@ -203,8 +264,25 @@ let generator1_of_lstring (env:Environment.t) (lstr:string list)
   ;
   res
 
-let of_lstring (man:'a Manager.t) (env:Environment.t) (lstr:string list) 
-  : 
+let tcons1_of_lstring (env:Environment.t) (lstr:string list)
+  :
+  Tcons1.earray
+  =
+  let length = List.length lstr in
+  let res = Tcons1.array_make env length in
+  let i = ref (-1) in
+  List.iter
+    (fun str ->
+      incr i;
+      let x = tcons1_of_string env str in
+      Tcons1.array_set res !i x
+    )
+    lstr
+  ;
+  res
+
+let of_lstring (man:'a Manager.t) (env:Environment.t) (lstr:string list)
+  :
   'a Abstract1.t
   =
   let array = lincons1_of_lstring env lstr in

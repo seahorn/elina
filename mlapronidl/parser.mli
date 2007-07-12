@@ -39,16 +39,31 @@ val generator1_of_lexbuf : Environment.t -> Lexing.lexbuf -> Generator1.t
   (** Conversion from lexing buffers to resp. linear expressions, linear
     constraints and generators, defined on the given environment. *)
 
+val texpr1expr_of_lexbuf : Lexing.lexbuf -> Texpr1.expr
+val texpr1_of_lexbuf : Environment.t -> Lexing.lexbuf -> Texpr1.t
+val tcons1_of_lexbuf : Environment.t -> Lexing.lexbuf -> Tcons1.t
+  (** Conversion from lexing buffers to resp. tree expressions and
+      constraints, defined on the given environment. *)
+
 val linexpr1_of_string : Environment.t -> string -> Linexpr1.t
 val lincons1_of_string : Environment.t -> string -> Lincons1.t
 val generator1_of_string : Environment.t -> string -> Generator1.t
   (** Conversion from strings to resp. linear expressions, linear
     constraints and generators, defined on the given environment. *)
 
+val texpr1expr_of_string : string -> Texpr1.expr
+val texpr1_of_string : Environment.t -> string -> Texpr1.t
+val tcons1_of_string : Environment.t -> string -> Tcons1.t
+  (** Conversion from lexing buffers to resp. tree expressions and
+      constraints, defined on the given environment. *)
+
 val lincons1_of_lstring : Environment.t -> string list -> Lincons1.earray
 val generator1_of_lstring : Environment.t -> string list -> Generator1.earray
   (** Conversion from lists of strings to array of resp. linear
-    constraints and generators, defined on the given environment. *)
+      constraints and generators, defined on the given environment. *)
+
+val tcons1_of_lstring : Environment.t -> string list -> Tcons1.earray
+  (** Conversion from lists of strings to array of tree constraints. *)
 
 val of_lstring : 'a Manager.t -> Environment.t -> string list -> 'a Abstract1.t
   (** Abstraction of lists of strings representing constraints to abstract
