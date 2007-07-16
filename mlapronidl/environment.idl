@@ -61,17 +61,39 @@ if (_res==NULL){\n\
 assert(_res->count >= 1);")
 ;
 
-quote(MLI,"\n(** Remove from an environment a set of integer and real variables. Raise [Failure] in case of non-existing variables. *)")
+quote(MLI,"\n(** Remove from an environment a set variables. Raise [Failure] in case of non-existing variables. *)")
 ap_environment_ptr ap_environment_remove(ap_environment_ptr e,
-				   [size_is(intdim)]ap_var_t* name_of_intdim,
-				   int intdim,
-				   [size_is(realdim)]ap_var_t* name_of_realdim,
-				   int realdim)
+					 [size_is(size)]ap_var_t* tvar,
+					 int size)
      quote(call,"\n\
-_res = ap_environment_remove(e,name_of_intdim,intdim,name_of_realdim,realdim);\n\
+_res = ap_environment_remove(e,tvar,size);\n\
 if (_res==NULL){\n\
   camlidl_free(_ctx);\n\
   caml_failwith(\"Environment.remove: unknown variable names\");\n\
+}\n\
+assert(_res->count >= 1);")
+;
+
+quote(MLI,"\n
+(** Compute the least common environment of 2 environment, \n\
+that is, the environment composed of all the variables \n\
+of the 2 environments.\n\
+Raise [Failure] if the same variable has different types \n\
+in the 2 environment.\
+*)")
+ap_environment_ptr ap_environment_lce(ap_environment_ptr e1,
+				      ap_environment_ptr e2)
+     quote(call,"\n\
+{\n\
+  ap_dimchange_t *c1;\n\
+  ap_dimchange_t *c2;\n\
+  _res = ap_environment_lce(e1,e2,&c1,&c2);\n\
+  if (c1) ap_dimchange_free(c1);\n\
+  if (c2) ap_dimchange_free(c2);\n\
+}\n\
+if (_res==NULL){\n\
+  camlidl_free(_ctx);\n\
+  caml_failwith(\"Environment.lce: variable with two different types\");\n\
 }\n\
 assert(_res->count >= 1);")
 ;

@@ -14,6 +14,10 @@ General:
 
 C interface:
 
+- API:
+  * Addition of ap_abstract1_unify function
+  * Modification of the signature of ap_environment_remove
+
 - some (redundant) functions removed from the API requested from
   underlying domains, but still provided through the APRON
   interface (level 0 and 1) for compatibility reasons:
@@ -41,6 +45,9 @@ C interface:
 
 OCaml interface
 - Linking simplified thanks to the change in C libraries (see above).
+- API:
+  * Addition of Environment.lce, Abstract1.unify (Abstract1.unify_with) functions
+  * Modification of the signature of Environment.remove
 
 Version 0.9.6
 

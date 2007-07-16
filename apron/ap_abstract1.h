@@ -383,6 +383,18 @@ ap_abstract1_t ap_abstract1_substitute_texpr(ap_manager_t* man,
   /* Assignement and Substitution of a single
      dimension by an expression */
 
+ap_abstract1_t ap_abstract1_unify(ap_manager_t* man,
+				  bool destructive, 
+				  ap_abstract1_t* a1,ap_abstract1_t* a2);
+  /* Unify two abstract values on their common variables, that is, embed them
+     on the least common environment and then compute their meet. The result is
+     defined on the least common environment. 
+
+     Ex: unify of {x=y, defined on {x,y}} and {y=z+t, defined on {y,z,t}}
+     gives {x=y and y=z+t, defined on {x,y,z,t}}.
+*/
+
+
 ap_linexpr1_t ap_abstract1_quasilinear_of_intlinear(ap_manager_t* man, ap_abstract1_t* a, ap_linexpr1_t* expr, ap_scalar_discr_t discr);
   /* Evaluate the interval linear expression expr on the abstract value a and
      approximate it by a quasilinear expression. discr indicates which type of

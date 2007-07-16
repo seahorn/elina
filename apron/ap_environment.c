@@ -194,6 +194,7 @@ static env_t env_add(env_t* env, ap_var_t* var_of_dim, size_t size, ap_dim_t* pe
 
 /* Remove from an environment an array of names.
 
+- May reorder the input array 
 - If a name to be removed was not present, return { NULL, UINT_MAX }.
 */
 static env_t env_remove(env_t* env, ap_var_t* var_of_dim, size_t size)
@@ -208,13 +209,11 @@ static env_t env_remove(env_t* env, ap_var_t* var_of_dim, size_t size)
   nenv.var_of_dim = malloc((env->size-size)*sizeof(ap_var_t));
   nenv.size = env->size-size;
   if (var_of_dim && size){
-    ap_var_t* var_of_dim2 = malloc(size*sizeof(ap_var_t));
-    memcpy(var_of_dim2,var_of_dim,size*sizeof(ap_var_t));
-    qsort(var_of_dim2,size,sizeof(ap_var_t),var_cmp);
+    qsort(var_of_dim,size,sizeof(ap_var_t),var_cmp);
     j=0;
     for (i=0;i<nenv.size; i++){
       while (j<size){
-	int sgn = ap_var_operations->compare(env->var_of_dim[i+j],var_of_dim2[j]);
+	int sgn = ap_var_operations->compare(env->var_of_dim[i+j],var_of_dim[j]);
 	assert(sgn<=0);
 	if (sgn==0)
 	  j++;
@@ -224,7 +223,7 @@ static env_t env_remove(env_t* env, ap_var_t* var_of_dim, size_t size)
       nenv.var_of_dim[i] = ap_var_operations->copy(env->var_of_dim[i+j]);
     }
     while (j<size){
-      int sgn = ap_var_operations->compare(env->var_of_dim[nenv.size+j],var_of_dim2[j]);
+      int sgn = ap_var_operations->compare(env->var_of_dim[nenv.size+j],var_of_dim[j]);
       if (sgn==0)
 	j++;
       else {
@@ -233,7 +232,6 @@ static env_t env_remove(env_t* env, ap_var_t* var_of_dim, size_t size)
 	break;
       }
     }
-    free(var_of_dim2);
   }
   else {
     /* Perform just a copy */
@@ -518,24 +516,55 @@ ap_environment_t* ap_environment_add_perm(ap_environment_t* env,
 }
 
 ap_environment_t* ap_environment_remove(ap_environment_t* env,
-					ap_var_t* name_of_intdim, size_t intdim,
-					ap_var_t* name_of_realdim, size_t realdim)
+					ap_var_t* tvar, size_t size)
 {
+  ap_var_t* tvar2;
+  size_t i;
+  size_t intdim,realdim;
+  ap_var_t* tvarint;
+  ap_var_t* tvarreal;
+  denv_t denv1,denv2;
   ap_environment_t* res;
-  denv_t denv2;
 
-  denv_t denv1 = denv_of_environment(env);
-
-  denv2.envint = env_remove(&denv1.envint, name_of_intdim, intdim);
-  denv2.envreal = env_remove(&denv1.envreal, name_of_realdim, realdim);
+  if (size==0)
+    return ap_environment_copy(env);
+  ;
+  /* Copy the input array and split it into integer and real arrays */
+  tvar2 = malloc(size*sizeof(ap_var_t));
+  memcpy(tvar2,tvar,size*sizeof(ap_var_t));
+  intdim = size;
+  i = 0;
+  while (i<size && i<intdim){
+    ap_dim_t dim = ap_environment_dim_of_var(env,tvar2[i]);
+    if (dim==AP_DIM_MAX){
+      free(tvar2);
+      return NULL;
+    }
+    if (dim>=env->intdim){
+      intdim--;
+      ap_var_t t = tvar2[i]; tvar2[i] = tvar2[intdim]; tvar2[intdim] = t;
+    }
+    else {
+      i++;
+    }
+  }
+  tvarint = intdim ? &tvar2[0] : NULL;
+  realdim = size-intdim; 
+  tvarreal = realdim ? &tvar2[intdim] : NULL;
+  
+  denv1 = denv_of_environment(env);
+  denv2.envint = env_remove(&denv1.envint, tvarint, intdim);
+  denv2.envreal = env_remove(&denv1.envreal, tvarreal, realdim);
   if (denv2.envint.size==UINT_MAX ||
       denv2.envreal.size==UINT_MAX){
     res = NULL;
   } else {
     res = environment_of_denv(&denv2);
   }
+  free(tvar2);
   return res;
 }
+
 ap_environment_t* ap_environment_alloc(ap_var_t* name_of_intdim, size_t intdim,
 				       ap_var_t* name_of_realdim, size_t realdim)
 {

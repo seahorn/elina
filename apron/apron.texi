@@ -1570,10 +1570,11 @@ If some variables are duplicated, return @code{NULL}.
 @end deftypefun
 
 @deftypefun ap_environment_t* ap_environment_add (ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
-@deftypefunx ap_environment_t* ap_environment_remove (ap_environment_t* @var{env}, ap_var_t* @var{var_of_intdim}, size_t @var{intdim}, ap_var_t* @var{var_of_realdim}, size_t @var{realdim})
-Resp. add or remove new variables to an existing environment, with a
-functional semantics. Same conventions as for
-@code{ap_environment_alloc} function apply. If the result is non-sense,
+@deftypefunx ap_environment_t* ap_environment_remove (ap_environment_t* @var{env}, ap_var_t* @var{tvar}, size_t @var{size})
+Resp. add or remove new variables to an existing environment, with
+a functional semantics. Same conventions as for
+@code{ap_environment_alloc} function apply. If the result is
+non-sense (or in case of attempt to remove an unknwon variable),
 return @code{NULL}.
 @end deftypefun
 
@@ -3061,6 +3062,18 @@ speaking, the result of the transformation is intersected with
 @var{dest}. This is useful for precise backward transformations in
 lattices like intervals or octagons.
 @end deftypefun
+
+@deftypefun ap_abstract1_t ap_abstract1_unify (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
+Unify two abstract values on their common variables, that is,
+embed them on the least common environment and then compute their
+meet. The result is defined on the least common environment.
+
+For instance, the unification of @code{1<=x<=3 and x=y} defined on
+@code{@{ x, y @}} and @code{2<=z<=4 and z=y] defined on @code{@{
+y,z @}} results in @code{2<=x<=3 and x=y=z} defined on
+@code{@{x,y,z@}}.
+@end deftypefun
+
 
 @deftypefun ap_linexpr1_t ap_abstract1_quasilinear_of_intlinear (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_linexpr1_t* @var{expr})
 Evaluate the interval linear expression @var{expr} on the abstract

@@ -593,7 +593,7 @@ ap_lincons1_array_t ap_abstract1_to_lincons_array(ap_manager_t* man, ap_abstract
 ap_tcons1_array_t ap_abstract1_to_tcons_array(ap_manager_t* man, ap_abstract1_t* a)
 {
   ap_tcons1_array_t array;
-  
+
   array.tcons0_array = ap_abstract0_to_tcons_array(man,a->abstract0);
   array.env = ap_environment_copy(a->env);
   return array;
@@ -1015,31 +1015,25 @@ ap_abstract1_t ap_abstract1_minimize_environment(ap_manager_t* man,
   ap_environment_t* env;
   ap_var_t* tvar;
   ap_dimension_t dim;
-  size_t i,size,intdim,realdim;
+  size_t i,size,nbdims;
   ap_var_t var;
 
   dim = ap_abstract0_dimension(man,a->abstract0);
   size = dim.intdim+dim.realdim;
   tvar = malloc(size*sizeof(ap_var_t));
-  intdim=0;
-  realdim=0;
+  nbdims = 0;
   for (i=0; i<size;i++){
     tbool_t tb = ap_abstract0_is_dimension_unconstrained(man,a->abstract0,i);
     if (tb==tbool_true){
       var = ap_environment_var_of_dim(a->env,i);
-      if (i<dim.intdim){
-	tvar[intdim] = var;
-	intdim++;
-      } else {
-	tvar[intdim+realdim] = var;
-	realdim++;
-      }
+      tvar[nbdims] = var;
+      nbdims++;
     }
   }
-  if (intdim+realdim==0){ /* No change */
+  if (nbdims==0){ /* No change */
     res = destructive ? *a : ap_abstract1_copy(man,a);
   } else {
-    env = ap_environment_remove(a->env,&(tvar[0]),intdim,&(tvar[intdim]),realdim);
+    env = ap_environment_remove(a->env,tvar,nbdims);
     if (env==NULL){
       fprintf(stderr,"ap_abstract1.c: ap_abstract1_minimize_environment: internal error\n");
       abort();
@@ -1136,7 +1130,7 @@ static int compar_dim(const void* a, const void* b)
   int va = *((ap_dim_t*)a);
   int vb = *((ap_dim_t*)b);
   return (va-vb);
-}  
+}
 ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
 				 bool destructive, ap_abstract1_t* a,
 				 ap_var_t* tvar, size_t size)
@@ -1168,10 +1162,7 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
     ap_abstract1_raise_invalid_var(man,AP_FUNID_FOLD,tvar[0]);
     goto ap_abstract1_fold_exit;
   }
-  nenv =
-    (dim<a->env->intdim) ?
-    ap_environment_remove(a->env, &tvar[1], size-1, NULL,0) :
-    ap_environment_remove(a->env, NULL,0, &tvar[1], size-1);
+  nenv = ap_environment_remove(a->env, &tvar[1], size-1);
   if (nenv==NULL){
     ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,AP_FUNID_FOLD,
 			       "some variables to fold are unkown in the environment");
@@ -1192,7 +1183,7 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
   qsort(tdim,size,sizeof(ap_dim_t),compar_dim);
   /* Compute the permutation for "exchanging" dim and tdim[0] if necessary  */
   if (dim!=tdim[0]){
-    /* We have the following situation 
+    /* We have the following situation
 
     Initially:
     env: A B C D E F G
@@ -1202,17 +1193,17 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
     env: A C E F G
     dim: 0 1 2 3 4
     gen: a b c e g
-         a d c e g
-         a f c e g
+	 a d c e g
+	 a f c e g
     We need now to apply the permutation
     rank: 0 1 2 3 4
     perm: 0 2 3 1 4
-    
+
     var: Y Z Q
     dim: 0 1 2
     gen: b a e
-         b c e
-         b d e
+	 b c e
+	 b d e
 
     So we have to perform a to the right between dim[0] and dim-(rank of dim in
     tdim)
@@ -1229,7 +1220,7 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
     }
     perm.dim[dim-index] = tdim[0];
   }
-  
+
   /* Perform the operation */
   value = ap_abstract0_fold(man,destructive,a->abstract0,tdim,size);
   /* Apply the permutation if necessary */
@@ -1365,6 +1356,53 @@ ap_abstract1_t ap_abstract1_substitute_texpr(ap_manager_t* man,
   return ap_abstract1_asssub_texpr_array(AP_FUNID_SUBSTITUTE_TEXPR_ARRAY,man,destructive,a,&var,expr,1,dest);
 }
 
+/* Unify two abstract values on their common variables, that is, embed them
+   on the least common environment and then compute their meet. The result is
+   defined on the least common environment. */
+ap_abstract1_t ap_abstract1_unify(ap_manager_t* man,
+				  bool destructive,
+				  ap_abstract1_t* a1,ap_abstract1_t* a2)
+{
+  ap_dimchange_t* dimchange1;
+  ap_dimchange_t* dimchange2;
+  ap_environment_t* env;
+  ap_abstract0_t* value1;
+  ap_abstract0_t* value2;
+  ap_abstract0_t* value;
+  ap_abstract1_t res;
+  
+  if (ap_environment_is_eq(a1->env,a2->env)){
+    return ap_abstract1_meet(man,destructive,a1,a2);
+  }
+  env = ap_environment_lce(a1->env,a2->env,&dimchange1,&dimchange2);
+  if (env==NULL){
+   ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,AP_FUNID_UNKNOWN,
+			      "\
+ap_abstract1_unify: a variable is defined with different types \
+in the two abstract values");
+   if (destructive)
+     return *a1;
+   else
+     return ap_abstract1_copy(man,a1);
+  }
+  assert(dimchange1 || dimchange2);
+  value1 =
+    dimchange1 ?
+    ap_abstract0_add_dimensions(man,destructive,a1->abstract0,dimchange1,false) :
+    (destructive ? 
+     a1->abstract0 : 
+     ap_abstract0_copy(man,a1->abstract0));
+  ;
+  value2 =
+    dimchange2 ?
+    ap_abstract0_add_dimensions(man,false,a2->abstract0,dimchange2,false) :
+    a2->abstract0;
+  ;
+  value = ap_abstract0_meet(man,true,value1,value2);
+  res = ap_abstract1_consres2(destructive, a1,
+			      value, ap_environment_copy(env));
+  return res;
+}
 
 
 /* Evaluate the interval linear expression expr on the abstract value a and
@@ -1379,7 +1417,7 @@ ap_linexpr1_t ap_abstract1_quasilinear_of_intlinear (ap_manager_t* man, ap_abstr
   ap_dimchange_t* dimchange;
   ap_linexpr1_t res;
   bool exact;
-  
+
   if (ap_environment_is_eq(a->env,expr->env)){
     dimchange = NULL;
     linexpr0 = expr->linexpr0;
@@ -1410,7 +1448,7 @@ ap_linexpr1_t ap_abstract1_quasilinear_of_intlinear (ap_manager_t* man, ap_abstr
    by an interval linear (resp. quasilinear if quasilinearize is true)
    expression. discr indicates which type of numbers should be used for
    computations.
-     
+
    This implies calls to ap_abstract0_bound_dimension. */
 
 ap_linexpr1_t ap_abstract1_intlinear_of_tree(ap_manager_t* man, ap_abstract1_t* a, ap_texpr1_t* expr, ap_scalar_discr_t discr, bool quasilinearize)
@@ -1419,7 +1457,7 @@ ap_linexpr1_t ap_abstract1_intlinear_of_tree(ap_manager_t* man, ap_abstract1_t* 
   ap_dimchange_t* dimchange;
   ap_linexpr1_t res;
   bool exact;
-  
+
   if (ap_environment_is_eq(a->env,expr->env)){
     dimchange = NULL;
     texpr0 = expr->texpr0;

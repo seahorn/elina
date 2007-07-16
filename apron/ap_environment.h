@@ -108,11 +108,13 @@ ap_environment_t* ap_environment_add_perm(ap_environment_t* env,
      the permutation to apply after having added new variables at the end of their
      respective slice, in order to get them sorted. 
      If the result is NULL, so is dimperm->dim */
+
 ap_environment_t* ap_environment_remove(ap_environment_t* env,
-					ap_var_t* name_of_intdim, size_t intdim,
-					ap_var_t* name_of_realdim, size_t realdim);
+					ap_var_t* tvar, size_t size);
   /* Remove variables from an environment.
-     Same comments as for environment_alloc */
+     Return NULL in case of attempt to remove an unknown variable.
+     Same comments as for environment_alloc.
+  */
 
 static inline
 bool ap_environment_mem_var(ap_environment_t* env, ap_var_t name);
