@@ -347,19 +347,20 @@ static inline void bound_of_scalar(oct_internal_t* pr,
 
 /* both bounds of an interval, the lower bound is negated 
    pr->conv is set if the conversion is not exact
+   returns true if the interval is empty
 */
-static inline void bounds_of_interval(oct_internal_t* pr,
+static inline bool bounds_of_interval(oct_internal_t* pr,
 				      bound_t minf, bound_t sup,
 				      ap_interval_t* i,
 				      bool mul2)
 {
-  arg_assert(ap_scalar_cmp(i->inf,i->sup)<=0,return;);
   bound_of_scalar(pr,minf,i->inf,true,mul2);
   bound_of_scalar(pr,sup,i->sup,false,mul2);
+  return ap_scalar_cmp(i->inf,i->sup)>0;
 }
 
 /* as above, for a coeff_t */
-static inline void bounds_of_coeff(oct_internal_t* pr,
+static inline bool bounds_of_coeff(oct_internal_t* pr,
 				   bound_t minf, bound_t sup,
 				   ap_coeff_t c,
 				   bool mul2)
@@ -368,14 +369,12 @@ static inline void bounds_of_coeff(oct_internal_t* pr,
   case AP_COEFF_SCALAR:
     bound_of_scalar(pr,minf,c.val.scalar,true,mul2);
     bound_of_scalar(pr,sup,c.val.scalar,false,mul2);
-    break;
+    return false;
   case AP_COEFF_INTERVAL:
-    arg_assert(ap_scalar_cmp(c.val.interval->inf,c.val.interval->sup)<=0,
-	       return;);
     bound_of_scalar(pr,minf,c.val.interval->inf,true,mul2);
     bound_of_scalar(pr,sup,c.val.interval->sup,false,mul2);
-    break;
-  default: arg_assert(0,return;);
+    return ap_scalar_cmp(c.val.interval->inf,c.val.interval->sup)>0;
+  default: arg_assert(0,return false;);
   }
 }
 
@@ -555,6 +554,7 @@ static inline ap_lincons0_t lincons_of_bound(oct_internal_t* pr,
 
 typedef struct {
   enum { 
+    EMPTY,    /* empty domain */
     ZERO,     /* 0 */
     UNARY,    /* unary unit expression */
     BINARY,   /* binary unit expression */

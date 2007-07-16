@@ -164,7 +164,7 @@ octtest%: liboct%.a oct_test%.o
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -o $@ oct_test$*.o \
 	-L. -loct$* \
 	-L../newpolka -lpolkaMPQ_debug \
-	-L../apron -lapron \
+	-L../apron -lapron_debug \
 	-L$(MPFR_PREFIX)/lib -lmpfr \
 	-L$(GMP_PREFIX)/lib -lgmp \
 	-lm

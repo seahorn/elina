@@ -240,6 +240,10 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
 
     switch (u.type) {      
 
+    case EMPTY:
+      /* the empty set has all properties */
+      return tbool_true;
+
     case ZERO:
       if ((c==AP_CONS_SUPEQ && bound_sgn(pr->tmp[0])<=0) ||
 	  /* [-a,b] >= 0 <=> a <= 0 */
@@ -345,7 +349,12 @@ ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
     bound_t* b = a->closed ? a->closed : a->m;
     size_t i, ui, uj;
     uexpr u = oct_uexpr_of_linexpr(pr,pr->tmp,expr,a->dim);
-    switch (u.type) {      
+    switch (u.type) {
+
+    case EMPTY:
+      ap_interval_set_bottom(r);
+      break;
+
     case ZERO:
       interval_of_bounds(pr,r,pr->tmp[0],pr->tmp[1],false);
       /* exact on Q if closed and no conversion error */

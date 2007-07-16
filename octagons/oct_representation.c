@@ -136,10 +136,15 @@ oct_t* oct_of_box(ap_manager_t* man, size_t intdim, size_t realdim,
     if (ap_scalar_cmp(t[i]->inf,t[i]->sup)>0) return r; /* empty */
   r->closed = hmat_alloc_top(pr,r->dim);
   for (i=0;i<r->dim;i++)
-    bounds_of_interval(pr,
-		       r->closed[matpos(2*i,2*i+1)],
-		       r->closed[matpos(2*i+1,2*i)],
-		       t[i],true);
+    if (bounds_of_interval(pr,
+			   r->closed[matpos(2*i,2*i+1)],
+			   r->closed[matpos(2*i+1,2*i)],
+			   t[i],true)) {
+      /* one interval is empty -> the result is empty */
+      hmat_free(pr,r->closed,r->dim);
+      r->closed = NULL;
+      return r;
+    }
   /* a S step is sufficient to ensure clsoure */
   if (hmat_s_step(r->closed,r->dim)){
     /* definitively empty */

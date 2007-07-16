@@ -260,7 +260,6 @@ ap_lincons0_t random_from_lincons(ap_lincons0_t a)
   return ap_lincons0_make(a.constyp,random_from_linexpr(a.linexpr0),NULL);
 }
 
-
 ap_generator0_t random_generator(int dim, ap_gentyp_t g)
 {
   ap_linexpr0_t* l = ap_linexpr0_alloc(AP_LINEXPR_DENSE,dim);
@@ -270,6 +269,32 @@ ap_generator0_t random_generator(int dim, ap_gentyp_t g)
   ap_coeff_set_scalar_int(&l->cst,0);
   return ap_generator0_make(g,l);
 }
+
+ap_texpr0_t* random_texpr(int dim, int depth)
+{
+  if (!depth) {
+    switch (lrand48()%3) {
+    case 0: return ap_texpr0_dim(lrand48()%dim);
+    case 1: return ap_texpr0_cst_scalar_frac(lrand48()%20-2,lrand48()%4+1);
+    default:
+      {
+	int n1 = lrand48()%20-2, d = lrand48()%4+1;
+	int n2 = n1 + lrand48()%10;
+	return ap_texpr0_cst_interval_frac(n1,d,n2,d);
+      }
+    }
+  }
+  else if (lrand48()%2)
+    return ap_texpr0_unop(AP_TEXPR_NEG+lrand48()%(AP_TEXPR_SQRT-AP_TEXPR_NEG+1),
+			  random_texpr(dim,lrand48()%depth),
+			  lrand48()%AP_RTYPE_SIZE, lrand48()%AP_RDIR_SIZE);
+  else
+    return ap_texpr0_binop(lrand48()%AP_TEXPR_NEG,
+			   random_texpr(dim,lrand48()%depth),
+			   random_texpr(dim,lrand48()%depth),
+			   lrand48()%AP_RTYPE_SIZE, lrand48()%AP_RDIR_SIZE);
+}
+
 
 ap_abstract0_t* random_poly(int dim)
 {
@@ -742,6 +767,28 @@ void test_bound_linexpr(exprmode mode)
     if (flag==exact && ap_interval_cmp(ip,io)!=0) ERROR("exact flag");
     oct_free(mo,o); ap_abstract0_free(mp,p);
     ap_linexpr0_free(e); ap_linexpr0_free(ee);
+    ap_interval_free(io); ap_interval_free(ip);
+   } ENDLOOP;
+}
+
+void test_bound_texpr(void)
+{
+  printf("\nbound texpr\n");
+  LOOP {
+    int dim = 6;
+    oct_t *o;
+    ap_abstract0_t *p;
+    ap_texpr0_t *e;
+    ap_interval_t *io, *ip;
+    random_poly_oct(dim, .2, &o, &p);
+    e  = random_texpr(dim,3);
+    io = oct_bound_texpr(mo,o,e); FLAG(mo);
+    ip = ap_abstract0_bound_texpr(mp,p,e); FLAG(mp);
+    if (ap_interval_cmp(ip,io)==0) RESULT('*');
+    else RESULT('.');
+    if (flag==exact && ap_interval_cmp(ip,io)!=0) ERROR("exact flag");
+    oct_free(mo,o); ap_abstract0_free(mp,p);
+    ap_texpr0_free(e);
     ap_interval_free(io); ap_interval_free(ip);
    } ENDLOOP;
 }
@@ -1387,7 +1434,8 @@ void test_assign(int subst, exprmode mode)
   printf("\n%s %slinexpr %s\n", subst ? "subst" : "assign", exprname[mode],
 	 num_incomplete?"":mode==expr_unary ? "(* expected)" : "");
   LOOP {
-    size_t dim = 6, d = lrand48()%dim;
+    size_t dim = 6;
+    ap_dim_t d = lrand48()%dim;
     oct_t *o, *o1, *o2;
     ap_abstract0_t *p, *p1, *p2;
     ap_linexpr0_t* l = random_linexpr(mode,dim);
@@ -1425,6 +1473,7 @@ void test_assign(int subst, exprmode mode)
 }
 
 #define NB_ASSIGN 3
+
 void test_par_assign(int subst, exprmode mode)
 {
   printf("\nparallel %s %slinexpr %s\n",subst ? "subst" : "assign",
@@ -1509,6 +1558,42 @@ void test_par_assign2(int subst, exprmode mode)
 }
 
 
+void test_assign_texpr(int subst)
+{
+  printf("\n%s texpr\n", subst ? "subst" : "assign");
+  LOOP {
+    size_t dim = 5;
+    ap_dim_t d = lrand48()%dim;
+    oct_t *o, *o1, *o2;
+    ap_abstract0_t *p, *p1, *p2;
+    ap_texpr0_t* e = random_texpr(dim,3);
+    random_poly_oct(dim, .1, &o, &p);
+    if (lrand48()%10>=5) oct_close(pr,o);
+    o1 = subst ? oct_substitute_texpr_array(mo,false,o,&d,&e,1,NULL) : oct_assign_texpr_array(mo,false,o,&d,&e,1,NULL);
+    FLAG(mo);
+    p1 = subst ? ap_abstract0_substitute_texpr_array(mp,false,p,&d,&e,1,NULL) : ap_abstract0_assign_texpr_array(mp,false,p,&d,&e,1,NULL);;
+    FLAG(mp);
+    p2 = poly_of_oct(o1);
+    o2 = oct_of_poly(p1);
+    RESULT(check(o1));
+    if (ap_abstract0_is_eq(mp,p1,p2)==tbool_true) RESULT('*');
+    else if (oct_is_eq(mo,o1,o2)==tbool_true) RESULT('x');
+    else RESULT('.');
+    if (flag==exact && ap_abstract0_is_eq(mp,p1,p2)==tbool_false)
+      ERROR("exact flag");
+    if (flag==best && oct_is_eq(mo,o1,o2)==tbool_false)
+      ERROR("best flag");
+    oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2); 
+    ap_abstract0_free(mp,p); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
+    ap_texpr0_free(e);
+  } ENDLOOP;
+}
+
+
+/* ********************************* */
+/*           main                    */
+/* ********************************* */
+
 void tests(int algo)
 {
   int i;
@@ -1533,6 +1618,7 @@ void tests(int algo)
   test_bound_linexpr(expr_oct);
   test_bound_linexpr(expr_lin);
   test_bound_linexpr(expr_interv);
+  test_bound_texpr();
   test_meet();
   test_meet_array();
   test_join();
@@ -1570,6 +1656,8 @@ void tests(int algo)
   test_par_assign2(1,expr_unary);
   test_par_assign2(1,expr_lin);
   test_par_assign2(1,expr_interv);
+  test_assign_texpr(0);
+  test_assign_texpr(1);
 }
 
 int main(int argc, const char** argv)
