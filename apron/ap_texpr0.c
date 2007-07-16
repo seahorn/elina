@@ -188,9 +188,8 @@ void ap_texpr0_node_free(ap_texpr0_node_t* node)
   ap_texpr0_free(node->exprB);
   free(node);
 }
-void ap_texpr0_free(ap_texpr0_t* expr)
+void ap_texpr0_clear(ap_texpr0_t* expr)
 {
-  if (!expr) return;
   switch(expr->discr){
   case AP_TEXPR_CST:
     ap_coeff_clear(&expr->val.cst);
@@ -203,6 +202,11 @@ void ap_texpr0_free(ap_texpr0_t* expr)
   default:
     assert(false);
   }
+}
+void ap_texpr0_free(ap_texpr0_t* expr)
+{
+  if (!expr) return;
+  ap_texpr0_clear(expr);
   free(expr);
 }
 ap_texpr0_t* ap_texpr0_from_linexpr0(ap_linexpr0_t* e)

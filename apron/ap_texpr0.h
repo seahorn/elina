@@ -53,6 +53,7 @@ typedef enum ap_texpr_rtype_t {
   AP_RTYPE_DOUBLE,   /* IEEE 754 64-bit double precision, e.g.: C's double */
   AP_RTYPE_EXTENDED, /* non-standard 80-bit double extended, e.g.: Intel's long double */
   AP_RTYPE_QUAD,     /* non-standard 128-bit quadruple precision, e.g.: Motorola's long double */
+  AP_RTYPE_SIZE      /* Not to be used ! */
 } ap_texpr_rtype_t;
 
 /* Rounding direction */
@@ -130,11 +131,6 @@ void ap_texpr0_free(ap_texpr0_t* expr);
 ap_texpr0_t* ap_texpr0_from_linexpr0(ap_linexpr0_t* e);
   /* From linear expression to comb-like expression tree */
 
-/* used internally */
-ap_texpr0_t* ap_texpr0_node(ap_texpr_op_t op,
-			    ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
-			    ap_texpr0_t* opA, ap_texpr0_t* opB);
-void ap_texpr0_node_free(ap_texpr0_node_t* node);
 
 /* ====================================================================== */
 /* II. Printing */
@@ -230,6 +226,16 @@ long ap_texpr0_hash(ap_texpr0_t* a);
 
 bool ap_texpr0_equal(ap_texpr0_t* a1, ap_texpr0_t* a2);
   /* Structural (recursive) equality */
+
+
+
+/* used internally */
+ap_texpr0_t* ap_texpr0_node(ap_texpr_op_t op,
+			    ap_texpr_rtype_t type, ap_texpr_rdir_t dir,
+			    ap_texpr0_t* opA, ap_texpr0_t* opB);
+void ap_texpr0_node_free(ap_texpr0_node_t* node);
+void ap_texpr0_clear(ap_texpr0_t* node);
+
 
 #ifdef __cplusplus
 }
