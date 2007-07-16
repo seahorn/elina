@@ -112,11 +112,13 @@ static inline void numflt_trunc(numflt_t a, numflt_t b)
 { *a = trunc(*b); }
 static inline void numflt_sqrt(numflt_t up, numflt_t down, numflt_t b)
 {
+  numflt_t x;
   assert(*b>=0);
-  *up = sqrt(*b);
-  assert(*up**up>=*b); /* assumes round towards +oo! */
-  if (*up**up==*b) *down = *up;
-  else *down = nextafter(*up,0);
+  *x = sqrt(*b);
+  assert(*x**x>=*b); /* assumes round towards +oo! */
+  if (*x**x==*b) *down = *x;
+  else *down = nextafter(*x,0);
+  *up = *x;
 }
 static inline void numflt_mul_2exp(numflt_t a, numflt_t b, int c)
 { *a = ldexp(*b,c); }
