@@ -57,7 +57,7 @@ void print_info(ap_texpr0_t* a)
   ap_texpr0_fprint(stdout,a,NULL);
   /* sizes, hashes */
   printf("\ndepth=%i, size=%i, max_dim=%i, hash=%i, dims=[",
-	 ap_texpr0_depth(a),ap_texpr0_size(a),m, (int)ap_texpr0_hash(a));
+	 (int)ap_texpr0_depth(a),(int)ap_texpr0_size(a),m, (int)ap_texpr0_hash(a));
   /* dims */
   for (i=0;dd[i]!=AP_DIM_MAX;i++) printf("%s%i",i?",":"",dd[i]);
   printf("]\n");
@@ -133,9 +133,10 @@ void testlinearize_discr(ap_texpr0_t* a, ap_interval_t**inter, int intdim,
     printf(" expr="); ap_interval_print(pe);
     printf(" lin=");  ap_interval_print(pl);
     printf(" qlin="); ap_interval_print(pq);
-    if (ap_interval_equal(pe,pl))
+    if (ap_interval_equal(pe,pl)) {
       if (ap_interval_equal(pe,pq)) printf(" **");
       else printf(" *");
+    }
     printf("\n");
     assert(ap_interval_is_leq(pe,itv));
     assert(ap_interval_is_leq(pl,itvl));

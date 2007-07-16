@@ -33,12 +33,16 @@ tbool_t ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
   bool exact;
   ap_lincons0_t lincons0;
   tbool_t res;
+  ap_abstract0_t a0;
 
   if (is_bottom(man,abs)==tbool_true){
   man->result.flag_exact = man->result.flag_best = tbool_true;
     return tbool_true;
   }
-  lincons0 = ap_intlinearize_tcons0(man,abs,cons,&exact,discr,quasilinearize);
+
+  a0.value = abs;
+  a0.man = man;
+  lincons0 = ap_intlinearize_tcons0(man,&a0,cons,&exact,discr,quasilinearize);
   res = sat_lincons(man,abs,&lincons0);
   ap_lincons0_clear(&lincons0);
   if (!exact){
@@ -59,6 +63,7 @@ ap_interval_t* ap_generic_bound_texpr(ap_manager_t* man, void* abs, ap_texpr0_t*
   bool exact;
   ap_linexpr0_t* linexpr0;
   ap_interval_t* res;
+  ap_abstract0_t a0;
 
   if (is_bottom(man,abs)==tbool_true){
     res = ap_interval_alloc();
@@ -66,7 +71,9 @@ ap_interval_t* ap_generic_bound_texpr(ap_manager_t* man, void* abs, ap_texpr0_t*
     return res;
   }
   
-  linexpr0 = ap_intlinearize_texpr0(man,abs,expr,&exact,discr,quasilinearize);
+  a0.value = abs;
+  a0.man = man;
+  linexpr0 = ap_intlinearize_texpr0(man,&a0,expr,&exact,discr,quasilinearize);
   res = bound_linexpr(man,abs,linexpr0);
   ap_linexpr0_free(linexpr0);
   if (!exact){
@@ -185,6 +192,7 @@ ap_generic_meet_intlinearize_tcons_array(ap_manager_t* man,
   void* res;
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
   tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+  ap_abstract0_t a0;
 
   man->result.flag_exact = man->result.flag_best = tbool_true;
 
@@ -192,7 +200,9 @@ ap_generic_meet_intlinearize_tcons_array(ap_manager_t* man,
     res = destructive ? abs : copy(abs);
   }
   else {
-    array2 = ap_intlinearize_tcons0_array(man,abs,array,&exact,discr,linearize);
+    a0.value = abs;
+    a0.man = man;
+    array2 = ap_intlinearize_tcons0_array(man,&a0,array,&exact,discr,linearize);
     res = meet_lincons_array(man,destructive,abs,&array2);
     if (!exact){
       man->result.flag_exact = man->result.flag_best = tbool_top;

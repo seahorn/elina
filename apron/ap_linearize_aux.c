@@ -357,6 +357,7 @@ ITVFUN(ap_intlinearize_tcons0_array)(ap_manager_t* man,
   for (i=0;i<tlincons.size;i++){
     ap_lincons0_set_itv_lincons(intern,&res.p[i],&tlincons.p[i]);
   }
+  itv_lincons_array_clear(&tlincons);
   intlinearize_free(intern,env,dim);
   return res;
 }
