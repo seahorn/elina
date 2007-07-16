@@ -275,11 +275,11 @@ static void itv_lincons_select_inf(itv_lincons_t* cons)
 
 void ITVFUN(itv_linearize_lincons_array)(itv_internal_t* intern, itv_lincons_array_t* array)
 {
-  size_t index,last,lastorg;
+  long index,last,lastorg;
 
   /* One first remove unsatisfiable constraints */
   index = 0;
-  last = array->size-1;
+  last = (long)array->size-1;
   while (index <= last && last!=0){
     itv_lincons_t* cons = &array->p[index];
     if (!cons->linexpr.equality){

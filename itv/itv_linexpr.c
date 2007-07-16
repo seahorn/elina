@@ -361,7 +361,7 @@ void ITVFUN(itv_linexpr_add)(itv_internal_t* intern,
     endB = endB || (j==exprB->size) || exprB->linterm[j].dim == AP_DIM_MAX;
     if (endA && endB)
       break;
-    if (endA || (!endB && exprB->linterm[i].dim < exprA->linterm[i].dim)){
+    if (endA || (!endB && exprB->linterm[j].dim < exprA->linterm[i].dim)){
       itv_set(expr.linterm[k].itv, exprB->linterm[j].itv);
       expr.linterm[k].equality = exprB->linterm[j].equality;
       expr.linterm[k].dim = exprB->linterm[j].dim;
@@ -376,7 +376,7 @@ void ITVFUN(itv_linexpr_add)(itv_internal_t* intern,
     else {
       itv_add(expr.linterm[k].itv, exprA->linterm[i].itv,exprB->linterm[j].itv);
       expr.linterm[k].equality =
-	exprA->linterm[i].equality && exprB->linterm[i].equality && /* speed-up */
+	exprA->linterm[i].equality && exprB->linterm[j].equality && /* speed-up */
 	itv_is_point(intern,expr.linterm[k].itv);
       expr.linterm[k].dim = exprA->linterm[i].dim;
       if (!itv_is_zero(expr.linterm[k].itv)){
