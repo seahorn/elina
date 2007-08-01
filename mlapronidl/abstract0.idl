@@ -599,7 +599,7 @@ let substitute_texpr_with man abs dim expr odest =\n\
 
 quote(ML,"\n\
 let print_array\n\
-  ?(first=(\"[|@[\":(unit,Format.formatter,unit) format))\n\
+  ?(first=(\"[|@[<hov>\":(unit,Format.formatter,unit) format))\n\
   ?(sep = (\";@ \":(unit,Format.formatter,unit) format))\n\
   ?(last = (\"@]|]\":(unit,Format.formatter,unit) format))\n\
   (print_elt: Format.formatter -> 'a -> unit)\n\

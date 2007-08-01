@@ -121,6 +121,55 @@ PPL_Grid::~PPL_Grid() { delete p; }
   }
 
 
+/* ====================================================================== */
+/* utility shared by _bound_dimension, _to_box, & _sat_interval (exact) */
+/* ====================================================================== */
+static void ap_ppl_grid_bound_dim(ap_interval_t* r,PPL_Grid* a,int dim)
+{
+  Coefficient sup_n,sup_d,inf_n,inf_d;
+  Linear_Expression l = Variable(dim);
+  bool ok;
+  /* sup bound */
+  if (a->p->maximize(l,sup_n,sup_d,ok)) 
+    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
+  else ap_scalar_set_infty(r->sup,1);
+  /* inf bound */
+  if (a->p->minimize(l,inf_n,inf_d,ok)) 
+    ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
+  else ap_scalar_set_infty(r->inf,-1);
+}
+
+static itv_t* ap_ppl_grid_to_itv_array(PPL_Grid* a)
+{
+  Coefficient sup_n,sup_d;
+  Linear_Expression l;
+  bool ok;
+  size_t i,nb;
+
+  nb = a->p->space_dimension();
+  itv_t* env = itv_array_alloc(nb);
+  for (i=0; i<nb; i++){
+    l = Variable(i);
+    /* sup bound */ 
+    if (a->p->maximize(l,sup_n,sup_d,ok)){
+      bound_set_int(env[i]->sup,0);
+      numrat_set_numint2(env[i]->sup,sup_n.get_mpz_t(),sup_d.get_mpz_t());
+    }
+    else 
+      bound_set_infty(env[i]->sup,1);
+    /* inf bound */
+    if (a->p->minimize(l,sup_n,sup_d,ok)){
+      bound_set_int(env[i]->inf,0);
+      numrat_set_numint2(env[i]->inf,sup_n.get_mpz_t(),sup_d.get_mpz_t());
+      numrat_neg(env[i]->inf,env[i]->inf);
+    }
+    else 
+      bound_set_infty(env[i]->inf,1);
+  }
+  return env;
+}
+
+
 /* ********************************************************************** */
 /* I. General management */
 /* ********************************************************************** */
@@ -310,7 +359,7 @@ PPL_Grid* ap_ppl_grid_of_box(ap_manager_t* man,
   try {
     PPL_Grid* r = new PPL_Grid(intdim,realdim,UNIVERSE);
     Congruence_System c;
-    if (ap_ppl_of_box(c,intdim+realdim,tinterval))
+    if (ap_ppl_of_box(c,tinterval,intdim,realdim))
       man->result.flag_exact = man->result.flag_best = tbool_top;
     r->p->add_recycled_congruences_and_minimize(c);
     return r;
@@ -383,7 +432,7 @@ tbool_t ap_ppl_grid_is_eq(ap_manager_t* man, PPL_Grid* a1,
 
 extern "C" 
 tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, PPL_Grid* a, 
-				ap_lincons0_t* lincons)
+				ap_lincons0_t* lincons0)
 {
   ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_top;
@@ -392,14 +441,39 @@ tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, PPL_Grid* a,
       return tbool_true;
     }
     else {
+      itv_lincons_t lincons;
+      mpz_class den;
       Congruence c = Congruence::zero_dim_false();
-      /* may throw cannot_convert, which will be caught by CATCH_WITH_VAL */
-      bool exact = ap_ppl_of_lincons(intern->itv,c,lincons);
-      if (a->p->relation_with(c) == Poly_Con_Relation::is_included()) {
-	if (!exact) return tbool_top;
-	return tbool_true;
+      tbool_t res;
+    
+      if (!ap_linexpr0_is_linear(lincons0->linexpr0)){
+	man->result.flag_exact = man->result.flag_best = tbool_true;
+	return tbool_false;
       }
-      return tbool_false;
+      itv_lincons_init(&lincons);
+      itv_lincons_set_ap_lincons0(intern->itv,&lincons,lincons0);
+      if (itv_sat_lincons_is_false(intern->itv,&lincons)){
+	itv_lincons_clear(&lincons);
+	man->result.flag_exact = man->result.flag_best = tbool_true;
+	return tbool_false;
+      }
+      assert(itv_lincons_is_scalar(&lincons));
+      try {
+	ap_ppl_of_itv_lincons(c,den,&lincons);
+	Poly_Con_Relation relation = a->p->relation_with(c);
+	if (relation.implies(Poly_Con_Relation::is_included())){
+	  res = tbool_true;
+	}
+	else {
+	  res = tbool_false;
+	}
+	man->result.flag_exact = man->result.flag_best = tbool_true;
+      }
+      catch (cannot_convert w) {
+	res = tbool_top;
+      }
+      itv_lincons_clear(&lincons);
+      return res;
     }
   }
   CATCH_WITH_VAL(AP_FUNID_SAT_LINCONS,tbool_top);
@@ -410,22 +484,6 @@ tbool_t ap_ppl_grid_sat_tcons(ap_manager_t* man, PPL_Grid* a,
 			      ap_tcons0_t* cons)
 {
   return ap_generic_sat_tcons(man,a,cons,AP_SCALAR_MPQ,true);
-}
-
-/* utility shared by _bound_dimension, _to_box, & _sat_interval (exact) */
-static void ap_ppl_grid_bound_dim(ap_interval_t* r,PPL_Grid* a,int dim)
-{
-  Coefficient sup_n,sup_d,inf_n,inf_d;
-  Linear_Expression l = Variable(dim);
-  bool ok;
-  /* sup bound */
-  if (a->p->maximize(l,sup_n,sup_d,ok)) 
-    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
-  else ap_scalar_set_infty(r->sup,1);
-  /* inf bound */
-  if (a->p->minimize(l,inf_n,inf_d,ok)) 
-    ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
-  else ap_scalar_set_infty(r->inf,-1);
 }
 
 extern "C" 
@@ -477,36 +535,58 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
     }
     else {
       /* not empty */
-      Coefficient sup_n,sup_d,inf_n,inf_d;
+      itv_linexpr_t linexpr;
+      Coefficient sup_n,sup_d;
       Linear_Expression l;
       mpz_class den;
       bool ok;
       bool exact = true;
-      /* may throw cannot_convert, which will be caught by CATCH_WITH_VAL */
-      if (!ap_linexpr0_is_quasilinear(expr)){
-	throw cannot_convert();
+
+      itv_linexpr_init(&linexpr,0);
+      itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,expr);
+      if (!itv_linexpr_is_quasilinear(&linexpr)){
+	itv_t* env = ap_ppl_grid_to_itv_array(a);
+	exact = itv_quasilinearize_linexpr(intern->itv,&linexpr,env,false);
+	itv_array_free(env,a->p->space_dimension());
       }
-      ap_ppl_of_linexpr(intern->itv,l,den,expr,1);
-      /* sup bound */
-      if (a->p->maximize(l,sup_n,sup_d,ok)) {
-	sup_d *= den;
-	ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
+      if (linexpr.size==0){
+	ap_interval_set_itv(intern->itv,r,linexpr.cst);
       }
-      else ap_scalar_set_infty(r->sup,1);
-      /* inf bound */
-      bool linear = ap_linexpr0_is_linear(expr);
-      if (!linear){
-	ap_ppl_of_linexpr(intern->itv,l,den,expr,-1);
+      else {
+	/* sup bound */      
+	if (bound_infty(linexpr.cst->sup)){
+	  ap_scalar_set_infty(r->sup,1);
+	}
+	else {
+	  ap_ppl_of_linexpr(intern->itv,l,den,expr,1);
+	  if (a->p->maximize(l,sup_n,sup_d,ok)) {
+	    sup_d *= den;
+	    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
+	  }
+	  else ap_scalar_set_infty(r->sup,1);
+	}
+	/* inf bound */
+	if (bound_infty(linexpr.cst->inf)){
+	  ap_scalar_set_infty(r->inf,-1);
+	}
+	else {
+	  if (!itv_linexpr_is_scalar(&linexpr)){
+	    ap_ppl_of_itv_linexpr(l,den,&linexpr,-1);
+	  }
+	  if (a->p->minimize(l,sup_n,sup_d,ok)) {
+	    sup_d *= den;
+	    ap_ppl_mpz2_to_scalar(r->inf,sup_n,sup_d);
+	  }
+	  else {
+	    ap_scalar_set_infty(r->inf,-1);
+	  }
+	}
       }
-      if (a->p->minimize(l,inf_n,inf_d,ok)) {
-	inf_d *= den;
-	ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
-      }
-      else ap_scalar_set_infty(r->inf,-1);
+      itv_linexpr_clear(&linexpr);
     }
-    return r;
   }
   CATCH_WITH_VAL(AP_FUNID_BOUND_LINEXPR,(ap_interval_set_top(r),r));
+  return r;
 }
 
 extern "C"

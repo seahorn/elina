@@ -21,11 +21,11 @@ all: C
 C: ctest1
 
 %: %.o
-	$(CXX) $(CFLAGS) $(ICFLAGS) $(LCFLAGS) -o $@  $< \
+	$(CXX) $(CXXFLAGS) $(ICFLAGS) $(LCFLAGS) -o $@  $< \
 	-lap_pkgrid -lap_ppl -lppl -lgmpxx -lpolkaMPQ -loctMPQ -lboxMPQ -lapron -lmpfr -lgmp
 
 %_debug: %_debug.o
-	$(CXX) $(CFLAGS_DEBUG) $(ICFLAGS) $(LCFLAGS) -o $@  $< \
+	$(CXX) $(CXXFLAGS_DEBUG) $(ICFLAGS) $(LCFLAGS) -o $@  $< \
 	-lap_pkgrid_debug -lap_ppl_debug -lppl -lgmpxx -lpolkaMPQ_debug -loctMPQ_debug -lboxMPQ_debug -lapron_debug -lmpfr -lgmp
 
 %.o : %.c

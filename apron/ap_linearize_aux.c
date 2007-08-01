@@ -81,7 +81,7 @@ ITVFUN(ap_quasilinearize_linexpr0)(ap_manager_t* man,
   exact = quasilinearize_alloc(man,abs,&intern,&lincons,&env,&dim);
   exact = itv_linexpr_set_ap_linexpr0(intern,&lincons.linexpr,linexpr0)
     && exact;
-  exact = itv_quasilinearize_linexpr(intern,&lincons.linexpr,env)
+  exact = itv_quasilinearize_linexpr(intern,&lincons.linexpr,env,false)
     && exact;
   rlinexpr0 = NULL;
   ap_linexpr0_set_itv_linexpr(intern,&rlinexpr0,&lincons.linexpr);
@@ -94,17 +94,27 @@ ITVFUN(ap_quasilinearize_linexpr0)(ap_manager_t* man,
 ap_lincons0_t
 ITVFUN(ap_quasilinearize_lincons0)(ap_manager_t* man,
 				   ap_abstract0_t* abs, ap_lincons0_t* lincons0,
-				   bool* pexact)
+				   bool* pexact, bool meet)
 {
-  ap_linexpr0_t* rlinexpr0 = ITVFUN(ap_quasilinearize_linexpr0)(man,abs,
-								lincons0->linexpr0,
-								pexact);
-  return ap_lincons0_make(lincons0->constyp,
-			  rlinexpr0,
-			  (lincons0->scalar ?
-			   ap_scalar_alloc_set(lincons0->scalar) :
-			   NULL)
-			  );
+  ap_dimension_t dim;
+  ap_lincons0_t rlincons0;
+  itv_internal_t* intern;
+  itv_lincons_t lincons;
+  itv_t* env;
+  bool exact,exact2;
+
+  exact = quasilinearize_alloc(man,abs,&intern,&lincons,&env,&dim);
+  exact = itv_lincons_set_ap_lincons0(intern,&lincons,lincons0)
+    && exact;
+  exact = itv_quasilinearize_lincons(intern,&lincons,env,meet)
+    && exact;
+  rlincons0 = ap_lincons0_make(AP_CONS_EQ,
+			       ap_linexpr0_alloc(AP_LINEXPR_SPARSE,0),
+			       NULL);
+  ap_lincons0_set_itv_lincons(intern,&rlincons0,&lincons);
+  quasilinearize_free(intern,&lincons,env,dim);
+  *pexact = exact;
+  return rlincons0;
 }
 
 /* Same for arrays of ap_linexpr0_t */
@@ -126,7 +136,7 @@ ITVFUN(ap_quasilinearize_linexpr0_array)(ap_manager_t* man,
   for (i=0; i<size; i++){
     exact = itv_linexpr_set_ap_linexpr0(intern,&lincons.linexpr,texpr[i])
       && exact;
-    exact = itv_quasilinearize_linexpr(intern,&lincons.linexpr,env)
+    exact = itv_quasilinearize_linexpr(intern,&lincons.linexpr,env,false)
       && exact;
     tab[i] = NULL;
     ap_linexpr0_set_itv_linexpr(intern,&tab[i],&lincons.linexpr);
@@ -140,7 +150,7 @@ ITVFUN(ap_quasilinearize_linexpr0_array)(ap_manager_t* man,
 ap_lincons0_array_t
 ITVFUN(ap_quasilinearize_lincons0_array)(ap_manager_t* man,
 					 ap_abstract0_t* abs, ap_lincons0_array_t* array,
-					 bool* pexact, bool linearize)
+					 bool* pexact, bool linearize, bool meet)
 {
   itv_internal_t* intern;
   itv_lincons_t lincons;
@@ -154,8 +164,9 @@ ITVFUN(ap_quasilinearize_lincons0_array)(ap_manager_t* man,
   exact = quasilinearize_alloc(man,abs,&intern,&lincons,&env,&dim);
   itv_lincons_array_init(&tlincons,array->size);
   exact = itv_lincons_array_set_ap_lincons0_array(intern,&tlincons,array) && exact;
-  exact = itv_quasilinearize_lincons_array(intern,&tlincons,env,linearize);
-  
+  exact = itv_quasilinearize_lincons_array(intern,&tlincons,env,meet);
+  if (linearize) 
+    itv_linearize_lincons_array(intern,&tlincons,meet);
   res = ap_lincons0_array_make(tlincons.size);
   for (i=0;i<tlincons.size;i++){
     ap_lincons0_set_itv_lincons(intern,&res.p[i],&tlincons.p[i]);
@@ -276,7 +287,10 @@ ITVFUN(ap_intlinearize_texpr0)(ap_manager_t* man,
   intlinearize_alloc(man,abs,&intern,&env,&dim);
   itv_linexpr_init(&linexpr,0);
   itv_intlinearize_ap_texpr0(intern, &linexpr, expr, env, 
-			     dim.intdim, quasilinearize);
+			     dim.intdim);
+  if (quasilinearize){
+    itv_quasilinearize_linexpr(intern,&linexpr,env,false);
+  }
   ap_linexpr0_set_itv_linexpr(intern,&res,&linexpr);
   itv_linexpr_clear(&linexpr);
   intlinearize_free(intern,env,dim);
@@ -301,7 +315,10 @@ ITVFUN(ap_intlinearize_texpr0_array)(ap_manager_t* man,
   res = malloc(size*sizeof(ap_linexpr0_t*));
   for (i=0; i<size; i++){
     itv_intlinearize_ap_texpr0(intern, &linexpr, texpr0[i], env, 
-			       dim.intdim, quasilinearize);
+			       dim.intdim);
+    if (quasilinearize){
+      itv_quasilinearize_linexpr(intern,&linexpr,env,false);
+    }
     res[i] = NULL;
     ap_linexpr0_set_itv_linexpr(intern,&res[i],&linexpr);
   }
@@ -313,7 +330,7 @@ ITVFUN(ap_intlinearize_texpr0_array)(ap_manager_t* man,
 ap_lincons0_t
 ITVFUN(ap_intlinearize_tcons0)(ap_manager_t* man,
 			       ap_abstract0_t* abs, ap_tcons0_t* cons,
-			       bool* pexact, bool quasilinearize)
+			       bool* pexact, bool quasilinearize, bool meet)
 {
   itv_internal_t* intern;
   ap_dimension_t dim;
@@ -326,7 +343,11 @@ ITVFUN(ap_intlinearize_tcons0)(ap_manager_t* man,
   itv_lincons_init(&lincons);
   itv_intlinearize_ap_tcons0(intern,
 			     &lincons, cons, env,
-			     dim.intdim,quasilinearize);
+			     dim.intdim);
+  if (quasilinearize){
+    itv_quasilinearize_lincons(intern,&lincons,env,meet);
+  }
+
   res.linexpr0 = NULL;
   res.scalar = NULL;
   ap_lincons0_set_itv_lincons(intern,&res,&lincons);
@@ -338,7 +359,9 @@ ITVFUN(ap_intlinearize_tcons0)(ap_manager_t* man,
 ap_lincons0_array_t
 ITVFUN(ap_intlinearize_tcons0_array)(ap_manager_t* man,
 				     ap_abstract0_t* abs, ap_tcons0_array_t* array,
-				     bool* pexact, ap_linexpr_type_t linearize)
+				     bool* pexact, 
+				     ap_linexpr_type_t linearize, bool meet,
+				     bool boxize, size_t kmax, bool intervalonly)
 {
   itv_internal_t* intern;
   ap_dimension_t dim;
@@ -346,17 +369,99 @@ ITVFUN(ap_intlinearize_tcons0_array)(ap_manager_t* man,
   itv_lincons_array_t tlincons;
   ap_lincons0_array_t res;
   size_t i;
+  bool change = false;
+  bool* tchange = NULL;
 
   if (pexact) *pexact = false;
   intlinearize_alloc(man,abs,&intern,&env,&dim);
   itv_lincons_array_init(&tlincons,array->size);
   itv_intlinearize_ap_tcons0_array(intern,&tlincons,
-				   array,env, dim.intdim,
-				   linearize);
+				   array,env, dim.intdim);
+  if (tlincons.size==1 && 
+      tlincons.p[0].linexpr.size==0)
+    goto ap_intlinearize_tcons0_array_exit;
+  if (meet && boxize && 
+      (intervalonly ? !itv_lincons_array_is_quasilinear(&tlincons) : true)){
+    tchange = malloc((dim.intdim+dim.realdim)*2);
+    for (i=0;i<(dim.intdim+dim.realdim)*2;i++) tchange[i]=false;
+    change = itv_boxize_lincons_array(intern,env,tchange,&tlincons,env,dim.intdim,kmax,intervalonly);
+  }
+  switch(linearize){
+  case AP_LINEXPR_INTLINEAR:
+    break;
+  case AP_LINEXPR_QUASILINEAR:
+    itv_quasilinearize_lincons_array(intern,&tlincons,env,meet);
+    break;
+  case AP_LINEXPR_LINEAR:
+    itv_quasilinearize_lincons_array(intern,&tlincons,env,meet);
+    itv_linearize_lincons_array(intern,&tlincons,meet);
+    break;
+  }
+  if (tlincons.size==1 && 
+      tlincons.p[0].linexpr.size==0 &&
+      itv_eval_cstlincons(intern,&tlincons.p[0])==tbool_false)
+    goto ap_intlinearize_tcons0_array_exit;
+  
+  if (change){
+    if (itv_is_bottom(intern,env[0])){
+      itv_lincons_array_reinit(&tlincons,1);
+      itv_lincons_set_bool(&tlincons.p[0],false);
+      goto ap_intlinearize_tcons0_array_exit;
+    }
+    size_t size = tlincons.size;
+    for (i=0;i<dim.intdim+dim.realdim; i++){
+      if (tchange[2*i] || tchange[2*i+1]){
+	/* we add a new row and prepare it */
+	if (size>=tlincons.size) 
+	  itv_lincons_array_reinit(&tlincons,1+(5*tlincons.size)/4);
+	itv_linexpr_reinit(&tlincons.p[size].linexpr,1);
+	tlincons.p[size].linexpr.linterm[0].dim = i;
+	tlincons.p[size].linexpr.linterm[0].equality = true;
+	tlincons.p[size].linexpr.equality = true;
+      }	
+      if ((tchange[2*i] || tchange[2*i+1]) && itv_is_point(intern,env[i])){
+	/* We have a point */
+	tlincons.p[size].constyp = AP_CONS_EQ;
+	itv_set_int(tlincons.p[size].linexpr.linterm[0].itv,-1);
+	itv_set(tlincons.p[size].linexpr.cst, env[i]);
+	size++;
+      }
+      else {
+	if (tchange[2*i]){
+	  /* inf bound */
+	  assert(!bound_infty(env[i]->inf));
+	  tlincons.p[size].constyp = AP_CONS_SUPEQ;
+	  itv_set_int(tlincons.p[size].linexpr.linterm[0].itv,1);
+	  itv_set_num(tlincons.p[size].linexpr.cst,bound_numref(env[i]->inf));
+	  size ++;
+	}
+	if (tchange[2*i+1]){
+	  /* sup bound */
+	  if (tchange[2*i]){
+	    /* we add a new row and prepare it */
+	    if (size>=tlincons.size) 
+	      itv_lincons_array_reinit(&tlincons,1+(5*tlincons.size)/4);
+	    itv_linexpr_reinit(&tlincons.p[size].linexpr,1);
+	    tlincons.p[size].linexpr.linterm[0].dim = i;
+	    tlincons.p[size].linexpr.linterm[0].equality = true;
+	    tlincons.p[size].linexpr.equality = true;
+	  }	    
+	  assert(!bound_infty(env[i]->sup));
+	  tlincons.p[size].constyp = AP_CONS_SUPEQ;
+	  itv_set_int(tlincons.p[size].linexpr.linterm[0].itv,-1);
+	  itv_set_num(tlincons.p[size].linexpr.cst, bound_numref(env[i]->sup));
+	  size++;
+	}
+      }
+    }
+    itv_lincons_array_reinit(&tlincons,size);
+  }
+ ap_intlinearize_tcons0_array_exit:
   res = ap_lincons0_array_make(tlincons.size);
   for (i=0;i<tlincons.size;i++){
     ap_lincons0_set_itv_lincons(intern,&res.p[i],&tlincons.p[i]);
   }
+  if (tchange) free(tchange);
   itv_lincons_array_clear(&tlincons);
   intlinearize_free(intern,env,dim);
   return res;

@@ -470,7 +470,7 @@ matrix_t* matrix_relation_of_assign_array(pk_internal_t* pk,
 				&pk->poly_itv_lincons.linexpr,
 				expr);
     if (titv){
-      itv_quasilinearize_linexpr(pk->itv,&pk->poly_itv_lincons.linexpr,titv);
+      itv_quasilinearize_linexpr(pk->itv,&pk->poly_itv_lincons.linexpr,titv,false);
     }
     pk->poly_itv_lincons.constyp = AP_CONS_EQ;
     num_set_int(pk->poly_itv_lincons.num,0);

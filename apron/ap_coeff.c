@@ -113,10 +113,10 @@ void ap_coeff_fprint(FILE* stream, ap_coeff_t* a)
 {
   switch(a->discr){
   case AP_COEFF_SCALAR:
-    ap_scalar_fprint(stdout,a->val.scalar);
+    ap_scalar_fprint(stream,a->val.scalar);
     break;
   case AP_COEFF_INTERVAL:
-    ap_interval_fprint(stdout,a->val.interval);
+    ap_interval_fprint(stream,a->val.interval);
     break;
   }
 }

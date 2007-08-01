@@ -93,7 +93,14 @@ void ITVFUN(itv_linexpr_fprint)(FILE* stream, itv_linexpr_t* expr, char** name)
     else fprintf(stream,"x%lu",(unsigned long)dim);
   }
 }
-
+void ITVFUN(itv_lincons_set_bool)(itv_lincons_t* lincons, bool value)
+{
+  /* constraint 0=0 if value, 1=0 otherwise */
+  itv_linexpr_reinit(&lincons->linexpr,0);
+  itv_set_int(lincons->linexpr.cst,value ? 0 : 1);
+  lincons->linexpr.equality = true;
+  lincons->constyp = AP_CONS_EQ;
+}
 void ITVFUN(itv_lincons_fprint)(FILE* stream, itv_lincons_t* cons, char** name)
 {
   ITVFUN(itv_linexpr_fprint)(stream,&cons->linexpr,name);
@@ -148,7 +155,7 @@ void ITVFUN(itv_lincons_array_clear)(itv_lincons_array_t* array)
 void ITVFUN(itv_lincons_array_fprint)(FILE* stream, itv_lincons_array_t* array, char** name)
 {
   size_t i;
-  fprintf(stream,"array of size %d_n",(int)array->size);
+  fprintf(stream,"array of size %d\n",(int)array->size);
   for (i=0; i<array->size; i++){
     itv_lincons_fprint(stream,&array->p[i],name);
     fprintf(stream,"\n");
@@ -413,3 +420,257 @@ void ITVFUN(itv_linexpr_sub)(itv_internal_t* intern,
     }
   }
 }
+
+/* ********************************************************************** */
+/* IV. Tests */
+/* ********************************************************************** */
+
+bool ITVFUN(itv_linexpr_is_scalar)(itv_linexpr_t* expr)
+{
+  bool res = expr->equality;
+  if (res){
+    size_t i;
+    for (i=0; i<expr->size; i++){
+      res = expr->linterm[i].equality;
+      if (!res) break;
+    }
+  }
+  return res;
+}
+bool ITVFUN(itv_linexpr_is_quasilinear)(itv_linexpr_t* expr)
+{
+  bool res;
+  if (expr->size==0)
+    res = true;
+  else {
+    size_t i;
+    for (i=0; i<expr->size; i++){
+      res = expr->linterm[i].equality;
+      if (!res) break;
+    }
+  }
+  return res;
+}
+bool ITVFUN(itv_lincons_array_is_scalar)(itv_lincons_array_t* array)
+{
+  size_t i;
+  bool res = true;
+  for (i=0; i<array->size; i++){
+    res = itv_lincons_is_scalar(&array->p[i]);
+    if (!res) break;
+  }
+  return res;
+}
+bool ITVFUN(itv_lincons_array_is_quasilinear)(itv_lincons_array_t* array)
+{
+  size_t i;
+  bool res = true;
+  for (i=0; i<array->size; i++){
+    res = itv_lincons_is_quasilinear(&array->p[i]);
+    if (!res) break;
+  }
+  return res;
+}
+
+/* Evaluate a constraint, composed of a constant (interval) expression */
+tbool_t ITVFUN(itv_eval_cstlincons)(itv_internal_t* intern,
+				    itv_lincons_t* lincons)
+{
+  tbool_t res;
+  itv_ptr cst = lincons->linexpr.cst;
+  bool equality = lincons->linexpr.equality;
+
+  assert (lincons->linexpr.size==0);
+  if (itv_is_bottom(intern,cst)){
+    return tbool_false;
+  }
+  switch (lincons->constyp){
+  case AP_CONS_EQ:
+    if (equality){
+      int sgn = bound_sgn(cst->sup);
+      res = (sgn==0 ? tbool_true : tbool_false);
+    }
+    else {
+      if (bound_sgn(cst->sup)<0 ||
+	  bound_sgn(cst->inf)<0)
+	res = tbool_false;
+      else
+	res = tbool_top;
+    }
+    break;
+  case AP_CONS_DISEQ:
+    res =
+      (bound_sgn(cst->inf)<0 ||
+       bound_sgn(cst->sup)<0) ?
+      tbool_true :
+      tbool_top;
+    break;
+  case AP_CONS_SUPEQ:
+    if (bound_sgn(cst->inf)<=0)
+      res = tbool_true;
+    else if (bound_sgn(cst->sup)<0)
+      res = tbool_false;
+    else
+      res = tbool_top;
+    break;
+  case AP_CONS_SUP:
+    if (bound_sgn(cst->inf)<0)
+      res = tbool_true;
+    else if (bound_sgn(cst->sup)<=0)
+      res = tbool_false;
+    else
+      res = tbool_top;
+    break;
+  case AP_CONS_EQMOD:
+    if (equality){
+      if (bound_sgn(cst->sup)==0){
+	res = tbool_true;
+      }
+      else if (num_cmp_int(lincons->num,0)){
+	res = (bound_sgn(cst->sup)==0) ? tbool_true : tbool_top;
+      }
+      else {
+#if defined(NUM_NUMRAT)
+	numrat_t numrat;
+	numrat_init(numrat);
+	numrat_div(numrat,bound_numref(cst->sup),lincons->num);
+	if (numint_cmp_int(numrat_denref(numrat),1)==0){
+	  res = tbool_true;
+	}
+	else {
+	  res = tbool_top;
+	}
+	numrat_clear(numrat);
+#elif defined(NUM_NUMINT)
+	numint_t numint;
+	numint_init(numint);
+	numint_mod(numint,bound_numref(cst->sup),lincons->num);
+	if (numint_sgn(numint)==0){
+	  res = tbool_true;
+	}
+	else {
+	  res = tbool_top;
+	}
+	numint_clear(numint);
+#else
+	res = tbool_top;
+#endif
+      }
+    }
+    else {
+      res = tbool_top;
+    }
+    break;
+  default:
+    abort();
+  }
+  return res;
+}
+
+bool ITVFUN(itv_sat_lincons_is_false)(itv_internal_t* intern,
+				      itv_lincons_t* lincons)
+{
+  bool res = false;
+
+  bool equality = lincons->linexpr.equality;
+  itv_ptr cst = lincons->linexpr.cst;
+  bool inf = bound_infty(cst->inf);
+  
+  switch (lincons->constyp){
+  case AP_CONS_EQ:
+  case AP_CONS_EQMOD:
+    res = !equality;
+    break;
+  case AP_CONS_DISEQ:
+    res = inf && bound_infty(cst->sup);
+    break;
+  case AP_CONS_SUPEQ:
+  case AP_CONS_SUP:
+    res = inf;
+    break;
+  default:
+    break;
+  }
+  if (!res && 
+      lincons->linexpr.size==0 && 
+      itv_eval_cstlincons(intern,lincons)==tbool_false){
+    res = true;
+  }
+  return res;
+}
+
+static bool 
+itv_lincons_is_useless_for_meet(itv_internal_t* intern,
+				itv_lincons_t* lincons)
+{
+  bool res = false;
+  itv_ptr cst = lincons->linexpr.cst;
+  if (lincons->linexpr.size==0){
+    if (itv_eval_cstlincons(intern,lincons)!=tbool_false)
+      res = true;
+  }
+  else {
+    if (!lincons->linexpr.equality){
+      bool sup = bound_infty(cst->sup);
+      switch (lincons->constyp){
+      case AP_CONS_EQ:
+      case AP_CONS_DISEQ:
+      case AP_CONS_EQMOD:
+	{
+	  bool inf = bound_infty(cst->inf);
+	  res = inf && sup;
+	}
+	break;
+      case AP_CONS_SUPEQ:
+      case AP_CONS_SUP:
+	res = sup;
+	break;
+      default:
+	break;
+      }
+    }
+  }
+  return res;
+ }
+
+tbool_t ITVFUN(itv_lincons_array_reduce)(itv_internal_t* intern,
+					 itv_lincons_array_t* array, bool meet)
+{
+  tbool_t res;
+  size_t i,size;
+
+  res = tbool_top;
+  i = 0;
+  size = array->size;
+  while (i<size){
+    if (array->p[i].linexpr.size==0){
+      tbool_t sat = itv_eval_cstlincons(intern,&array->p[i]);
+      if (sat==tbool_true){
+      itv_lincons_array_reduce_remove:
+	size --;
+	itv_lincons_swap(&array->p[i],&array->p[size]);
+	continue;
+      }
+      else if (sat==tbool_false){
+      itv_lincons_array_reduce_false:
+	itv_lincons_array_reinit(array,1);
+	itv_lincons_set_bool(&array->p[0],false);
+	return tbool_false;
+      }
+    }
+    if (meet && itv_lincons_is_useless_for_meet(intern,&array->p[i]))
+      goto itv_lincons_array_reduce_remove;
+    else if (itv_sat_lincons_is_false(intern,&array->p[i]))
+      goto itv_lincons_array_reduce_false;
+    else {
+      i++;
+    }
+  }
+  itv_lincons_array_reinit(array,size);
+  if (size==0) 
+    res = tbool_true;
+  else if (size==1 && array->p[0].linexpr.size==0)
+    res = itv_eval_cstlincons(intern,&array->p[0]);
+  return res;
+}
+

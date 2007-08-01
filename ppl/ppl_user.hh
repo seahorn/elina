@@ -26,6 +26,7 @@
 #include "bound.h"
 #include "itv.h"
 #include "itv_linexpr.h"
+#include "itv_linearize.h"
 
 /* PPL includes */
 #include "ppl.hh"
@@ -125,6 +126,26 @@ extern ap_generator0_array_t ap_ppl_generator_universe(size_t dim);
 extern void ap_ppl_box_universe(ap_interval_t** i,size_t nb);
 
 /* ********************************************************************** */
+/* Conversions from ITV to PPL */
+/* ********************************************************************** */
+
+/* some of these may raise cannot_convert */
+/* returned booleans are true when exact */
+/* reference booleans are set to true when exact, false otherwise */
+
+/* Linear expressions */
+extern void ap_ppl_of_itv_linexpr(Linear_Expression& r, 
+				  mpz_class& den,
+				  itv_linexpr_t* c,
+				  int mode);
+
+/* Linear constraints */
+extern bool ap_ppl_of_itv_lincons(Constraint& r, mpz_class& den, itv_lincons_t* c, bool allow_strict);
+extern void ap_ppl_of_itv_lincons(Congruence& r, mpz_class& den, itv_lincons_t* c);
+extern bool ap_ppl_of_itv_lincons_array(Constraint_System& r, mpz_class& den,itv_lincons_array_t* a,bool allow_strict);
+extern bool ap_ppl_of_itv_lincons_array(Congruence_System& r, mpz_class& den,itv_lincons_array_t* a);
+
+/* ********************************************************************** */
 /* Conversions from APRON to PPL */
 /* ********************************************************************** */
 
@@ -139,8 +160,8 @@ extern bool ap_ppl_of_generator_array(itv_internal_t* intern, Generator_System& 
 extern bool ap_ppl_of_generator_array(itv_internal_t* intern, Grid_Generator_System& r,ap_generator0_array_t* a);
 
 /* Boxes */ 
-extern bool ap_ppl_of_box(Constraint_System& r,size_t nb, ap_interval_t** a);
-extern bool ap_ppl_of_box(Congruence_System& r,size_t nb, ap_interval_t** a);
+extern bool ap_ppl_of_box(Constraint_System& r, ap_interval_t** a, size_t intdim, size_t realdim);
+extern bool ap_ppl_of_box(Congruence_System& r, ap_interval_t** a, size_t intdim, size_t realdim);
 
 /* Linear expressions */
 extern void ap_ppl_of_linexpr(itv_internal_t* intern,
@@ -153,6 +174,10 @@ extern bool ap_ppl_of_lincons(itv_internal_t* intern, Constraint& r, PPL_Poly& a
 extern bool ap_ppl_of_lincons(itv_internal_t* intern, Congruence& r,ap_lincons0_t* c);
 extern bool ap_ppl_of_lincons_array(itv_internal_t* intern, Constraint_System& r,ap_lincons0_array_t* a,bool allow_strict);
 extern bool ap_ppl_of_lincons_array(itv_internal_t* intern, Congruence_System& r,ap_lincons0_array_t* a);
+
+/* ********************************************************************** */
+/* Others */
+/* ********************************************************************** */
 
 static ap_abstract0_t* ap_ppl_make_abstract0(ap_manager_t* man, void* v)
 {

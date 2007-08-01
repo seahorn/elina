@@ -76,6 +76,7 @@ static inline void itv_linterm_init(itv_linterm_t* term);
 static inline void itv_linterm_init_set(itv_linterm_t* res, itv_linterm_t* term);
 static inline void itv_linterm_set(itv_linterm_t* res, itv_linterm_t* term);
 static inline void itv_linterm_clear(itv_linterm_t* term);
+static inline void itv_linterm_swap(itv_linterm_t* a, itv_linterm_t* b);
 
 static inline void itv_linexpr_init(itv_linexpr_t* expr, size_t size);
 static inline void itv_linexpr_init_set(itv_linexpr_t* res, itv_linexpr_t* expr);
@@ -87,10 +88,11 @@ static inline void itv_linexpr_print(itv_linexpr_t* expr, char** name);
 
 static inline void itv_lincons_init(itv_lincons_t* cons);
 static inline void itv_lincons_set(itv_lincons_t* res, itv_lincons_t* expr);
+static inline void itv_lincons_set_bool(itv_lincons_t* res, bool value);
 static inline void itv_lincons_clear(itv_lincons_t* cons);
 static inline void itv_lincons_fprint(FILE* stream, itv_lincons_t* cons, char** name);
 static inline void itv_lincons_print(itv_lincons_t* cons, char** name);
-static inline void itv_lincons_exch(itv_lincons_t* a, itv_lincons_t* b);
+static inline void itv_lincons_swap(itv_lincons_t* a, itv_lincons_t* b);
 
 static inline void itv_lincons_array_init(itv_lincons_array_t* array, size_t size);
 static inline void itv_lincons_array_reinit(itv_lincons_array_t* array, size_t size);
@@ -158,6 +160,35 @@ static inline void itv_linexpr_sub(itv_internal_t* intern,
      (Substraction temporarily negates exprB, and then restores it */
 
 /* ********************************************************************** */
+/* IV. Tests and Simplifications */
+/* ********************************************************************** */
+
+static inline bool itv_linexpr_is_scalar(itv_linexpr_t* expr);
+static inline bool itv_linexpr_is_quasilinear(itv_linexpr_t* expr);
+static inline bool itv_lincons_is_scalar(itv_lincons_t* expr);
+static inline bool itv_lincons_is_quasilinear(itv_lincons_t* expr);
+static inline bool itv_lincons_array_is_scalar(itv_lincons_array_t* array);
+static inline bool itv_lincons_array_is_quasilinear(itv_lincons_array_t* array);
+
+static inline tbool_t itv_eval_cstlincons(itv_internal_t* intern,
+					  itv_lincons_t* lincons);
+  /* Is the assumed constant constraint satisfied ? */
+
+static inline bool itv_sat_lincons_is_false(itv_internal_t* intern,
+					    itv_lincons_t* lincons);
+  /* Return true if the constraint is not satisfiable
+     *for all* deterministic expressions contained in it
+     Cases taken into account:
+     - expr + [a,A] = 0 (mod k) with a!=A
+     - expr + [-oo,+oo] != 0
+     - expr + (-oo,x] >|>= 0
+     - the cases where itv_eval_cstlincons returns tbool_false
+  */
+
+static inline tbool_t itv_lincons_array_reduce(itv_internal_t* intern,
+					       itv_lincons_array_t* array, bool meet);
+
+/* ********************************************************************** */
 /* Definition of inline functions */
 /* ********************************************************************** */
 
@@ -167,7 +198,7 @@ void ITVFUN(itv_linexpr_set)(itv_linexpr_t* res, itv_linexpr_t* expr);
 void ITVFUN(itv_linexpr_reinit)(itv_linexpr_t* expr, size_t size);
 void ITVFUN(itv_linexpr_clear)(itv_linexpr_t* expr);
 void ITVFUN(itv_linexpr_fprint)(FILE* stream, itv_linexpr_t* expr, char** name);
-
+void ITVFUN(itv_lincons_set_bool)(itv_lincons_t* cons, bool value);
 void ITVFUN(itv_lincons_fprint)(FILE* stream, itv_lincons_t* cons, char** name);
 
 void ITVFUN(itv_lincons_array_init)(itv_lincons_array_t* array, size_t size);
@@ -188,6 +219,15 @@ void ITVFUN(itv_linexpr_div)(itv_internal_t* intern, itv_linexpr_t* expr, itv_t 
 void ITVFUN(itv_linexpr_add)(itv_internal_t* intern, itv_linexpr_t* expr, itv_linexpr_t* exprA, itv_linexpr_t* exprB);
 void ITVFUN(itv_linexpr_sub)(itv_internal_t* intern, itv_linexpr_t* expr, itv_linexpr_t* exprA, itv_linexpr_t* exprB);
 
+bool ITVFUN(itv_linexpr_is_scalar)(itv_linexpr_t* expr);
+bool ITVFUN(itv_linexpr_is_quasilinear)(itv_linexpr_t* expr);
+bool ITVFUN(itv_lincons_array_is_scalar)(itv_lincons_array_t* array);
+bool ITVFUN(itv_lincons_array_is_quasilinear)(itv_lincons_array_t* array);
+
+tbool_t ITVFUN(itv_eval_cstlincons)(itv_internal_t* intern, itv_lincons_t* lincons);
+bool ITVFUN(itv_sat_lincons_is_false)(itv_internal_t* intern, itv_lincons_t* lincons);
+tbool_t ITVFUN(itv_lincons_array_reduce)(itv_internal_t* intern, itv_lincons_array_t* array, bool meet);
+
 
 static inline void itv_linterm_init(itv_linterm_t* term)
 { itv_init(term->itv); term->equality = true; term->dim = AP_DIM_MAX; }
@@ -197,6 +237,8 @@ static inline void itv_linterm_set(itv_linterm_t* res, itv_linterm_t* term)
 { itv_set(res->itv,term->itv); res->equality = term->equality; res->dim = term->dim; }
 static inline void itv_linterm_clear(itv_linterm_t* term)
 { itv_clear(term->itv); }
+static inline void itv_linterm_swap(itv_linterm_t* a, itv_linterm_t* b)
+{ itv_linterm_t t=*a; *a=*b; *b=t; }
 
 static inline void itv_linexpr_init(itv_linexpr_t* expr, size_t size)
 { ITVFUN(itv_linexpr_init)(expr,size); }
@@ -221,6 +263,8 @@ static inline void itv_lincons_init(itv_lincons_t* cons)
 { itv_linexpr_init(&cons->linexpr,0); num_init(cons->num); }
 static inline void itv_lincons_set(itv_lincons_t* a, itv_lincons_t* b)
 { if (a!=b){ itv_linexpr_set(&a->linexpr,&b->linexpr); num_set(a->num,b->num); a->constyp = b->constyp; } }
+static inline void itv_lincons_set_bool(itv_lincons_t* a, bool value)
+{ ITVFUN(itv_lincons_set_bool)(a,value); }
 static inline void itv_lincons_clear(itv_lincons_t* cons)
 { itv_linexpr_clear(&cons->linexpr); num_clear(cons->num); }
 
@@ -229,7 +273,7 @@ static inline void itv_lincons_fprint(FILE* stream, itv_lincons_t* cons, char** 
 
 static inline void itv_lincons_print(itv_lincons_t* cons, char** name)
 { itv_lincons_fprint(stdout,cons,name); }
-static inline void itv_lincons_exch(itv_lincons_t* a, itv_lincons_t* b)
+static inline void itv_lincons_swap(itv_lincons_t* a, itv_lincons_t* b)
 { itv_lincons_t t=*a; *a=*b; *b=t; }
 
 static inline void itv_lincons_array_init(itv_lincons_array_t* array, size_t size)
@@ -278,7 +322,24 @@ static inline void itv_linexpr_add(itv_internal_t* intern, itv_linexpr_t* expr, 
 static inline void itv_linexpr_sub(itv_internal_t* intern, itv_linexpr_t* expr, itv_linexpr_t* exprA, itv_linexpr_t* exprB)
 { ITVFUN(itv_linexpr_sub)(intern,expr,exprA,exprB); }
 
-
+static inline bool itv_linexpr_is_scalar(itv_linexpr_t* expr)
+{ return ITVFUN(itv_linexpr_is_scalar)(expr); }
+static inline bool itv_linexpr_is_quasilinear(itv_linexpr_t* expr)
+{ return ITVFUN(itv_linexpr_is_quasilinear)(expr); }
+static inline bool itv_lincons_is_scalar(itv_lincons_t* cons)
+{ return ITVFUN(itv_linexpr_is_scalar)(&cons->linexpr); }
+static inline bool itv_lincons_is_quasilinear(itv_lincons_t* cons)
+{ return ITVFUN(itv_linexpr_is_quasilinear)(&cons->linexpr); }
+static inline bool itv_lincons_array_is_scalar(itv_lincons_array_t* array)
+{ return ITVFUN(itv_lincons_array_is_scalar)(array); }
+static inline bool itv_lincons_array_is_quasilinear(itv_lincons_array_t* array)
+{ return ITVFUN(itv_lincons_array_is_quasilinear)(array); }
+static inline tbool_t itv_eval_cstlincons(itv_internal_t* intern, itv_lincons_t* lincons)
+{ return ITVFUN(itv_eval_cstlincons)(intern,lincons); }
+static inline bool itv_sat_lincons_is_false(itv_internal_t* intern, itv_lincons_t* lincons)
+{ return ITVFUN(itv_sat_lincons_is_false)(intern,lincons); }
+static inline tbool_t itv_lincons_array_reduce(itv_internal_t* intern, itv_lincons_array_t* array, bool meet)
+{ return ITVFUN(itv_lincons_array_reduce)(intern,array,meet); }
 #ifdef __cplusplus
 }
 #endif

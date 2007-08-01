@@ -231,7 +231,13 @@ tbool_t box_sat_tcons(ap_manager_t* man,
   itv_eval_ap_texpr0(intern->itv,
 		     lincons.linexpr.cst, cons->texpr0, a->p);
   lincons.linexpr.equality = itv_is_point(intern->itv,lincons.linexpr.cst);
+  lincons.constyp = cons->constyp;
+  if (cons->scalar)
+    num_set_ap_scalar(lincons.num,cons->scalar);
+  else
+    num_set_int(lincons.num,0);
   res = itv_eval_cstlincons(intern->itv,&lincons);
+  if (res==tbool_top) res = tbool_false;
   itv_lincons_clear(&lincons);
   return res;
 }

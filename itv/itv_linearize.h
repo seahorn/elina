@@ -24,9 +24,6 @@ static inline void itv_eval_linexpr(itv_internal_t* intern,
   /* Evaluate the interval linear expression, using the array p[]
      associating intervals to dimensions */
 
-static inline tbool_t itv_eval_cstlincons(itv_internal_t* intern, itv_lincons_t* lincons);
-  /* Is the assumed constant constraint satisfied ? */
-
 static inline bool itv_eval_ap_linexpr0(itv_internal_t* intern,
 					itv_t itv,
 					ap_linexpr0_t* expr,
@@ -37,79 +34,134 @@ static inline bool itv_eval_ap_linexpr0(itv_internal_t* intern,
      Return true if all conversions were exact */
 
 /* ********************************************************************** */
-/* II. (Quasi)linearisation of interval linear expressions and constraints */
+/* II. Boxization of interval linear expressions */
 /* ********************************************************************** */
 
-static inline bool itv_quasilinearize_linexpr(itv_internal_t* intern, itv_linexpr_t* linexpr, itv_t* env);
+static inline bool itv_boxize_lincons_array(itv_internal_t* intern,
+					    itv_t* res,
+					    bool* tchange,
+					    itv_lincons_array_t* array,
+					    itv_t* env,size_t intdim,
+					    size_t kmax,
+					    bool intervalonly);
+  /* Deduce interval constraints from a set of interval linear constraints.
+
+     Return true if some bounds have been inferred.
+
+     - The inferred bounds are stored in res (which may be equal to env)
+     - If tchange!=NULL, tchange[2dim] (resp. 2dim+1) set to true indicates
+       that the inf (resp. sup) bound of dimension dim has been improved.
+     - env is the current bounds for variables
+     - kmax specifies the maximum number of iterations
+     - if intervalonly is true, deduces bounds from a constraint only when the
+       coefficient associated to the current dimension is an interval.
+  */
+
+/* ********************************************************************** */
+/* III. (Quasi)linearisation of interval linear expressions and constraints */
+/* ********************************************************************** */
+
+/* These functions return true if there were no rounding in computations.
+
+   They may perform simplifications, which are valid
+   - for intersecting constraints, when parameter meet is true
+   - for testing satisfaction, when parameter meet is false
+*/
+
+static inline bool itv_quasilinearize_linexpr(itv_internal_t* intern, itv_linexpr_t* linexpr, itv_t* env, bool for_meet_inequality);
   /* Quasilinearize in-place linexpr using the bounding box itv */
 
-static inline bool itv_quasilinearize_lincons(itv_internal_t* intern, itv_lincons_t* lincons, itv_t* env);
+static inline bool itv_quasilinearize_lincons(itv_internal_t* intern, itv_lincons_t* lincons, itv_t* env, bool meet);
   /* Quasilinearize in-place lincons using the bounding box itv */
 
-static inline bool itv_quasilinearize_lincons_array(itv_internal_t* intern, itv_lincons_array_t* tlincons, itv_t* env, bool linearize);
+static inline bool itv_quasilinearize_lincons_array(itv_internal_t* intern, itv_lincons_array_t* tlincons, itv_t* env, bool meet);
   /* (Quasi)linearize in-place tlincons using the bounding box itv */
 
-static inline void itv_linearize_lincons_array(itv_internal_t* intern, itv_lincons_array_t* tlincons);
+static inline void itv_linearize_lincons_array(itv_internal_t* intern, itv_lincons_array_t* tlincons, bool meet);
   /* Linearize in-place quasilinear tlincons using the bounding box itv */
 
 /* ********************************************************************** */
-/* III. Evaluation of tree expressions  */
+/* IV. Evaluation of tree expressions  */
 /* ********************************************************************** */
 
 static inline void itv_eval_ap_texpr0(itv_internal_t* intern, itv_t res, ap_texpr0_t* expr, itv_t* env);
 
 /* ********************************************************************** */
-/* IV. Linearisation of tree expressions. */
+/* V. Linearisation of tree expressions. */
 /* ********************************************************************** */
 
-static inline void itv_intlinearize_texpr0(itv_internal_t* intern, itv_linexpr_t* res, ap_texpr0_t* expr, itv_t* env, size_t intdim, bool quasilinearize);
-static inline void itv_intlinearize_tcons0(itv_internal_t* intern, itv_lincons_t* res, ap_tcons0_t* cons, itv_t* env, size_t intdim, bool quasilinearize);
-static inline void itv_intlinearize_tcons0_array(itv_internal_t* intern, itv_lincons_array_t* res, ap_tcons0_array_t* cons, itv_t* env, size_t intdim, ap_linexpr_type_t linearize);
+/* These functions returns true if the linearization return in an empty
+   expression (of type [1;-1]). This may happen when linearizing
+   sqrt(-1), for instance.
+
+   They may perform simplifications, which are valid
+   - for intersecting constraints, when parameter meet is true
+   - for testing satisfaction, when parameter meet is false
+*/
+
+static inline bool itv_intlinearize_ap_texpr0(itv_internal_t* intern, itv_linexpr_t* res, ap_texpr0_t* expr, itv_t* env, size_t intdim);
+static inline bool itv_intlinearize_ap_tcons0(itv_internal_t* intern, itv_lincons_t* res, ap_tcons0_t* cons, itv_t* env, size_t intdim);
+static inline bool itv_intlinearize_ap_tcons0_array(itv_internal_t* intern, itv_lincons_array_t* res, ap_tcons0_array_t* cons, itv_t* env, size_t intdim);
+
+/* ********************************************************************** */
+/* Prototypes of functions */
+/* ********************************************************************** */
+
+/* I. Evaluation of expressions  */
+void ITVFUN(itv_eval_linexpr)(itv_internal_t* intern, itv_t itv, itv_linexpr_t* expr, itv_t* env);
+bool ITVFUN(itv_eval_ap_linexpr0)(itv_internal_t* intern, itv_t itv, ap_linexpr0_t* expr, itv_t* env);
+
+/* II. Boxization of interval linear expressions */
+bool ITVFUN(itv_boxize_lincons_array)(itv_internal_t* intern, itv_t* res, bool* change, itv_lincons_array_t* array, itv_t* env, size_t intdim, size_t kmax, bool intervalonly);
+
+/* III. (Quasi)linearisation of interval linear expressions and constraints */
+bool ITVFUN(itv_quasilinearize_linexpr)(itv_internal_t* intern, itv_linexpr_t* linexpr, itv_t* env, bool for_meet_inequality);
+bool ITVFUN(itv_quasilinearize_lincons)(itv_internal_t* intern, itv_lincons_t* lincons, itv_t* env, bool meet);
+bool ITVFUN(itv_quasilinearize_lincons_array)(itv_internal_t* intern, itv_lincons_array_t* tlincons, itv_t* env, bool meet);
+void ITVFUN(itv_linearize_lincons_array)(itv_internal_t* intern, itv_lincons_array_t* array, bool meet);
+
+/* IV. Evaluation of tree expressions  */
+void ITVFUN(itv_eval_ap_texpr0)(itv_internal_t* intern, itv_t itv, ap_texpr0_t* expr, itv_t* env);
+
+/* V. Linearisation of tree expressions. */
+bool ITVFUN(itv_intlinearize_ap_texpr0)(itv_internal_t* intern,itv_linexpr_t* res,ap_texpr0_t* expr,itv_t* env, size_t intdim);
+bool ITVFUN(itv_intlinearize_ap_tcons0)(itv_internal_t* intern,itv_lincons_t* res, ap_tcons0_t* cons, itv_t* env, size_t intdim);
+bool ITVFUN(itv_intlinearize_ap_tcons0_array)(itv_internal_t* intern,itv_lincons_array_t* res, ap_tcons0_array_t* cons, itv_t* env, size_t intdim);
 
 /* ********************************************************************** */
 /* Definition of inline functions */
 /* ********************************************************************** */
-
-void ITVFUN(itv_eval_linexpr)(itv_internal_t* intern, itv_t itv, itv_linexpr_t* expr, itv_t* env);
-tbool_t ITVFUN(itv_eval_cstlincons)(itv_internal_t* intern, itv_lincons_t* lincons);
-bool ITVFUN(itv_eval_ap_linexpr0)(itv_internal_t* intern, itv_t itv, ap_linexpr0_t* expr, itv_t* env);
-
-bool ITVFUN(itv_quasilinearize_linexpr)(itv_internal_t* intern, itv_linexpr_t* linexpr, itv_t* env);
-bool ITVFUN(itv_quasilinearize_lincons)(itv_internal_t* intern, itv_lincons_t* lincons, itv_t* env);
-bool ITVFUN(itv_quasilinearize_lincons_array)(itv_internal_t* intern, itv_lincons_array_t* tlincons, itv_t* env, bool linearize);
-void ITVFUN(itv_linearize_lincons_array)(itv_internal_t* intern, itv_lincons_array_t* array);
-
-void ITVFUN(itv_eval_ap_texpr0)(itv_internal_t* intern, itv_t itv, ap_texpr0_t* expr, itv_t* env);
-
-void ITVFUN(itv_intlinearize_ap_texpr0)(itv_internal_t* intern,itv_linexpr_t* res,ap_texpr0_t* expr,itv_t* env, size_t intdim, bool quasilinearize);
-void ITVFUN(itv_intlinearize_ap_tcons0)(itv_internal_t* intern,itv_lincons_t* res, ap_tcons0_t* cons, itv_t* env, size_t intdim, bool quasilinearize);
-void ITVFUN(itv_intlinearize_ap_tcons0_array)(itv_internal_t* intern,itv_lincons_array_t* res, ap_tcons0_array_t* cons, itv_t* env, size_t intdim, ap_linexpr_type_t linearize);
-
+/* I. Evaluation of expressions  */
 static inline void itv_eval_linexpr(itv_internal_t* intern, itv_t itv, itv_linexpr_t* expr, itv_t* env)
 { ITVFUN(itv_eval_linexpr)(intern,itv,expr,env); }
 static inline bool itv_eval_ap_linexpr0(itv_internal_t* intern, itv_t itv, ap_linexpr0_t* expr, itv_t* env)
 { return ITVFUN(itv_eval_ap_linexpr0)(intern,itv,expr,env); }
-static inline tbool_t itv_eval_cstlincons(itv_internal_t* intern,itv_lincons_t* lincons)
-{ return ITVFUN(itv_eval_cstlincons)(intern,lincons); }
 
-static inline bool itv_quasilinearize_linexpr(itv_internal_t* intern, itv_linexpr_t* linexpr, itv_t* env)
-{ return ITVFUN(itv_quasilinearize_linexpr)(intern,linexpr,env); }
-static inline bool itv_quasilinearize_lincons(itv_internal_t* intern, itv_lincons_t* lincons, itv_t* env)
-{ return ITVFUN(itv_quasilinearize_lincons)(intern,lincons,env); }
-static inline bool itv_quasilinearize_lincons_array(itv_internal_t* intern, itv_lincons_array_t* tlincons, itv_t* env, bool linearize)
-{ return ITVFUN(itv_quasilinearize_lincons_array)(intern,tlincons,env,linearize); }
-static inline void itv_linearize_lincons_array(itv_internal_t* intern, itv_lincons_array_t* array)
-{ ITVFUN(itv_linearize_lincons_array)(intern,array); }
+/* II. Boxization of interval linear expressions */
+static inline bool itv_boxize_lincons_array(itv_internal_t* intern, itv_t* res, bool* tchange, itv_lincons_array_t* array, itv_t* env, size_t intdim, size_t kmax, bool intervalonly)
+{ return ITVFUN(itv_boxize_lincons_array)(intern,res,tchange,array,env,intdim,kmax,intervalonly); }
 
+/* III. (Quasi)linearisation of interval linear expressions and constraints */
+static inline bool itv_quasilinearize_linexpr(itv_internal_t* intern, itv_linexpr_t* linexpr, itv_t* env, bool for_ineq)
+  { return ITVFUN(itv_quasilinearize_linexpr)(intern,linexpr,env, for_ineq); }
+static inline bool itv_quasilinearize_lincons(itv_internal_t* intern, itv_lincons_t* lincons, itv_t* env, bool meet)
+{ return ITVFUN(itv_quasilinearize_lincons)(intern,lincons,env,meet); }
+  static inline bool itv_quasilinearize_lincons_array(itv_internal_t* intern, itv_lincons_array_t* tlincons, itv_t* env, bool meet)
+{ return ITVFUN(itv_quasilinearize_lincons_array)(intern,tlincons,env,meet); }
+static inline void itv_linearize_lincons_array(itv_internal_t* intern, itv_lincons_array_t* array, bool meet)
+{ ITVFUN(itv_linearize_lincons_array)(intern,array,meet); }
+
+/* IV. Evaluation of tree expressions  */
 static inline void itv_eval_ap_texpr0(itv_internal_t* intern, itv_t itv, ap_texpr0_t* expr, itv_t* env)
 { ITVFUN(itv_eval_ap_texpr0)(intern,itv,expr,env); }
 
-static inline void itv_intlinearize_ap_texpr0(itv_internal_t* intern, itv_linexpr_t* linexpr, ap_texpr0_t* expr, itv_t* env, size_t intdim, bool quasilinearize)
-{ ITVFUN(itv_intlinearize_ap_texpr0)(intern,linexpr,expr,env,intdim,quasilinearize); }
-static inline void itv_intlinearize_ap_tcons0(itv_internal_t* intern, itv_lincons_t* lincons, ap_tcons0_t* cons, itv_t* env, size_t intdim, bool quasilinearize)
-{ ITVFUN(itv_intlinearize_ap_tcons0)(intern,lincons,cons,env,intdim,quasilinearize); }
-static inline void itv_intlinearize_ap_tcons0_array(itv_internal_t* intern, itv_lincons_array_t* tlincons, ap_tcons0_array_t* tcons, itv_t* env, size_t intdim, ap_linexpr_type_t linearize)
-{ ITVFUN(itv_intlinearize_ap_tcons0_array)(intern,tlincons,tcons,env,intdim,linearize); }
+/* V. Linearisation of tree expressions. */
+static inline bool itv_intlinearize_ap_texpr0(itv_internal_t* intern, itv_linexpr_t* linexpr, ap_texpr0_t* expr, itv_t* env, size_t intdim)
+{ return ITVFUN(itv_intlinearize_ap_texpr0)(intern,linexpr,expr,env,intdim); }
+static inline bool itv_intlinearize_ap_tcons0(itv_internal_t* intern, itv_lincons_t* lincons, ap_tcons0_t* cons, itv_t* env, size_t intdim)
+  { return ITVFUN(itv_intlinearize_ap_tcons0)(intern,lincons,cons,env,intdim); }
+static inline bool itv_intlinearize_ap_tcons0_array(itv_internal_t* intern, itv_lincons_array_t* tlincons, ap_tcons0_array_t* tcons, itv_t* env, size_t intdim)
+  { return ITVFUN(itv_intlinearize_ap_tcons0_array)(intern,tlincons,tcons,env,intdim); }
 
 #ifdef __cplusplus
 }

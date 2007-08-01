@@ -15,14 +15,14 @@ OCAMLINC = \
 -I mlgmpidl -I mlapronidl -I box -I octagons -I newpolka -I ppl -I products
 
 ifdef HAS_PPL
-OCAMLLDFLAGS_PPL = polkaGrid.cma ppl.cma -cclib "-lpolkaGrid_caml -lap_pkgrid_debug -lap_ppl_caml -lap_ppl -lppl -lgmpxx" -cc "g++"
+OCAMLLDFLAGS_PPL = polkaGrid.cma ppl.cma -cclib "-lpolkaGrid_caml -lap_pkgrid -lap_ppl_caml -lap_ppl -lppl -lgmpxx" -cc "g++"
 endif
 
 OCAMLLDFLAGS = \
 -noautolink -ccopt "$(LCFLAGS)" \
 bigarray.cma gmp.cma apron.cma box.cma oct.cma polka.cma \
 $(OCAMLLDFLAGS_PPL) \
--cclib "-lpolka_caml -lpolkaMPQ_debug -loct_caml -loctMPQ_debug -lbox_caml -lboxMPQ_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
+-cclib "-lpolka_caml -lpolkaMPQ -loct_caml -loctMPQ -lbox_caml -lboxMPQ -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
 
 ifdef HAS_OCAML
 all: $(REQUESTED) c ml aprontop apronrun

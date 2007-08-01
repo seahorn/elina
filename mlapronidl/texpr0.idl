@@ -87,7 +87,7 @@ void camlidl_texpr0_ap_texpr0_of_expr_ml2c(value v, ap_texpr0_t** res, camlidl_c
   ap_coeff_t coeff;\n\
   value v0,v1,v2,v3,v4;\n\
 \n\
-  texpr = malloc(sizeof(ap_texpr0_t));\n\
+  texpr = malloc(sizeof(ap_texpr0_t));\n \
 \n\
   assert (Is_block(v));\n\
   switch (Tag_val(v)){\n\
@@ -110,7 +110,7 @@ void camlidl_texpr0_ap_texpr0_of_expr_ml2c(value v, ap_texpr0_t** res, camlidl_c
     v2 = Field(v,2);\n\
     v3 = Field(v,3);\n\
     \n\
-    node = malloc(sizeof(ap_texpr0_node_t));\n\
+    node = malloc(sizeof(ap_texpr0_node_t));\n \
     camlidl_apron_texpr_unop_t_ml2c      (v0,&node->op);\n\
     camlidl_texpr0_ap_texpr0_of_expr_ml2c(v1,&node->exprA,_ctx);\n \
     camlidl_apron_texpr_rtype_t_ml2c     (v2,&node->type);\n\
@@ -150,8 +150,8 @@ value camlidl_texpr0_ap_texpr0_of_expr(value _v_expr)\n\
 \n\
   camlidl_texpr0_ap_texpr0_of_expr_ml2c(_v_expr,&res,_ctx);\n\
   _v_res = camlidl_apron_texpr0_ptr_c2ml(&res);\n\
-  camlidl_free(_ctx);\n\
 \n\
+  camlidl_free(_ctx);\n\
   CAMLreturn(_v_res);\n\
 }\n\
 ")
@@ -210,7 +210,7 @@ ap_texpr0_ptr ap_texpr0_of_linexpr(ap_linexpr0_ptr e)
 quote(call,"_res = ap_texpr0_from_linexpr0(e);");
 
 quote(MLI,"(** General destructor *)")
-quote(MLMLI,"external to_expr : t -> expr = \"camlidl_texpr0_ap_texpr0_to_expr_c2ml\"\n")
+quote(MLMLI,"external to_expr : t -> expr = \"camlidl_texpr0_ap_texpr0_to_expr\"\n")
 
 quote(MLI,"\n(** {3 Incremental constructors} *)\n")
 ap_texpr0_ptr ap_texpr0_cst([ref]struct ap_coeff_t* coeff);

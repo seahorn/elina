@@ -120,6 +120,53 @@ PPL_Poly::~PPL_Poly() { delete p; }
     fprintf(stream,"!exception!");					\
   }
 
+/* ====================================================================== */
+/* utility shared by _bound_dimension & _to_box, _sat_interval (exact) */
+/* ====================================================================== */
+static void ap_ppl_poly_bound_dim(ap_interval_t* r,PPL_Poly* a,int dim)
+{
+  Coefficient sup_n,sup_d;
+  Linear_Expression l = Variable(dim);
+  bool ok;
+  /* sup bound */
+  if (a->p->maximize(l,sup_n,sup_d,ok))
+    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
+  else ap_scalar_set_infty(r->sup,1);
+  /* inf bound */
+  if (a->p->minimize(l,sup_n,sup_d,ok))
+    ap_ppl_mpz2_to_scalar(r->inf,sup_n,sup_d);
+  else ap_scalar_set_infty(r->inf,-1);
+}
+static itv_t* ap_ppl_poly_to_itv_array(PPL_Poly* a)
+{
+  Coefficient sup_n,sup_d;
+  Linear_Expression l;
+  bool ok;
+  size_t i,nb;
+
+  nb = a->p->space_dimension();
+  itv_t* env = itv_array_alloc(nb);
+  for (i=0; i<nb; i++){
+    l = Variable(i);
+    /* sup bound */ 
+    if (a->p->maximize(l,sup_n,sup_d,ok)){
+      bound_set_int(env[i]->sup,0);
+      numrat_set_numint2(env[i]->sup,sup_n.get_mpz_t(),sup_d.get_mpz_t());
+    }
+    else 
+      bound_set_infty(env[i]->sup,1);
+    /* inf bound */
+    if (a->p->minimize(l,sup_n,sup_d,ok)){
+      bound_set_int(env[i]->inf,0);
+      numrat_set_numint2(env[i]->inf,sup_n.get_mpz_t(),sup_d.get_mpz_t());
+      numrat_neg(env[i]->inf,env[i]->inf);
+    }
+    else 
+      bound_set_infty(env[i]->inf,1);
+  }
+  return env;
+}
+
 /* ********************************************************************** */
 /* I. General management */
 /* ********************************************************************** */
@@ -309,7 +356,7 @@ PPL_Poly* ap_ppl_poly_of_box(ap_manager_t* man,
   try {
     PPL_Poly* r = new PPL_Poly(man,intdim,realdim,UNIVERSE);
     Constraint_System c;
-    if (ap_ppl_of_box(c,intdim+realdim,tinterval))
+    if (ap_ppl_of_box(c,tinterval,intdim,realdim))
       man->result.flag_exact = man->result.flag_best = tbool_top;
     r->p->add_constraints(c);
     return r;
@@ -385,42 +432,60 @@ tbool_t ap_ppl_poly_is_eq(ap_manager_t* man, PPL_Poly* a1,
 
 extern "C"
 tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a,
-				ap_lincons0_t* lincons)
+				ap_lincons0_t* lincons0)
 {
   ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_top;
+
   try {
     if (a->p->is_empty()){
       return tbool_true;
     }
     else {
-      bool exact = true;
-      ap_linexpr0_t* linexpr;
-      Constraint r = Constraint::zero_dim_positivity();
+      itv_lincons_t lincons;
       Linear_Expression l;
       mpz_class den;
+      Constraint r = Constraint::zero_dim_positivity();
+      bool exact = true;
 
-      switch (lincons->constyp) {
-      case AP_CONS_EQ: 
+      switch (lincons0->constyp) {
+      case AP_CONS_EQ:
       case AP_CONS_EQMOD:
-	if (!ap_linexpr0_is_linear(lincons->linexpr0)){
+	if (!ap_linexpr0_is_linear(lincons0->linexpr0)){
 	  man->result.flag_exact = man->result.flag_best = tbool_true;
 	  return tbool_false;
 	}
       case AP_CONS_SUPEQ:
       case AP_CONS_SUP:
-	linexpr = ap_quasilinearize_linexpr0(man,a,lincons->linexpr0,&exact,AP_SCALAR_MPQ);
-	ap_ppl_of_linexpr(intern->itv,l,den,linexpr,-1);
-	if (linexpr != lincons->linexpr0) ap_linexpr0_free(linexpr);
-	switch (lincons->constyp) {
-	case AP_CONS_SUPEQ: 
+	itv_lincons_init(&lincons);
+	itv_lincons_set_ap_lincons0(intern->itv,&lincons,lincons0);
+	if (itv_sat_lincons_is_false(intern->itv,&lincons)){
+	  itv_lincons_clear(&lincons);
+	  man->result.flag_exact = man->result.flag_best = tbool_true;
+	  return tbool_false;
+	}
+	if (!itv_lincons_is_quasilinear(&lincons)){
+	  itv_t* env = ap_ppl_poly_to_itv_array(a);
+	  exact = itv_quasilinearize_lincons(intern->itv,&lincons,env,false);
+	  itv_array_free(env,a->p->space_dimension());
+	}
+	if (itv_sat_lincons_is_false(intern->itv,&lincons)){
+	  itv_lincons_clear(&lincons);
+	  man->result.flag_exact = man->result.flag_best = tbool_true;
+	  return tbool_false;
+	}
+	assert (!bound_infty(lincons.linexpr.cst->inf));
+	ap_ppl_of_itv_linexpr(l,den,&lincons.linexpr,-1);
+	itv_lincons_clear(&lincons);
+	switch (lincons.constyp){
+	case AP_CONS_SUPEQ:
 	  r = (l>=0); break;
 	case AP_CONS_SUP:
-	  r = intern->strict ? (l>0) : (l>=0); 
+	  r = intern->strict ? (l>0) : (l>=0);
 	  break;
 	case AP_CONS_EQMOD:
-	  exact = (lincons->scalar==NULL) || (ap_scalar_sgn(lincons->scalar)==0);
-	case AP_CONS_EQ: 
+	  exact = (num_sgn(lincons.num)==0);
+	case AP_CONS_EQ:
 	  r = (l == 0);
 	  break;
 	default:
@@ -431,8 +496,9 @@ tbool_t ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a,
 	man->result.flag_exact = man->result.flag_best = tbool_false;
 	return tbool_top;
       }
-      if (a->p->relation_with(r) == Poly_Con_Relation::is_included()) {
-	if (!exact) return tbool_top;
+      man->result.flag_exact = man->result.flag_best = exact ? tbool_true : tbool_top;
+      Poly_Con_Relation relation = a->p->relation_with(r);
+      if (relation.implies(Poly_Con_Relation::is_included())){
 	return tbool_true;
       }
       if (a->intdim) return tbool_top;
@@ -449,21 +515,7 @@ tbool_t ap_ppl_poly_sat_tcons(ap_manager_t* man, PPL_Poly* a,
   return ap_generic_sat_tcons(man,a,cons,AP_SCALAR_MPQ,true);
 }
 
-/* utility shared by _bound_dimension & _to_box, _sat_interval (exact) */
-static void ap_ppl_poly_bound_dim(ap_interval_t* r,PPL_Poly* a,int dim)
-{
-  Coefficient sup_n,sup_d,inf_n,inf_d;
-  Linear_Expression l = Variable(dim);
-  bool ok;
-  /* sup bound */
-  if (a->p->maximize(l,sup_n,sup_d,ok))
-    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
-  else ap_scalar_set_infty(r->sup,1);
-  /* inf bound */
-  if (a->p->minimize(l,inf_n,inf_d,ok))
-    ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
-  else ap_scalar_set_infty(r->inf,-1);
-}
+
 
 extern "C"
 tbool_t ap_ppl_poly_sat_interval(ap_manager_t* man, PPL_Poly* a,
@@ -521,42 +573,62 @@ ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
     }
     else {
       /* not empty */
-      Coefficient sup_n,sup_d,inf_n,inf_d;
+      itv_linexpr_t linexpr;
+      Coefficient sup_n,sup_d;
       Linear_Expression l;
       mpz_class den;
       bool ok;
       bool exact = true;
 
-      ap_linexpr0_t* linexpr0 = ap_quasilinearize_linexpr0(man,a,expr,&exact,
-							   AP_SCALAR_MPQ);
-      ap_ppl_of_linexpr(intern->itv,l,den,linexpr0,+1);
-      /* sup bound */
-      if (a->p->maximize(l,sup_n,sup_d,ok)) {
-	sup_d *= den;
-	ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
+      itv_linexpr_init(&linexpr,0);
+      itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,expr);
+      if (!itv_linexpr_is_quasilinear(&linexpr)){
+	itv_t* env = ap_ppl_poly_to_itv_array(a);
+	exact = itv_quasilinearize_linexpr(intern->itv,&linexpr,env,false);
+	itv_array_free(env,a->p->space_dimension());
+      }
+      if (linexpr.size==0){
+	ap_interval_set_itv(intern->itv,r,linexpr.cst);
       }
       else {
-	ap_scalar_set_infty(r->sup,1);
+	/* sup bound */
+	if (bound_infty(linexpr.cst->sup)){
+	  ap_scalar_set_infty(r->sup,1);
+	}
+	else {
+	  ap_ppl_of_itv_linexpr(l,den,&linexpr,+1);
+	  if (a->p->maximize(l,sup_n,sup_d,ok)) {
+	    sup_d *= den;
+	    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
+	  }
+	  else {
+	    ap_scalar_set_infty(r->sup,1);
+	  }
+	}
+	/* inf bound */
+	if (bound_infty(linexpr.cst->inf)){
+	  ap_scalar_set_infty(r->inf,-1);
+	}
+	else {
+	  if (!itv_linexpr_is_scalar(&linexpr)){
+	    ap_ppl_of_itv_linexpr(l,den,&linexpr,-1);
+	  }
+	  if (a->p->minimize(l,sup_n,sup_d,ok)) {
+	    sup_d *= den;
+	    ap_ppl_mpz2_to_scalar(r->inf,sup_n,sup_d);
+	  }
+	  else {
+	    ap_scalar_set_infty(r->inf,-1);
+	  }
+	}
       }
-      /* inf bound */
-      if (!ap_linexpr0_is_linear(linexpr0)){
-	ap_ppl_of_linexpr(intern->itv,l,den,linexpr0,-1);
-      }
-      if (a->p->minimize(l,inf_n,inf_d,ok)) {
-	inf_d *= den;
-	ap_ppl_mpz2_to_scalar(r->inf,inf_n,inf_d);
-      }
-      else {
-	ap_scalar_set_infty(r->inf,-1);
-      }
-      if (linexpr0!=expr){
-	ap_linexpr0_free(linexpr0);
-      }
+      itv_linexpr_clear(&linexpr);
     }
-    return r;
   }
   CATCH_WITH_VAL(AP_FUNID_BOUND_LINEXPR,(ap_interval_set_top(r),r));
+  return r;
 }
+
 
 extern "C"
 ap_interval_t* ap_ppl_poly_bound_texpr(ap_manager_t* man,
@@ -710,27 +782,36 @@ PPL_Poly* ap_ppl_poly_meet_lincons_array(ap_manager_t* man,
 					 PPL_Poly* a,
 					 ap_lincons0_array_t* array)
 {
-  bool exact;
-  ap_lincons0_array_t array2;
+  bool exact = true;
+  itv_lincons_array_t array2;
   bool lin;
+  mpz_class den;
   ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best =
     a->intdim ? tbool_top : tbool_true;
   try {
     PPL_Poly* r = destructive ? a : new PPL_Poly(man,*a);
-    if (!a->p->is_empty()){
-      array2 = ap_quasilinearize_lincons0_array(man,a,array,&exact,
-						AP_SCALAR_MPQ,true);
-      Constraint_System c;
-      exact = ap_ppl_of_lincons_array(intern->itv,c,&array2,intern->strict) && exact;
-      if (!exact){
-	man->result.flag_exact = man->result.flag_best = tbool_top;
-      }
-      if (array2.p!=array->p){
-	ap_lincons0_array_clear(&array2);
-      }
-      r->p->add_recycled_constraints(c);
+    if (a->p->is_empty()){
+      return r;
     }
+    itv_lincons_array_init(&array2,array->size);
+    itv_lincons_array_set_ap_lincons0_array(intern->itv,
+					    &array2,
+					    array);
+    if (!itv_lincons_array_is_quasilinear(&array2)){
+      itv_t* env = ap_ppl_poly_to_itv_array(a);
+      itv_quasilinearize_lincons_array(intern->itv,&array2,env,true);
+      itv_array_free(env,a->p->space_dimension());
+      exact = false;
+    }
+    itv_linearize_lincons_array(intern->itv,&array2,true);
+    Constraint_System c;
+    exact = ap_ppl_of_itv_lincons_array(c,den,&array2,intern->strict) && exact;
+    if (!exact){
+      man->result.flag_exact = man->result.flag_best = tbool_top;
+    }
+    itv_lincons_array_clear(&array2);
+    r->p->add_recycled_constraints(c);
     return r;
   }
   CATCH_WITH_POLY(AP_FUNID_MEET_LINCONS_ARRAY,a);
@@ -775,102 +856,6 @@ PPL_Poly* ap_ppl_poly_add_ray_array(ap_manager_t* man,
 /* ============================================================ */
 
 extern "C"
-PPL_Poly* ap_ppl_poly_assign_linexpr(ap_manager_t* man,
-				     bool destructive,
-				     PPL_Poly* org,
-				     ap_dim_t dim, ap_linexpr0_t* expr,
-				     PPL_Poly* dest)
-{
-  bool exact;
-  ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best =
-    org->intdim ? tbool_top : tbool_true;
-  try {
-    PPL_Poly* r = destructive ? org : new PPL_Poly(man,*org);
-    try {
-      ap_linexpr0_t* expr2 = ap_quasilinearize_linexpr0(man,org,expr,&exact,AP_SCALAR_MPQ);
-      if (ap_linexpr0_is_linear(expr2)){
-	Linear_Expression e;
-	mpz_class den;
-	ap_ppl_of_linexpr(intern->itv,e,den,expr,1);
-	r->p->affine_image(Variable(dim),e,den);
-	if (dest) r->p->intersection_assign(*dest->p);
-      }
-      else {
-	r = (PPL_Poly*)ap_generic_assign_linexpr_array(man, true, r,
-						       &dim,&expr2,1,dest);
-      }
-      if (expr2!=expr){
-	ap_linexpr0_free(expr2);
-      }
-    }
-    catch (cannot_convert x) {
-      /* defaults to forget */
-      r->p->add_generator(Generator::line(Variable(dim)));
-      if (dest) r->p->intersection_assign(*dest->p);
-      man->result.flag_exact = man->result.flag_best = tbool_top;
-    }
-    return r;
-  }
-  CATCH_WITH_POLY(AP_FUNID_ASSIGN_LINEXPR_ARRAY,org);
-}
-extern "C"
-PPL_Poly* ap_ppl_poly_substitute_linexpr(ap_manager_t* man,
-					 bool destructive,
-					 PPL_Poly* org,
-					 ap_dim_t dim, ap_linexpr0_t* expr,
-					 PPL_Poly* dest)
-{
-  bool exact;
-  ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best =
-    org->intdim ? tbool_top : tbool_true;
-  try {
-    PPL_Poly* r = destructive ? org : new PPL_Poly(man,*org);
-    try {
-      ap_linexpr0_t* expr2;
-      if (!ap_linexpr0_is_quasilinear(expr)){
-	bool has_dest = (dest!=NULL);
-	if (!has_dest){
-	  ap_dimension_t dimension = ap_ppl_poly_dimension(man,org);
-	  dest = new PPL_Poly(man,dimension.intdim,dimension.realdim,UNIVERSE);
-	}
-	expr2 = ap_quasilinearize_linexpr0(man,dest,expr,&exact,AP_SCALAR_MPQ);
-	if (!has_dest){
-	  delete dest;
-	  dest = NULL;
-	}
-      }
-      else {
-	expr2 = expr;
-      }
-      if (ap_linexpr0_is_linear(expr2)){
-	Linear_Expression e;
-	mpz_class den;
-	ap_ppl_of_linexpr(intern->itv,e,den,expr,1);
-	r->p->affine_preimage(Variable(dim),e,den);
-	if (dest) r->p->intersection_assign(*dest->p);
-      }
-      else {
-	r = (PPL_Poly*)ap_generic_substitute_linexpr_array(man, true, r,
-							   &dim,&expr2,1,dest);
-      }
-      if (expr2!=expr){
-	ap_linexpr0_free(expr2);
-      }
-    }
-    catch (cannot_convert x) {
-      /* defaults to forget */
-      r->p->add_generator(Generator::line(Variable(dim)));
-      if (dest) r->p->intersection_assign(*dest->p);
-      man->result.flag_exact = man->result.flag_best = tbool_top;
-    }
-    return r;
-  }
-  CATCH_WITH_POLY(AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,org);
-}
-
-extern "C"
 PPL_Poly* ap_ppl_poly_assign_linexpr_array(ap_manager_t* man,
 					   bool destructive,
 					   PPL_Poly* org,
@@ -881,6 +866,7 @@ PPL_Poly* ap_ppl_poly_assign_linexpr_array(ap_manager_t* man,
 {
   PPL_Poly* r;
   size_t i;
+  ppl_internal_t* intern = get_internal(man);
   bool exact = true;
   for (i=0;i<size;i++){
     if (!ap_linexpr0_is_linear(texpr[i])){
@@ -888,10 +874,26 @@ PPL_Poly* ap_ppl_poly_assign_linexpr_array(ap_manager_t* man,
       break;
     }
   }
-  if (size==1)
-    r = ap_ppl_poly_assign_linexpr(man,destructive,org,tdim[0],texpr[0],dest);
+  if (size==1 && exact){
+    man->result.flag_exact = man->result.flag_best =
+      org->intdim ? tbool_top : tbool_true;
+    try {
+      PPL_Poly* r = destructive ? org : new PPL_Poly(man,*org);
+      itv_linexpr_t linexpr;
+      Linear_Expression e;
+      mpz_class den;
+      itv_linexpr_init(&linexpr,0);
+      itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,texpr[0]);
+      ap_ppl_of_itv_linexpr(e,den,&linexpr,1);
+      itv_linexpr_clear(&linexpr);
+      r->p->affine_image(Variable(tdim[0]),e,den);
+      if (dest) r->p->intersection_assign(*dest->p);
+      return r;
+    }
+    CATCH_WITH_POLY(AP_FUNID_ASSIGN_LINEXPR_ARRAY,org);
+  }
   else {
-    r = (PPL_Poly*)ap_generic_assign_linexpr_array(man, destructive, 
+    r = (PPL_Poly*)ap_generic_assign_linexpr_array(man, destructive,
 						   org,
 						   tdim,texpr,size,
 						   dest);
@@ -899,7 +901,7 @@ PPL_Poly* ap_ppl_poly_assign_linexpr_array(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = (!exact || org->intdim) ? tbool_top : tbool_true;
   return r;
 }
-  
+
 extern "C"
 PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
 					       bool destructive,
@@ -911,6 +913,7 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
 {
   PPL_Poly* r;
   size_t i;
+  ppl_internal_t* intern = get_internal(man);
   bool exact = true;
   for (i=0;i<size;i++){
     if (!ap_linexpr0_is_linear(texpr[i])){
@@ -918,10 +921,26 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
       break;
     }
   }
-  if (size==1)
-    r = ap_ppl_poly_substitute_linexpr(man,destructive,org,tdim[0],texpr[0],dest);
+  if (size==1 && exact){
+    man->result.flag_exact = man->result.flag_best =
+      org->intdim ? tbool_top : tbool_true;
+    try {
+      PPL_Poly* r = destructive ? org : new PPL_Poly(man,*org);
+      itv_linexpr_t linexpr;
+      Linear_Expression e;
+      mpz_class den;
+      itv_linexpr_init(&linexpr,0);
+      itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,texpr[0]);
+      ap_ppl_of_itv_linexpr(e,den,&linexpr,1);
+      itv_linexpr_clear(&linexpr);
+      r->p->affine_preimage(Variable(tdim[0]),e,den);
+      if (dest) r->p->intersection_assign(*dest->p);
+      return r;
+    }
+    CATCH_WITH_POLY(AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY,org);
+  }
   else {
-    r = (PPL_Poly*)ap_generic_substitute_linexpr_array(man, destructive, 
+    r = (PPL_Poly*)ap_generic_substitute_linexpr_array(man, destructive,
 						       org,
 						       tdim,texpr,size,
 						       dest);
@@ -929,6 +948,7 @@ PPL_Poly* ap_ppl_poly_substitute_linexpr_array(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = (!exact || org->intdim) ? tbool_top : tbool_true;
   return r;
 }
+
 extern "C"
 PPL_Poly* ap_ppl_poly_assign_texpr_array(ap_manager_t* man,
 					 bool destructive,
@@ -938,7 +958,7 @@ PPL_Poly* ap_ppl_poly_assign_texpr_array(ap_manager_t* man,
 					 size_t size,
 					 PPL_Poly* dest)
 {
-  return (PPL_Poly*)ap_generic_assign_texpr_array(man, destructive, 
+  return (PPL_Poly*)ap_generic_assign_texpr_array(man, destructive,
 						  org,
 						  tdim,texpr,size,
 						  dest);
@@ -952,7 +972,7 @@ PPL_Poly* ap_ppl_poly_substitute_texpr_array(ap_manager_t* man,
 					     size_t size,
 					     PPL_Poly* dest)
 {
-  return (PPL_Poly*)ap_generic_substitute_texpr_array(man, destructive, 
+  return (PPL_Poly*)ap_generic_substitute_texpr_array(man, destructive,
 						      org,
 						      tdim,texpr,size,
 						      dest);
@@ -1166,7 +1186,7 @@ PPL_Poly* ap_ppl_poly_widening_threshold(ap_manager_t* man,
 					 PPL_Poly* a2,
 					 ap_lincons0_array_t* array)
 {
-  ppl_internal_t* intern = get_internal(man);  
+  ppl_internal_t* intern = get_internal(man);
   man->result.flag_exact = man->result.flag_best = tbool_top;
   int algo = man->option.funopt[AP_FUNID_WIDENING].algorithm;
   try {

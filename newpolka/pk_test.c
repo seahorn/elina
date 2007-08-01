@@ -16,7 +16,6 @@
 #include "pk_extract.h"
 #include "pk_test.h"
 #include "itv_linearize.h"
-#include "ap_generic.h"
 
 /* ====================================================================== */
 /* Emptiness test */
@@ -250,15 +249,16 @@ tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* po, ap_lincons0_t* lincons0)
   dim = po->intdim + po->realdim;
 
   if (!ap_linexpr0_is_quasilinear(lincons0->linexpr0)){
-    itv_t* titv = matrix_to_box(pk,po->F);
+    itv_t* env = matrix_to_box(pk,po->F);
     exact = itv_lincons_set_ap_lincons0(pk->itv,
 					&pk->poly_itv_lincons,
 					lincons0);
     exact = itv_quasilinearize_lincons(pk->itv,
 				       &pk->poly_itv_lincons,
-				       titv)
+				       env,
+				       false)
       && exact;
-    itv_array_free(titv,po->intdim+po->realdim);
+    itv_array_free(env,dim);
   }
   else {
     exact = itv_lincons_set_ap_lincons0(pk->itv,
@@ -288,7 +288,49 @@ tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* po, ap_lincons0_t* lincons0)
 
 tbool_t pk_sat_tcons(ap_manager_t* man, pk_t* po, ap_tcons0_t* cons)
 {
-  return ap_generic_sat_tcons(man,po,cons,AP_SCALAR_MPQ,true);
+  size_t dim;
+  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_SAT_LINCONS);
+
+  if (pk->funopt->algorithm>0)
+    poly_chernikova(man,po,NULL);
+  else
+    poly_obtain_F(man,po,NULL);
+
+  if (pk->exn){
+    pk->exn = AP_EXC_NONE;
+    return tbool_top;
+  }
+  if (!po->F){ /* po is empty */
+    man->result.flag_exact = man->result.flag_best = tbool_true;
+    return tbool_true;
+  }
+  switch (cons->constyp){
+  case AP_CONS_EQ:
+  case AP_CONS_SUPEQ:
+  case AP_CONS_SUP:
+    break;
+  default:
+    man->result.flag_exact = man->result.flag_best = tbool_top;
+    return tbool_top;
+  }
+  dim = po->intdim + po->realdim;
+
+  itv_t* env = matrix_to_box(pk,po->F);
+  itv_intlinearize_ap_tcons0(pk->itv,&pk->poly_itv_lincons,
+			     cons,env,po->intdim);
+  itv_quasilinearize_lincons(pk->itv,&pk->poly_itv_lincons,env,false);
+  itv_array_free(env,po->intdim+po->realdim);
+  man->result.flag_exact = man->result.flag_best = tbool_top;
+  bool sat = vector_set_itv_lincons_sat(pk,
+					pk->poly_numintp,
+					&pk->poly_itv_lincons,
+					po->intdim, po->realdim, true);
+  if (sat){
+    sat = do_generators_sat_vector(pk,po->F,
+				   pk->poly_numintp,
+				   cons->constyp==AP_CONS_SUP);
+  }
+  return tbool_of_bool(sat);
 }
 
 /* ====================================================================== */

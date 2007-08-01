@@ -77,7 +77,7 @@ CFLAGS = \
 -Wall -Wextra -Wundef -Wbad-function-cast -Wcast-align -Wstrict-prototypes \
 -Wno-unused \
 -std=c99 \
--O3 -UNDEBUG
+-O3 -DNDEBUG
 
 # C compilation flags in debug (or profile) mode
 CFLAGS_DEBUG = \
@@ -85,7 +85,7 @@ CFLAGS_DEBUG = \
 -Wall -Wextra -Wundef -Wbad-function-cast -Wcast-align -Wstrict-prototypes \
 -Wno-unused \
 -std=c99 \
--g -O0 -DNDEBUG
+-g -O0 -UNDEBUG
 
 # Examples of CFLAGS
 # CFLAGS = -Wswitch -Werror-implicit-function-declaration -Wall -std=c99	\
@@ -100,13 +100,13 @@ CXXFLAGS = \
 -Wcast-qual -Wswitch \
 -Wall -Wextra -Wundef -Wcast-align \
 -Wno-unused \
--O3 -UNDEBUG
+-O3 -DNDEBUG
 # C++ compilation flags in debug (or profile) mode
 CXXFLAGS_DEBUG = \
 -Wcast-qual -Wswitch \
 -Wall -Wextra -Wundef -Wcast-align \
 -Wno-unused \
--g -O0 -DNDEBUG
+-g -O0 -UNDEBUG
 
 AR = ar
 RANLIB = ranlib

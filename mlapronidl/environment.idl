@@ -145,8 +145,8 @@ void ap_environment_vars(ap_environment_ptr e,
   quote(call,"\n\
   {\n\
     size_t i;\n\
-    for(i=0;i<e->intdim;i++) name_of_intdim[i] = e->var_of_dim[i];\n\
-    for(i=0;i<e->realdim;i++) name_of_realdim[i] = e->var_of_dim[e->intdim+i];\n\
+    for(i=0;i<e->intdim;i++) name_of_intdim[i] = ap_var_operations->copy(e->var_of_dim[i]);\n \
+    for(i=0;i<e->realdim;i++) name_of_realdim[i] = ap_var_operations->copy(e->var_of_dim[e->intdim+i]);\n \
   }");
 
 quote(MLI,"\n(** Return the variable corresponding to the given dimension in the environment. Raise [Failure] is the dimension is out of the range of the environment (greater than or equal to [dim env]) *)")
@@ -155,7 +155,7 @@ ap_var_t ap_environment_var_of_dim(ap_environment_ptr e, ap_dim_t dim)
 if (dim>=e->intdim+e->realdim){\n\
    caml_failwith(\"Environment.var_of_dim: dim out of range w.r.t. the environment\");\n\
 }\n\
-_res = e->var_of_dim[dim];");
+_res = ap_var_operations->copy(e->var_of_dim[dim]);");
 
 quote(MLI,"\n(** Return the dimension associated to the given variable in the environment. Raise [Failure] if the variable does not belong to the environment. *)")
 ap_dim_t ap_environment_dim_of_var(ap_environment_ptr e, ap_var_t var)

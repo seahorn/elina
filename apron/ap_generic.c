@@ -26,7 +26,8 @@
 /* ********************************************************************** */
 
 tbool_t ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
-			     ap_scalar_discr_t discr, bool quasilinearize)
+			     ap_scalar_discr_t discr, 
+			     bool quasilinearize)
 {
   tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
   tbool_t (*sat_lincons)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_LINCONS];
@@ -42,7 +43,7 @@ tbool_t ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
 
   a0.value = abs;
   a0.man = man;
-  lincons0 = ap_intlinearize_tcons0(man,&a0,cons,&exact,discr,quasilinearize);
+  lincons0 = ap_intlinearize_tcons0(man,&a0,cons,&exact,discr,quasilinearize,false);
   res = sat_lincons(man,abs,&lincons0);
   ap_lincons0_clear(&lincons0);
   if (!exact){
@@ -164,7 +165,7 @@ ap_generic_meet_quasilinearize_lincons_array(ap_manager_t* man,
   }
   else {
     array2 = ap_quasilinearize_lincons0_array(man,abs,array,&exact,
-					      discr,linearize);
+					      discr,linearize,true);
     res = meet_lincons_array(man,destructive,abs,&array2);
     if (!exact){
       man->result.flag_exact = man->result.flag_best = tbool_top;
@@ -197,12 +198,12 @@ ap_generic_meet_intlinearize_tcons_array(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = tbool_true;
 
   if (is_bottom(man,abs)==tbool_true || array->size==0){
-    res = destructive ? abs : copy(abs);
+    res = destructive ? abs : copy(man,abs);
   }
   else {
     a0.value = abs;
     a0.man = man;
-    array2 = ap_intlinearize_tcons0_array(man,&a0,array,&exact,discr,linearize);
+    array2 = ap_intlinearize_tcons0_array(man,&a0,array,&exact,discr,linearize,true,true,2,false);
     res = meet_lincons_array(man,destructive,abs,&array2);
     if (!exact){
       man->result.flag_exact = man->result.flag_best = tbool_top;

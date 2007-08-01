@@ -86,7 +86,8 @@ ap_lincons0_t ap_quasilinearize_lincons0(ap_manager_t* man,
 					 void* abs,
 					 ap_lincons0_t* lincons0,
 					 bool* pexact,
-					 ap_scalar_discr_t discr)
+					 ap_scalar_discr_t discr,
+					 bool meet)
 {
   if (ap_linexpr0_is_quasilinear(lincons0->linexpr0)){
     *pexact = true;
@@ -95,9 +96,9 @@ ap_lincons0_t ap_quasilinearize_lincons0(ap_manager_t* man,
   else {
     switch (discr){
     case AP_SCALAR_MPQ:
-      return ap_quasilinearize_lincons0_MPQ(man,abs,lincons0,pexact);
+      return ap_quasilinearize_lincons0_MPQ(man,abs,lincons0,pexact,meet);
     case AP_SCALAR_DOUBLE:
-      return ap_quasilinearize_lincons0_D(man,abs,lincons0,pexact);
+      return ap_quasilinearize_lincons0_D(man,abs,lincons0,pexact,meet);
     default:
       abort();
     }
@@ -134,7 +135,8 @@ ap_quasilinearize_lincons0_array(ap_manager_t* man,
 				 ap_lincons0_array_t* array,
 				 bool* pexact,
 				 ap_scalar_discr_t discr,
-				 bool linearize)
+				 bool linearize,
+				 bool meet)
 {
   ap_linexpr_type_t type = ap_lincons0_array_type(array);
   if ((linearize && type==AP_LINEXPR_LINEAR) ||
@@ -145,9 +147,9 @@ ap_quasilinearize_lincons0_array(ap_manager_t* man,
   else {
     switch (discr){
     case AP_SCALAR_MPQ:
-      return ap_quasilinearize_lincons0_array_MPQ(man,abs,array,pexact,linearize);
+      return ap_quasilinearize_lincons0_array_MPQ(man,abs,array,pexact,linearize,meet);
     case AP_SCALAR_DOUBLE:
-      return ap_quasilinearize_lincons0_array_D(man,abs,array,pexact,linearize);
+      return ap_quasilinearize_lincons0_array_D(man,abs,array,pexact,linearize,meet);
     default:
       abort();
     }
@@ -200,13 +202,13 @@ ap_lincons0_t ap_intlinearize_tcons0(ap_manager_t* man,
 				     ap_tcons0_t* cons,
 				     bool* pexact,
 				     ap_scalar_discr_t discr,
-				     bool quasilinearize)
+				     bool quasilinearize, bool meet)
 {
   switch (discr){
   case AP_SCALAR_MPQ:
-    return ap_intlinearize_tcons0_MPQ(man,abs,cons,pexact,quasilinearize);
+    return ap_intlinearize_tcons0_MPQ(man,abs,cons,pexact,quasilinearize,meet);
   case AP_SCALAR_DOUBLE:
-    return ap_intlinearize_tcons0_D(man,abs,cons,pexact,quasilinearize);
+    return ap_intlinearize_tcons0_D(man,abs,cons,pexact,quasilinearize,meet);
   default:
     assert(false);
     return ap_lincons0_make(AP_CONS_EQ,NULL,NULL);
@@ -218,13 +220,14 @@ ap_lincons0_array_t ap_intlinearize_tcons0_array(ap_manager_t* man,
 						 ap_tcons0_array_t* array,
 						 bool* pexact,
 						 ap_scalar_discr_t discr,
-						 ap_linexpr_type_t linearize)
+						 ap_linexpr_type_t linearize, bool meet,
+						 bool boxize, size_t kmax, bool intervalonly)
 {
   switch (discr){
   case AP_SCALAR_MPQ:
-    return ap_intlinearize_tcons0_array_MPQ(man,abs,array,pexact,linearize);
+    return ap_intlinearize_tcons0_array_MPQ(man,abs,array,pexact,linearize,meet,boxize,kmax,intervalonly);
   case AP_SCALAR_DOUBLE:
-    return ap_intlinearize_tcons0_array_D(man,abs,array,pexact,linearize);
+    return ap_intlinearize_tcons0_array_D(man,abs,array,pexact,linearize,meet,boxize,kmax,intervalonly);
   default:
     assert(false);
     return ap_lincons0_array_make(0);

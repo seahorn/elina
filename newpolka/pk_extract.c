@@ -14,6 +14,7 @@
 #include "pk_representation.h"
 #include "pk_extract.h"
 #include "ap_generic.h"
+#include "itv_linearize.h"
 
 /* Bounding the value of a dimension in a matrix of generators. */
 
@@ -251,6 +252,47 @@ void matrix_bound_itv_linexpr(pk_internal_t* pk,
 }
 
 /* ====================================================================== */
+/* Bounding the value of a dimension in a polyhedra */
+/* ====================================================================== */
+
+ap_interval_t* pk_bound_dimension(ap_manager_t* man,
+				  pk_t* po,
+				  ap_dim_t dim)
+{
+  itv_t itv;
+  ap_interval_t* interval;
+  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOUND_DIMENSION);
+
+  interval = ap_interval_alloc();
+  ap_interval_reinit(interval,AP_SCALAR_MPQ);
+  if (pk->funopt->algorithm>0)
+    poly_chernikova(man,po,NULL);
+  else
+    poly_obtain_F(man,po,NULL);
+
+  if (pk->exn){
+    pk->exn = AP_EXC_NONE;
+    ap_interval_set_top(interval);
+    return interval;
+  }
+
+  if (!po->F){ /* po is empty */
+    ap_interval_set_bottom(interval);
+    man->result.flag_exact = man->result.flag_best = tbool_true;
+    return interval;
+  }
+
+  itv_init(itv);
+  matrix_bound_dimension(pk,itv,dim,po->F);
+  ap_interval_set_itv(pk->itv,interval, itv);
+  itv_clear(itv);
+  man->result.flag_exact = man->result.flag_best = 
+    dim<po->intdim ? tbool_top : tbool_true;
+
+  return interval;
+}
+
+/* ====================================================================== */
 /* Bounding the value of a linear expression in a polyhedra */
 /* ====================================================================== */
 
@@ -305,21 +347,16 @@ ap_interval_t* pk_bound_texpr(ap_manager_t* man,
 			      pk_t* po,
 			      ap_texpr0_t* expr)
 {
-  return ap_generic_bound_texpr(man,po,expr,AP_SCALAR_MPQ,true);
-}
-
-/* ====================================================================== */
-/* Bounding the value of a dimension in a polyhedra */
-/* ====================================================================== */
-
-ap_interval_t* pk_bound_dimension(ap_manager_t* man,
-				  pk_t* po,
-				  ap_dim_t dim)
-{
+  itv_t itv1,itv2;
+  itv_t* env;
   ap_interval_t* interval;
-  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOUND_DIMENSION);
+  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOUND_TEXPR);
 
   interval = ap_interval_alloc();
+  if (pk_is_bottom(man,po)==tbool_true){
+    ap_interval_set_bottom(interval);
+    return interval;
+  }
   ap_interval_reinit(interval,AP_SCALAR_MPQ);
   if (pk->funopt->algorithm>0)
     poly_chernikova(man,po,NULL);
@@ -331,18 +368,18 @@ ap_interval_t* pk_bound_dimension(ap_manager_t* man,
     ap_interval_set_top(interval);
     return interval;
   }
+  env = matrix_to_box(pk,po->F);
+  itv_intlinearize_ap_texpr0(pk->itv,&pk->poly_itv_linexpr,
+			     expr,env,po->intdim);
+  itv_init(itv1); itv_init(itv2);
+  matrix_bound_itv_linexpr(pk,itv1,&pk->poly_itv_linexpr,po->F);
+  itv_eval_ap_texpr0(pk->itv,itv2,expr,env);
+  itv_meet(pk->itv,itv1,itv1,itv2);
+  ap_interval_set_itv(pk->itv,interval,itv1);
+  itv_clear(itv1); itv_clear(itv2);
+  itv_array_free(env,po->intdim+po->realdim);
+  man->result.flag_exact = man->result.flag_best = ap_texpr0_is_interval_linear(expr) ? tbool_true : tbool_top;
 
-  if (!po->F){ /* po is empty */
-    ap_interval_set_bottom(interval);
-    man->result.flag_exact = man->result.flag_best = tbool_true;
-    return interval;
-  }
-
-  matrix_bound_dimension(pk,pk->poly_itv,dim,po->F);
-  man->result.flag_exact = man->result.flag_best = 
-    dim<po->intdim ? tbool_top : tbool_true;
-
-  ap_interval_set_itv(pk->itv,interval, pk->poly_itv);
   return interval;
 }
 
@@ -401,6 +438,7 @@ ap_interval_t** pk_to_box(ap_manager_t* man,
 			  pk_t* po)
 {
   ap_interval_t** interval;
+  itv_t* titv;
   size_t i,dim;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_TO_BOX);
 
@@ -409,7 +447,6 @@ ap_interval_t** pk_to_box(ap_manager_t* man,
     poly_chernikova(man,po,NULL);
   else
     poly_obtain_F(man,po,NULL);
-
 
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
@@ -420,9 +457,18 @@ ap_interval_t** pk_to_box(ap_manager_t* man,
     }
     return interval;
   }
-  interval = malloc(dim*sizeof(ap_interval_t*));
-  for (i=0; i<dim; i++){
-    interval[i] = pk_bound_dimension(man,po,i);
+  interval = ap_interval_array_alloc(dim);
+  if (!po->F){
+    for (i=0; i<dim; i++){
+      ap_interval_set_bottom(interval[i]);
+    }
+  }
+  else {
+    titv = matrix_to_box(pk,po->F);
+    for (i=0; i<dim; i++){
+      ap_interval_set_itv(pk->itv,interval[i],titv[i]);
+    }
+    itv_array_free(titv,dim);
   }
   man->result.flag_exact = man->result.flag_best = tbool_true;
   return interval;

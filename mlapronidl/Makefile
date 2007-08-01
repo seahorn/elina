@@ -126,7 +126,7 @@ apron.cmo apron.cmi: $(MLOBJ) $(MLINT)
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -i -pack -o $@ $(MLOBJ)
 
 apron.cmx apron.o: $(MLOBJx)
-	$(OCAMLOPT) -pack -o $@ $(MLOBJx)
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -pack -o $@ $(MLOBJx)
 
 apron_lexer.ml: apron_lexer.mll
 	$(OCAMLLEX) $^

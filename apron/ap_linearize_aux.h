@@ -43,7 +43,7 @@ ITVFUN(ap_quasilinearize_linexpr0)(ap_manager_t* man,
 ap_lincons0_t
 ITVFUN(ap_quasilinearize_lincons0)(ap_manager_t* man,
 				   ap_abstract0_t* abs, ap_lincons0_t* lincons0,
-				   bool* pexact);
+				   bool* pexact, bool meet);
 
 ap_linexpr0_t**
 ITVFUN(ap_quasilinearize_linexpr0_array)(ap_manager_t* man,
@@ -53,7 +53,7 @@ ITVFUN(ap_quasilinearize_linexpr0_array)(ap_manager_t* man,
 ap_lincons0_array_t
 ITVFUN(ap_quasilinearize_lincons0_array)(ap_manager_t* man,
 					 ap_abstract0_t* abs, ap_lincons0_array_t* array, bool* pexact,
-					 bool linearize);
+					 bool linearize, bool meet);
 
 /* ********************************************************************** */
 /* III. Evaluation of tree expressions */
@@ -75,7 +75,7 @@ ITVFUN(ap_intlinearize_texpr0)(ap_manager_t* man,
 ap_lincons0_t
 ITVFUN(ap_intlinearize_tcons0)(ap_manager_t* man,
 			       ap_abstract0_t* abs, ap_tcons0_t* cons,
-			       bool* pexact, bool quasilinearize);
+			       bool* pexact, bool quasilinearize, bool meet);
 
 ap_linexpr0_t**
 ITVFUN(ap_intlinearize_texpr0_array)(ap_manager_t* man,
@@ -85,7 +85,9 @@ ITVFUN(ap_intlinearize_texpr0_array)(ap_manager_t* man,
 ap_lincons0_array_t
 ITVFUN(ap_intlinearize_tcons0_array)(ap_manager_t* man,
 				     ap_abstract0_t* abs, ap_tcons0_array_t* array,
-				     bool* pexact, ap_linexpr_type_t linearize);
+				     bool* pexact, 
+				     ap_linexpr_type_t linearize, bool meet,
+				     bool boxize, size_t kmax, bool intervalonly);
 
 #ifdef __cplusplus
 }

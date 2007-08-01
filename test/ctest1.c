@@ -28,27 +28,67 @@ ap_linexpr0_t* random_linexpr_linear(int);
 ap_abstract0_t* random_abstract_std(ap_manager_t* man, int dim);
 void random_abstract2_std(ap_manager_t*, ap_manager_t*, int,
 			  ap_abstract0_t**, ap_abstract0_t**);
+ap_texpr0_t* random_texpr_std(int, int);
+ap_texpr0_t* random_texpr_real(int, int);
 
+/* ********************************************************************** */
 /* Global paramaters */
+/* ********************************************************************** */
+
+FILE* stream=NULL;
+
 ap_manager_t* manprec;
 ap_manager_t* manrough;
 int intdim;
 
 ap_linexpr0_t* (*random_linexpr)(int) = &random_linexpr_linear;
+ap_texpr0_t* (*random_texpr)(int,int) = &random_texpr_real;
 ap_abstract0_t* (*random_abstract)(ap_manager_t*, int) = &random_abstract_std;
 void (*random_abstract2)(ap_manager_t*, ap_manager_t*, int,
 			 ap_abstract0_t**, ap_abstract0_t**) = &random_abstract2_std;
+bool random_abstract2_equal = 1;
+/* Indicates whether the last call to random_abstract2 guarantees that the two
+   abstract values are semantically equal */
 
+size_t nb_meetjoin_array = 4;
+size_t nb_asssub_array = 4;
 
-/* utilities */
-/* ********* */
+#define N 10
+
+char b1_[N+4]= " [";
+char b2_[N+4];
+int i_;
+int error_ = 0;
+
+#define LOOP								\
+  {									\
+    memset(b1_+2,' ',N); b1_[N+2]=']'; b1_[N+3]=0;			\
+    memset(b2_,8,N+3); b2_[N+3]=0;					\
+    for (i_=0;i_<N;i_++) {						\
+      printf("%s%s",b1_,b2_);						\
+      fflush(stdout);
+
+#define RESULT(c) b1_[i_+2]=c
+
+#define ERROR(msg)					\
+  do {							\
+    fprintf(stream,"\n%s\n",msg);			\
+    RESULT('!');					\
+    error_++;						\
+  } while (0)
+
+#define ENDLOOP	} } printf("%s%s\n",b1_,b2_); if (error_) abort();
+
+/* ********************************************************************** */
+/* Random generations of expressions, constraints, rays */
+/* ********************************************************************** */
 
 void random_vertex(ap_interval_t** tdim, int size)
 {
   int i;
   for (i=0;i<size;i++){
     int n = rand()%20-10;
-    int d  = rand()%3+1;
+    int d  = rand()%4+1;
     ap_interval_set_frac(tdim[i],n,d,n,d);
   }
 }
@@ -56,9 +96,10 @@ void random_vertex(ap_interval_t** tdim, int size)
 void random_interval(ap_interval_t* i)
 {
   int n1 = rand()%20-10;
-  int n2 = n1 + rand()%20;
-  int d  = rand()%3+1;
-  ap_interval_set_frac(i,n1,d,n2,d);
+  int n2 = n1 + rand()%10;
+  int d1  = rand()%4+1;
+  int d2  = rand()%d1+1;
+  ap_interval_set_frac(i,n1,d1,n2,d2);
 }
 
 /* random affine expression, linear */
@@ -77,9 +118,9 @@ ap_linexpr0_t* random_linexpr_quasilinear(int dim)
 {
   ap_linexpr0_t* l = random_linexpr_linear(dim);
   int n1 = rand()%20-10;
-  int n2 = n1 + rand()%20;
+  int n2 = n1 + rand()%10;
   int d1  = rand()%4+1;
-  int d2  = rand()%4+1;
+  int d2  = rand()%d1+1;
   ap_linexpr0_set_cst_interval_frac(l,n1,d1,n2,d2);
   return l;
 }
@@ -91,17 +132,113 @@ ap_linexpr0_t* random_linexpr_intlinear(int dim)
   int i,n1,n2,d1,d2;
   for (i=0;i<dim;i++){
     n1 = rand()%20-10;
-    n2 = n1 + rand()%20;
+    n2 = n1 + rand()%10;
     d1 = rand()%4+1;
-    d2 = rand()%4+1;
+    d2 = rand()%d1+1;
     ap_coeff_set_interval_frac(l->p.coeff+i,n1,d1,n2,d2);
   }
   n1 = rand()%20-10;
-  n2 = n1 + rand()%20;
+  n2 = n1 + rand()%10;
   d1 = rand()%4+1;
-  d2 = rand()%4+1;
+  d2 = rand()%d1+1;
   ap_coeff_set_interval_frac(&l->cst,n1,d1,n2,d2);
   return l;
+}
+/* random affine expression, linear, chosen from an interval linear one */
+ap_linexpr0_t* random_linexpr_linear_from_intlinear(ap_linexpr0_t* a)
+{
+  size_t i;
+  ap_linexpr0_t* l = ap_linexpr0_alloc(AP_LINEXPR_DENSE,a->size);
+  for (i=0;i<a->size;i++) {
+    switch (a->p.coeff[i].discr) {
+    case AP_COEFF_SCALAR:
+      ap_coeff_set_scalar(&l->p.coeff[i],a->p.coeff[i].val.scalar);
+      break;
+    case AP_COEFF_INTERVAL:
+      if (rand()%2)
+	ap_coeff_set_scalar(&l->p.coeff[i],a->p.coeff[i].val.interval->inf);
+      else 
+	ap_coeff_set_scalar(&l->p.coeff[i],a->p.coeff[i].val.interval->sup);
+      break;
+    }
+  }
+  switch (a->cst.discr) {
+  case AP_COEFF_SCALAR:
+    ap_coeff_set_scalar(&l->cst,a->cst.val.scalar);
+    break;
+  case AP_COEFF_INTERVAL:
+    if (rand()%2) ap_coeff_set_scalar(&l->cst,a->cst.val.interval->inf);
+    else ap_coeff_set_scalar(&l->cst,a->cst.val.interval->sup);
+    break;
+    
+  }
+ return l;
+}
+
+ap_lincons0_t random_lincons_linear_from_intlinear(ap_lincons0_t a)
+{
+  return ap_lincons0_make(a.constyp,
+			  random_linexpr_linear_from_intlinear(a.linexpr0),
+			  NULL);
+}
+
+/* random tree expression */
+ap_texpr0_t* random_texpr_std(int dim, int depth)
+{
+  if (depth==0) {
+    switch (rand()%3) {
+    case 0: return ap_texpr0_dim(rand()%dim);
+    case 1: return ap_texpr0_cst_scalar_frac(rand()%20-2,rand()%4+1);
+    default:
+      {
+	int n1 = rand()%20-10;
+	int n2 = n1 + rand()%10;
+	int d1  = rand()%4+1;
+	int d2  = n2>=0 ? rand()%d1+1 : d1+1+rand()%4;
+	return ap_texpr0_cst_interval_frac(n1,d1,n2,d2);
+      }
+    }
+  }
+  else {
+    if (rand()%2)
+      return ap_texpr0_unop(AP_TEXPR_NEG+rand()%(AP_TEXPR_SQRT-AP_TEXPR_NEG+1),
+			    random_texpr(dim,rand()%depth),
+			    rand()%AP_RTYPE_SIZE, rand()%AP_RDIR_SIZE);
+    else
+      return ap_texpr0_binop(rand()%AP_TEXPR_NEG,
+			     random_texpr(dim,rand()%depth),
+			     random_texpr(dim,rand()%depth),
+			     rand()%AP_RTYPE_SIZE, rand()%AP_RDIR_SIZE);
+  }
+}
+
+ap_texpr0_t* random_texpr_real(int dim, int depth)
+{
+  if (depth==0) {
+    switch (rand()%3) {
+    case 0: return ap_texpr0_dim(rand()%dim);
+    case 1: return ap_texpr0_cst_scalar_frac(rand()%20-2,rand()%4+1);
+    default:
+      {
+	int n1 = rand()%20-10;
+	int n2 = n1 + rand()%10;
+	int d1  = rand()%4+1;
+	int d2  = n2>=0 ? rand()%d1+1 : d1+1+rand()%4;
+	return ap_texpr0_cst_interval_frac(n1,d1,n2,d2);
+      }
+    }
+  }
+  else {
+    if (rand()%2)
+      return ap_texpr0_unop(AP_TEXPR_NEG+rand()%(AP_TEXPR_SQRT-AP_TEXPR_NEG+1),
+			    random_texpr(dim,rand()%depth),
+			    AP_RTYPE_REAL, rand()%AP_RDIR_SIZE);
+    else
+      return ap_texpr0_binop(rand()%AP_TEXPR_NEG,
+			     random_texpr(dim,rand()%depth),
+			     random_texpr(dim,rand()%depth),
+			     AP_RTYPE_REAL, rand()%AP_RDIR_SIZE);
+  }
 }
 
 /* random generator of specified type */
@@ -133,6 +270,10 @@ ap_lincons0_t random_constraint(int dim, ap_constyp_t c)
     abort();
   }
 }
+
+/* ********************************************************************** */
+/* Random generation of abstract values */
+/* ********************************************************************** */
 
 /* random abstract value, created with the vdim vertices, and rdim
    rays. */
@@ -261,6 +402,7 @@ void random_abstract2_std(ap_manager_t* man1,/* assumed to be the most precise *
 {
   *abs2 = random_abstract(man2,dim);
   *abs1 = convert(man1,*abs2);
+  random_abstract2_equal = true;
 }
 void random_abstract2_inv(ap_manager_t* man1,/* assumed to be the most precise */
 			  ap_manager_t* man2,/* assumed to be the less precise */
@@ -269,11 +411,23 @@ void random_abstract2_inv(ap_manager_t* man1,/* assumed to be the most precise *
 {
   *abs1 = random_abstract(man1,dim);
   *abs2 = convert(man2,*abs1);
+  random_abstract2_equal = false;
 }
 
+/* print */
+void print_abstract(const char* msg, ap_abstract0_t* p)
+{
+  fprintf(stream,"%s (%s) = ",msg,p->man->library);
+  ap_abstract0_fprint(stream,p->man,p,NULL);
+  ap_abstract0_fdump(stream,p->man,p);
+  fprintf(stream,"\n");
+}
 
-/* comparison
+/* ********************************************************************** */
+/* Comparison of abstract values */
+/* ********************************************************************** */
 
+   /*
 The first abstract value is supposed to be defined on a more precise abstract
 domain than the second one. Hence we convert a2 to the first abstract domain
 and then performs the comparison.
@@ -293,50 +447,66 @@ tbool_t is_leq(ap_abstract0_t* a1, ap_abstract0_t* a2)
   return r;
 }
 
-/* print */
-void print_abstract(const char* msg, ap_abstract0_t* p)
+
+/* ********************************************************************** */
+/* Tests */
+/* ********************************************************************** */
+
+/* ====================================================================== */
+/* Various tests on special cases */
+/* ====================================================================== */
+
+/* test on prec domain */
+void test_misc(void)
 {
-  fprintf(stderr,"%s (%s) = ",msg,p->man->library);
-  ap_abstract0_fprint(stderr,p->man,p,NULL);
-  ap_abstract0_fdump(stderr,p->man,p);
-  fprintf(stderr,"\n");
+  size_t D = 5;
+  int i;
+  ap_abstract0_t *bot,*top;
+
+  bot = ap_abstract0_bottom(manprec,0,D);
+  top = ap_abstract0_top(manprec,0,D);
+  ap_dimension_t d1 = ap_abstract0_dimension(manprec,bot);
+  ap_dimension_t d2 = ap_abstract0_dimension(manprec,top);  
+  printf("\nperforming various tests\n");
+  if (d1.intdim || d1.realdim!=D) printf("ap_abstract0_dimension failed #1\n");
+  if (d2.intdim || d2.realdim!=D) printf("ap_abstract0_dimension failed #2\n");
+  if (ap_abstract0_is_bottom(manprec,bot)==tbool_false)  printf("ap_abstract0_is_bottom failed #3\n");
+  if (ap_abstract0_is_bottom(manprec,top)==tbool_true)   printf("ap_abstract0_is_bottom failed #4\n");
+  if (ap_abstract0_is_top(manprec,bot)==tbool_true)      printf("ap_abstract0_is_top failed #5\n");
+  if (ap_abstract0_is_top(manprec,top)==tbool_false)     printf("ap_abstract0_is_top failed #6\n");
+  if (ap_abstract0_is_leq(manprec,bot,top)==tbool_false) printf("ap_abstract0_is_leq failed #7\n");
+  if (ap_abstract0_is_leq(manprec,top,bot)==tbool_true)  printf("ap_abstract0_is_leq failed #8\n");
+  if (ap_abstract0_is_eq(manprec,bot,bot)==tbool_false)  printf("ap_abstract0_is_eq failed #9\n");
+  if (ap_abstract0_is_eq(manprec,top,top)==tbool_false)  printf("ap_abstract0_is_eq failed #10\n");
+  if (ap_abstract0_is_eq(manprec,bot,top)==tbool_true)   printf("ap_abstract0_is_eq failed #11\n");
+  if (ap_abstract0_is_dimension_unconstrained(manprec,bot,0)==tbool_true)
+    printf("ap_abstract0_is_dimension_unconstrained #12\n");
+  if (ap_abstract0_is_dimension_unconstrained(manprec,top,0)==tbool_false)
+    printf("ap_abstract0_is_dimension_unconstrained #13\n");
+  for (i=0;i<N;i++) {
+    ap_abstract0_t* o = random_abstract(manprec,D);
+    ap_abstract0_t* c = ap_abstract0_copy(manprec,o);
+    ap_abstract0_t* l = ap_abstract0_closure(manprec,false,o);
+    ap_dimension_t d = ap_abstract0_dimension(manprec,o);
+    if (d.intdim || d.realdim!=D) printf("ap_abstract0_dimension failed #14\n");
+    if (ap_abstract0_is_leq(manprec,bot,o)==tbool_false)  printf("ap_abstract0_is_leq failed #15\n");
+    if (ap_abstract0_is_leq(manprec,o,top)==tbool_false)  printf("ap_abstract0_is_leq failed #16\n");
+    if (ap_abstract0_is_eq(manprec,o,c)==tbool_false)     printf("ap_abstract0_is_eq failed #17\n");
+    if (ap_abstract0_is_eq(manprec,o,l)==tbool_false)     printf("ap_abstract0_is_eq failed #18\n");
+    // not implemented
+    //ap_abstract0_minimize(manprec,o);
+    //ap_abstract0_canonicalize(manprec,o);
+    //ap_abstract0_approximate(manprec,o,0);
+    //ap_abstract0_is_minimal(manprec,o);
+    //ap_abstract0_is_canonical(manprec,o);
+    ap_abstract0_free(manprec,o); ap_abstract0_free(manprec,c); ap_abstract0_free(manprec,l);
+  }
+  ap_abstract0_free(manprec,bot); ap_abstract0_free(manprec,top);
 }
 
-
-/* loop */
-/* **** */
-
-#define N 70
-
-char b1_[N+4]= " [";
-char b2_[N+4];
-int i_;
-int error_ = 0;
-
-#define LOOP								\
-  {									\
-    memset(b1_+2,' ',N); b1_[N+2]=']'; b1_[N+3]=0;			\
-    memset(b2_,8,N+3); b2_[N+3]=0;					\
-    for (i_=0;i_<N;i_++) {						\
-      printf("%s%s",b1_,b2_);						\
-      fflush(stdout);
-
-#define RESULT(c) b1_[i_+2]=c
-
-#define ERROR(msg)					\
-  do {							\
-    fprintf(stderr,"\n%s\n",msg);			\
-    RESULT('!');					\
-    error_++;						\
-  } while (0)
-
-#define ENDLOOP	} } printf("%s%s\n",b1_,b2_); if (error_) abort();
-
-
-
-
-/* tests */
-/* ***** */
+/* ====================================================================== */
+/* Comparison tests */
+/* ====================================================================== */
 
 void test_conv(void)
 {
@@ -360,56 +530,218 @@ void test_conv(void)
   } ENDLOOP;
 }
 
-
-void test_join(void)
+void test_bound_dimension(void)
 {
-  int dim = 4;
-  printf("\nbinary join\n");
+  printf("\nbound_dimension\n");
   LOOP {
-    ap_abstract0_t *prec0,*prec1,*precr,*rough0,*rough1,*roughr;
-    random_abstract2(manprec,manrough,dim,&prec0,&rough0);
-    random_abstract2(manprec,manrough,dim,&prec1,&rough1);
-    roughr = ap_abstract0_join(manrough,false,rough0,rough1);
-    precr = ap_abstract0_join(manprec,false,prec0,prec1);
+    int cmp;
+    size_t i, dim = 6;
+    ap_abstract0_t* rougha,*preca;
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
     RESULT('*');
-    if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results");
-      print_abstract("rough0",rough0); print_abstract("rough1",rough1);
-      print_abstract("roughr",roughr); print_abstract("precr",precr);
+    for (i=0;i<dim;i++) {
+      tbool_t roughd,precd;
+      ap_interval_t* roughi,*preci;
+      roughd = ap_abstract0_is_dimension_unconstrained(manrough,rougha,i);
+      precd = ap_abstract0_is_dimension_unconstrained(manprec,preca,i);
+
+      roughi = ap_abstract0_bound_dimension(manrough,rougha,i);
+      preci = ap_abstract0_bound_dimension(manprec,preca,i);
+      cmp = ap_interval_cmp(preci,roughi);
+      if (roughd!=precd || 
+	  random_abstract2_equal && cmp!=0 ||
+	  cmp!=0 && cmp!=(-1)){
+	ERROR("different results");
+	print_abstract("rougha",rougha);
+	print_abstract("preca",preca);
+	fprintf(stream,"roughi[%i]=",(int)i); ap_interval_fprint(stream,roughi);
+	fprintf(stream," preci[%i]=",(int)i); ap_interval_fprint(stream,preci);
+	fprintf(stream," roughd=%i precd=%i\n",roughd,precd);
+      }
+      ap_interval_free(roughi);
+      ap_interval_free(preci);
     }
-    ap_abstract0_free(manrough,rough0); ap_abstract0_free(manrough,rough1); ap_abstract0_free(manrough,roughr);
-    ap_abstract0_free(manprec,prec0); ap_abstract0_free(manprec,prec1); ap_abstract0_free(manprec,precr);
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
   } ENDLOOP;
 }
 
-#define NB 4
-
-void test_join_array(void)
+void test_bound_linexpr(void)
 {
-  int i,dim = 3;
-  printf("\narray join\n");
+  printf("\nbound_linexpr\n");
   LOOP {
-    ap_abstract0_t* rougha[NB], *roughr;
-    ap_abstract0_t* preca[NB], *precr;
-    for (i=0;i<NB;i++) {
-      random_abstract2(manprec,manrough,dim,&preca[i],&rougha[i]);
+    int cmp;
+    size_t dim = 6;
+    ap_abstract0_t* rougha,*preca;
+    ap_interval_t* roughi,*preci;
+    ap_linexpr0_t* l = random_linexpr(dim);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughi = ap_abstract0_bound_linexpr(manrough,rougha,l);
+    preci = ap_abstract0_bound_linexpr(manprec,preca,l);
+    cmp = ap_interval_cmp(preci,roughi);
+    RESULT('*');
+    if (random_abstract2_equal && cmp!=0 ||
+	cmp!=0 && cmp!=(-1)){
+      ERROR("different results");
+      print_abstract("rougha",rougha); print_abstract("preca",preca);
+      ap_linexpr0_fprint(stream,l,NULL);
+      fprintf(stream,"\nroughi="); ap_interval_fprint(stream,roughi);
+      fprintf(stream,"\npreci="); ap_interval_fprint(stream,preci);
+      fprintf(stream,"\n");
     }
-    roughr = ap_abstract0_join_array(manrough,(ap_abstract0_t**)rougha,NB);
-    precr = ap_abstract0_join_array(manprec,(ap_abstract0_t**)preca,NB);
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_interval_free(roughi); ap_interval_free(preci);
+    ap_linexpr0_free(l);
+  } ENDLOOP;
+}
+
+void test_bound_texpr(void)
+{
+  printf("\nbound_texpr\n");
+  LOOP {
+    int cmp;
+    size_t dim = 6, depth=3;
+    ap_abstract0_t* rougha,*preca;
+    ap_interval_t* roughi,*preci;
+    ap_texpr0_t* e = random_texpr(dim,depth);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughi = ap_abstract0_bound_texpr(manrough,rougha,e);
+    preci = ap_abstract0_bound_texpr(manprec,preca,e);
+    cmp = ap_interval_cmp(preci,roughi);
+    RESULT('*');
+    if (random_abstract2_equal && cmp!=0 ||
+	cmp!=0 && cmp!=(-1)){
+      ERROR("different results");
+      print_abstract("rougha",rougha); print_abstract("preca",preca);
+      ap_texpr0_fprint(stream,e,NULL);
+      fprintf(stream,"\nroughi="); ap_interval_fprint(stream,roughi);
+      fprintf(stream,"\npreci="); ap_interval_fprint(stream,preci);
+      fprintf(stream,"\n");
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_interval_free(roughi); ap_interval_free(preci);
+    ap_texpr0_free(e);
+  } ENDLOOP;
+}   
+
+void test_sat_interval(void)
+{
+  printf("\nsat_interval\n");
+  LOOP {
+    size_t dim = 6;
+    size_t p = rand() % dim;
+    ap_abstract0_t* rougha,*preca;
+    ap_interval_t* i = ap_interval_alloc();
+    tbool_t roughs,precs;
+    random_interval(i);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughs = ap_abstract0_sat_interval(manrough,rougha,p,i);
+    precs = ap_abstract0_sat_interval(manprec,preca,p,i);
+    RESULT('*');
+    if (random_abstract2_equal && 
+	((roughs==tbool_true && roughs!=precs) ||
+	 (precs==tbool_true && roughs!=precs)) ||
+	roughs==tbool_true && precs != tbool_true){
+      ERROR("different results");
+      print_abstract("rougha",rougha);
+      print_abstract("preca",preca);
+      ap_interval_fprint(stream,i);
+      fprintf(stream,"\nvar=%i\nroughs=%i precs=%i\n",(int)p,roughs,precs);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_interval_free(i);
+  } ENDLOOP;
+}
+
+void test_sat_lincons(void)
+{
+  printf("\nsat_lincons\n");
+  LOOP {
+    size_t dim = 6;
+    ap_abstract0_t* rougha,*preca;
+    ap_lincons0_t l = ap_lincons0_make((rand()%100>=90)?AP_CONS_EQ:
+				       (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
+				       random_linexpr(dim),NULL);
+    tbool_t roughs,precs;
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughs = ap_abstract0_sat_lincons(manrough,rougha,&l);
+    precs = ap_abstract0_sat_lincons(manprec,preca,&l);
+    RESULT('*');
+    if (random_abstract2_equal && 
+	((roughs==tbool_true && roughs!=precs) ||
+	 (precs==tbool_true && roughs!=precs)) ||
+	roughs==tbool_true && precs != tbool_true){
+      ERROR("different results");
+      print_abstract("rougha",rougha);print_abstract("preca",preca);
+      ap_lincons0_fprint(stream,&l,NULL);
+      fprintf(stream,"\nroughs=%i precs=%i\n",roughs,precs);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_lincons0_clear(&l);
+  } ENDLOOP;
+}
+
+void test_sat_tcons(void)
+{
+  printf("\nsat_tcons\n");
+  LOOP {
+    size_t dim = 6, depth=3;
+    ap_abstract0_t* rougha,*preca;
+    ap_tcons0_t l = ap_tcons0_make((rand()%100>=90)?AP_CONS_EQ:
+				     (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
+				     random_texpr(dim,depth),NULL);
+    tbool_t roughs,precs;
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughs = ap_abstract0_sat_tcons(manrough,rougha,&l);
+    precs = ap_abstract0_sat_tcons(manprec,preca,&l);
+    RESULT('*');
+    if (random_abstract2_equal && 
+	((roughs==tbool_true && roughs!=precs) ||
+	 (precs==tbool_true && roughs!=precs)) ||
+	roughs==tbool_true && precs != tbool_true){
+      ERROR("different results");
+      print_abstract("rougha",rougha);print_abstract("preca",preca);
+      ap_tcons0_fprint(stream,&l,NULL);
+      fprintf(stream,"\nroughs=%i precs=%i\n",roughs,precs);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_tcons0_clear(&l);
+  } ENDLOOP;
+}
+
+void test_to_box(void)
+{
+  printf("\nbox conversion\n");
+  LOOP {
+    size_t i, dim = 6;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_interval_t** roughi,**preci;
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughi = ap_abstract0_to_box(manrough,rougha);
+    preci = ap_abstract0_to_box(manprec,preca);
+    roughr = ap_abstract0_of_box(manrough,0,dim,(ap_interval_t**)roughi);
+    precr = ap_abstract0_of_box(manprec,0,dim,(ap_interval_t**)preci);
     RESULT('*');
     if (is_leq(precr,roughr)!=tbool_true) {
       ERROR("different results");
-      print_abstract("roughr",roughr); print_abstract("precr",precr);
+      for (i=0;i<dim;i++) {
+	fprintf(stream,"roughi[%i]=",(int)i); ap_interval_fprint(stream,roughi[i]);
+	fprintf(stream," preci[%i]=",(int)i); ap_interval_fprint(stream,preci[i]);
+	fprintf(stream,"\n");
+      }
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
     }
-    for (i=0;i<NB;i++) { ap_abstract0_free(manrough,rougha[i]); ap_abstract0_free(manprec,preca[i]); }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
     ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    ap_interval_array_free(roughi,dim); ap_interval_array_free(preci,dim);
   } ENDLOOP;
+
 }
+
 
 void test_meet(void)
 {
   int dim = 4;
-  printf("\nbinary meet\n");
+  printf("\nmeet\n");
   LOOP {
     ap_abstract0_t *prec0,*prec1,*precr,*rough0,*rough1,*roughr;
     random_abstract2(manprec,manrough,dim,&prec0,&rough0);
@@ -430,27 +762,405 @@ void test_meet(void)
 void test_meet_array(void)
 {
   int i,dim = 3;
-  printf("\narray meet\n");
+  printf("\nmeet_array\n");
   LOOP {
-    ap_abstract0_t* rougha[NB], *roughr;
-    ap_abstract0_t* preca[NB], *precr;
-    for (i=0;i<NB;i++) {
+    ap_abstract0_t* rougha[nb_meetjoin_array], *roughr;
+    ap_abstract0_t* preca[nb_meetjoin_array], *precr;
+    for (i=0;i<nb_meetjoin_array;i++) {
       random_abstract2(manprec,manrough,dim,&preca[i],&rougha[i]);
     }
-    roughr = ap_abstract0_meet_array(manrough,(ap_abstract0_t**)rougha,NB);
-    precr = ap_abstract0_meet_array(manprec,(ap_abstract0_t**)preca,NB);
+    roughr = ap_abstract0_meet_array(manrough,(ap_abstract0_t**)rougha,nb_meetjoin_array);
+    precr = ap_abstract0_meet_array(manprec,(ap_abstract0_t**)preca,nb_meetjoin_array);
     RESULT('*');
     if (is_leq(precr,roughr)!=tbool_true) {
       ERROR("different results");
       print_abstract("roughr",roughr); print_abstract("precr",precr);
     }
-    for (i=0;i<NB;i++) { ap_abstract0_free(manrough,rougha[i]); ap_abstract0_free(manprec,preca[i]); }
+    for (i=0;i<nb_meetjoin_array;i++) { ap_abstract0_free(manrough,rougha[i]); ap_abstract0_free(manprec,preca[i]); }
     ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
   } ENDLOOP;
 }
 
 
-void test_dimadd(void)
+void test_meet_lincons_array(void)
+{
+  printf("\nmeet_lincons_array\n");
+  LOOP {
+    size_t i, dim = 6, nb = 3;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_lincons0_array_t ar = ap_lincons0_array_make(nb);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    for (i=0;i<nb;i++) {
+      ar.p[i] = ap_lincons0_make((rand()%100>=90)?AP_CONS_EQ:
+				 (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
+				 random_linexpr(dim),NULL);
+    }
+    roughr = ap_abstract0_meet_lincons_array(manrough,false,rougha,&ar);
+    precr = ap_abstract0_meet_lincons_array(manprec,false,preca,&ar);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      ap_lincons0_array_fprint(stream,&ar,NULL);
+      print_abstract("rougha",rougha); print_abstract("preca",preca);
+      print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    ap_lincons0_array_clear(&ar);
+  } ENDLOOP;
+}
+
+void test_meet_tcons_array(void)
+{
+  printf("\nmeet_tcons_array\n");
+  LOOP {
+    size_t i, dim = 6, depth = 4, nb = 3;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_tcons0_array_t ar = ap_tcons0_array_make(nb);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    for (i=0;i<nb;i++) {
+      ar.p[i] = ap_tcons0_make((rand()%100>=90)?AP_CONS_EQ:
+			       (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
+			       random_texpr(dim,depth),NULL);
+    }
+    roughr = ap_abstract0_meet_tcons_array(manrough,false,rougha,&ar);
+    precr = ap_abstract0_meet_tcons_array(manprec,false,preca,&ar);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      ap_tcons0_array_fprint(stream,&ar,NULL);
+      print_abstract("rougha",rougha); print_abstract("preca",preca);
+      print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    ap_tcons0_array_clear(&ar);
+  } ENDLOOP;
+}
+
+void test_join(void)
+{
+  int dim = 4;
+  printf("\njoin\n");
+  LOOP {
+    ap_abstract0_t *prec0,*prec1,*precr,*rough0,*rough1,*roughr;
+    random_abstract2(manprec,manrough,dim,&prec0,&rough0);
+    random_abstract2(manprec,manrough,dim,&prec1,&rough1);
+    roughr = ap_abstract0_join(manrough,false,rough0,rough1);
+    precr = ap_abstract0_join(manprec,false,prec0,prec1);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      print_abstract("rough0",rough0); print_abstract("rough1",rough1);
+      print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rough0); ap_abstract0_free(manrough,rough1); ap_abstract0_free(manrough,roughr);
+    ap_abstract0_free(manprec,prec0); ap_abstract0_free(manprec,prec1); ap_abstract0_free(manprec,precr);
+  } ENDLOOP;
+}
+
+void test_join_array(void)
+{
+  int i,dim = 3;
+  printf("\njoin_array\n");
+  LOOP {
+    ap_abstract0_t* rougha[nb_meetjoin_array], *roughr;
+    ap_abstract0_t* preca[nb_meetjoin_array], *precr;
+    for (i=0;i<nb_meetjoin_array;i++) {
+      random_abstract2(manprec,manrough,dim,&preca[i],&rougha[i]);
+    }
+    roughr = ap_abstract0_join_array(manrough,(ap_abstract0_t**)rougha,nb_meetjoin_array);
+    precr = ap_abstract0_join_array(manprec,(ap_abstract0_t**)preca,nb_meetjoin_array);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    for (i=0;i<nb_meetjoin_array;i++) { ap_abstract0_free(manrough,rougha[i]); ap_abstract0_free(manprec,preca[i]); }
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+  } ENDLOOP;
+}
+
+void test_add_ray(void)
+{
+  printf("\nadd_rays_array\n");
+  LOOP {
+    size_t i, dim = 4, nb = 4;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_generator0_array_t ar = ap_generator0_array_make(nb);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    for (i=0;i<nb;i++)
+      ar.p[i] = random_generator(dim,(rand()%100>=80)?AP_GEN_LINE:AP_GEN_RAY);
+    roughr = ap_abstract0_add_ray_array(manrough,false,rougha,&ar);
+    precr = ap_abstract0_add_ray_array(manprec,false,preca,&ar);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      ap_generator0_array_fprint(stream,&ar,NULL);
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    ap_generator0_array_clear(&ar);
+  } ENDLOOP;
+}
+
+void test_assign_linexpr(void)
+{
+  printf("\nassign_linexpr\n");
+  LOOP {
+    size_t dim = 7;
+    size_t p = rand() % dim;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_linexpr0_t* l = random_linexpr(dim);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughr = ap_abstract0_assign_linexpr(manrough,false,rougha,p,l,NULL);
+    precr = ap_abstract0_assign_linexpr(manprec,false,preca,p,l,NULL);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      fprintf(stream,"x%i <- ",(int)p); ap_linexpr0_fprint(stream,l,NULL); fprintf(stream,"\n");
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    ap_linexpr0_free(l);
+  } ENDLOOP;
+}
+
+void test_assign_linexpr_array(void)
+{
+  printf("\nassign_linexpr_array\n");
+  LOOP {
+    size_t i, dim = 5;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_dim_t d[nb_asssub_array];
+    ap_linexpr0_t *l[nb_asssub_array];
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    for (i=0;i<nb_asssub_array;i++) {
+      l[i]  = random_linexpr(dim);
+      if (!i) d[i] = rand()%(dim-nb_asssub_array);
+      else d[i] = d[i-1] + 1 + (rand()%(dim-nb_asssub_array+i-d[i-1]));
+    }
+    roughr = ap_abstract0_assign_linexpr_array(manrough,false,rougha,d,(ap_linexpr0_t**)l,nb_asssub_array,NULL);
+    precr = ap_abstract0_assign_linexpr_array(manprec,false,preca,d,(ap_linexpr0_t**)l,nb_asssub_array,NULL);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      for (i=0;i<nb_asssub_array;i++) {
+	fprintf(stream,"x%i <- ",d[i]);
+	ap_linexpr0_fprint(stream,l[i],NULL);
+	fprintf(stream,"\n");
+      }
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("preca",preca); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    for (i=0;i<nb_asssub_array;i++) ap_linexpr0_free(l[i]);
+  } ENDLOOP;
+}
+
+void test_substitute_linexpr(void)
+{
+  printf("\nsubstitute_linexpr\n");
+  LOOP {
+    size_t dim = 7;
+    size_t p = rand() % dim;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_linexpr0_t* l = random_linexpr(dim);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughr = ap_abstract0_substitute_linexpr(manrough,false,rougha,p,l,NULL);
+    precr = ap_abstract0_substitute_linexpr(manprec,false,preca,p,l,NULL);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      fprintf(stream,"x%i -> ",(int)p); ap_linexpr0_fprint(stream,l,NULL); fprintf(stream,"\n");
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    ap_linexpr0_free(l);
+  } ENDLOOP;
+}
+
+void test_substitute_linexpr_array(void)
+{
+  printf("\nsubstitute_linexpr_array\n");
+  LOOP {
+    size_t i, dim = 7;
+    size_t p = rand() % dim;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_dim_t d[nb_asssub_array];
+    ap_linexpr0_t *l[nb_asssub_array];
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    for (i=0;i<nb_asssub_array;i++) {
+      l[i]  = random_linexpr(dim);
+      if (!i) d[i] = rand()%(dim-nb_asssub_array);
+      else d[i] = d[i-1] + 1 + (rand()%(dim-nb_asssub_array+i-d[i-1]));
+    }
+    roughr = ap_abstract0_substitute_linexpr_array(manrough,false,rougha,d,(ap_linexpr0_t**)l,nb_asssub_array,NULL);
+    precr = ap_abstract0_substitute_linexpr_array(manprec,false,preca,d,(ap_linexpr0_t**)l,nb_asssub_array,NULL);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      for (i=0;i<nb_asssub_array;i++) {
+	fprintf(stream,"x%i -> ",d[i]);
+	ap_linexpr0_fprint(stream,l[i],NULL);
+	fprintf(stream,"\n");
+      }
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    for (i=0;i<nb_asssub_array;i++) ap_linexpr0_free(l[i]);
+  } ENDLOOP;
+}
+
+void test_assign_texpr(void)
+{
+  printf("\nassign_texpr\n");
+  LOOP {
+    size_t dim = 7, depth=3;
+    size_t p = rand() % dim;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_texpr0_t* l = random_texpr(dim, depth);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughr = ap_abstract0_assign_texpr(manrough,false,rougha,p,l,NULL);
+    precr = ap_abstract0_assign_texpr(manprec,false,preca,p,l,NULL);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      fprintf(stream,"x%i <- ",(int)p); ap_texpr0_fprint(stream,l,NULL); fprintf(stream,"\n");
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    ap_texpr0_free(l);
+  } ENDLOOP;
+}
+
+void test_assign_texpr_array(void)
+{
+  printf("\nassign_texpr_array\n");
+  LOOP {
+    size_t i, dim = 7, depth=3;
+    size_t p = rand() % dim;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_dim_t d[nb_asssub_array];
+    ap_texpr0_t *l[nb_asssub_array];
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    for (i=0;i<nb_asssub_array;i++) {
+      l[i]  = random_texpr(dim, depth);
+      if (!i) d[i] = rand()%(dim-nb_asssub_array);
+      else d[i] = d[i-1] + 1 + (rand()%(dim-nb_asssub_array+i-d[i-1]));
+    }
+    roughr = ap_abstract0_assign_texpr_array(manrough,false,rougha,d,(ap_texpr0_t**)l,nb_asssub_array,NULL);
+    precr = ap_abstract0_assign_texpr_array(manprec,false,preca,d,(ap_texpr0_t**)l,nb_asssub_array,NULL);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      for (i=0;i<nb_asssub_array;i++) {
+	fprintf(stream,"x%i <- ",d[i]);
+	ap_texpr0_fprint(stream,l[i],NULL);
+	fprintf(stream,"\n");
+      }
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("preca",preca); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    for (i=0;i<nb_asssub_array;i++) ap_texpr0_free(l[i]);
+  } ENDLOOP;
+}
+
+void test_substitute_texpr(void)
+{
+  printf("\nsubstitute_texpr\n");
+  LOOP {
+    size_t dim = 7, depth=3;
+    size_t p = rand() % dim;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_texpr0_t* l = random_texpr(dim, depth);
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    roughr = ap_abstract0_substitute_texpr(manrough,false,rougha,p,l,NULL);
+    precr = ap_abstract0_substitute_texpr(manprec,false,preca,p,l,NULL);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      fprintf(stream,"x%i -> ",(int)p); ap_texpr0_fprint(stream,l,NULL); fprintf(stream,"\n");
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    ap_texpr0_free(l);
+  } ENDLOOP;
+}
+
+void test_substitute_texpr_array(void)
+{
+  printf("\nsubstitute_texpr_array\n");
+  LOOP {
+    size_t i, dim = 7, depth=3;
+    size_t p = rand() % dim;
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_dim_t d[nb_asssub_array];
+    ap_texpr0_t *l[nb_asssub_array];
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    for (i=0;i<nb_asssub_array;i++) {
+      l[i]  = random_texpr(dim, depth);
+      if (!i) d[i] = rand()%(dim-nb_asssub_array);
+      else d[i] = d[i-1] + 1 + (rand()%(dim-nb_asssub_array+i-d[i-1]));
+    }
+    roughr = ap_abstract0_substitute_texpr_array(manrough,false,rougha,d,(ap_texpr0_t**)l,nb_asssub_array,NULL);
+    precr = ap_abstract0_substitute_texpr_array(manprec,false,preca,d,(ap_texpr0_t**)l,nb_asssub_array,NULL);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      for (i=0;i<nb_asssub_array;i++) {
+	fprintf(stream,"x%i -> ",d[i]);
+	ap_texpr0_fprint(stream,l[i],NULL);
+	fprintf(stream,"\n");
+      }
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    for (i=0;i<nb_asssub_array;i++) ap_texpr0_free(l[i]);
+  } ENDLOOP;
+}
+
+
+void test_forget_array(void)
+{
+  printf("\nforget_array\n");
+  LOOP {
+    size_t i, dim = 8;
+    ap_dimchange_t* a = ap_dimchange_alloc(0,2);
+    ap_abstract0_t* rougha,*roughr, *preca,*precr;
+    ap_dimension_t d;
+    int proj = rand()%2;
+    random_abstract2(manprec,manrough,dim,&preca,&rougha);
+    d = ap_abstract0_dimension(manrough,rougha);
+    for (i=0;i<a->intdim+a->realdim;i++) {
+      a->dim[i] = rand()%3 + 1;
+      if (i) a->dim[i] += a->dim[i-1];
+      if (a->dim[i]<d.intdim) { a->intdim++; a->realdim--; }
+      assert(a->dim[i]<dim);
+    }
+    roughr = ap_abstract0_forget_array(manrough,false,rougha,a->dim,a->realdim,proj);
+    precr = ap_abstract0_forget_array(manprec,false,preca,a->dim,a->realdim,proj);
+    RESULT('*');
+    if (is_leq(precr,roughr)!=tbool_true) {
+      ERROR("different results");
+      ap_dimchange_fprint(stream,a);
+      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
+    }
+    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
+    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
+    ap_dimchange_free(a);
+  } ENDLOOP;
+}
+
+void test_add_dimensions(void)
 {
   printf("\nadd dimensions\n");
   LOOP {
@@ -472,8 +1182,8 @@ void test_dimadd(void)
     RESULT('*');
     if (is_eq(precr,roughr)!=tbool_true) {
       ERROR("different results");
-      ap_dimchange_fprint(stderr,a);
-      fprintf(stderr,"proj=%d\n",proj);
+      ap_dimchange_fprint(stream,a);
+      fprintf(stream,"proj=%d\n",proj);
       print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("preca",preca); print_abstract("precr",precr);
     }
     ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
@@ -482,7 +1192,7 @@ void test_dimadd(void)
   } ENDLOOP;
 }
 
-void test_dimrem(void)
+void test_remove_dimensions(void)
 {
   printf("\nremove dimensions\n");
   LOOP {
@@ -503,7 +1213,7 @@ void test_dimrem(void)
     RESULT('*');
     if (is_leq(precr,roughr)!=tbool_true) {
       ERROR("different results");
-      ap_dimchange_fprint(stderr,a);
+      ap_dimchange_fprint(stream,a);
       print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
     }
     ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
@@ -512,38 +1222,7 @@ void test_dimrem(void)
   } ENDLOOP;
 }
 
-void test_forget(void)
-{
-  printf("\nforget\n");
-  LOOP {
-    size_t i, dim = 8;
-    ap_dimchange_t* a = ap_dimchange_alloc(0,2);
-    ap_abstract0_t* rougha,*roughr, *preca,*precr;
-    ap_dimension_t d;
-    int proj = rand()%2;
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    d = ap_abstract0_dimension(manrough,rougha);
-    for (i=0;i<a->intdim+a->realdim;i++) {
-      a->dim[i] = rand()%3 + 1;
-      if (i) a->dim[i] += a->dim[i-1];
-      if (a->dim[i]<d.intdim) { a->intdim++; a->realdim--; }
-      assert(a->dim[i]<dim);
-    }
-    roughr = ap_abstract0_forget_array(manrough,false,rougha,a->dim,a->realdim,proj);
-    precr = ap_abstract0_forget_array(manprec,false,preca,a->dim,a->realdim,proj);
-    RESULT('*');
-    if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results");
-      ap_dimchange_fprint(stderr,a);
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
-    ap_dimchange_free(a);
-  } ENDLOOP;
-}
-
-void test_permute(void)
+void test_permute_dimensions(void)
 {
   printf("\npermute dimensions\n");
   LOOP {
@@ -566,7 +1245,7 @@ void test_permute(void)
     RESULT('*');
     if (is_eq(precr,roughr)!=tbool_true) {
       ERROR("different results");
-      ap_dimperm_fprint(stderr,p);
+      ap_dimperm_fprint(stream,p);
       print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
     }
     ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
@@ -591,7 +1270,7 @@ void test_expand(void)
     RESULT('*');
     if (is_eq(precr,roughr)!=tbool_true) {
       ERROR("different results");
-      fprintf(stderr,"dim %i expanded %i times\n",(int)dd,(int)n);
+      fprintf(stream,"dim %i expanded %i times\n",(int)dd,(int)n);
       print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
     }
     ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
@@ -620,314 +1299,11 @@ void test_fold(void)
     RESULT('*');
     if (is_leq(precr,roughr)!=tbool_true) {
       ERROR("different results");
-      fprintf(stderr,"fold %i,%i,%i\n",(int)dd[0],(int)dd[1],(int)dd[2]);
+      fprintf(stream,"fold %i,%i,%i\n",(int)dd[0],(int)dd[1],(int)dd[2]);
       print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
     }
     ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
     ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
-  } ENDLOOP;
-}
-
-
-void test_add_lincons(void)
-{
-  printf("\nadd lincons\n");
-  LOOP {
-    size_t i, dim = 6, nb = 3;
-    ap_abstract0_t* rougha,*roughr, *preca,*precr;
-    ap_lincons0_array_t ar = ap_lincons0_array_make(nb);
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    for (i=0;i<nb;i++) {
-      ar.p[i] = ap_lincons0_make((rand()%100>=90)?AP_CONS_EQ:
-				 (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
-				 random_linexpr(dim),NULL);
-    }
-    roughr = ap_abstract0_meet_lincons_array(manrough,false,rougha,&ar);
-    precr = ap_abstract0_meet_lincons_array(manprec,false,preca,&ar);
-    RESULT('*');
-    if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results");
-      ap_lincons0_array_fprint(stderr,&ar,NULL);
-      print_abstract("rougha",rougha); print_abstract("preca",preca);
-      print_abstract("roughr",roughr); print_abstract("precr",precr);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
-    ap_lincons0_array_clear(&ar);
-  } ENDLOOP;
-}
-
-void test_add_ray(void)
-{
-  printf("\nadd rays\n");
-  LOOP {
-    size_t i, dim = 4, nb = 4;
-    ap_abstract0_t* rougha,*roughr, *preca,*precr;
-    ap_generator0_array_t ar = ap_generator0_array_make(nb);
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    for (i=0;i<nb;i++)
-      ar.p[i] = random_generator(dim,(rand()%100>=80)?AP_GEN_LINE:AP_GEN_RAY);
-    roughr = ap_abstract0_add_ray_array(manrough,false,rougha,&ar);
-    precr = ap_abstract0_add_ray_array(manprec,false,preca,&ar);
-    RESULT('*');
-    if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results");
-      ap_generator0_array_fprint(stderr,&ar,NULL);
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
-    ap_generator0_array_clear(&ar);
-  } ENDLOOP;
-}
-
-void test_box(void)
-{
-  printf("\nbox conversion\n");
-  LOOP {
-    size_t i, dim = 6;
-    ap_abstract0_t* rougha,*roughr, *preca,*precr;
-    ap_interval_t** roughi,**preci;
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    roughi = ap_abstract0_to_box(manrough,rougha);
-    preci = ap_abstract0_to_box(manprec,preca);
-    roughr = ap_abstract0_of_box(manrough,0,dim,(ap_interval_t**)roughi);
-    precr = ap_abstract0_of_box(manprec,0,dim,(ap_interval_t**)preci);
-    RESULT('*');
-    if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results");
-      for (i=0;i<dim;i++) {
-	fprintf(stderr,"roughi[%i]=",(int)i); ap_interval_fprint(stderr,roughi[i]);
-	fprintf(stderr," preci[%i]=",(int)i); ap_interval_fprint(stderr,preci[i]);
-	fprintf(stderr,"\n");
-      }
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
-    ap_interval_array_free(roughi,dim); ap_interval_array_free(preci,dim);
-  } ENDLOOP;
-
-}
-
-void test_vbound(void)
-{
-  printf("\nvariable bound\n");
-  LOOP {
-    size_t i, dim = 6;
-    ap_abstract0_t* rougha,*preca;
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    RESULT('*');
-    for (i=0;i<dim;i++) {
-      tbool_t roughd,precd;
-      ap_interval_t* roughi,*preci;
-      roughd = ap_abstract0_is_dimension_unconstrained(manrough,rougha,i);
-      precd = ap_abstract0_is_dimension_unconstrained(manprec,preca,i);
-
-      roughi = ap_abstract0_bound_dimension(manrough,rougha,i);
-      preci = ap_abstract0_bound_dimension(manprec,preca,i);
-      if (roughd!=precd || ap_interval_cmp(roughi,preci)) {
-	ERROR("different results");
-	print_abstract("rougha",rougha);
-	print_abstract("preca",preca);
-	fprintf(stderr,"roughi[%i]=",(int)i); ap_interval_fprint(stderr,roughi);
-	fprintf(stderr," preci[%i]=",(int)i); ap_interval_fprint(stderr,preci);
-	fprintf(stderr," roughd=%i precd=%i\n",roughd,precd);
-      }
-      ap_interval_free(roughi);
-      ap_interval_free(preci);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-  } ENDLOOP;
-}
-
-void test_lbound(void)
-{
-  printf("\nlinear expression bound\n");
-  LOOP {
-    size_t dim = 6;
-    ap_abstract0_t* rougha,*preca;
-    ap_interval_t* roughi,*preci;
-    ap_linexpr0_t* l = random_linexpr(dim);
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    roughi = ap_abstract0_bound_linexpr(manrough,rougha,l);
-    preci = ap_abstract0_bound_linexpr(manprec,preca,l);
-    RESULT('*');
-    if (ap_interval_cmp(roughi,preci)) {
-      ERROR("different results");
-      print_abstract("rougha",rougha); print_abstract("preca",preca);
-      ap_linexpr0_fprint(stderr,l,NULL);
-      fprintf(stderr,"\nroughi="); ap_interval_fprint(stderr,roughi);
-      fprintf(stderr,"\npreci="); ap_interval_fprint(stderr,preci);
-      fprintf(stderr,"\n");
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_interval_free(roughi); ap_interval_free(preci);
-    ap_linexpr0_free(l);
-  } ENDLOOP;
-}
-
-void test_csat(void)
-{
-  printf("\nconstraint satisfaction\n");
-  LOOP {
-    size_t dim = 6;
-    ap_abstract0_t* rougha,*preca;
-    ap_lincons0_t l = ap_lincons0_make((rand()%100>=90)?AP_CONS_EQ:
-				       (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
-				       random_linexpr(dim),NULL);
-    tbool_t roughs,precs;
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    roughs = ap_abstract0_sat_lincons(manrough,rougha,&l);
-    precs = ap_abstract0_sat_lincons(manprec,preca,&l);
-    RESULT('*');
-    if ((roughs==tbool_true && roughs!=precs) ||
-	 (precs==tbool_true && roughs!=precs)) {
-      ERROR("different results");
-      print_abstract("rougha",rougha);print_abstract("preca",preca);
-      ap_lincons0_fprint(stderr,&l,NULL);
-      fprintf(stderr,"\nroughs=%i precs=%i\n",roughs,precs);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_lincons0_clear(&l);
-  } ENDLOOP;
-}
-
-void test_isat(void)
-{
-  printf("\ninterval satisfaction\n");
-  LOOP {
-    size_t dim = 6;
-    size_t p = rand() % dim;
-    ap_abstract0_t* rougha,*preca;
-    ap_interval_t* i = ap_interval_alloc();
-    tbool_t roughs,precs;
-    random_interval(i);
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    roughs = ap_abstract0_sat_interval(manrough,rougha,p,i);
-    precs = ap_abstract0_sat_interval(manprec,preca,p,i);
-    RESULT('*');
-    if (roughs!=precs) {
-      ERROR("different results");
-      print_abstract("rougha",rougha);
-      ap_interval_fprint(stderr,i);
-      fprintf(stderr,"\nvar=%i\nroughs=%i precs=%i\n",(int)p,roughs,precs);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_interval_free(i);
-  } ENDLOOP;
-}
-
-void test_assign(void)
-{
-  printf("\nassign\n");
-  LOOP {
-    size_t dim = 7;
-    size_t p = rand() % dim;
-    ap_abstract0_t* rougha,*roughr, *preca,*precr;
-    ap_linexpr0_t* l = random_linexpr(dim);
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    roughr = ap_abstract0_assign_linexpr(manrough,false,rougha,p,l,NULL);
-    precr = ap_abstract0_assign_linexpr(manprec,false,preca,p,l,NULL);
-    RESULT('*');
-    if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results");
-      fprintf(stderr,"x%i <- ",(int)p); ap_linexpr0_fprint(stderr,l,NULL); fprintf(stderr,"\n");
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
-    ap_linexpr0_free(l);
-  } ENDLOOP;
-}
-
-#define NB 2
-void test_par_assign(void)
-{
-  printf("\nparallel assign\n");
-  LOOP {
-    size_t i, dim = 3;
-    size_t p = rand() % dim;
-    ap_abstract0_t* rougha,*roughr, *preca,*precr;
-    ap_dim_t d[NB];
-    ap_linexpr0_t *l[NB];
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    for (i=0;i<NB;i++) {
-      l[i]  = random_linexpr(dim);
-      if (!i) d[i] = rand()%(dim-NB);
-      else d[i] = d[i-1] + 1 + (rand()%(dim-NB+i-d[i-1]));
-    }
-    roughr = ap_abstract0_assign_linexpr_array(manrough,false,rougha,d,(ap_linexpr0_t**)l,NB,NULL);
-    precr = ap_abstract0_assign_linexpr_array(manprec,false,preca,d,(ap_linexpr0_t**)l,NB,NULL);
-    RESULT('*');
-    if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results");
-      for (i=0;i<NB;i++) {
-	fprintf(stderr,"x%i <- ",d[i]);
-	ap_linexpr0_fprint(stderr,l[i],NULL);
-	fprintf(stderr,"\n");
-      }
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("preca",preca); print_abstract("precr",precr);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
-    for (i=0;i<NB;i++) ap_linexpr0_free(l[i]);
-  } ENDLOOP;
-}
-
-void test_subst(void)
-{
-  printf("\nsubst\n");
-  LOOP {
-    size_t dim = 7;
-    size_t p = rand() % dim;
-    ap_abstract0_t* rougha,*roughr, *preca,*precr;
-    ap_linexpr0_t* l = random_linexpr(dim);
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    roughr = ap_abstract0_substitute_linexpr(manrough,false,rougha,p,l,NULL);
-    precr = ap_abstract0_substitute_linexpr(manprec,false,preca,p,l,NULL);
-    RESULT('*');
-    if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results");
-      fprintf(stderr,"x%i -> ",(int)p); ap_linexpr0_fprint(stderr,l,NULL); fprintf(stderr,"\n");
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
-    ap_linexpr0_free(l);
-  } ENDLOOP;
-}
-
-void test_par_subst(void)
-{
-  printf("\nparallel subst\n");
-  LOOP {
-    size_t i, dim = 7;
-    size_t p = rand() % dim;
-    ap_abstract0_t* rougha,*roughr, *preca,*precr;
-    ap_dim_t d[NB];
-    ap_linexpr0_t *l[NB];
-    random_abstract2(manprec,manrough,dim,&preca,&rougha);
-    for (i=0;i<NB;i++) {
-      l[i]  = random_linexpr(dim);
-      if (!i) d[i] = rand()%(dim-NB);
-      else d[i] = d[i-1] + 1 + (rand()%(dim-NB+i-d[i-1]));
-    }
-    roughr = ap_abstract0_substitute_linexpr_array(manrough,false,rougha,d,(ap_linexpr0_t**)l,NB,NULL);
-    precr = ap_abstract0_substitute_linexpr_array(manprec,false,preca,d,(ap_linexpr0_t**)l,NB,NULL);
-    RESULT('*');
-    if (is_leq(precr,roughr)!=tbool_true) {
-      ERROR("different results");
-      for (i=0;i<NB;i++) {
-	fprintf(stderr,"x%i -> ",d[i]);
-	ap_linexpr0_fprint(stderr,l[i],NULL);
-	fprintf(stderr,"\n");
-      }
-      print_abstract("rougha",rougha); print_abstract("roughr",roughr); print_abstract("precr",precr);
-    }
-    ap_abstract0_free(manrough,rougha); ap_abstract0_free(manprec,preca);
-    ap_abstract0_free(manrough,roughr); ap_abstract0_free(manprec,precr);
-    for (i=0;i<NB;i++) ap_linexpr0_free(l[i]);
   } ENDLOOP;
 }
 
@@ -975,27 +1351,37 @@ void test(ap_manager_t* man1, /* the most precise */
 	   manprec->library,manprec->version,manrough->library,manrough->version,intdim);
     /* run tests */
     test_conv();
-    test_join();
+    test_bound_dimension();
+    test_bound_linexpr();
+    test_bound_texpr();
+    test_sat_interval();
+    test_sat_lincons();
+    test_sat_tcons();
+    test_to_box();
+
     test_meet();
-    test_join_array();
     test_meet_array();
-    test_dimadd();
-    test_dimrem();
-    test_forget();
-    test_permute();
+    test_meet_lincons_array();
+    test_meet_tcons_array();
+    test_join();
+    test_join_array();
+    test_add_ray();
+
+    test_assign_linexpr();
+    test_assign_linexpr_array();
+    test_substitute_linexpr();
+    test_substitute_linexpr_array();
+    test_assign_texpr();
+    test_assign_texpr_array();
+    test_substitute_texpr();
+    test_substitute_texpr_array();
+    test_forget_array();
+
+    test_add_dimensions();
+    test_remove_dimensions();
+    test_permute_dimensions();
     test_expand();
     test_fold();
-    test_add_lincons();
-    test_add_ray();
-    test_box();
-    test_vbound();
-    test_lbound();
-    test_csat();
-    test_isat();
-    test_assign();
-    test_par_assign();
-    test_subst();
-    test_par_subst();
   }
   if (error_) printf("\n%i error(s)!\n",error_);
   else printf("\nall tests passed\n");
@@ -1009,6 +1395,8 @@ int main(int argc, char** argv)
 {
   int i;
 
+  stream = stdout;
+
   if (argc==1){
     srand(time(NULL));
   }
@@ -1017,7 +1405,7 @@ int main(int argc, char** argv)
     srand(seed);
   }
   else {
-    fprintf(stderr,"usage: %s [<seed>]\n",argv[0]);
+    fprintf(stream,"usage: %s [<seed>]\n",argv[0]);
     exit(1);
   }
   /* allocating all managers */
@@ -1039,19 +1427,21 @@ int main(int argc, char** argv)
     random_abstract2 = i==0 ? &random_abstract2_std : &random_abstract2_inv;
 
     // box/polyhedra
-    test(manpkl,manbox);
-    test(manpks,manbox);
-    test(manppll,manbox);
-    test(manppls,manbox);
+    //test(manpkl,manbox);
+    //test(manpks,manbox);
+    //test(manppll,manbox);
+    //test(manppls,manbox);
 
     // polyhedra/polyhedra (same library)
-    test(manpks,manpkl); test(manpkl,manpks);
-    test(manppls,manppll); test(manppll,manppls);
+    // test(manpks,manpkl); 
+    // test(manpkl,manpks);
+    // test(manppls,manppll); 
+    // test(manppll,manppls);
     // Polka polyhedra/PPL polyhedra
-    test(manppll,manpkl);
-    test(manpkl,manppll);
-    test(manppls,manpks);
-    test(manpks,manppls);
+    // test(manppll,manpkl);
+    // test(manpkl,manppll);
+    // test(manppls,manpks);
+    // test(manpks,manppls);
     // Grid/Equalities
     test(manpplgrid,manpkeq);
     random_abstract = &random_abstract_eq;

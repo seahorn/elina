@@ -84,7 +84,7 @@ value camlidl_texpr1_ap_texpr1_to_expr_c2ml(ap_environment_t* env, ap_texpr0_t* 
       var = ap_var_copy(var);\n\
       Begin_root(v0);\n\
       v0 = camlidl_apron_var_ptr_c2ml(&var);\n\
-      _v_res = caml_alloc_small(1,0);\n\
+      _v_res = caml_alloc_small(1,1);\n\
        Field(_v_res,0) = v0;\n\
       End_roots();\n\
     }\n\
@@ -141,7 +141,7 @@ value camlidl_texpr1_ap_texpr1_to_expr(value _v_texpr)\n\
   CAMLreturn(_v_res);\n\
 }\n\
 \n\
-void camlidl_texpr1_ap_texpr1_of_expr_ml2c(value v, ap_environment_t* env, ap_texpr0_t** res, camlidl_ctx _ctx)\n\
+void camlidl_texpr1_ap_texpr0_of_expr_ml2c(value v, ap_environment_t* env, ap_texpr0_t** res, camlidl_ctx _ctx)\n\
 {\n\
   ap_texpr0_t* texpr;\n\
   ap_texpr0_node_t* node;\n\
@@ -152,7 +152,7 @@ void camlidl_texpr1_ap_texpr1_of_expr_ml2c(value v, ap_environment_t* env, ap_te
   ap_texpr0_t* exprB;\n\
   value v0,v1,v2,v3,v4;\n\
 \n\
-  texpr = malloc(sizeof(ap_texpr0_t));\n\
+  texpr = malloc(sizeof(ap_texpr0_t));\n \
 \n\
   assert (Is_block(v));\n\
   switch (Tag_val(v)){\n\
@@ -170,7 +170,7 @@ void camlidl_texpr1_ap_texpr1_of_expr_ml2c(value v, ap_environment_t* env, ap_te
     texpr->discr = AP_TEXPR_DIM;\n\
     texpr->val.dim = ap_environment_dim_of_var(env,var);\n\
     if (texpr->val.dim == AP_DIM_MAX){\n\
-      ap_texpr0_free(texpr);\n\
+      free(texpr);\n\
       texpr = NULL;\n\
     }\n\
     break;\n\
@@ -180,7 +180,7 @@ void camlidl_texpr1_ap_texpr1_of_expr_ml2c(value v, ap_environment_t* env, ap_te
     v2 = Field(v,2);\n\
     v3 = Field(v,3);\n\
     \n\
-    camlidl_texpr1_ap_texpr1_of_expr_ml2c(v1,env,&exprA,_ctx);\n\
+    camlidl_texpr1_ap_texpr0_of_expr_ml2c(v1,env,&exprA,_ctx);\n\
     if (exprA==NULL){\n\
       free(texpr);\n\
       texpr = NULL;\n\
@@ -188,7 +188,6 @@ void camlidl_texpr1_ap_texpr1_of_expr_ml2c(value v, ap_environment_t* env, ap_te
     else {\n\
       node = malloc(sizeof(ap_texpr0_node_t));\n\
       camlidl_apron_texpr_unop_t_ml2c      (v0,&node->op);\n\
-      node->exprA = NULL; \n\
       camlidl_apron_texpr_rtype_t_ml2c     (v2,&node->type);\n\
       camlidl_apron_texpr_rdir_t_ml2c      (v3,&node->dir);\n\
       node->exprA = exprA; \n\
@@ -203,63 +202,87 @@ void camlidl_texpr1_ap_texpr1_of_expr_ml2c(value v, ap_environment_t* env, ap_te
     v2 = Field(v,2);\n\
     v3 = Field(v,3);\n\
     v4 = Field(v,4);\n\
-    camlidl_texpr1_ap_texpr1_of_expr_ml2c(v1,env,&exprA,_ctx);\n\
+    camlidl_texpr1_ap_texpr0_of_expr_ml2c(v1,env,&exprA,_ctx);\n\
     if (exprA==NULL){\n\
       free(texpr);\n\
       texpr = NULL;\n\
     }\n\
     else {\n\
-      camlidl_texpr1_ap_texpr1_of_expr_ml2c(v2,env,&exprB,_ctx);\n\
+      camlidl_texpr1_ap_texpr0_of_expr_ml2c(v2,env,&exprB,_ctx);\n\
       if (exprB==NULL){\n\
-        ap_texpr0_free(exprA);\n\
-        free(texpr);\n\
-        texpr = NULL;\n\
+	ap_texpr0_free(exprA);\n\
+	free(texpr);\n\
+	texpr = NULL;\n\
       }\n\
       else {\n\
-        node = malloc(sizeof(ap_texpr0_node_t));\n\
-        camlidl_apron_texpr_binop_t_ml2c     (v0,&node->op);\n\
-        camlidl_apron_texpr_rtype_t_ml2c     (v3,&node->type);\n\
-        camlidl_apron_texpr_rdir_t_ml2c      (v4,&node->dir);\n\
-        node->exprA = exprA; \n\
-        node->exprB = exprB; \n\
-        texpr->discr = AP_TEXPR_NODE;\n\
-        texpr->val.node = node;\n\
+	node = malloc(sizeof(ap_texpr0_node_t));\n\
+	camlidl_apron_texpr_binop_t_ml2c     (v0,&node->op);\n\
+	camlidl_apron_texpr_rtype_t_ml2c     (v3,&node->type);\n\
+	camlidl_apron_texpr_rdir_t_ml2c      (v4,&node->dir);\n\
+	node->exprA = exprA; \n\
+	node->exprB = exprB; \n\
+	texpr->discr = AP_TEXPR_NODE;\n\
+	texpr->val.node = node;\n\
       }\n\
     }\n\
     break;\n\
   default:\n\
     assert(false);\n\
   }\n\
-  if (texpr==NULL){\n\
-    camlidl_free(_ctx);\n\
-    caml_failwith(\"Texpr1.of_expr: unknown variable in the environment\");\n\
-  }\n\
   *res = texpr;\n\
 }\n\
-value camlidl_texpr1_ap_texpr1_of_expr(value _v_env, value _v_expr)\n\
+value camlidl_texpr1_ap_texpr0_of_expr(value _v_env, value _v_expr)\n\
 {\n\
   CAMLparam2(_v_env,_v_expr);\n\
   CAMLlocal1(_v_res);\n\
-  ap_texpr1_t texpr1;\n\
+  ap_texpr0_t* texpr0;\n\
   ap_environment_t* env;\n\
 \n\
   struct camlidl_ctx_struct _ctxs = { CAMLIDL_TRANSIENT, NULL };\n\
   camlidl_ctx _ctx = &_ctxs;\n\
 \n\
   camlidl_apron_environment_ptr_ml2c(_v_env,&env);\n\
-  camlidl_texpr1_ap_texpr1_of_expr_ml2c(_v_expr,env,&texpr1.texpr0,_ctx);\n\
-  texpr1.env = ap_environment_copy(env);\n\
-  camlidl_ml2c_texpr1_struct_ap_texpr1_t(_v_res,&texpr1,_ctx);\n\
+  camlidl_texpr1_ap_texpr0_of_expr_ml2c(_v_expr,env,&texpr0,_ctx);\n\
   camlidl_free(_ctx);\n\
-\n\
+  if (texpr0==NULL){\n\
+    caml_failwith(\"Texpr1.texpr0_of_expr: unknown variable in the environment\");\n\
+  }\n\
+  _v_res = camlidl_apron_texpr0_ptr_c2ml(&texpr0);\n\
   CAMLreturn(_v_res);\n\
 }\n\
 ")
 
 quote(MLMLI,"(** {2 Constructors and Destructor} *)")
 
-     quote(MLI,"(** General constructor (actually the most efficient) *)")
-quote(MLMLI,"external of_expr : Environment.t -> expr -> t = \"camlidl_texpr1_ap_texpr1_of_expr\"\n") 
+quote(MLI,"(** General constructor (actually the most efficient) *)")
+quote(MLI,"val of_expr : Environment.t -> expr -> t\n")
+/* quote(ML,"external texpr0_of_expr : Environment.t -> expr -> Texpr0.t = \"camlidl_texpr1_ap_texpr0_of_expr\")
+*/
+quote(ML,"\
+let rec expr0_of_expr1 env expr =\n\
+  match expr with\n\
+  | Cst x -> Texpr0.Cst x\n\
+  | Var var -> Texpr0.Dim (Environment.dim_of_var env var)\n\
+  | Unop(op,e,t,r) -> \n\
+      Texpr0.Unop(\n\
+	op,\n\
+	(expr0_of_expr1 env e),\n\
+	t,r\n\
+      )\n\
+  | Binop(op,e1,e2,t,r) -> \n\
+      Texpr0.Binop(\n\
+	op,\n\
+	(expr0_of_expr1 env e1),\n\
+	(expr0_of_expr1 env e2),\n\
+	t,r\n\
+      )\n\
+let texpr0_of_expr env expr =\n\
+  Texpr0.of_expr (expr0_of_expr1 env expr)\n\
+let of_expr env expr = {\n\
+  texpr0 = texpr0_of_expr env expr;\n\
+  env = env;\n\
+}\n\
+")
 
 quote(MLI,"\
 (** Copy *)\n\
@@ -273,17 +296,39 @@ let copy e = { texpr0 = Texpr0.copy e.texpr0; env = e.env }\n\
 let of_linexpr e = { texpr0 = Texpr0.of_linexpr e.Linexpr1.linexpr0; env = e.Linexpr1.env }\n\
 ")
 quote(MLI,"(** General destructor *)")
-quote(MLMLI,"external to_expr : t -> expr = \"camlidl_texpr1_ap_texpr1_to_expr_c2ml\"\n") 
-
+/* quote(MLMLI,"external to_expr : t -> expr = \"camlidl_texpr1_ap_texpr1_to_expr\"\n") */
+quote(MLI,"val to_expr : t -> expr\n")
+quote(ML,"\
+let rec expr1_of_expr0 env expr =\n\
+  match expr with\n\
+  | Texpr0.Cst x -> Cst x\n\
+  | Texpr0.Dim dim -> Var (Environment.var_of_dim env dim)\n\
+  | Texpr0.Unop(op,e,t,r) -> \n\
+      Unop(\n\
+	op,\n\
+	(expr1_of_expr0 env e),\n\
+	t,r\n\
+      )\n\
+  | Texpr0.Binop(op,e1,e2,t,r) -> \n\
+      Binop(\n\
+	op,\n\
+	(expr1_of_expr0 env e1),\n\
+	(expr1_of_expr0 env e2),\n\
+	t,r\n\
+      )\n\
+let to_expr texpr1 =\n\
+  let expr0 = Texpr0.to_expr texpr1.texpr0 in\n\
+  expr1_of_expr0 texpr1.env expr0\n\
+")
 quote(MLI,"\n(** {3 Incremental constructors} *)\n")
 [ref]struct ap_texpr1_t* ap_texpr1_cst(ap_environment_ptr env, [ref]struct ap_coeff_t* coeff);
 [ref]struct ap_texpr1_t* ap_texpr1_var(ap_environment_ptr env, ap_var_t var);
 [ref]struct ap_texpr1_t* ap_texpr1_unop(ap_texpr_unop_t op,
-			     [ref]struct ap_texpr1_t* expr, 
+			     [ref]struct ap_texpr1_t* expr,
 			     ap_texpr_rtype_t type, ap_texpr_rdir_t dir)
 quote(call,"_res = ap_texpr1_unop(op,ap_texpr1_copy(expr),type,dir);");
 [ref]struct ap_texpr1_t* ap_texpr1_binop(ap_texpr_binop_t op,
-			      [ref]struct ap_texpr1_t* exprA, [ref]struct ap_texpr1_t* exprB, 
+			      [ref]struct ap_texpr1_t* exprA, [ref]struct ap_texpr1_t* exprB,
 			      ap_texpr_rtype_t type, ap_texpr_rdir_t dir)
 quote(call,"_res = ap_texpr1_binop(op,ap_texpr1_copy(exprA),ap_texpr1_copy(exprB),type,dir);");
 
@@ -308,7 +353,7 @@ let is_scalar x = Texpr0.is_scalar x.texpr0 \n\
 quote(MLMLI,"\n(** {2 Operations} *)\n")
 quote(MLI,"(** Change the environment of the expression for a super-environement. Raise [Failure] if it is not the case *)")
 [ref]struct ap_texpr1_t* ap_texpr1_extend_environment([ref]struct ap_texpr1_t* texpr,
-					              ap_environment_ptr env)
+						      ap_environment_ptr env)
      quote(call,"\n\
 {\n\
   bool b;\n\

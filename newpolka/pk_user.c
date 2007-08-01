@@ -463,7 +463,7 @@ bool matrix_append_ap_intlincons0_array(pk_internal_t* pk,
 					&pk->poly_itv_lincons,
 					&array->p[index])
       && exact;
-    exact = itv_quasilinearize_lincons(pk->itv,&pk->poly_itv_lincons,titv)
+    exact = itv_quasilinearize_lincons(pk->itv,&pk->poly_itv_lincons,titv,true)
       && exact;
     j += vector_set_itv_lincons(pk,&mat->p[j],&pk->poly_itv_lincons,
 				intdim,realdim,integer);

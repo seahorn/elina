@@ -288,7 +288,7 @@ let array_make env size =\n\
     array_env = env\n\
   }\n\
 let array_print\n\
-  ?(first=(\"[|@[\":(unit,Format.formatter,unit) format))\n\
+  ?(first=(\"[|@[<hov>\":(unit,Format.formatter,unit) format))\n\
   ?(sep = (\";@ \":(unit,Format.formatter,unit) format))\n\
   ?(last = (\"@]|]\":(unit,Format.formatter,unit) format))\n\
   fmt array \n\

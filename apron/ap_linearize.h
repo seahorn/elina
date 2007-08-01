@@ -70,7 +70,8 @@ ap_quasilinearize_lincons0(ap_manager_t* man,
 			   void* abs,
 			   ap_lincons0_t* lincons0,
 			   bool* pexact,
-			   ap_scalar_discr_t discr);
+			   ap_scalar_discr_t discr,
+			   bool meet);
 
 ap_linexpr0_t**
 ap_quasilinearize_linexpr0_array(ap_manager_t* man,
@@ -85,12 +86,8 @@ ap_quasilinearize_lincons0_array(ap_manager_t* man,
 				 ap_lincons0_array_t* array,
 				 bool* pexact,
 				 ap_scalar_discr_t discr,
-				 bool linearize);
-
-
-/* For internal use by ap_linearize_aux */
-void ap_linearize_quasilincons0(ap_lincons0_array_t* array, size_t* pindex,
-				ap_lincons0_t* cons);
+				 bool linearize,
+				 bool meet);
 
 /* ********************************************************************** */
 /* Tree expressions and derived types */
@@ -114,7 +111,7 @@ ap_lincons0_t ap_intlinearize_tcons0(ap_manager_t* man,
 				     ap_tcons0_t* cons,
 				     bool* pexact,
 				     ap_scalar_discr_t discr,
-				     bool quasilinearize);
+				     bool quasilinearize, bool meet);
 
 ap_linexpr0_t** ap_intlinearize_texpr0_array(ap_manager_t* man,
 					     ap_abstract0_t* abs,
@@ -128,7 +125,8 @@ ap_lincons0_array_t ap_intlinearize_tcons0_array(ap_manager_t* man,
 						 ap_tcons0_array_t* array,
 						 bool* pexact,
 						 ap_scalar_discr_t discr,
-						 ap_linexpr_type_t type);
+						 ap_linexpr_type_t type, bool meet,
+						 bool boxize, size_t kmax, bool intervalonly);
 
 #ifdef __cplusplus
 }
