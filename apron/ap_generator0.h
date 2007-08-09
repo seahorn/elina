@@ -93,6 +93,11 @@ ap_generator0_array_t ap_generator0_array_make(size_t size);
   /* Allocate an array of size generators.
      The generators are initialized with NULL pointers. */
 
+void ap_generator0_array_resize(ap_generator0_array_t* array, size_t size);
+  /* Resize an array of size generators.
+     New generators are initialized with NULL pointers,
+     Removed generators with non-NULL pointers are deallocated */
+
 void ap_generator0_array_clear(ap_generator0_array_t* ap_generator0_array);
   /* Clear the generators of the array, and then the array itself */
 

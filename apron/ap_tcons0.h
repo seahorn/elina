@@ -110,6 +110,13 @@ ap_tcons0_t ap_tcons0_add_dimensions(ap_tcons0_t* cons,
 				     ap_dimchange_t* dimchange);
 
 static inline
+void ap_tcons0_remove_dimensions_with(ap_tcons0_t* cons,
+				      ap_dimchange_t* dimchange);
+static inline
+ap_tcons0_t ap_tcons0_remove_dimensions(ap_tcons0_t* cons,
+					ap_dimchange_t* dimchange);
+
+static inline
 void ap_tcons0_permute_dimensions_with(ap_tcons0_t* cons,
 				       ap_dimperm_t* perm);
 static inline
@@ -148,6 +155,11 @@ void ap_tcons0_array_add_dimensions_with(ap_tcons0_array_t* array,
 					 ap_dimchange_t* dimchange);
 ap_tcons0_array_t ap_tcons0_array_add_dimensions(ap_tcons0_array_t* array,
 						 ap_dimchange_t* dimchange);
+
+void ap_tcons0_array_remove_dimensions_with(ap_tcons0_array_t* array,
+					    ap_dimchange_t* dimchange);
+ap_tcons0_array_t ap_tcons0_array_remove_dimensions(ap_tcons0_array_t* array,
+						    ap_dimchange_t* dimchange);
 
 void ap_tcons0_array_permute_dimensions_with(ap_tcons0_array_t* array,
 					     ap_dimperm_t* perm);
@@ -218,6 +230,18 @@ ap_tcons0_t ap_tcons0_add_dimensions(ap_tcons0_t* cons,
 {
   return ap_tcons0_make(cons->constyp,
 			ap_texpr0_add_dimensions(cons->texpr0,dimchange),
+			cons->scalar ? ap_scalar_alloc_set(cons->scalar) : NULL);
+}
+static inline
+void ap_tcons0_remove_dimensions_with(ap_tcons0_t* cons,
+				      ap_dimchange_t* dimchange)
+{ ap_texpr0_remove_dimensions_with(cons->texpr0,dimchange); }
+static inline
+ap_tcons0_t ap_tcons0_remove_dimensions(ap_tcons0_t* cons,
+					ap_dimchange_t* dimchange)
+{
+  return ap_tcons0_make(cons->constyp,
+			ap_texpr0_remove_dimensions(cons->texpr0,dimchange),
 			cons->scalar ? ap_scalar_alloc_set(cons->scalar) : NULL);
 }
 static inline

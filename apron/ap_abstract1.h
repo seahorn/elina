@@ -411,7 +411,7 @@ ap_linexpr1_t ap_abstract1_intlinear_of_tree (ap_manager_t* man, ap_abstract1_t*
      This implies calls to ap_abstract0_bound_dimension. */
 
 #ifdef __cplusplus
-
+}
 #endif
 
 #endif

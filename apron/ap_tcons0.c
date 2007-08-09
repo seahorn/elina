@@ -136,6 +136,28 @@ ap_tcons0_array_t ap_tcons0_array_add_dimensions(ap_tcons0_array_t* array,
   return narray;
 }
 
+void ap_tcons0_array_remove_dimensions_with(ap_tcons0_array_t* array,
+					    ap_dimchange_t* dimchange)
+{
+  size_t i;
+  for(i=0; i<array->size; i++){
+    ap_texpr0_t* expr = array->p[i].texpr0;
+    if (expr) ap_texpr0_remove_dimensions_with(expr,dimchange);
+  }
+}
+ap_tcons0_array_t ap_tcons0_array_remove_dimensions(ap_tcons0_array_t* array,
+						    ap_dimchange_t* dimchange)
+{
+  size_t i;
+  ap_tcons0_array_t narray;
+
+  narray = ap_tcons0_array_make(array->size);
+  for(i=0; i<array->size; i++){
+    narray.p[i] =  ap_tcons0_remove_dimensions(&array->p[i],dimchange);
+  }
+  return narray;
+}
+
 void ap_tcons0_array_permute_dimensions_with(ap_tcons0_array_t* array,
 					     ap_dimperm_t* perm)
 {

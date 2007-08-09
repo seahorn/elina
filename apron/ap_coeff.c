@@ -130,6 +130,7 @@ void ap_coeff_reduce(ap_coeff_t* coeff)
       ap_scalar_free(coeff->val.interval->sup);
       free(coeff->val.interval);
       coeff->val.scalar = scalar;
+      coeff->discr=AP_COEFF_SCALAR;
     }
   }
 }

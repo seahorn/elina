@@ -93,7 +93,7 @@ void ap_linexpr0_minimize(ap_linexpr0_t* e)
     for (i=0; i<e->size; i++){
       ap_coeff_t* p = &e->p.linterm[i].coeff;
       ap_coeff_reduce(p);
-      if (ap_coeff_zero(p) || e->p.linterm[i].dim==AP_DIM_MAX)
+      if (!ap_coeff_zero(p) && e->p.linterm[i].dim!=AP_DIM_MAX)
 	nsize++;
     }
     if (nsize!=e->size){
@@ -101,7 +101,7 @@ void ap_linexpr0_minimize(ap_linexpr0_t* e)
       j = 0;
       for (i=0; i<e->size; i++){
 	ap_coeff_t* p = &e->p.linterm[i].coeff;
-	if (! ap_coeff_zero(p) || e->p.linterm[i].dim!=AP_DIM_MAX){
+	if (!ap_coeff_zero(p) && e->p.linterm[i].dim!=AP_DIM_MAX){
 	  linterm[j] = e->p.linterm[i];
 	  j++;
 	}
@@ -701,6 +701,7 @@ ap_linexpr0_permute_dimensions_with(ap_linexpr0_t* expr,
       size_t i;
       for (i=0; i<expr->size; i++){
 	ap_dim_t dim = expr->p.linterm[i].dim;
+	if (dim==AP_DIM_MAX) continue;
 	expr->p.linterm[i].dim = perm->dim[dim];
       }
       qsort(expr->p.linterm,
@@ -714,6 +715,7 @@ ap_linexpr0_permute_dimensions_with(ap_linexpr0_t* expr,
       ap_linexpr0_t* nexpr = ap_linexpr0_permute_dimensions(expr,perm);
       ap_linexpr0_clear(expr);
       *expr = *nexpr;
+      free(nexpr);
     }
     break;
   default:
