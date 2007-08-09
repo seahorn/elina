@@ -1,0 +1,108 @@
+README
+
+C++ binding for APRON Library
+
+Copyright (C) Antoine Mine' 2007
+------------------------------------------------------------------------
+
+NOTE:
+The biding is a work in-progress. 
+IT IS NOT IN A USABLE STATE YET.
+
+
+SUMMARY
+-------
+
+The apronxx directory provides a C++ binding for the APRON library.
+
+It adds the following features:
+- use classes, overloading and a namespace to simplify function names
+- use class methods and default arguments to ease function calls
+- use opeartor overloading to ease function calls
+- object management (through constructors, destructors and copy assignments)
+- report errors through exceptions
+- extra run-time checks that map to exceptions
+- interface with gmpxx
+- ability to mix C++ and native C calls to APRON
+- doxygen documentation
+
+C++ calls should not have much overhead.
+
+As for every language binding, knowing the native API is definitively a plus.
+The C++ binding is less documented (most documentation points at what is
+C++ specific). It may also lack behind the native API in terms of 
+functionality.
+
+
+
+INTERNALS
+---------
+
+Classes.
+
+Most C++ classes simply wrap around a corresponding C structure
+(see bellow for the exceptions such as abstract0 types).
+For type ap_XXX_t, we would have a one-field class XXX:
+
+class XXX {
+protected:
+   ap_XXX_t l;
+};
+
+This make it easy to:
+1) pass the ap_XXX_t to an APRON function
+2) interpret an ap_XXX_t returned by APRON as an object of type XXX
+   (reinterpret_cast is overused here)
+3) get a reference to a field of type ap_YYY_t as an object of type YYY
+   (e.g., an ap_interval_t contains two ap_scalar_t; so you can get 
+   get two scalar& object from an interval object; 
+   some more reinterpret_cast here).
+
+Actually, 3) was a major reason to choose wrapping structures directly instead
+of wrapping structures pointers.
+
+In order to get 2) working correctly and allow the caller to delete an
+object created by the APRON C library, new/delete are mapped to malloc/free.
+
+
+Memory Management.
+
+Constructors automatically ap_XXX_init the object while destructors 
+ap_XXX_clear the object (init/clear functions have been added for those C
+types that did not support it).
+
+Most objects are functional in that copy constructors and assignments will 
+perform a full copy, so that the copy can be manipulated without affecting the 
+original. Useless copies are avoided by using const references as arguments.
+A function that creates ap_XXX_t will return an object pointer XXX*
+to avoid assignment copies.
+Finally, in-place modification is possible through accessors returning 
+references to internal data.
+
+
+Disjunctive types.
+
+Several Apron C types are disjunctive, implanted as unions with a discriminant
+For those, the C++ class provides a get_discr constant member, as well as
+get_YYY accessors providing references to union fields YYY.
+This allows reading and modifying  the object, but not change its type.
+Moreover, each accessors perform run-time checks and throws a bad_discriminant 
+exception if the discriminant mismatches.
+
+
+Pointer objects.
+
+The following classes are wrappers to pointers instead of pointers to
+structures:
+- manager
+- abstract0
+- environment
+- expression nodes
+
+
+
+ISSUES
+------
+
+- C++ and C boolean type may be different
+
