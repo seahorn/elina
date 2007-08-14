@@ -157,7 +157,7 @@ ap_linexpr0_t* random_linexpr_linear_from_intlinear(ap_linexpr0_t* a)
     case AP_COEFF_INTERVAL:
       if (rand()%2)
 	ap_coeff_set_scalar(&l->p.coeff[i],a->p.coeff[i].val.interval->inf);
-      else 
+      else
 	ap_coeff_set_scalar(&l->p.coeff[i],a->p.coeff[i].val.interval->sup);
       break;
     }
@@ -170,7 +170,7 @@ ap_linexpr0_t* random_linexpr_linear_from_intlinear(ap_linexpr0_t* a)
     if (rand()%2) ap_coeff_set_scalar(&l->cst,a->cst.val.interval->inf);
     else ap_coeff_set_scalar(&l->cst,a->cst.val.interval->sup);
     break;
-    
+
   }
  return l;
 }
@@ -350,7 +350,7 @@ ap_abstract0_t* random_abstract_eq(ap_manager_t* man, int dim)
   for (i=0;i<dim/RATIOEQ;i++)
     ar.p[i] = random_constraint(dim,AP_CONS_EQ);
   p = ap_abstract0_meet_lincons_array(man,true,p,&ar);
-
+  ap_lincons0_array_clear(&ar);
   // fprintf(stdout,"abs0:\n"); ap_abstract0_fprint(stdout,man,p,0);
 
   return p;
@@ -375,6 +375,7 @@ ap_abstract0_t* random_abstract_eqmod(ap_manager_t* man, int dim)
     ar.p[i] = random_constraint(dim,constyp);
   }
   p = ap_abstract0_meet_lincons_array(man,true,p,&ar);
+  ap_lincons0_array_clear(&ar);
 
   // fprintf(stdout,"abs0:\n"); ap_abstract0_fprint(stdout,man,p,0);
 
@@ -466,7 +467,7 @@ void test_misc(void)
   bot = ap_abstract0_bottom(manprec,0,D);
   top = ap_abstract0_top(manprec,0,D);
   ap_dimension_t d1 = ap_abstract0_dimension(manprec,bot);
-  ap_dimension_t d2 = ap_abstract0_dimension(manprec,top);  
+  ap_dimension_t d2 = ap_abstract0_dimension(manprec,top);
   printf("\nperforming various tests\n");
   if (d1.intdim || d1.realdim!=D) printf("ap_abstract0_dimension failed #1\n");
   if (d2.intdim || d2.realdim!=D) printf("ap_abstract0_dimension failed #2\n");
@@ -548,7 +549,7 @@ void test_bound_dimension(void)
       roughi = ap_abstract0_bound_dimension(manrough,rougha,i);
       preci = ap_abstract0_bound_dimension(manprec,preca,i);
       cmp = ap_interval_cmp(preci,roughi);
-      if (roughd!=precd || 
+      if (roughd!=precd ||
 	  random_abstract2_equal && cmp!=0 ||
 	  cmp!=0 && cmp!=(-1)){
 	ERROR("different results");
@@ -621,7 +622,7 @@ void test_bound_texpr(void)
     ap_interval_free(roughi); ap_interval_free(preci);
     ap_texpr0_free(e);
   } ENDLOOP;
-}   
+}
 
 void test_sat_interval(void)
 {
@@ -637,7 +638,7 @@ void test_sat_interval(void)
     roughs = ap_abstract0_sat_interval(manrough,rougha,p,i);
     precs = ap_abstract0_sat_interval(manprec,preca,p,i);
     RESULT('*');
-    if (random_abstract2_equal && 
+    if (random_abstract2_equal &&
 	((roughs==tbool_true && roughs!=precs) ||
 	 (precs==tbool_true && roughs!=precs)) ||
 	roughs==tbool_true && precs != tbool_true){
@@ -666,7 +667,7 @@ void test_sat_lincons(void)
     roughs = ap_abstract0_sat_lincons(manrough,rougha,&l);
     precs = ap_abstract0_sat_lincons(manprec,preca,&l);
     RESULT('*');
-    if (random_abstract2_equal && 
+    if (random_abstract2_equal &&
 	((roughs==tbool_true && roughs!=precs) ||
 	 (precs==tbool_true && roughs!=precs)) ||
 	roughs==tbool_true && precs != tbool_true){
@@ -694,7 +695,7 @@ void test_sat_tcons(void)
     roughs = ap_abstract0_sat_tcons(manrough,rougha,&l);
     precs = ap_abstract0_sat_tcons(manprec,preca,&l);
     RESULT('*');
-    if (random_abstract2_equal && 
+    if (random_abstract2_equal &&
 	((roughs==tbool_true && roughs!=precs) ||
 	 (precs==tbool_true && roughs!=precs)) ||
 	roughs==tbool_true && precs != tbool_true){
@@ -1427,31 +1428,33 @@ int main(int argc, char** argv)
     random_abstract2 = i==0 ? &random_abstract2_std : &random_abstract2_inv;
 
     // box/polyhedra
-    //test(manpkl,manbox);
-    //test(manpks,manbox);
-    //test(manppll,manbox);
-    //test(manppls,manbox);
+    /*
+    test(manpkl,manbox);
+    test(manpks,manbox);
+    test(manppll,manbox);
+    test(manppls,manbox);
 
     // polyhedra/polyhedra (same library)
-    // test(manpks,manpkl); 
-    // test(manpkl,manpks);
-    // test(manppls,manppll); 
-    // test(manppll,manppls);
+    test(manpks,manpkl);
+    test(manpkl,manpks);
+    test(manppls,manppll);
+    test(manppll,manppls);
     // Polka polyhedra/PPL polyhedra
-    // test(manppll,manpkl);
-    // test(manpkl,manppll);
-    // test(manppls,manpks);
-    // test(manpks,manppls);
+    test(manppll,manpkl);
+    test(manpkl,manppll);
+    test(manppls,manpks);
+    test(manpks,manppls);
     // Grid/Equalities
     test(manpplgrid,manpkeq);
     random_abstract = &random_abstract_eq;
     test(manpplgrid,manpkeq);
     random_abstract = &random_abstract_eqmod;
     test(manpplgrid,manpkeq);
-
-    // manpkgrid 
+    */  
+    // manpkgrid
+    random_abstract = &random_abstract_eqmod;
     test(manpkgrid,manpplgrid);
-    test(manpkgrid,manpkl);
+    // test(manpkgrid,manpkl);
 
     // Oct/Box and Oct/Poly
     /*
@@ -1474,6 +1477,6 @@ int main(int argc, char** argv)
   ap_manager_free(manppll);
   ap_manager_free(manppls);
   ap_manager_free(manpplgrid);
-
+  ap_manager_free(manpkgrid);
   return 0;
 }

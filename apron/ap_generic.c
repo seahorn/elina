@@ -386,7 +386,7 @@ void* ap_generic_asssub_texpr_array(bool assign,
   void* abs2;
   tbool_t exact,best;
 
-  if (is_bottom(man,abs)){
+  if (is_bottom(man,abs)==tbool_true){
     man->result.flag_exact = man->result.flag_best = tbool_true;
     return destructive ? abs : copy(man,abs);
   }

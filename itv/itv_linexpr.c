@@ -660,7 +660,7 @@ tbool_t ITVFUN(itv_lincons_array_reduce)(itv_internal_t* intern,
     }
     if (meet && itv_lincons_is_useless_for_meet(intern,&array->p[i]))
       goto itv_lincons_array_reduce_remove;
-    else if (itv_sat_lincons_is_false(intern,&array->p[i]))
+    else if (!meet && itv_sat_lincons_is_false(intern,&array->p[i]))
       goto itv_lincons_array_reduce_false;
     else {
       i++;

@@ -24,7 +24,7 @@ box_t* box_add_dimensions(ap_manager_t* man,
   size = res->intdim+res->realdim;
   dimsup = dimchange->intdim+dimchange->realdim;
   res->p = realloc(res->p,(size+dimsup+1)*sizeof(itv_t));
-  for (i=(int)size;i<(int)(size+dimsup+1);i++){
+  for (i=(int)size+1;i<(int)(size+dimsup+1);i++){
     itv_init(res->p[i]);
   }
   k = dimsup;

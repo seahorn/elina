@@ -238,7 +238,7 @@ static inline void itv_linterm_set(itv_linterm_t* res, itv_linterm_t* term)
 static inline void itv_linterm_clear(itv_linterm_t* term)
 { itv_clear(term->itv); }
 static inline void itv_linterm_swap(itv_linterm_t* a, itv_linterm_t* b)
-{ itv_linterm_t t=*a; *a=*b; *b=t; }
+{ if (a!=b){ itv_linterm_t t=*a; *a=*b; *b=t; } }
 
 static inline void itv_linexpr_init(itv_linexpr_t* expr, size_t size)
 { ITVFUN(itv_linexpr_init)(expr,size); }
@@ -274,7 +274,7 @@ static inline void itv_lincons_fprint(FILE* stream, itv_lincons_t* cons, char** 
 static inline void itv_lincons_print(itv_lincons_t* cons, char** name)
 { itv_lincons_fprint(stdout,cons,name); }
 static inline void itv_lincons_swap(itv_lincons_t* a, itv_lincons_t* b)
-{ itv_lincons_t t=*a; *a=*b; *b=t; }
+{ if (a!=b){ itv_lincons_t t=*a; *a=*b; *b=t; } }
 
 static inline void itv_lincons_array_init(itv_lincons_array_t* array, size_t size)
 { ITVFUN(itv_lincons_array_init)(array,size); }

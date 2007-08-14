@@ -4,7 +4,7 @@
 
 #include "itv_linearize.h"
 
-#define LOGDEBUG 1
+#define LOGDEBUG 0
 
 /* ********************************************************************** */
 /* I. Evaluation of interval linear expressions  */

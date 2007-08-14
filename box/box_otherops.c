@@ -115,7 +115,9 @@ box_t* box_fold(ap_manager_t* man,
   for (i=0;i<intdimsup+realdimsup;i++){
     dimchange.dim[i]=tdim[i+1];
   }
-  return box_remove_dimensions(man,true,res,&dimchange);
+  res = box_remove_dimensions(man,true,res,&dimchange);
+  ap_dimchange_clear(&dimchange);
+  return res;
 }
 
 

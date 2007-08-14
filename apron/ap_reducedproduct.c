@@ -175,7 +175,20 @@ ap_reducedproduct_t* ap_reducedproduct_copy(ap_manager_t* manager, ap_reducedpro
   return res;
 }
 
-VOID_MAN_VAL(free,AP_FUNID_FREE)
+void ap_reducedproduct_free(ap_manager_t* manager, ap_reducedproduct_t* a)
+{
+  ap_reducedproduct_internal_t* intern = 
+    get_internal_init1(manager,AP_FUNID_FREE,a);
+  size_t i;
+
+  for (i=0;i<intern->size;i++){
+    ap_manager_t* man = intern->tmanagers[i];
+    void (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_FREE];
+    ptr(man,a->p[i]);
+  }
+  free(a);
+  collect_results0(manager);
+}
 
 size_t ap_reducedproduct_size(ap_manager_t* manager, ap_reducedproduct_t* a)
 {
@@ -470,7 +483,7 @@ tbool_t ap_reducedproduct_sat_interval(ap_manager_t* manager, ap_reducedproduct_
 tbool_t ap_reducedproduct_is_dimension_unconstrained(ap_manager_t* manager, ap_reducedproduct_t* a,
 						ap_dim_t dim)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_IS_DIMENSION_UNCONSTRAINED,a);
   size_t i;
   tbool_t gres = tbool_true;
@@ -504,7 +517,7 @@ void ap_interval_meet_with(ap_interval_t* a, ap_interval_t* b)
 ap_interval_t* ap_reducedproduct_bound_linexpr(ap_manager_t* manager,
 					       ap_reducedproduct_t* a, ap_linexpr0_t* expr)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_BOUND_LINEXPR,a);
   size_t i;
   ap_interval_t* gres = ap_interval_alloc();
@@ -525,7 +538,7 @@ ap_interval_t* ap_reducedproduct_bound_linexpr(ap_manager_t* manager,
 ap_interval_t* ap_reducedproduct_bound_texpr(ap_manager_t* manager,
 					       ap_reducedproduct_t* a, ap_texpr0_t* expr)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_BOUND_TEXPR,a);
   size_t i;
   ap_interval_t* gres = ap_interval_alloc();
@@ -546,7 +559,7 @@ ap_interval_t* ap_reducedproduct_bound_texpr(ap_manager_t* manager,
 ap_interval_t* ap_reducedproduct_bound_dimension(ap_manager_t* manager,
 						 ap_reducedproduct_t* a, ap_dim_t dim)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_BOUND_DIMENSION,a);
   size_t i;
   ap_interval_t* gres = ap_interval_alloc();
@@ -566,7 +579,7 @@ ap_interval_t* ap_reducedproduct_bound_dimension(ap_manager_t* manager,
 }
 ap_lincons0_array_t ap_reducedproduct_to_lincons_array(ap_manager_t* manager, ap_reducedproduct_t* a)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_TO_LINCONS_ARRAY,a);
   size_t i,j;
   ap_lincons0_array_t garray;
@@ -589,7 +602,7 @@ ap_lincons0_array_t ap_reducedproduct_to_lincons_array(ap_manager_t* manager, ap
 }
 ap_tcons0_array_t ap_reducedproduct_to_tcons_array(ap_manager_t* manager, ap_reducedproduct_t* a)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_TO_TCONS_ARRAY,a);
   size_t i,j;
   ap_tcons0_array_t garray;
@@ -612,7 +625,7 @@ ap_tcons0_array_t ap_reducedproduct_to_tcons_array(ap_manager_t* manager, ap_red
 }
 ap_interval_t** ap_reducedproduct_to_box(ap_manager_t* manager, ap_reducedproduct_t* a)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_TO_BOX,a);
   size_t i,j;
   ap_interval_t** gbox = NULL;
@@ -760,7 +773,7 @@ ap_reducedproduct_t* ap_reducedproduct_meet_lincons_array(ap_manager_t* manager,
 							  bool destructive, ap_reducedproduct_t* a,
 							  ap_lincons0_array_t* array)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_MEET_LINCONS_ARRAY,a);
   size_t i;
   ap_reducedproduct_t* res;
@@ -785,7 +798,7 @@ ap_reducedproduct_t* ap_reducedproduct_meet_tcons_array(ap_manager_t* manager,
 							bool destructive, ap_reducedproduct_t* a,
 							ap_tcons0_array_t* array)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_MEET_TCONS_ARRAY,a);
   size_t i;
   ap_reducedproduct_t* res;
@@ -810,7 +823,7 @@ ap_reducedproduct_t* ap_reducedproduct_add_ray_array(ap_manager_t* manager,
 							   bool destructive, ap_reducedproduct_t* a,
 							   ap_lincons0_array_t* array)
 {
-  ap_reducedproduct_internal_t* intern = 
+  ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_ADD_RAY_ARRAY,a);
   size_t i;
   ap_reducedproduct_t* res;
@@ -1158,7 +1171,7 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   assert(size>=2);
   if (size<2) return NULL;
 
-  
+
 
   /* Creating libray name and version */
   length = 100 + 2*size;
@@ -1191,6 +1204,8 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   man = ap_manager_alloc(strdup(library),strdup(version),
 			 internal,
 			 &ap_reducedproduct_internal_free);
+  free(library);
+  free(version);
   /* default options */
   for (funid=0; funid<AP_FUNID_SIZE; funid++){
     man->option.funopt[funid].algorithm = 0x2;
@@ -1224,7 +1239,7 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   man->option.funopt[AP_FUNID_EXPAND].algorithm = 0x1;
   man->option.funopt[AP_FUNID_WIDENING].algorithm = 0x0;
   man->option.funopt[AP_FUNID_CLOSURE].algorithm = 0x1;
-  
+
   /* Virtual table */
   funptr = man->funptr;
 
