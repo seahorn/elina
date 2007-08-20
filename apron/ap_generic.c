@@ -426,7 +426,6 @@ void* ap_generic_asssub_texpr_array(bool assign,
   /* 5. Build constraints system
      An assignement x'_i := a_ij x_j + b_i becomes
      an equality constraint -x'_i + a_ij x_j + b_i = 0
-     Primed and unprimed dimensiosn permuted if dest!=NULL
   */
   array = ap_tcons0_array_make(size);
   for (i=0; i<size; i++){

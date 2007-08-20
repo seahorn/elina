@@ -53,7 +53,7 @@ bool random_abstract2_equal = 1;
 size_t nb_meetjoin_array = 4;
 size_t nb_asssub_array = 4;
 
-#define N 10
+#define N 3
 
 char b1_[N+4]= " [";
 char b2_[N+4];
@@ -77,7 +77,7 @@ int error_ = 0;
     error_++;						\
   } while (0)
 
-#define ENDLOOP	} } printf("%s%s\n",b1_,b2_); if (error_) abort();
+#define ENDLOOP	} } printf("%s%s\n",b1_,b2_); // if (error_) abort();
 
 /* ********************************************************************** */
 /* Random generations of expressions, constraints, rays */
@@ -1428,7 +1428,6 @@ int main(int argc, char** argv)
     random_abstract2 = i==0 ? &random_abstract2_std : &random_abstract2_inv;
 
     // box/polyhedra
-    /*
     test(manpkl,manbox);
     test(manpks,manbox);
     test(manppll,manbox);
@@ -1450,11 +1449,10 @@ int main(int argc, char** argv)
     test(manpplgrid,manpkeq);
     random_abstract = &random_abstract_eqmod;
     test(manpplgrid,manpkeq);
-    */  
     // manpkgrid
     random_abstract = &random_abstract_eqmod;
     test(manpkgrid,manpplgrid);
-    // test(manpkgrid,manpkl);
+    test(manpkgrid,manpkl);
 
     // Oct/Box and Oct/Poly
     /*

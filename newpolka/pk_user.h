@@ -56,14 +56,14 @@ void vector_set_itv_linexpr(pk_internal_t* pk,
 			    size_t dim,
 			    int mode);
 
-/* Fills the vector(s) with the constraint cons
-   Returns the number of vectors written (0, 1 or 2) */
-size_t vector_set_itv_lincons(pk_internal_t* pk,
-			      numint_t** tvec,
-			      itv_lincons_t* cons,
-			      size_t intdim, size_t realdim,
-			      bool integer);
-/* Fills the vector(s) with the fully linear constraint cons for testing
+/* Fills the vector(s) with the linear constraint cons */
+void vector_set_itv_lincons(pk_internal_t* pk,
+			    numint_t* vec,
+			    itv_lincons_t* cons,
+			    size_t intdim, size_t realdim,
+			    bool integer);
+
+/* Fills the vector(s) with the linear constraint cons for testing
    satisfiability. Returns false if unsatisfiable
  */
 bool vector_set_itv_lincons_sat(pk_internal_t* pk,
@@ -82,6 +82,7 @@ bool matrix_set_ap_generator0_array(pk_internal_t* pk,
 				    matrix_t** matrix,
 				    ap_generator0_array_t* array,
 				    size_t intdim, size_t realdim);
+/*
 bool matrix_set_ap_lincons0_array(pk_internal_t* pk,
 				  matrix_t** mat,
 				  size_t** tabindex, size_t* size,
@@ -95,6 +96,15 @@ bool matrix_set_ap_intlincons0_array(pk_internal_t* pk,
 				     size_t* tab, size_t size,
 				     size_t intdim, size_t realdim,
 				     bool integer);
+*/
+/* From ITV to PK */
+bool matrix_set_itv_lincons_array(pk_internal_t* pk,
+				  matrix_t** mat,
+				  itv_lincons_array_t* array,
+				  size_t intdim, size_t realdim,
+				  bool integer);
+
+
 
 /* From PK to APRON */
 

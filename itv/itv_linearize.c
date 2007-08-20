@@ -807,13 +807,20 @@ void ITVFUN(itv_eval_ap_texpr0)(itv_internal_t* intern,
       itv_init(x);
       itv_eval_ap_texpr0(intern,x,expr->val.node->exprA,env);
       itv_eval_ap_texpr0(intern,res,expr->val.node->exprB,env);
-      itv_eval_ap_texpr0_node(intern,expr->val.node,res,x,res);
+      if (itv_is_bottom(intern,x) || itv_is_bottom(intern,res)){
+	itv_set_bottom(res);
+      } 
+      else {
+	itv_eval_ap_texpr0_node(intern,expr->val.node,res,x,res);
+      }
       itv_clear(x);
     }
     else {
       /* unary */
       itv_eval_ap_texpr0(intern,res,expr->val.node->exprA,env);
-      itv_eval_ap_texpr0_node(intern,expr->val.node,res,res,res);
+      if (!itv_is_bottom(intern,res)){
+	itv_eval_ap_texpr0_node(intern,expr->val.node,res,res,res);
+      }
     }
     break;
   default:
@@ -921,6 +928,7 @@ ap_texpr0_to_int(itv_internal_t* intern,
   default:
     assert(0);
   }
+  l->equality = false;
 }
 
 /* adds rounding error to both l and i to go from type org to type dst */
@@ -980,7 +988,10 @@ ap_texpr0_reduce(itv_internal_t* intern, itv_t* env,
     itv_set_bottom(l->cst);
     if (l->size>0) itv_linexpr_reinit(l,0);
   }
-  else if (l->size==0) itv_set(l->cst,i);
+  else if (l->size==0){
+    itv_set(l->cst,i);
+    l->equality = itv_is_point(intern,l->cst);
+  }
   itv_clear(tmp);
 }
 
@@ -1062,6 +1073,7 @@ ap_texpr0_node_intlinearize(itv_internal_t* intern,
     itv_round(ires,ires,n->type,n->dir);
     itv_linexpr_reinit(lres,0);
     itv_set(lres->cst,ires);
+    lres->equality = itv_is_point(intern,lres->cst);
     break;
 
   case AP_TEXPR_ADD:
@@ -1072,39 +1084,53 @@ ap_texpr0_node_intlinearize(itv_internal_t* intern,
     /* intlinearize arguments */
     t1 = itv_intlinearize_texpr0_rec(intern,n->exprA,env,intdim,&l1,i1);
     t2 = itv_intlinearize_texpr0_rec(intern,n->exprB,env,intdim,lres,ires);
-    /* add/sub linear form & interval */
-    if (n->op==AP_TEXPR_ADD) {
-      itv_linexpr_add(intern,lres,&l1,lres);
-      itv_add(ires,i1,ires);
+    if (itv_is_bottom(intern,i1) || itv_is_bottom(intern,ires)){
+      itv_set_bottom(ires);
+      itv_linexpr_reinit(lres,0);
+      itv_set(lres->cst,ires);
     }
     else {
-      itv_linexpr_sub(intern,lres,&l1,lres);
-      itv_sub(ires,i1,ires);
+      /* add/sub linear form & interval */
+      if (n->op==AP_TEXPR_ADD) {
+	itv_linexpr_add(intern,lres,&l1,lres);
+	itv_add(ires,i1,ires);
+      }
+      else {
+	itv_linexpr_sub(intern,lres,&l1,lres);
+	itv_sub(ires,i1,ires);
+      }
+      /* round */
+      ap_texpr0_round(intern,lres,ires,
+		      (t1==AP_RTYPE_INT && t2==AP_RTYPE_INT) ?
+		      AP_RTYPE_INT : AP_RTYPE_REAL,
+		      n->type,n->dir);
+      /* reduce */
+      ap_texpr0_reduce(intern,env,lres,ires);
     }
-    /* round */
-    ap_texpr0_round(intern,lres,ires,
-		    (t1==AP_RTYPE_INT && t2==AP_RTYPE_INT) ?
-		    AP_RTYPE_INT : AP_RTYPE_REAL,
-		    n->type,n->dir);
-    /* reduce */
-    ap_texpr0_reduce(intern,env,lres,ires);
     itv_clear(i1);
     itv_linexpr_clear(&l1);
     break;
-
+    
   case AP_TEXPR_DIV:
     itv_init(i1);
     itv_linexpr_init(&l1,0);
     /* intlinearize arguments, l1 is not used */
     itv_intlinearize_texpr0_rec(intern,n->exprA,env,intdim,lres,ires);
     itv_intlinearize_texpr0_rec(intern,n->exprB,env,intdim,&l1,i1);
-    /* divide linear form & interval */
-    itv_linexpr_div(intern,lres,i1);
-    itv_div(intern,ires,ires,i1);
-    /* round */
-    ap_texpr0_round(intern,lres,ires,AP_RTYPE_REAL,n->type,n->dir);
-    /* reduce */
-    ap_texpr0_reduce(intern,env,lres,ires);
+    if (itv_is_bottom(intern,i1) || itv_is_bottom(intern,ires)){
+      itv_set_bottom(ires);
+      itv_linexpr_reinit(lres,0);
+      itv_set(lres->cst,ires);
+    }
+    else {
+      /* divide linear form & interval */
+      itv_linexpr_div(intern,lres,i1);
+      itv_div(intern,ires,ires,i1);
+      /* round */
+      ap_texpr0_round(intern,lres,ires,AP_RTYPE_REAL,n->type,n->dir);
+      /* reduce */
+      ap_texpr0_reduce(intern,env,lres,ires);
+    }
     itv_clear(i1);
     itv_linexpr_clear(&l1);
     break;
@@ -1115,32 +1141,40 @@ ap_texpr0_node_intlinearize(itv_internal_t* intern,
     /* intlinearize arguments */
     t1 = itv_intlinearize_texpr0_rec(intern,n->exprA,env,intdim,&l1,i1);
     t2 = itv_intlinearize_texpr0_rec(intern,n->exprB,env,intdim,lres,ires);
-    /* multiply one linear form with the other interval */
-    if (ap_texpr0_cmp_range(intern,&l1,i1,lres,ires))  {
-      /* res = ires * l1 */
-#if LOGDEBUG
-      printf("%*s lin * inter\n",2*debug_indent,"");
-#endif
-      itv_linexpr_clear(lres);
-      *lres = l1;
-      itv_linexpr_scale(intern,lres,ires);
+    if (itv_is_bottom(intern,i1) || itv_is_bottom(intern,ires)){
+      itv_set_bottom(ires);
+      itv_linexpr_reinit(lres,0);
+      itv_set(lres->cst,ires);
+      itv_linexpr_clear(&l1);
     }
     else {
-      /* res = i1 * lres */
+      /* multiply one linear form with the other interval */
+      if (ap_texpr0_cmp_range(intern,&l1,i1,lres,ires))  {
+	/* res = ires * l1 */
 #if LOGDEBUG
-      printf("%*s inter * lin\n",2*debug_indent,"");
+	printf("%*s lin * inter\n",2*debug_indent,"");
 #endif
-      itv_linexpr_clear(&l1);
-      itv_linexpr_scale(intern,lres,i1);
+	itv_linexpr_clear(lres);
+	*lres = l1;
+	itv_linexpr_scale(intern,lres,ires);
+      }
+      else {
+	/* res = i1 * lres */
+#if LOGDEBUG
+	printf("%*s inter * lin\n",2*debug_indent,"");
+#endif
+	itv_linexpr_clear(&l1);
+	itv_linexpr_scale(intern,lres,i1);
+      }
+      itv_mul(intern,ires,i1,ires);
+      /* round */
+      ap_texpr0_round(intern,lres,ires,
+		      (t1==AP_RTYPE_INT && t2==AP_RTYPE_INT) ?
+		      AP_RTYPE_INT : AP_RTYPE_REAL,
+		      n->type,n->dir);
+      /* reduce */
+      ap_texpr0_reduce(intern,env,lres,ires);
     }
-    itv_mul(intern,ires,i1,ires);
-    /* round */
-    ap_texpr0_round(intern,lres,ires,
-		    (t1==AP_RTYPE_INT && t2==AP_RTYPE_INT) ?
-		    AP_RTYPE_INT : AP_RTYPE_REAL,
-		    n->type,n->dir);
-    /* reduce */
-    ap_texpr0_reduce(intern,env,lres,ires);
     itv_clear(i1);
     break;
 
@@ -1150,10 +1184,18 @@ ap_texpr0_node_intlinearize(itv_internal_t* intern,
     /* intlinearize arguments, lres & l1 are not used */
     itv_intlinearize_texpr0_rec(intern,n->exprA,env,intdim,lres,ires);
     itv_intlinearize_texpr0_rec(intern,n->exprB,env,intdim,&l1,i1);
-    /* interval modulo, no rounding */
-    itv_mod(intern,ires,ires,i1,n->type==AP_RTYPE_INT);
-    itv_linexpr_reinit(lres,0);
-    itv_set(lres->cst,ires);
+    if (itv_is_bottom(intern,i1) || itv_is_bottom(intern,ires)){
+      itv_set_bottom(ires);
+      itv_linexpr_reinit(lres,0);
+      itv_set(lres->cst,ires);
+    }
+    else {
+      /* interval modulo, no rounding */
+      itv_mod(intern,ires,ires,i1,n->type==AP_RTYPE_INT);
+      itv_linexpr_reinit(lres,0);
+      itv_set(lres->cst,ires);
+      lres->equality = itv_is_point(intern,lres->cst);
+    }
     itv_clear(i1);
     itv_linexpr_clear(&l1);
     break;
@@ -1187,7 +1229,7 @@ itv_intlinearize_texpr0_rec(itv_internal_t* intern,
     itv_set_ap_coeff(intern,ires,&expr->val.cst);
     itv_linexpr_reinit(lres,0);
     itv_set(lres->cst,ires);
-    lres->equality = false;
+    lres->equality = itv_is_point(intern,lres->cst);
     t = itv_is_int(intern,lres->cst) ? AP_RTYPE_INT : AP_RTYPE_REAL;
     break;
   case AP_TEXPR_DIM:

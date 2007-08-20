@@ -214,8 +214,7 @@ pk_t* pk_widening_threshold(ap_manager_t* man,
 			    ap_lincons0_array_t* array)
 {
   pk_t* po;
-  size_t i,nbrows;
-  matrix_t* mat;
+  size_t i,nbrows,nbcols;
   size_t* tab;
   size_t size,nb;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
@@ -224,36 +223,31 @@ pk_t* pk_widening_threshold(ap_manager_t* man,
   if (!po->C && !po->F)
     return po;
 
-  matrix_set_ap_lincons0_array(pk,&mat,&tab,&size,
-			       array,
-			       pa->intdim,pa->realdim,true);
-  if (tab) free(tab);
   /* We assume that both pa and pb are minimized, and that po->F==NULL */
+  nbcols = po->C->nbcolumns;
   nbrows = po->C->nbrows;
-  matrix_resize_rows_lazy(po->C, nbrows + mat->nbrows);
-  for (i=0; i<mat->nbrows; i++){
+  matrix_resize_rows_lazy(po->C, nbrows + array->size);
+  for (i=0; i<array->size; i++){
     switch(array->p[i].constyp){
     case AP_CONS_EQ:
       break;
     case AP_CONS_SUPEQ:
     case AP_CONS_SUP:
-      if (ap_linexpr0_is_quasilinear(array->p[i].linexpr0)){
+      if (ap_linexpr0_is_linear(array->p[i].linexpr0)){
 	itv_lincons_set_ap_lincons0(pk->itv,
 				    &pk->poly_itv_lincons,
 				    &array->p[i]);
-	nb = vector_set_itv_lincons(pk,
-				    &pk->poly_numintp,
-				    &pk->poly_itv_lincons,
-				    pa->intdim,pa->realdim,true);
-	assert(nb<=1);
-	if (nb==1 && 
-	    do_generators_sat_vector(pk,pb->F,
+	vector_set_itv_lincons(pk,
+			       pk->poly_numintp,
+			       &pk->poly_itv_lincons,
+			       pa->intdim,pa->realdim,true);
+	if (do_generators_sat_vector(pk,pb->F,
 				     pk->poly_numintp,
 				     pk->strict && 
-				     numint_sgn(mat->p[i][polka_eps])<0))
+				     numint_sgn(pk->poly_numintp[polka_eps])<0))
 	  {
 	    /* if the constraint is satisfied by pb, add it */
-	    vector_copy(po->C->p[nbrows],mat->p[i],mat->nbcolumns);
+	    vector_copy(po->C->p[nbrows],pk->poly_numintp,nbcols);
 	    nbrows++;
 	  }
       }

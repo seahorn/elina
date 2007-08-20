@@ -46,10 +46,10 @@ bool poly_meet_matrix(bool meet, bool lazy,
 		      pk_t* po, 
 		      pk_t* pa, matrix_t* mat);
 
-void poly_meet_lincons_array(bool lazy,
-			     ap_manager_t* man,
-			     pk_t* po, 
-			     pk_t* pa, ap_lincons0_array_t* array);
+void poly_meet_itv_lincons_array(bool lazy,
+				 ap_manager_t* man,
+				 pk_t* po, pk_t* pa, 
+				 itv_lincons_array_t* array);
 
 void poly_meet(bool meet,
 	       bool lazy,

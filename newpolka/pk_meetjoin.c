@@ -18,7 +18,7 @@
 #include "pk_cherni.h"
 #include "pk_meetjoin.h"
 #include "ap_generic.h"
-
+#include "itv_linearize.h"
 
 /* ********************************************************************** */
 /* I. Meet/Join */
@@ -521,20 +521,19 @@ pk_t* pk_meet_array(ap_manager_t* man,
 /* ---------------------------------------------------------------------- */
 /* Factorized version */
 
-void poly_meet_lincons_array(bool lazy,
-			     ap_manager_t* man,
-			     pk_t* po, pk_t* pa, 
-			     ap_lincons0_array_t* array)
+void poly_meet_itv_lincons_array(bool lazy,
+				 ap_manager_t* man,
+				 pk_t* po, pk_t* pa, 
+				 itv_lincons_array_t* array)
 {
   matrix_t* mat;
-  size_t* tab;
-  size_t size;
+  bool quasilinear;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
-  man->result.flag_best = man->result.flag_exact = tbool_true;
-
+  quasilinear = itv_lincons_array_is_quasilinear(array);
+  
   /* Get the constraint systems */
-  if (lazy){
+  if (lazy && quasilinear){
     poly_obtain_C(man,pa,"of the argument");
   } else {
     poly_chernikova(man,pa,"of the argument");
@@ -549,25 +548,19 @@ void poly_meet_lincons_array(bool lazy,
   }
   /* if pa is bottom, return bottom */
   if ( !pa->C && !pa->F){
+    man->result.flag_best = man->result.flag_exact = tbool_true;
     poly_set(po,pa);
     return;
   }
-  matrix_set_ap_lincons0_array(pk,
-			       &mat,&tab,&size,
-			       array,
-			       pa->intdim,pa->realdim, true);
-  if (lazy && tab!=NULL){
-    lazy = false;
-    poly_chernikova(man,pa,"of the argument");
-     if (pk->exn){
-       pk->exn = AP_EXC_NONE;
-       if (!pa->C){
-	 man->result.flag_best = man->result.flag_exact = tbool_false;
-	 poly_set_top(pk,po);
-	 return;
-       }
-     }
+
+  /* quasilinearize if needed */
+  if (!quasilinear){
+    itv_t* env = matrix_to_box(pk,po->F);
+    itv_quasilinearize_lincons_array(pk->itv,array,env,true);
+    itv_array_free(env,po->intdim+po->realdim);
   }
+  itv_linearize_lincons_array(pk->itv,array,true);
+  bool exact = matrix_set_itv_lincons_array(pk,&mat,array,po->intdim,po->realdim,true);
   matrix_sort_rows(pk,mat);
   if (!lazy) poly_obtain_satC(pa);
   poly_meet_matrix(true,lazy,man,po,pa,mat);
@@ -575,42 +568,23 @@ void poly_meet_lincons_array(bool lazy,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     man->result.flag_exact = man->result.flag_best = tbool_false;
-    if (tab) free(tab);
-    return;
   }
-  if (tab!=NULL){
-    itv_t* titv;
-    if (!po->F){
-      assert (!po->C);
-      man->result.flag_exact = man->result.flag_best = tbool_true;
-      if (tab) free(tab);
-      return;
-    }
-    titv = matrix_to_box(pk,po->F);
-    matrix_set_ap_intlincons0_array(pk,
-				    &mat,titv,
-				    array,tab,size,
-				    po->intdim,po->realdim,true);
-    itv_array_free(titv,po->intdim+po->realdim);
-    free(tab);
-    matrix_sort_rows(pk,mat);
-    poly_obtain_satC(po);
-    poly_meet_matrix(true,false,man,po,po,mat);
-    matrix_free(mat);
-    if (pk->exn){
-      pk->exn = AP_EXC_NONE;
-      man->result.flag_exact = man->result.flag_best = tbool_true;
-      return;
-    }
+  else {
+    man->result.flag_best = man->result.flag_exact = exact ? tbool_true : tbool_false;
   }
 }
 
 pk_t* pk_meet_lincons_array(ap_manager_t* man, bool destructive, pk_t* pa, ap_lincons0_array_t* array)
 {
+  itv_lincons_array_t tcons;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET_LINCONS_ARRAY);
   pk_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
-  poly_meet_lincons_array(pk->funopt->algorithm<0,
-			   man,po,pa,array);
+
+  itv_lincons_array_init(&tcons,array->size);
+  itv_lincons_array_set_ap_lincons0_array(pk->itv,&tcons,array);
+  poly_meet_itv_lincons_array(pk->funopt->algorithm<0,
+			      man,po,pa,&tcons);
+  itv_lincons_array_clear(&tcons);  
   return po;
 }
 

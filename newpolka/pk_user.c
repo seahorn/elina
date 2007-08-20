@@ -192,58 +192,37 @@ void vector_set_itv_linexpr(pk_internal_t* pk,
   return;
 }
 
-/* Fills the vector(s) with the fully linear constraint cons
-   Returns the number of vectors written (0, 1 or 2) */
-size_t vector_set_itv_lincons(pk_internal_t* pk,
-			      numint_t** tvec,
-			      itv_lincons_t* cons,
-			      size_t intdim, size_t realdim,
-			      bool integer)
+/* Fills the vector(s) with the fully linear constraint cons */
+void vector_set_itv_lincons(pk_internal_t* pk,
+			    numint_t* vec,
+			    itv_lincons_t* cons,
+			    size_t intdim, size_t realdim,
+			    bool integer)
 {
   size_t i,nb;
-  numint_t* vec;
   assert(cons->constyp == AP_CONS_EQ || 
 	 cons->constyp == AP_CONS_SUPEQ ||
 	 cons->constyp == AP_CONS_SUP);
+  assert(itv_linexpr_is_scalar(&cons->linexpr));
 
-  nb = 0;
-  if (!bound_infty(cons->linexpr.cst->sup)){
-    vec = tvec[0];
-    vector_set_itv_linexpr(pk, vec, &cons->linexpr, intdim+realdim,1);
-    vector_normalize(pk,vec,pk->dec+intdim+realdim);
-    if (cons->constyp == AP_CONS_EQ && cons->linexpr.equality){
-      numint_set_int(vec[0],0);
-    }
-    else {
-      numint_set_int(vec[0],1);
-    }
-    if (cons->constyp == AP_CONS_SUP){
-      if (pk->strict){
-	numint_set_int(vec[polka_eps],-1);
-      }
-      else if (integer && vector_is_integer(pk, vec, intdim, realdim)){
-	numint_sub_uint(vec[polka_cst], vec[polka_cst], 1);
-      }
-    }
-    if (integer)
-      vector_normalize_constraint_int(pk,vec,intdim,realdim);
-    nb++;
+  vector_set_itv_linexpr(pk, vec, &cons->linexpr, intdim+realdim,1);
+  vector_normalize(pk,vec,pk->dec+intdim+realdim);
+  if (cons->constyp == AP_CONS_EQ){
+    numint_set_int(vec[0],0);
   }
-  if (cons->constyp == AP_CONS_EQ && cons->linexpr.equality != true &&
-      !bound_infty(cons->linexpr.cst->inf)){
-    vec = tvec[nb];
-    vector_set_itv_linexpr(pk, vec, &cons->linexpr, intdim+realdim,-1);
-    vector_normalize(pk,vec,pk->dec+intdim+realdim);
+  else {
     numint_set_int(vec[0],1);
-    numint_neg(vec[polka_cst],vec[polka_cst]);
-    for (i=pk->dec; i<pk->dec+intdim+realdim; i++){
-      numint_neg(vec[i],vec[i]);
-    }
-    if (integer)
-      vector_normalize_constraint_int(pk,vec,intdim,realdim);
-    nb++;
   }
-  return nb;
+  if (cons->constyp == AP_CONS_SUP){
+    if (pk->strict){
+      numint_set_int(vec[polka_eps],-1);
+    }
+    else if (integer && vector_is_integer(pk, vec, intdim, realdim)){
+      numint_sub_uint(vec[polka_cst], vec[polka_cst], 1);
+    }
+  }
+  if (integer)
+    vector_normalize_constraint_int(pk,vec,intdim,realdim);
 }
 
 /* Fills the vector(s) with the fully linear constraint cons for testing
@@ -358,6 +337,7 @@ bool matrix_set_ap_generator0_array(pk_internal_t* pk,
   (*matrix)->nbrows = 0;
   return matrix_append_ap_generator0_array(pk,*matrix,array,intdim,realdim);
 }
+/*
 static
 bool matrix_append_ap_lincons0_array(pk_internal_t* pk,
 				     matrix_t* mat,
@@ -487,6 +467,56 @@ bool matrix_set_ap_intlincons0_array(pk_internal_t* pk,
 					    titv,
 					    array,tab,size,
 					    intdim,realdim,integer);
+}
+*/
+static
+bool matrix_append_itv_lincons_array(pk_internal_t* pk,
+				     matrix_t* mat,
+				     itv_lincons_array_t* array,
+				     size_t intdim, size_t realdim,
+				     bool integer)
+{
+  bool exact,res;
+  size_t nbrows,i,j;
+  size_t* tab;
+
+  nbrows = mat->nbrows;
+  matrix_resize_rows_lazy(mat,nbrows+array->size);
+
+  res = true;
+  j = nbrows;
+  for (i=0; i<array->size; i++){
+    assert(itv_linexpr_is_scalar(&array->p[i].linexpr));
+    switch (array->p[i].constyp){
+    case AP_CONS_EQ:
+    case AP_CONS_SUPEQ:
+    case AP_CONS_SUP:
+      vector_set_itv_lincons(pk,
+			     mat->p[j], &array->p[i],
+			     intdim,realdim,integer);
+      j++;
+      break;
+    default:
+      res = false;
+      break;
+    }
+  }
+  mat->nbrows = j;
+  return res;
+}
+bool matrix_set_itv_lincons_array(pk_internal_t* pk,
+				  matrix_t** mat,
+				  itv_lincons_array_t* array,
+				  size_t intdim, size_t realdim,
+				  bool integer)
+{
+  
+
+  *mat = matrix_alloc(array->size,pk->dec+intdim+realdim,false);
+  (*mat)->nbrows = 0;
+  return matrix_append_itv_lincons_array(pk,
+					 *mat,array,
+					 intdim,realdim,integer);
 }
 
 /* ********************************************************************** */
