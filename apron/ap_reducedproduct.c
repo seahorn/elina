@@ -730,7 +730,7 @@ ap_reducedproduct_t* ap_reducedproduct_meetjoin_array(ap_funid_t funid,
   a = (void**)malloc(size*sizeof(void*));
   for (i=0;i<intern->size;i++){
     ap_manager_t* man = intern->tmanagers[i];
-    void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_ARRAY];
+    void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
     for (j=0;j<size;j++){
       a[j] = tab[j]->p[i];
     }

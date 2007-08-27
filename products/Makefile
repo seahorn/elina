@@ -65,8 +65,8 @@ distclean:
 	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(PREFIX)/bin/$$i; done
 	/bin/rm -f Makefile.depend
 
-dist: $(CCSRC) Makefile COPYING README
-	(cd ..; tar zcvf itv.tgz $(^:%=itv/%))
+dist: $(CCSRC) ap_pkgrid.texi sedscript_caml polkaGrid.idl polkaGrid.ml polkaGrid.mli polkaGrid_caml.c Makefile COPYING README
+	(cd ..; tar zcvf products.tgz $(^:%=products/%))
 
 #---------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES

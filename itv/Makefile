@@ -21,7 +21,7 @@ ICFLAGS = \
 #---------------------------------------
 
 CCMODULES = itv itv_linexpr itv_linearize
-CCSRC = itv_config.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
+CCSRC = itv_config.h itv_fun.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = itv.h itv_fun.h itv_config.h itv_linexpr.h itv_linearize.h
 CCBIN_TO_INSTALL = 

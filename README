@@ -1,7 +1,5 @@
-# $Id$
-
-# This file is part of the APRON Library, released under LGPL
-# license.
+# This file is part of the APRON Library, released under LGPL license, except
+# files requiring the PPL library (in ppl and products subdirectories)
 
 # Please read the COPYING file packaged in the distribution
 
@@ -17,19 +15,24 @@ itv:
 apron:
 	apron interface, C version
 
-newpolka:
-	convex polyhedra library
+box:
+	interval library
 
 octagons:
 	octagon library
 
-box:
-	interval library
+newpolka:
+	convex polyhedra and linear equalities library
 
 ppl:
 	wrapper to call the Parma Polyhedra Library from APRON (C & OCaml)
 	requires PPL 0.9 and GMPXX
 	not compiled unless HAS_PPL is defined in Makefile.config
+	under GPL (instead of LGPL) license
+
+products:
+	- reduced product of NewPolka convex polyhedra and PPL
+	  linear congruences.
 
 mlgmpidl:
 	OCaml interface for the GMP and MPFR libraries, used by mlapronidl.

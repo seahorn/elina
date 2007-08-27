@@ -63,7 +63,7 @@ OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
 
 CXXSOURCES = ppl_user.cc ppl_poly.cc ppl_grid.cc
 CSOURCES = ppl_test.c
-CCINC = ppl_user.hh ppl_poly.hh ppl_grid.hh ap_ppl.h
+CCINC = ppl_user.hh ppl_poly.hh ppl_grid.hh ppl_grid.h ap_ppl.h
 
 #---------------------------------------
 # Rules

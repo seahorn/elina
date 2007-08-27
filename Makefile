@@ -170,6 +170,10 @@ online: doc index.html
 	cp examples/mlexample?.ml online
 	cp Changes online
 
+pkg_mlgmpidl:
+	(cd mlgmpidl; $(MAKE) dist)
+	(cd $(PKGNAME); tar xzf $(HOME)/mlgmpidl.tgz)
+	rm -rf $*.tgz
 pkg_%:
 	(cd $*; $(MAKE) dist)
 	(cd $(PKGNAME); tar xzf ../$*.tgz)

@@ -3069,8 +3069,8 @@ embed them on the least common environment and then compute their
 meet. The result is defined on the least common environment.
 
 For instance, the unification of @code{1<=x<=3 and x=y} defined on
-@code{@{ x, y @}} and @code{2<=z<=4 and z=y] defined on @code{@{
-y,z @}} results in @code{2<=x<=3 and x=y=z} defined on
+@code{@{ x, y @}} and @code{2<=z<=4 and z=y} defined on 
+@code{@{y,z @}} results in @code{2<=x<=3 and x=y=z} defined on
 @code{@{x,y,z@}}.
 @end deftypefun
 
