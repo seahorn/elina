@@ -1,7 +1,7 @@
 
 This license applies to all files distributed in the original package, *except*
-files contained in ppl and products subdirectories, which contain specific
-COPYING files (GPL license instead of LGPL license).
+files contained in ppl, products, examples, and tests subdirectories, which
+contain specific COPYING files (GPL license instead of LGPL license).
 
 		  GNU LESSER GENERAL PUBLIC LICENSE
 		       Version 2.1, February 1999

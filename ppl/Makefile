@@ -4,7 +4,7 @@
 #
 # Copyright (C) Antoine Mine' 2006
 
-# This file is part of the APRON Library, released under LGPL license.
+# This file is part of the APRON Library, released under GPL license.
 # Please read the COPYING file packaged in the distribution.
 
 include ../Makefile.config
@@ -95,6 +95,7 @@ uninstall:
 	/bin/rm -f $(INCDIR)/*ap_ppl*
 	/bin/rm -f $(LIBDIR)/*ap_ppl* $(LIBDIR)/ppl.a $(LIBDIR)/ppl.idl $(LIBDIR)/ppl.cm*
 	/bin/rm -f $(BINDIR)/*ap_ppl*
+	/bin/rm -f $(BINDIR)/pplrun $(BINDIR)/ppltop
 	/bin/rm -f $(CAMLDIR)/*ap_ppl*
 
 distclean: uninstall

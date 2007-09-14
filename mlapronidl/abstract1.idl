@@ -496,14 +496,16 @@ void ap_abstract1_change_environment_with(ap_manager_ptr man,
 				       boolean v2)
      quote(call,"\
 {\n\
-  if (a->env!=v1){\n\
-    ap_environment_copy(a->env); /* to protect it */\n\
-    ap_abstract1_t res = ap_abstract1_change_environment(man,true,a,v1,v2);\n\
-    value v = Field(_v_a,0);\n\
-    *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+  ap_environment_t* oldenv = ap_environment_copy(a->env);\n		\
+  ap_abstract1_t res = ap_abstract1_change_environment(man,true,a,v1,v2);\n\
+  value v = Field(_v_a,0);\n\
+  *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
+  if (res.env==oldenv){\n\
+    ap_environment_free(oldenv);\n\
+  }\n\
+  else {\n\
     assert(res.env==v1);\n\
-    Store_field(_v_a,1,_v_v1); \n\
-    ap_environment_free(v1); \n\
+    Store_field(_v_a,1,_v_v1);\n\
   }\n\
 }")
      quote(dealloc,"I0_CHECK_EXC(man)");
@@ -511,11 +513,17 @@ void ap_abstract1_change_environment_with(ap_manager_ptr man,
 void ap_abstract1_minimize_environment_with(ap_manager_ptr man,
 					 [ref]struct ap_abstract1_t* a)
      quote(call,"{\n\
+  ap_environment_t* oldenv = ap_environment_copy(a->env);\n		\
   ap_abstract1_t res = ap_abstract1_minimize_environment(man,true,a);\n\
   value v = Field(_v_a,0);\n\
   *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
-  v = Field(_v_a,1);\n\
-  *((ap_environment_ptr *) Data_custom_val(v)) = res.env;\n\
+  if (res.env==oldenv){\n\
+    ap_environment_free(oldenv);\n\
+  }\n\
+  else {\n\
+    v = camlidl_apron_environment_ptr_c2ml(&res.env); \n\
+    Store_field(_v_a,1,v); \n\
+  }\n\
 }")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
@@ -525,11 +533,17 @@ void ap_abstract1_rename_array_with(ap_manager_ptr man, [ref]struct ap_abstract1
      quote(call,"\n\
 if (v3!=v4) caml_failwith(\"Abstract1.rename_array_with: arrays of different size\");\n\
 {\n\
+  ap_environment_t* oldenv = ap_environment_copy(a->env);\n		\
   ap_abstract1_t res = ap_abstract1_rename_array(man,true,a,v1,v2,v3);\n\
   value v = Field(_v_a,0);\n\
   *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
-  v = Field(_v_a,1);\n\
-  *((ap_environment_ptr *) Data_custom_val(v)) = res.env;\n\
+  if (res.env==oldenv){\n\
+    ap_environment_free(oldenv);\n\
+  }\n\
+  else {\n\
+    v = camlidl_apron_environment_ptr_c2ml(&res.env); \n\
+    Store_field(_v_a,1,v); \n\
+  }\n\
 }")
       quote(dealloc,"I0_CHECK_EXC(man)");
 
@@ -582,11 +596,17 @@ void ap_abstract1_expand_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
 			   [size_is(v3)]ap_var_t* v2,
 			   int v3)
      quote(call,"{\n\
+  ap_environment_t* oldenv = ap_environment_copy(a->env);\n		\
   ap_abstract1_t res = ap_abstract1_expand(man,true,a,v1,v2,v3);
   value v = Field(_v_a,0);\n\
   *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
-  v = Field(_v_a,1);\n\
-  *((ap_environment_ptr *) Data_custom_val(v)) = res.env;\n\
+  if (res.env==oldenv){\n\
+    ap_environment_free(oldenv);\n\
+  }\n\
+  else {\n\
+    v = camlidl_apron_environment_ptr_c2ml(&res.env); \n\
+    Store_field(_v_a,1,v); \n\
+  }\n\
 }")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
@@ -594,11 +614,17 @@ void ap_abstract1_fold_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
 			 [size_is(v2)]ap_var_t* v1,
 			 int v2)
      quote(call,"{\n\
+  ap_environment_t* oldenv = ap_environment_copy(a->env);\n		\
   ap_abstract1_t res = ap_abstract1_fold(man,true,a,v1,v2);
   value v = Field(_v_a,0);\n\
   *((ap_abstract0_ptr *) Data_custom_val(v)) = res.abstract0;\n\
-  v = Field(_v_a,1);\n\
-  *((ap_environment_ptr *) Data_custom_val(v)) = res.env;\n\
+  if (res.env==oldenv){\n\
+    ap_environment_free(oldenv);\n\
+  }\n\
+  else {\n\
+    v = camlidl_apron_environment_ptr_c2ml(&res.env); \n\
+    Store_field(_v_a,1,v); \n\
+  }\n\
 }")
      quote(dealloc,"I0_CHECK_EXC(man)");
 

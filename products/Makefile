@@ -34,7 +34,7 @@ CCINC_TO_INSTALL = ap_pkgrid.h
 CCBIN_TO_INSTALL =
 CCLIB_TO_INSTALL = \
 libap_pkgrid.a libap_pkgrid_debug.a \
-polkaGrid.mli polkaGrid.ml polkaGrid.cmi polkaGrid.cmx polkaGrid.cma polkaGrid.cmxa libpolkaGrid_caml.a libpolkaGrid_caml_debug.a
+polkaGrid.mli polkaGrid.ml polkaGrid.cmi polkaGrid.cmx polkaGrid.cma polkaGrid.cmxa polkaGrid.a libpolkaGrid_caml.a libpolkaGrid_caml_debug.a
 
 #---------------------------------------
 # Rules
@@ -52,7 +52,7 @@ mostlyclean: clean
 	/bin/rm -fr manager.idl
 	/bin/rm -f polkaGrid.ml polkaGrid.mli polkaGrid_caml.c
 
-install: $(CCINC_TO_INSTALL) $(CCLIB_TO_INSTALL)
+install:
 	$(INSTALLd) $(PREFIX)/include $(PREFIX)/lib
 	$(INSTALL) $(CCINC_TO_INSTALL) $(PREFIX)/include
 	for i in $(CCLIB_TO_INSTALL); do \
@@ -116,7 +116,7 @@ manager.idl: ../mlapronidl/manager.idl
 	ln -s $< $@
 
 # generates polkaGrid.ml, polkaGrid.mli, polkaGrid_caml.c from polkaGrid.idl
-rebuild: manager.idl polkaGrid.idl 
+rebuild: manager.idl polkaGrid.idl
 	mkdir -p tmp
 	cp polkaGrid.idl tmp/polkaGrid.idl
 	$(CAMLIDL) -no-include -nocpp tmp/polkaGrid.idl
@@ -145,4 +145,3 @@ rebuild: manager.idl polkaGrid.idl
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -c -o $@ $<
 %_debug.o: %.c
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPQ -c -o $@ $<
-

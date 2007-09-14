@@ -236,13 +236,14 @@ pk_t* cherni_add_dimensions(pk_internal_t* pk,
     if (pa->F){
       size_t nbrows = pa->F->nbrows;
       po->F = matrix_add_dimensions(pk,destructive,pa->F,dimchange);
-      matrix_resize_rows(po->F,po->F->nbrows+dimsup);
+      matrix_resize_rows_lazy(po->F,po->F->nbrows+dimsup);
       /* translate rows [0,oldF->nbrows-1] to [dimsup,oldF->nbrows+dimsup-1] */
       matrix_move_rows(po->F,dimsup,0,nbrows);
       /* addition of new lines at the beginning of the matrix */
       k=dimsup-1;
       for (i=po->intdim+po->realdim - dimsup; i>=0; i--){
 	while (k>=0 && dimchange->dim[k]==(ap_dim_t)i){
+	  vector_clear(po->F->p[dimsup-1-k],po->F->nbcolumns);
 	  numint_set_int(po->F->p[dimsup-1-k][pk->dec+i+k], 1);
 	  k--;
 	}

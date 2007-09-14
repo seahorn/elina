@@ -24,10 +24,10 @@
 
 static
 void poly_projectforget_array(bool project,
-			       bool lazy,
-			       ap_manager_t* man,	
-			       pk_t* po, pk_t* pa, 
-			       ap_dim_t* tdim, size_t size)
+			      bool lazy,
+			      ap_manager_t* man,	
+			      pk_t* po, pk_t* pa, 
+			      ap_dim_t* tdim, size_t size)
 {
   bool res;
   matrix_t* mat;

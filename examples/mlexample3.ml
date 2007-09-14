@@ -1,11 +1,11 @@
 
-(* This file is part of the APRON Library, released under LGPL license.  Please
-   read the COPYING file packaged in the distribution. *)
+(* This file is part of the APRON Library, released under LGPL license. (use of
+   PPL) Please read the COPYING file packaged in the distribution. *)
 
 (*
 with default setting:
 
-aprontop -I $APRON_INSTALL/lib
+apronppltop -I $APRON_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cma";;

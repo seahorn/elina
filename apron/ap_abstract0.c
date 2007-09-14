@@ -1133,7 +1133,7 @@ ap_abstract0_t* ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
       ap_abstract0_check_linexpr_array(funid,man,dimension,texpr,size) ){
     void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
     void* valueold = a->value;
-    void* value = ptr(man,destructive,a->value,tdim,texpr,size,dest);
+    void* value = ptr(man,destructive,a->value,tdim,texpr,size,dest ? dest->value : NULL);
     if (value==valueold){
       assert(destructive);
       return a;
@@ -1188,7 +1188,7 @@ ap_abstract0_t* ap_abstract0_asssub_texpr_array(ap_funid_t funid,
       ap_abstract0_check_texpr_array(funid,man,dimension,texpr,size) ){
     void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
     void* valueold = a->value;
-    void* value = ptr(man,destructive,a->value,tdim,texpr,size,dest);
+    void* value = ptr(man,destructive,a->value,tdim,texpr,size,dest ? dest->value : NULL);
     if (value==valueold){
       assert(destructive);
       return a;
