@@ -685,7 +685,7 @@ int ap_environment_compare(ap_environment_t* env1,
   else if (dimchange1==NULL) res = 1;
   else if (dimchange2==NULL) res = -1;
   else res = 2;
-  if (dimchange1 && dimchange2) ap_environment_free(e);
+  if (e) ap_environment_free(e);
   if (dimchange1) ap_dimchange_free(dimchange1);
   if (dimchange2) ap_dimchange_free(dimchange2);
   return res;
