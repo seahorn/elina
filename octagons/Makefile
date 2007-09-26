@@ -144,11 +144,6 @@ dist: Makefile COPYING README oct_doc.html sedscript_caml $(CCSOURCES) $(CCINC) 
 # C part
 #-----------------------------------
 
-liboct.a: liboctMPQ.a
-	cp $^ $@
-liboct_debug.a: liboctMPQ_debug.a
-	cp $^ $@
-
 liboct%.a: $(subst .c,%.o,$(CCSOURCES))
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
@@ -214,27 +209,21 @@ mlMPQ: ml octtopMPQ octrunMPQ
 mlD: ml octtopD octrunD
 mlDl: ml octtopDl octrunDl
 
-octtop: oct.cma liboct_caml.a liboct.a
-	$(OCAMLMKTOP) $(OCAMLFLAGS) $(OCAMLINC) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron -L../itv"
-
-octrun: oct.cma liboct_caml.a liboct.a
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron -L../itv"
-
 octtop%: oct.cma liboct_caml.a liboct%.a
 	$(OCAMLMKTOP) -noautolink $(OCAMLFLAGS) $(OCAMLINC) -o $@ -custom bigarray.cma gmp.cma apron.cma oct.cma -ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron -L../itv -L$(MPFR_PREFIX)/lib -L$(GMP_PREFIX)/lib -L$(CAMLIDL_PREFIX)/lib/ocaml" -cclib "-loct_caml -loct$* -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
 
 octrun%: oct.cma liboct_caml.a
 	$(OCAMLC) -noautolink $(OCAMLFLAGS) $(OCAMLINC) -o $@ -make-runtime bigarray.cma gmp.cma apron.cma oct.cma -ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron -L../itv -L$(MPFR_PREFIX)/lib -L$(GMP_PREFIX)/lib -L$(CAMLIDL_PREFIX)/lib/ocaml" -cclib "-loct_caml -loct$* -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
 
-oct.cma: oct.cmi oct.cmo liboct_caml.a liboct.a
+oct.cma: oct.cmi oct.cmo liboct_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -custom -a -o $@ \
 	oct.cmo \
-	-ccopt "-L$(OCT_PREFIX)/lib" -cclib "-loct_caml -loct"
+	-ccopt "-L$(OCT_PREFIX)/lib" -cclib "-loct_caml"
 
-oct.cmxa oct.a: oct.cmi oct.cmx liboct_caml.a liboct.a
+oct.cmxa oct.a: oct.cmi oct.cmx liboct_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
 	oct.cmx \
-	-ccopt "-L$(OCT_PREFIX)/lib" -cclib "-loct_caml -loct"
+	-ccopt "-L$(OCT_PREFIX)/lib" -cclib "-loct_caml"
 	$(RANLIB) oct.a
 
 liboct_caml.a: oct_caml.o
