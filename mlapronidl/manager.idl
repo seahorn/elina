@@ -70,8 +70,6 @@ typedef [abstract,
   | Funid_bottom\n\
   | Funid_top\n\
   | Funid_of_box\n\
-  | Funid_of_lincons_array\n\
-  | Funid_of_tcons_array\n\
   | Funid_dimension\n\
   | Funid_is_bottom\n\
   | Funid_is_top\n\
@@ -95,13 +93,9 @@ typedef [abstract,
   | Funid_join\n\
   | Funid_join_array\n\
   | Funid_add_ray_array\n\
-  | Funid_assign_linexpr\n\
   | Funid_assign_linexpr_array\n\
-  | Funid_substitute_linexpr\n\
   | Funid_substitute_linexpr_array\n\
-  | Funid_assign_texpr\n\
   | Funid_assign_texpr_array\n\
-  | Funid_substitute_texpr\n\
   | Funid_substitute_texpr_array\n\
   | Funid_add_dimensions\n\
   | Funid_remove_dimensions\n\
@@ -245,8 +239,6 @@ let string_of_funid = function\n\
 | Funid_bottom -> \"Funid_bottom\"\n\
 | Funid_top -> \"Funid_top\"\n\
 | Funid_of_box -> \"Funid_of_box\"\n\
-| Funid_of_lincons_array -> \"Funid_of_lincons_array\"\n\
-| Funid_of_tcons_array -> \"Funid_of_tcons_array\"\n\
 | Funid_dimension -> \"Funid_dimension\"\n\
 | Funid_is_bottom -> \"Funid_is_bottom\"\n\
 | Funid_is_top -> \"Funid_is_top\"\n\
@@ -270,13 +262,9 @@ let string_of_funid = function\n\
 | Funid_join -> \"Funid_join\"\n\
 | Funid_join_array -> \"Funid_join_array\"\n\
 | Funid_add_ray_array -> \"Funid_add_ray_array\"\n\
-| Funid_assign_linexpr -> \"Funid_assign_linexpr\"\n\
 | Funid_assign_linexpr_array -> \"Funid_assign_linexpr_array\"\n\
-| Funid_substitute_linexpr -> \"Funid_substitute_linexpr\"\n\
 | Funid_substitute_linexpr_array -> \"Funid_substitute_linexpr_array\"\n\
-| Funid_assign_texpr -> \"Funid_assign_texpr\"\n\
 | Funid_assign_texpr_array -> \"Funid_assign_texpr_array\"\n\
-| Funid_substitute_texpr -> \"Funid_substitute_texpr\"\n\
 | Funid_substitute_texpr_array -> \"Funid_substitute_texpr_array\"\n\
 | Funid_add_dimensions -> \"Funid_add_dimensions\"\n\
 | Funid_remove_dimensions -> \"Funid_remove_dimensions\"\n\
