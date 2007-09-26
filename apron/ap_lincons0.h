@@ -159,7 +159,7 @@ static inline ap_lincons0_t ap_lincons0_make(ap_constyp_t constyp, ap_linexpr0_t
 static inline ap_lincons0_t ap_lincons0_copy(ap_lincons0_t* cons)
 {
   return ap_lincons0_make(cons->constyp, 
-			  ap_linexpr0_copy(cons->linexpr0),
+			  cons->linexpr0 ? ap_linexpr0_copy(cons->linexpr0) : NULL,
 			  cons->scalar ? ap_scalar_alloc_set(cons->scalar) : NULL);
 }
 static inline void ap_lincons0_clear(ap_lincons0_t* lincons)

@@ -701,6 +701,8 @@ ap_dimchange_t* ap_environment_dimchange(ap_environment_t* env1,
   bool b;
   ap_dimchange_t* dimchange;
 
+  if (env->intdim < env1->intdim || env->realdim < env1->realdim) return NULL;
+
   denv_t denv1 = denv_of_environment(env1);
   denv_t denv = denv_of_environment(env);
 

@@ -132,7 +132,8 @@ static inline ap_generator0_t ap_generator0_make(ap_gentyp_t gentyp, ap_linexpr0
 }
 static inline ap_generator0_t ap_generator0_copy(ap_generator0_t* gen)
 {
-  return ap_generator0_make(gen->gentyp, ap_linexpr0_copy(gen->linexpr0));
+  return ap_generator0_make(gen->gentyp, 
+			    gen->linexpr0 ? ap_linexpr0_copy(gen->linexpr0) : NULL);
 }
 static inline void ap_generator0_clear(ap_generator0_t* generator)
 {
