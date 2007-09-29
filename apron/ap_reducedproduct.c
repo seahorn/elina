@@ -1148,6 +1148,8 @@ void ap_reducedproduct_internal_free(void* p)
     ap_manager_free(intern->tmanagers[i]);
     intern->tmanagers[i] = NULL;
   }
+  free(intern->library);
+  free(intern->version);
   free(intern);
 }
 
@@ -1199,13 +1201,15 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   }
   internal->reduce = reduce;
   internal->approximate = approximate;
-
-  /* allocating managers */
-  man = ap_manager_alloc(strdup(library),strdup(version),
-			 internal,
-			 &ap_reducedproduct_internal_free);
+  internal->library = strdup(library);
+  internal->version = strdup(version);
   free(library);
   free(version);
+
+  /* allocating managers */
+  man = ap_manager_alloc(internal->library,internal->version,
+			 internal,
+			 &ap_reducedproduct_internal_free);
   /* default options */
   for (funid=0; funid<AP_FUNID_SIZE; funid++){
     man->option.funopt[funid].algorithm = 0x2;
