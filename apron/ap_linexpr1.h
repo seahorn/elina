@@ -53,7 +53,7 @@ ap_linexpr1_t ap_linexpr1_make(ap_environment_t* env,
      of type SCALAR and DOUBLE.
 
      - If lin_discr selects a dense representation, the size of
-       the expression is the size of the environement.
+       the expression is the size of the environment.
 
      - Otherwise, the initial size is given by size and the
        expression may be resized lazily.  */
@@ -126,7 +126,7 @@ static inline
 void ap_linexpr1_get_cst(ap_coeff_t* coeff, ap_linexpr1_t* expr);
 
 /* Get coefficient of variable var in the expression and assign it to coeff.
-   Return true if var is unkown in the environment */
+   Return true if var is unknown in the environment */
 bool ap_linexpr1_get_coeff(ap_coeff_t* coeff, ap_linexpr1_t* expr, ap_var_t var);
 
 /* Set the constant of the linear expression */

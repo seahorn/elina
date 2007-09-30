@@ -136,7 +136,7 @@ void ap_coeff_reduce(ap_coeff_t* coeff)
 }
 
 /* ====================================================================== */
-/* Combined allocation and assignement */
+/* Combined allocation and assignment */
 /* ====================================================================== */
 ap_coeff_t* ap_coeff_alloc_set_scalar(ap_scalar_t* scalar)
 {
@@ -166,7 +166,7 @@ ap_coeff_t* ap_coeff_alloc_set(ap_coeff_t* coeff)
 }
 
 /* ====================================================================== */
-/* Assignements */
+/* Assignments */
 /* ====================================================================== */
 
 void ap_coeff_set(ap_coeff_t* a, ap_coeff_t* b)

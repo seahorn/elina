@@ -69,7 +69,7 @@ void ap_scalar_fprint(FILE* stream, ap_scalar_t* a)
 }
 
 /* ====================================================================== */
-/* Combined allocation and assignements */
+/* Combined allocation and assignments */
 /* ====================================================================== */
 
 ap_scalar_t* ap_scalar_alloc_set(ap_scalar_t* b)
@@ -106,7 +106,7 @@ ap_scalar_t* ap_scalar_alloc_set_double(double k)
 }
 
 /* ====================================================================== */
-/* Assignements */
+/* Assignments */
 /* ====================================================================== */
 
 void ap_scalar_set(ap_scalar_t* a, ap_scalar_t* b)

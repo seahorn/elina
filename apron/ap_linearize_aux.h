@@ -64,7 +64,7 @@ ITVFUN(ap_eval_texpr0)(ap_manager_t* man,
 		       bool* pexact);
 
 /* ********************************************************************** */
-/* IV. Intervcal linearization of tree expressions */
+/* IV. Interval linearization of tree expressions */
 /* ********************************************************************** */
 
 ap_linexpr0_t*

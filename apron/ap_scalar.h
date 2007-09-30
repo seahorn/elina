@@ -27,8 +27,8 @@ extern "C" {
 /* ********************************************************************** */
 
 typedef enum ap_scalar_discr_t {
-  AP_SCALAR_DOUBLE, /* flottant avec double */
-  AP_SCALAR_MPQ,   /* rationnel avec multiprécision de GMP */
+  AP_SCALAR_DOUBLE, /* double-precision floating-point number */
+  AP_SCALAR_MPQ,    /* GMP arbitrary precision rational */
 } ap_scalar_discr_t;
 
 typedef struct ap_scalar_t {
@@ -64,11 +64,11 @@ void ap_scalar_swap(ap_scalar_t* a, ap_scalar_t* b);
   /* Exchange */
 
 /* ====================================================================== */
-/* Assignements */
+/* Assignments */
 /* ====================================================================== */
 
 void ap_scalar_set(ap_scalar_t* scalar, ap_scalar_t* scalar2);
-  /* Assignement */
+  /* Assignment */
 void ap_scalar_set_mpq(ap_scalar_t* scalar, mpq_t mpq);
 void ap_scalar_set_int(ap_scalar_t* scalar, long int i);
 void ap_scalar_set_frac(ap_scalar_t* scalar, long int i, unsigned long int j);
@@ -80,16 +80,16 @@ void ap_scalar_set_frac(ap_scalar_t* scalar, long int i, unsigned long int j);
 void ap_scalar_set_double(ap_scalar_t* scalar, double k);
   /* Change the type of scalar to DOUBLE and initialize it with k. */
 void ap_scalar_set_infty(ap_scalar_t* scalar, int sgn);
-  /* Assignement to sgn*infty. Keep the type of the scalar.
+  /* Assignment to sgn*infty. Keep the type of the scalar.
      If sgn == 0, set to zero. */
 
 /* ====================================================================== */
-/* Combined allocation and assignement */
+/* Combined allocation and assignment */
 /* ====================================================================== */
 
 ap_scalar_t* ap_scalar_alloc_set(ap_scalar_t* scalar2);
 ap_scalar_t* ap_scalar_alloc_set_mpq(mpq_t mpq);
-  /* Change the type of scalar to MPQ and initialize it withmpq */
+  /* Change the type of scalar to MPQ and initialize it with mpq */
 ap_scalar_t* ap_scalar_alloc_set_double(double k);
   /* Change the type of scalar to DOUBLE and initialize it with k. */
 

@@ -89,7 +89,7 @@ ap_linexpr1_t ap_generator1_linexpr1ref(ap_generator1_t* gen);
 static inline void ap_generator1_get_cst(ap_coeff_t* coeff, ap_generator1_t* gen);
 
 /* Get coefficient of variable var in the generator and assign it to coeff.
-   Return true if var is unkown in the environment */
+   Return true if var is unknown in the environment */
 bool ap_generator1_get_coeff(ap_coeff_t* coeff, ap_generator1_t* gen, ap_var_t var);
 
 /* Set the constant of the linear generator */
@@ -122,7 +122,7 @@ ap_generator0_t* ap_generator1_generator0ref(ap_generator1_t* gen);
   /* Return underlying generator of level 0.
      Do not free it: nothing is duplicated.
      Modifying the argument or the result is equivalent, except for
-     change of dimensions/envionment. */
+     change of dimensions/environment. */
 
 /* ====================================================================== */
 /* I.3 Change of dimensions and permutations */

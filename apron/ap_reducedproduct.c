@@ -841,7 +841,7 @@ ap_reducedproduct_t* ap_reducedproduct_add_ray_array(ap_manager_t* manager,
 }
 
 /* ============================================================ */
-/* III.2 Assignement and Substitutions */
+/* III.2 Assignment and Substitutions */
 /* ============================================================ */
 
 ap_reducedproduct_t*

@@ -97,7 +97,7 @@ void ap_abstract0_fdump(FILE* stream, ap_manager_t* man, ap_abstract0_t* a);
 ap_membuf_t ap_abstract0_serialize_raw(ap_manager_t* man, ap_abstract0_t* a);
   /* Allocate a memory buffer (with malloc), output the abstract value in raw
      binary format to it and return a pointer on the memory buffer and the size
-     of bytes written.  It is the user responsability to free the memory
+     of bytes written.  It is the user responsibility to free the memory
      afterwards (with free). */
 
 
@@ -141,7 +141,7 @@ ap_dimension_t ap_abstract0_dimension(ap_manager_t* man, ap_abstract0_t* a);
 /* ============================================================ */
 
 /* If any of the following functions returns tbool_top, this means that
-   an exception has occured, or that the exact computation was
+   an exception has occurred, or that the exact computation was
    considered too expensive to be performed (according to the options).
    The flag exact and best should be cleared in such a case. */
 
@@ -247,7 +247,7 @@ ap_abstract0_add_ray_array(ap_manager_t* man,
   /* Generalized time elapse operator */
 
 /* ============================================================ */
-/* III.2 Assignement and Substitutions */
+/* III.2 Assignment and Substitutions */
 /* ============================================================ */
 
 ap_abstract0_t*
@@ -275,7 +275,7 @@ ap_abstract0_substitute_texpr_array(ap_manager_t* man,
 				    ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
 				    ap_abstract0_t* dest);
 
-  /* Parallel Assignement and Substitution of several dimensions by
+  /* Parallel Assignment and Substitution of several dimensions by
      linear/tree expressions in abstract value org.
 
      dest is an optional argument. If not NULL, semantically speaking,
@@ -396,7 +396,7 @@ ap_abstract0_t* ap_abstract0_substitute_texpr(ap_manager_t* man,
 					      ap_abstract0_t* org,
 					      ap_dim_t dim, ap_texpr0_t* expr,
 					      ap_abstract0_t* dest);
-  /* Assignement and Substitution of a single dimension by an expression in
+  /* Assignment and Substitution of a single dimension by an expression in
      abstract value org.
 
      dest is an optional argument. If not NULL, semantically speaking,

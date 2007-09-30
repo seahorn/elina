@@ -59,11 +59,11 @@ void ap_coeff_swap(ap_coeff_t* a, ap_coeff_t* b)
   /* Exchange */
 
 /* ====================================================================== */
-/* Assignements */
+/* Assignments */
 /* ====================================================================== */
 
 void ap_coeff_set(ap_coeff_t* a, ap_coeff_t* b);
-  /* Assignement */
+  /* Assignment */
 void ap_coeff_set_scalar(ap_coeff_t* coeff, ap_scalar_t* scalar);
 void ap_coeff_set_scalar_mpq(ap_coeff_t* coeff, mpq_t mpq);
 void ap_coeff_set_scalar_int(ap_coeff_t* coeff, long int num);
@@ -95,7 +95,7 @@ void ap_coeff_set_interval_top(ap_coeff_t* coeff);
   */
 
 /* ====================================================================== */
-/* Combined allocation and assignement */
+/* Combined allocation and assignment */
 /* ====================================================================== */
 ap_coeff_t* ap_coeff_alloc_set(ap_coeff_t* coeff);
 ap_coeff_t* ap_coeff_alloc_set_scalar(ap_scalar_t* scalar);

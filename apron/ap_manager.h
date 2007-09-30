@@ -246,8 +246,8 @@ ap_manager_t* ap_manager_copy(ap_manager_t* man);
   /* Increment the reference counter and return its argument */
 void ap_manager_raise_exception(ap_manager_t* man,
 				ap_exc_t exn, ap_funid_t funid, const char* msg);
-  /* raise an exception and put fiels
-     man->result.flag_exact et man->result.flag_best to
+  /* raise an exception and put fields
+     man->result.flag_exact and man->result.flag_best to
      tbool_false
   */
 ap_exclog_t* ap_exc_cons(ap_exc_t exn,

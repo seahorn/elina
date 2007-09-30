@@ -96,14 +96,14 @@ ap_texpr1_t ap_tcons1_texpr1ref(ap_tcons1_t* cons);
   /* Get a reference to the underlying expression of the constraint.
      Do not free it: nothing is duplicated.
      Modifying the argument or the result is equivalent, except for
-     change of dimensions/environement. */
+     change of dimensions/environment. */
 
 static inline
 ap_tcons0_t* ap_tcons1_tcons0ref(ap_tcons1_t* cons);
   /* Return underlying constraint of level 0.
      Do not free it: nothing is duplicated.
      Modifying the argument or the result is equivalent, except for
-     change of dimensions/envionment. */
+     change of dimensions/environment. */
 
 /* ====================================================================== */
 /* I.3 Change of dimensions and permutations */

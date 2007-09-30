@@ -99,7 +99,7 @@ void ap_abstract1_fdump(FILE* stream, ap_manager_t* man, ap_abstract1_t* a);
 ap_membuf_t ap_abstract1_serialize_raw(ap_manager_t* man, ap_abstract1_t* a);
 /* Allocate a memory buffer (with malloc), output the abstract value in raw
    binary format to it and return a pointer on the memory buffer and the size
-   of bytes written.  It is the user responsability to free the memory
+   of bytes written.  It is the user responsibility to free the memory
    afterwards (with free). */
 
 ap_abstract1_t ap_abstract1_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size);
@@ -128,7 +128,7 @@ ap_abstract1_t ap_abstract1_of_box(ap_manager_t* man,
   /* Abstract an hypercube defined by the arrays tvar and tinterval,
      satisfying: forall i, tvar[i] in tinterval[i].
 
-     If no inclusion is specified for a variable in the environement, its value
+     If no inclusion is specified for a variable in the environment, its value
      is no constrained in the resulting abstract value.
   */
 
@@ -145,7 +145,7 @@ ap_abstract0_t* ap_abstract1_abstract0(ap_manager_t* man, ap_abstract1_t* a);
 /* ============================================================ */
 
 /* If any of the following functions returns tbool_top, this means that
-   an exception has occured, or that the exact computation was
+   an exception has occurred, or that the exact computation was
    considered too expensive to be performed (according to the options).
    The flag exact and best should be cleared in such a case. */
 
@@ -245,10 +245,10 @@ ap_abstract1_t ap_abstract1_add_ray_array(ap_manager_t* man,
   /* Generalized time elapse operator */
 
 /* ============================================================ */
-/* III.2 Assignement and Substitutions */
+/* III.2 Assignment and Substitutions */
 /* ============================================================ */
 
-/* Parallel Assignement and Substitution of several dimensions by
+/* Parallel Assignment and Substitution of several dimensions by
    expressions. */
 ap_abstract1_t 
 ap_abstract1_assign_linexpr_array(ap_manager_t* man,
@@ -281,7 +281,7 @@ ap_abstract1_t ap_abstract1_forget_array(ap_manager_t* man,
 					 bool project);
 
 /* ============================================================ */
-/* III.4 Change of environnement */
+/* III.4 Change of environment */
 /* ============================================================ */
 
 ap_abstract1_t 
@@ -380,7 +380,7 @@ ap_abstract1_t ap_abstract1_substitute_texpr(ap_manager_t* man,
 					     bool destructive, ap_abstract1_t* a,
 					     ap_var_t var, ap_texpr1_t* expr,
 					     ap_abstract1_t* dest);
-  /* Assignement and Substitution of a single
+  /* Assignment and Substitution of a single
      dimension by an expression */
 
 ap_abstract1_t ap_abstract1_unify(ap_manager_t* man,

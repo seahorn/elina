@@ -89,7 +89,7 @@ ap_generic_meet_intlinearize_tcons_array(ap_manager_t* man,
 								     ap_lincons0_array_t*));
 
 /* ============================================================ */
-/*  Assignemens/Substitutions */
+/*  Assignments/Substitutions */
 /* ============================================================ */
 
 void* ap_generic_asssub_linexpr_array(bool assign,
@@ -101,7 +101,7 @@ void* ap_generic_asssub_texpr_array(bool assign,
 				    bool destructive, void* abs, ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
 				    void* dest);
   /*
-    These functions implement generic parallel assignement/substitution
+    These functions implement generic parallel assignment/substitution
     operations by:
     1. introducing primed dimensions
     2. transforming linear expressions into equality constraints relating the
@@ -119,9 +119,9 @@ void* ap_generic_asssub_texpr_array(bool assign,
    abstract operations.
    
    Meaning of parameters:
-   - assign selects the operation: true means assignement, false substitution
+   - assign selects the operation: true means assignment, false substitution
    - The other parameters have the meaning they have for parallel
-     assignement/substitution
+     assignment/substitution
 */
 static inline
 void* ap_generic_assign_linexpr_array(ap_manager_t* man,
@@ -132,7 +132,7 @@ void* ap_generic_assign_texpr_array(ap_manager_t* man,
 				    bool destructive, void* abs, ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
 				    void* dest);
   /*
-     These functions implement generic parallel assignement operations by
+     These functions implement generic parallel assignment operations by
      relying on is_bottom, copy, dimension, add_dimensions, permute_dimensions,
      remove_dimensions, meet_lincons_array or meet_tcons_array abstract
      operations.
@@ -146,7 +146,7 @@ void* ap_generic_substitute_texpr_array(ap_manager_t* man,
 					bool destructive, void* abs, ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
 					void* dest);
   /*
-     These functions implement generic parallel assignement operations by
+     These functions implement generic parallel assignment operations by
      relying on is_bottom, copy, dimension, add_dimensions, permute_dimensions,
      remove_dimensions, meet_lincons_array or meet_tcons_array abstract
      operations.

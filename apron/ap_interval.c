@@ -44,7 +44,7 @@ void ap_interval_fprint(FILE* stream, ap_interval_t* a)
 }
 
 /* ====================================================================== */
-/* Assignements */
+/* Assignments */
 /* ====================================================================== */
 
 void ap_interval_set(ap_interval_t* interval, ap_interval_t* interval2)
@@ -95,7 +95,7 @@ void ap_interval_set_bottom(ap_interval_t* interval)
 }
 
 /* ====================================================================== */
-/* Combined allocation and assignements */
+/* Combined allocation and assignments */
 /* ====================================================================== */
 
 ap_interval_t* ap_interval_alloc_set(ap_interval_t* interval)

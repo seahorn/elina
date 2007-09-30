@@ -123,11 +123,11 @@ bool ap_texpr1_is_scalar(ap_texpr1_t* e);
 /* ====================================================================== */
 
 ap_texpr1_t* ap_texpr1_substitute(ap_texpr1_t* e, ap_var_t var, ap_texpr1_t *dst);
-  /* Substitute every occurence of variable var with a copy of dst.  
+  /* Substitute every occurrence of variable var with a copy of dst.  
      Return NULL in case of incorrect argument (w.r.t. var and/or environment
      compatibility). */
 bool ap_texpr1_substitute_with   (ap_texpr1_t* e, ap_var_t var, ap_texpr1_t *dst);
-  /* Substitute every occurence of variable var with a copy of dst.
+  /* Substitute every occurrence of variable var with a copy of dst.
      Return true in case of incorrect argument (w.r.t. var and/or environment
      compatibility) */
 

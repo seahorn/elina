@@ -214,11 +214,11 @@ ap_generic_meet_intlinearize_tcons_array(ap_manager_t* man,
 }
 
 /* ============================================================ */
-/*  Assignemens/Substitutions */
+/*  Assignments/Substitutions */
 /* ============================================================ */
 
 /*
-   This function implements generic parallel assignement/substitution
+   This function implements generic parallel assignment/substitution
    operations by:
    1. introducing primed dimensions
    2. transforming linear expressions into equality constraints relating the
@@ -236,9 +236,9 @@ ap_generic_meet_intlinearize_tcons_array(ap_manager_t* man,
    abstract operations.
 
    Meaning of parameters:
-   - assign selects the operation: true means assignement, false substitution
+   - assign selects the operation: true means assignment, false substitution
    - The other parameters have the meaning they have for parallel
-     assignement/substitution
+     assignment/substitution
 */
 
 void* ap_generic_asssub_linexpr_array(bool assign,
@@ -301,7 +301,7 @@ void* ap_generic_asssub_linexpr_array(bool assign,
   /* From now, work by side-effect on abs2 */
 
   /* 5. Build constraints system
-     An assignement x'_i := a_ij x_j + b_i becomes
+     An assignment x'_i := a_ij x_j + b_i becomes
      an equality constraint -x'_i + a_ij x_j + b_i = 0
      Primed and unprimed dimensiosn permuted if dest!=NULL
   */
@@ -424,7 +424,7 @@ void* ap_generic_asssub_texpr_array(bool assign,
   /* From now, work by side-effect on abs2 */
 
   /* 5. Build constraints system
-     An assignement x'_i := a_ij x_j + b_i becomes
+     An assignment x'_i := a_ij x_j + b_i becomes
      an equality constraint -x'_i + a_ij x_j + b_i = 0
   */
   array = ap_tcons0_array_make(size);

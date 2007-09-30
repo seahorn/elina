@@ -166,7 +166,7 @@ bool ap_texpr0_has_dim(ap_texpr0_t* a, ap_dim_t d);
    /* Returns true if dimension d appears in the expression */
 
 ap_dim_t* ap_texpr0_dimlist(ap_texpr0_t* a);
-  /* Returns an ordered, AP_DIM_MAX-terminated array of occuring dimensions;
+  /* Returns an ordered, AP_DIM_MAX-terminated array of occurring dimensions;
      caller should free() the array after use
    */
 
@@ -196,7 +196,7 @@ bool ap_texpr0_is_scalar(ap_texpr0_t* a);
 
 ap_texpr0_t* ap_texpr0_substitute(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst);
 void ap_texpr0_substitute_with   (ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst);
-  /* Substitue every occurence of dimension dim with a copy of dst  */
+  /* Substitute every occurrence of dimension dim with a copy of dst  */
 
 /* ====================================================================== */
 /* V. Change of dimensions and permutations */

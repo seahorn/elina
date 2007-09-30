@@ -108,13 +108,13 @@ ap_linexpr1_t ap_lincons1_linexpr1ref(ap_lincons1_t* cons);
   /* Get a reference to the underlying expression of the constraint.
      Do not free it: nothing is duplicated.
      Modifying the argument or the result is equivalent, except for
-     change of dimensions/environement. */
+     change of dimensions/environment. */
 
 /* Get the constant and assign it to coeff */
 static inline void ap_lincons1_get_cst(ap_coeff_t* coeff, ap_lincons1_t* cons);
 
 /* Get coefficient of variable var in the constraint and assign it to coeff.
-   Return true if var is unkown in the environment */
+   Return true if var is unknown in the environment */
 bool ap_lincons1_get_coeff(ap_coeff_t* coeff, ap_lincons1_t* cons, ap_var_t var);
 
 /* Set the constant of the linear constraint */
@@ -147,7 +147,7 @@ ap_lincons0_t* ap_lincons1_lincons0ref(ap_lincons1_t* cons);
   /* Return underlying constraint of level 0.
      Do not free it: nothing is duplicated.
      Modifying the argument or the result is equivalent, except for
-     change of dimensions/envionment. */
+     change of dimensions/environment. */
 
 /* ====================================================================== */
 /* I.3 Change of dimensions and permutations */

@@ -90,7 +90,7 @@ ap_environment_t* ap_environment_alloc(ap_var_t* name_of_intdim, size_t intdim,
 				       ap_var_t* name_of_realdim, size_t realdim);
   /* Build an environment from an array of integer and
      an array of real variables.
-     - Variables are duplicated in the result, so it is the responsability
+     - Variables are duplicated in the result, so it is the responsibility
        of the user to free the variables he provides.
      - If the result does not satisfy the invariant, return NULL.
   */
@@ -174,7 +174,7 @@ ap_environment_t* ap_environment_lce(ap_environment_t* env1,
      (a variable has different types in the 2 environments),
      return NULL
 
-   - Compute also in dimchange1 and dimchange2 the conversion transofrmations.
+   - Compute also in dimchange1 and dimchange2 the conversion transformations.
 
    - If no dimensions to add to env1, this implies that env is
      actually env1. In this case, *dimchange1==NULL. Otherwise, the

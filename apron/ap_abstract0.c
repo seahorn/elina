@@ -1114,7 +1114,7 @@ ap_abstract0_t* ap_abstract0_add_ray_array(ap_manager_t* man,
 }
 
 /* ============================================================ */
-/* III.2 Assignement and Substitutions */
+/* III.2 Assignment and Substitutions */
 /* ============================================================ */
 
 ap_abstract0_t* ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
@@ -1505,7 +1505,7 @@ ap_abstract0_t* ap_abstract0_of_tcons_array(ap_manager_t* man,
 }
 
 /*
-  These four functions implement assignement and substitution of a single
+  These four functions implement assignment and substitution of a single
   dimension by a single expression.
 */
 ap_abstract0_t* ap_abstract0_assign_linexpr(ap_manager_t* man,

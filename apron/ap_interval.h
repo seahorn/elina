@@ -45,17 +45,17 @@ void ap_interval_swap(ap_interval_t* a, ap_interval_t* b)
   /* Exchange */
 
 /* ====================================================================== */
-/* Assignements */
+/* Assignments */
 /* ====================================================================== */
 
 void ap_interval_set(ap_interval_t* interval, ap_interval_t* interval2);
-  /* Assignement */
+  /* Assignment */
 void ap_interval_set_scalar(ap_interval_t* interval, ap_scalar_t* inf, ap_scalar_t* sup);
 void ap_interval_set_mpq(ap_interval_t* interval, mpq_t inf, mpq_t sup);
 void ap_interval_set_int(ap_interval_t* interval, long int inf, long int sup);
 void ap_interval_set_frac(ap_interval_t* interval, long int numinf, unsigned long int deninf, long int numsup, unsigned long int densup);
 void ap_interval_set_double(ap_interval_t* interval, double inf, double sup);
-  /* Assignement from resp.
+  /* Assignment from resp.
      - two scalars
      - two rationals of type MPQ
      - two integers, giving [inf,dup]
@@ -63,18 +63,18 @@ void ap_interval_set_double(ap_interval_t* interval, double inf, double sup);
      - two double values
   */
 void ap_interval_set_top(ap_interval_t* interval);
-  /* Assignement to universe interval [-oo,oo],
+  /* Assignment to universe interval [-oo,oo],
      does not change the type of scalars */
 void ap_interval_set_bottom(ap_interval_t* interval);
-  /* Assignement to empty interval [1,-1],
+  /* Assignment to empty interval [1,-1],
      does not change the type of scalars */
 
 /* ====================================================================== */
-/* Combined allocation and assignements */
+/* Combined allocation and assignments */
 /* ====================================================================== */
 
 ap_interval_t* ap_interval_alloc_set(ap_interval_t* interval);
-  /* Assignement */
+  /* Assignment */
 
 /* ====================================================================== */
 /* Tests */

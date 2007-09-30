@@ -24,7 +24,7 @@ extern "C" {
 typedef unsigned int ap_dim_t;
 #define AP_DIM_MAX UINT_MAX
 /* Used for sparse representations (mean: to be ignored) and also as
-   a result when an error occured */
+   a result when an error occurred */
 
 /* Datatype for specifying the dimensionality of an abstract value */
 typedef struct ap_dimension_t {
