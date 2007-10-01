@@ -241,7 +241,10 @@ void box_fprintdiff(FILE* stream,
 	int sgn2 = bound_cmp(a->p[i]->sup, b->p[i]->sup);
 	
 	if (sgn1!=0 || sgn2!=0){
-	  fprintf(stream,"%8s in ",name_of_dim[i]);
+	  if (name_of_dim) 
+	    fprintf(stream,"%8s in ",name_of_dim[i]);
+	  else
+	    fprintf(stream,"x%ld in ", (long)i);
 	  itv_fprint(stream,a->p[i]);
 	  fprintf(stream," => ");
 	  str =
@@ -268,7 +271,10 @@ void box_fprintdiff(FILE* stream,
 	  fprintf(stream,"%s\n",str);
 	}
 	else {
-	  fprintf(stream,"%8s in [=,=]\n",name_of_dim[i]);
+	  if (name_of_dim)
+	    fprintf(stream,"%8s in [=,=]\n",name_of_dim[i]);
+	  else
+	    fprintf(stream,"x%ld in [=,=]\n",(long)i);
 	}
       }
       bound_clear(bound);
