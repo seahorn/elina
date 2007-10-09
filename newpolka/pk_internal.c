@@ -259,9 +259,10 @@ ap_manager_t* pk_manager_alloc(bool strict)
   funptr[AP_FUNID_WIDENING] = &pk_widening;
   funptr[AP_FUNID_CLOSURE] = &pk_closure;
 
-  for (i=0; i<AP_EXC_SIZE; i++){
-    ap_manager_set_abort_if_exception(man, i, false);
-  }
+  ap_manager_set_abort_if_exception(man, AP_EXC_TIMEOUT, false);
+  ap_manager_set_abort_if_exception(man, AP_EXC_OUT_OF_SPACE, false);
+  ap_manager_set_abort_if_exception(man, AP_EXC_OVERFLOW, false);
+  
   return man;
 }
 
