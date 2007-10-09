@@ -237,7 +237,7 @@ static inline
 bool ap_abstract0_check_dim(ap_funid_t funid, ap_manager_t* man,
 			    ap_dimension_t dimension, ap_dim_t dim)
 {
-  if (dim>dimension.intdim+dimension.realdim){
+  if (dim>=dimension.intdim+dimension.realdim){
     ap_abstract0_check_dim_raise(funid,man,dimension,dim,
 				 "incompatible dimension for the abstract value");
     return false;
@@ -254,7 +254,7 @@ bool ap_abstract0_check_dim_array(ap_funid_t funid, ap_manager_t* man,
   size_t i;
   for (i=0;i<size;i++){
     ap_dim_t dim = tdim[i];
-    if (dim>dimension.intdim+dimension.realdim){
+    if (dim>=dimension.intdim+dimension.realdim){
       char str[80];
       sprintf(str,"incompatible %luth dimension in the array for the abstract value",(unsigned long)i);
       ap_abstract0_check_dim_raise(funid,man,dimension,dim,str);
