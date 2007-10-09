@@ -16,6 +16,7 @@ apronppltop -I $APRON_INSTALL/lib
 #load "polkaGrid.cma";;
 
 #install_printer Apron.Linexpr1.print;;
+#install_printer Apron.Texpr1.print;;
 #install_printer Apron.Lincons1.print;;
 #install_printer Apron.Generator1.print;;
 #install_printer Apron.Abstract1.print;;
@@ -85,12 +86,7 @@ let ex1 (man:'a Manager.t) : 'a Abstract1.t =
   
   let abs = Abstract1.of_lincons_array man env tab in
   printf "abs=%a@." Abstract1.print abs;
-(*
-  let array = Abstract1.to_generator_array man abs in
-  printf "gen=%a@." generator1_array_print array;
-  let array = Abstract1.to_generator_array man abs in
-  printf "gen=%a@." generator1_array_print array;
-*)
+
   (* Extraction (we first extract values for existing constraints, then for
      dimensions) *)
   let box = Abstract1.to_box man abs in
@@ -125,6 +121,11 @@ let ex1 (man:'a Manager.t) : 'a Abstract1.t =
     var_u [|Var.of_string "u1"; Var.of_string "u2"|] 
   in
   printf "p2=expand(abs,u,[u1,u2]))=%a@." Abstract1.print p2; 
+
+  (* Tree expressions *)
+  let texpr = Parser.texpr1_of_string env "a + (x*y*y/sqrt(b))" in
+  let abs2 = Abstract1.assign_texpr man abs var_u texpr None in
+  printf "abs2=%a@." Abstract1.print abs2;  
   abs
 ;;
 

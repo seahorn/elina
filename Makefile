@@ -30,7 +30,7 @@ ifneq ($(HAS_OCAML),0)
 ifneq ($(HAS_PPL),0)
 all: $(REQUESTED) c ml aprontop apronrun apronppltop apronpplrun
 else
-all: $(REQUESTED) c ml aprontop apronrun 
+all: $(REQUESTED) c ml aprontop apronrun
 endif
 else
 all: c
@@ -51,7 +51,7 @@ ifneq ($(HAS_PPL),0)
 	(cd products; make)
 endif
 
-ml: $(MLREQUESTED) 
+ml: $(MLREQUESTED)
 	(cd mlgmpidl; make all)
 	(cd mlapronidl; make all)
 	(cd newpolka; make ml)
@@ -64,19 +64,19 @@ endif
 
 .PHONY: apronrun aprontop apronpplrun apronppltop
 
-apronrun: $(MLREQUESTED) 
+apronrun: $(MLREQUESTED)
 	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ $(OCAMLLDFLAGS)
 
-aprontop: $(MLREQUESTED) 
+aprontop: $(MLREQUESTED)
 	$(OCAMLMKTOP) $(OCAMLINC) -verbose -custom -o $@ $(OCAMLLDFLAGS)
 
-apronpplrun: $(MLREQUESTED) 
+apronpplrun: $(MLREQUESTED)
 	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ $(OCAMLLDFLAGS_PPL)
 
-apronppltop: $(MLREQUESTED) 
+apronppltop: $(MLREQUESTED)
 	$(OCAMLMKTOP) $(OCAMLINC) -verbose -custom -o $@ $(OCAMLLDFLAGS_PPL)
 
-rebuild: $(MLREQUESTED) 
+rebuild: $(MLREQUESTED)
 ifneq ($(HAS_OCAML),0)
 	(cd mlgmpidl; make rebuild)
 	(cd mlapronidl; make rebuild)
@@ -171,7 +171,7 @@ dist:
 	rm -rf $(PKGNAME)
 
 # these 2 targets are for main developpers only
-index.html: index.tex 
+index.html: index.tex
 	hyperlatex index.tex
 online: doc index.html
 	rm -fr online
