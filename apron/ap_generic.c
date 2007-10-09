@@ -287,13 +287,24 @@ void* ap_generic_asssub_linexpr_array(bool assign,
   /* 3. Build permutation (exchanging primed and unprimed dimensions) */
   ap_dimperm_init(&permutation,d.intdim+d.realdim+dsup.intdim+dsup.realdim);
   ap_dimperm_set_id(&permutation);
-  for (i=0; i<size; i++){
-    ap_dim_t dim = tdim[i];
-    ap_dim_t dimp = dim<d.intdim ? d.intdim+i : d.intdim+d.realdim+i;
-    permutation.dim[dim] = dimp;
-    permutation.dim[dimp] = dim;
+  {
+    int index_int = 0;
+    int index_real = 0;
+    for (i=0; i<size; i++){
+      ap_dim_t dim = tdim[i];
+      ap_dim_t dimp;
+      if (dim<d.intdim){
+	dimp = d.intdim+index_int;
+	index_int++;
+      } else {
+	dim += dsup.intdim;
+	dimp = d.intdim+dsup.intdim+d.realdim+index_real;
+	index_real++;
+      }
+      permutation.dim[dim] = dimp;
+      permutation.dim[dimp] = dim;
+    }
   }
-
   /* 4. Add primed dimensions to abstract value */
   abs2 = add_dimensions(man,destructive,abs,&dimchange,false);
   exact = man->result.flag_exact;
@@ -410,11 +421,23 @@ void* ap_generic_asssub_texpr_array(bool assign,
   /* 3. Build permutation (exchanging primed and unprimed dimensions) */
   ap_dimperm_init(&permutation,d.intdim+d.realdim+dsup.intdim+dsup.realdim);
   ap_dimperm_set_id(&permutation);
-  for (i=0; i<size; i++){
-    ap_dim_t dim = tdim[i];
-    ap_dim_t dimp = dim<d.intdim ? d.intdim+i : d.intdim+d.realdim+i;
-    permutation.dim[dim] = dimp;
-    permutation.dim[dimp] = dim;
+  {
+    int index_int = 0;
+    int index_real = 0;
+    for (i=0; i<size; i++){
+      ap_dim_t dim = tdim[i];
+      ap_dim_t dimp;
+      if (dim<d.intdim){
+	dimp = d.intdim+index_int;
+	index_int++;
+      } else {
+	dim += dsup.intdim;
+	dimp = d.intdim+dsup.intdim+d.realdim+index_real;
+	index_real++;
+      }
+      permutation.dim[dim] = dimp;
+      permutation.dim[dimp] = dim;
+    }
   }
 
   /* 4. Add primed dimensions to abstract value */
