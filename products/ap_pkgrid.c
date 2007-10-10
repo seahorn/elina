@@ -98,6 +98,7 @@ void ap_pkgrid_reduce(ap_manager_t* manager,
     case AP_CONS_EQMOD:
       interval = pk_bound_linexpr(manpoly,poly,cons.linexpr0);
       if (ap_scalar_infty(interval->inf) || ap_scalar_infty(interval->sup)){
+	ap_interval_free(interval);
 	continue;
       }
       assert(interval->inf->discr==AP_SCALAR_MPQ &&
@@ -141,10 +142,12 @@ void ap_pkgrid_reduce(ap_manager_t* manager,
 				      dimension.intdim,dimension.realdim);
 	    poly = pk_bottom(manpoly,
 			     dimension.intdim,dimension.realdim);
+	    ap_interval_free(interval);
 	    goto ap_pkgrid_reduce_exit;
 	  }
 	}
       }
+      ap_interval_free(interval);
       break;
     default:
       break;
@@ -188,7 +191,13 @@ ap_manager_t* ap_pkgrid_manager_alloc(bool strict)
       tmanagers[i]->option.abort_if_exception[exc] = false;
     }
   }
-  ap_manager_t* man = ap_reducedproduct_manager_alloc(tmanagers,2,
+  char* library =
+    strict ? 
+    "Reduced product of polka, strict mode, PPL::Grid" :
+    "Reduced product of polka, loose mode, PPL::Grid";
+
+  ap_manager_t* man = ap_reducedproduct_manager_alloc(library,
+						      tmanagers,2,
 						      &ap_pkgrid_reduce,
 						      ap_pkgrid_approximate);
   return man;

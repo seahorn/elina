@@ -39,8 +39,9 @@ typedef struct ap_reducedproduct_internal_t {
 
 ap_manager_t* ap_reducedproduct_manager_alloc
 (
- ap_manager_t** tab, /* Array of managers */
- size_t size,        /* size of array */
+ char* library, /* library name */
+ ap_manager_t** tab,  /* Array of managers */
+ size_t size,         /* size of array */
  void (*reduce)(ap_manager_t*, ap_reducedproduct_t*),            
    /* reduce function */
  void (*approximate)(ap_manager_t*, ap_reducedproduct_t*, int n) 

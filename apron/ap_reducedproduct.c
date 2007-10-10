@@ -1126,7 +1126,7 @@ ap_reducedproduct_t* ap_reducedproduct_closure(ap_manager_t* manager, bool destr
   for (i=0;i<intern->size;i++){
     ap_manager_t* man = intern->tmanagers[i];
     void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_CLOSURE];
-    res->p[i] = ptr(man,a->p[i]);
+    res->p[i] = ptr(man,destructive,a->p[i]);
   }
   res->reduced = false;
   collect_results1(manager,AP_FUNID_CLOSURE,res);
@@ -1148,7 +1148,6 @@ void ap_reducedproduct_internal_free(void* p)
     ap_manager_free(intern->tmanagers[i]);
     intern->tmanagers[i] = NULL;
   }
-  free(intern->library);
   free(intern->version);
   free(intern);
 }
@@ -1156,13 +1155,13 @@ void ap_reducedproduct_internal_free(void* p)
 
 ap_manager_t* ap_reducedproduct_manager_alloc
 (
+ char* library,
  ap_manager_t** tab,
  size_t size,
  void (*reduce)(ap_manager_t*, ap_reducedproduct_t*),            /* reduce function */
  void (*approximate)(ap_manager_t*, ap_reducedproduct_t*, int n) /* approximate function */
 )
 {
-  char* library;
   char* version;
   size_t i,index, length;
   ap_reducedproduct_internal_t* internal;
@@ -1176,14 +1175,6 @@ ap_manager_t* ap_reducedproduct_manager_alloc
 
 
   /* Creating libray name and version */
-  length = 100 + 2*size;
-  for (i=0;i<size;i++) length += strlen(tab[i]->library);
-  library = malloc(length*sizeof(char));
-  index = sprintf(library,"Reduced product of %s, %s",
-		  tab[0]->library,tab[1]->library);
-  for (i=2; i<size; i++){
-    index += sprintf(library+index,", %s",tab[i]->library);
-  }
   length = 100 + 2 * size;
   for (i=0;i<size;i++) length += strlen(tab[i]->version);
   version = malloc(length*sizeof(char));
@@ -1201,9 +1192,8 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   }
   internal->reduce = reduce;
   internal->approximate = approximate;
-  internal->library = strdup(library);
+  internal->library = library;
   internal->version = strdup(version);
-  free(library);
   free(version);
 
   /* allocating managers */
