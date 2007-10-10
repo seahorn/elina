@@ -143,7 +143,7 @@ bool ap_abstract1_checkman_array(ap_funid_t funid,
 {
   size_t i;
   for (i=0;i<size;i++){
-    if (man != tab[i].abstract0->man){
+    if (man->library != tab[i].abstract0->man->library){
       char str[160];
       snprintf(str,159,"\
 The %luth abstract value of the array is of type %s and not of the type %s expected by the manager\
@@ -998,10 +998,11 @@ ap_abstract1_t ap_abstract1_change_environment(ap_manager_t* man,
   if (dimchange2){
     ap_dimchange_add_invert(dimchange2);
     value = ap_abstract0_remove_dimensions(man,destructive || dimchange1,value,dimchange2);
-    free(dimchange2);
+    ap_dimchange_free(dimchange2);
   }
   if (dimchange1)
-    free(dimchange1);
+    ap_dimchange_free(dimchange1);
+  ap_environment_free(env);
   res = ap_abstract1_consres2(destructive, a,
 			      value, ap_environment_copy(nenv));
   return res;
@@ -1399,8 +1400,9 @@ in the two abstract values");
     a2->abstract0;
   ;
   value = ap_abstract0_meet(man,true,value1,value2);
-  res = ap_abstract1_consres2(destructive, a1,
-			      value, ap_environment_copy(env));
+  res = ap_abstract1_consres2(destructive, a1, value, env);
+  if (dimchange1) ap_dimchange_free(dimchange1);
+  if (dimchange2) ap_dimchange_free(dimchange1);
   return res;
 }
 
