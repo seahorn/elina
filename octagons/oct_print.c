@@ -85,20 +85,19 @@ void oct_fprintdiff(FILE* stream, ap_manager_t* man,
       for (j=0;j<=(i|1);j++,m1++,m2++) {
 	ap_lincons0_t l;
 	if (i==j || !bound_cmp(*m1,*m2)) continue;
-	if (bound_infty(*m1)) {
-	  fprintf(stream,"1: ");
-	  l = lincons_of_bound(pr,i,j,*m1);
-	  ap_lincons0_fprint(stream,&l,name_of_dim);
-	  ap_lincons0_clear(&l);
-	  fprintf(stream,"\n");
-	}
-	if (bound_infty(*m2)) {
-	  fprintf(stream,"2: ");
-	  l = lincons_of_bound(pr,i,j,*m2);
-	  ap_lincons0_fprint(stream,&l,name_of_dim);
-	  ap_lincons0_clear(&l);
-	  fprintf(stream,"\n");
-	}
+	
+	l = lincons_of_bound(pr,i,j,*m1);
+	ap_lincons0_fprint(stream,&l,name_of_dim);
+	ap_lincons0_clear(&l);
+
+	fprintf(stream," / ");
+
+	l = lincons_of_bound(pr,i,j,*m2);
+	ap_lincons0_fprint(stream,&l,name_of_dim);
+	ap_lincons0_clear(&l);
+
+	fprintf(stream, "\n");
+
 	n++;
       }
     if (!n) fprintf(stream,"octagon1 = octagon2\n");

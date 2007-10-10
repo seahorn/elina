@@ -270,19 +270,21 @@ oct_t* oct_expand(ap_manager_t* man,
     hmat_addrem_dimensions(mm,m,&pos,1,n,a->dim,true);
 
     for (i=0;i<n;i++) {
-      /* copy info from dim */
+
+      /* copy binary constraints */
+
       for (j=0;j<2*dim;j++) {
-	bound_set(mm[matpos2(2*(pos+i)  ,j)],m[matpos(2*dim  ,j)]);
-	bound_set(mm[matpos2(2*(pos+i)+1,j)],m[matpos(2*dim+1,j)]);
+	bound_set(mm[matpos2(2*(pos+i)  ,j)],mm[matpos(2*dim  ,j)]);
+	bound_set(mm[matpos2(2*(pos+i)+1,j)],mm[matpos(2*dim+1,j)]);
       }
-      for (j=2*dim+2;j<2*a->dim;j++) {
-	bound_set(mm[matpos2(2*(pos+i)  ,j)],m[matpos(j^1,2*dim+1)]);
-	bound_set(mm[matpos2(2*(pos+i)+1,j)],m[matpos(j^1,2*dim)]);
+      for (j=2*dim+2;j<2*(a->dim+n);j++) {
+	bound_set(mm[matpos2(2*(pos+i)  ,j)],mm[matpos(j^1,2*dim+1)]);
+	bound_set(mm[matpos2(2*(pos+i)+1,j)],mm[matpos(j^1,2*dim)]);
       }
 
-      /* unary constraint */
-      bound_set(mm[matpos2(2*(pos+i),2*(pos+i)+1)],m[matpos2(2*dim,2*dim+1)]);
-      bound_set(mm[matpos2(2*(pos+i)+1,2*(pos+i))],m[matpos2(2*dim+1,2*dim)]);
+      /* copy unary constraints */
+      bound_set(mm[matpos2(2*(pos+i),2*(pos+i)+1)],mm[matpos2(2*dim,2*dim+1)]);
+      bound_set(mm[matpos2(2*(pos+i)+1,2*(pos+i))],mm[matpos2(2*dim+1,2*dim)]);
     }
   }
   
@@ -306,17 +308,18 @@ oct_t* oct_fold(ap_manager_t* man,
   m = a->closed ? a->closed : a->m;
   if (!m) mm = NULL;
   else {
-    /* check, assuming tdim[1..(size-1)] is strictly increasing */
+    /* check, assuming tdim[0..(size-1)] is strictly increasing */
     size_t i,j;
     arg_assert(size>0,return NULL;);
     for (i=1;i<size;i++) {
-      arg_assert(tdim[i]<a->dim,return NULL;);
-      if (i) arg_assert(tdim[i-1]<tdim[i],return NULL;);
+      arg_assert(tdim[i-1]<tdim[i],return NULL;);
     }
+    arg_assert(tdim[size-1]<a->dim,return NULL;);
     
-    /* merge binary constraints */
     bound_set_array(pr->tmp,m,matsize(a->dim));
-    for (j=0;j<2*a->dim;j++) {
+
+    /* merge binary constraints */
+    for (j=0;j<2*tdim[0];j++) {
       bound_t* mm1 = pr->tmp+matpos2(tdim[0]*2  ,j);
       bound_t* mm2 = pr->tmp+matpos2(tdim[0]*2+1,j);
       for (i=1;i<size;i++) {
@@ -324,7 +327,15 @@ oct_t* oct_fold(ap_manager_t* man,
 	bound_max(*mm2,*mm2,m[matpos2(tdim[i]*2+1,j)]);
       }
     }
-  
+    for (j=2*(tdim[0]+1);j<2*a->dim;j++) {
+      bound_t* mm1 = pr->tmp+matpos2(tdim[0]*2  ,j);
+      bound_t* mm2 = pr->tmp+matpos2(tdim[0]*2+1,j);
+      for (i=1;i<size;i++) {
+	bound_max(*mm1,*mm1,m[matpos2(tdim[i]*2  ,j)]);
+	bound_max(*mm2,*mm2,m[matpos2(tdim[i]*2+1,j)]);
+      }
+    }
+
     /* merge unary constraints */
     {
       bound_t* mm1 = pr->tmp+matpos2(tdim[0]*2  ,tdim[0]*2+1);
@@ -337,8 +348,7 @@ oct_t* oct_fold(ap_manager_t* man,
 
     /* destroy all dimensions in tdim except the first one */
     mm = hmat_alloc_top(pr,a->dim-size+1);
-    hmat_addrem_dimensions(mm,pr->tmp,tdim+1,size-1,1,
-			   a->dim,false);
+    hmat_addrem_dimensions(mm,pr->tmp,tdim+1,size-1,1,a->dim,false);
 
     /* reset diagonal elements */
     bound_set_int(mm[matpos(tdim[0]*2  ,tdim[0]*2  )],0);
@@ -348,9 +358,9 @@ oct_t* oct_fold(ap_manager_t* man,
   }
 
   if (a->closed) {
-    /* result is optimal on Q, and closed */
+    /* result is optimal on Q, not closed */
     if (num_incomplete || a->intdim) flag_incomplete;
-    r = oct_set_mat(pr,a,NULL,mm,destructive);
+    r = oct_set_mat(pr,a,mm,NULL,destructive);
   }
   else {
     /* not exact, not closed */
@@ -358,6 +368,6 @@ oct_t* oct_fold(ap_manager_t* man,
     r = oct_set_mat(pr,a,mm,NULL,destructive);
   }
   r->dim -= size-1;
-  if (tdim[0]<a->intdim) a->intdim -= size-1;
+  if (tdim[0]<r->intdim) r->intdim -= size-1;
   return r;
 }
