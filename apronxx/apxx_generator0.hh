@@ -27,7 +27,7 @@ namespace apron {
 /* ================================= */
 
 
-/*! \brief ap_generator0_t wrapper.
+/*! \brief Level 0 generator (ap_generator0_t wrapper).
  *
  * A generator0 object represents a generator: vertex, ray, line, modular line, or modular ray.
  * It stores and manages a linexpr0 (linear expression with scalar coefficients only), 
@@ -43,7 +43,7 @@ protected:
   generator0(ap_generator0_t& l) : l(l) {}
 
   friend class abstract0;
- 
+
 public:
 
 
@@ -52,17 +52,18 @@ public:
 
   /*! \brief Creates a new generator from an empty linear expression.
    *
-   * The linear expression is created sparse and empty (has_linexpr0 returns true).
-   * \arg \c gentyp can be AP_GEN_LINE, AP_GEN_RAY, AP_GEN_VERTEX,  AP_GEN_LINEMOD,
-   * or AP_GEN_RAYMOD.
+   * The linear expression is created sparse and empty (has_linexpr returns true).
+   * \arg \c gentyp can be \c AP_GEN_LINE, \c AP_GEN_RAY, \c AP_GEN_VERTEX,  \c AP_GEN_LINEMOD,
+   * or \c AP_GEN_RAYMOD.
    */
   generator0(ap_gentyp_t gentyp=AP_GEN_RAY);
 
   /*! \brief Creates a new generator constraint from a linear expression (copied).
    *
-   * \arg \c gentyp can be AP_GEN_LINE, AP_GEN_RAY, AP_GEN_VERTEX,  AP_GEN_LINEMOD,
-   * or AP_GEN_RAYMOD.
-   * \arg \c lin should have only scalar (non-interval) coefficients.
+   * \arg \c gentyp can be \c AP_GEN_LINE, \c AP_GEN_RAY, \c AP_GEN_VERTEX,  \c AP_GEN_LINEMOD,
+   * or \c AP_GEN_RAYMOD.
+   *
+   * \warning \c lin should have only scalar (non-interval) coefficients (unchecked).
    */
   generator0(ap_gentyp_t gentyp, const linexpr0& lin);
 
@@ -117,21 +118,24 @@ public:
 
   /* size */
 
-  //! Returns the size of the underlying linear expression.
-  size_t get_size() const;
-
-
-  /* get */
- 
   /*! \brief Returns the size of the underlying linear expression.
    *
    * \throw std::invalid_argument if no valid linear expression has been defined.
+   */
+  size_t size() const;
+
+
+  /* get */
+  
+  /*! \brief Returns a (modifiable) reference to the constraint type.
+   *
+   * \return either \c AP_GEN_LINE, \c AP_GEN_RAY, \c AP_GEN_VERTEX, \c AP_GEN_LINEMOD, or \c AP_GEN_RAYMOD.
    */
   ap_gentyp_t& get_gentyp();
   
   /*! \brief Returns a reference to the constraint type.
    *
-   * \return either AP_GEN_LINE, AP_GEN_RAY, AP_GEN_VERTEX, AP_GEN_LINEMOD, or AP_GEN_RAYMOD.
+   * \return either \c AP_GEN_LINE, \c AP_GEN_RAY, \c AP_GEN_VERTEX, \c AP_GEN_LINEMOD, or \c AP_GEN_RAYMOD.
    */
   const ap_gentyp_t& get_gentyp() const;
   
@@ -140,32 +144,35 @@ public:
    * \note The only way the linear expression may be invalid is when accessing fields of uninitialised 
    * (or enlarged) generator0_array.
    */
-  bool has_linexpr0() const;
+  bool has_linexpr() const;
 
   /*! \brief Returns a (modifiable) reference to the underlying linear expression.
    *
    * \throw std::invalid_argument if no valid linear expression has been defined.
    */
-  linexpr0& get_linexpr0();
+  linexpr0& get_linexpr();
  
   /*! \brief Returns a reference to the underlying linear expression.
    *
    * \throw std::invalid_argument if no valid linear expression has been defined.
    */
-  const linexpr0& get_linexpr0() const;
+  const linexpr0& get_linexpr() const;
 
   /*! \brief Sets the underlying linear expression to c (copied).
    *
-   * Does not fail as get_linexpr0 can: if the generator was created without an underlying expression, 
+   * Does not fail as get_linexpr can: if the generator was created without an underlying expression, 
    * it is created.
+   * \warning \c c should have only scalar (non-interval) coefficients (unchecked).
    */
-  void set_linexpr0(const linexpr0& c);
+  void set_linexpr(const linexpr0& c);
 
 
   /* print */
   /* ===== */
 
   /*! \brief Printing.
+   *
+   * Variable naming can be configured through the varname stream modifier.
    *
    * \throw std::invalid_argument if the underlying expression is missing.
    */
@@ -197,9 +204,9 @@ public:
 /* ================================= */
 
 
-/*! \brief ap_generator0_array_t wrapper.
+/*! \brief Array of generators (ap_generator0_array_t wrapper).
  *
- * A generator0_array represents an array of generators.
+ * A generator0_array represents an array of generator(s).
  */
 class generator0_array : public use_malloc {
 
@@ -211,6 +218,7 @@ protected:
   generator0_array(ap_generator0_array_t& a) : a(a) {}
 
   friend class abstract0;
+  friend class generator1_array;
 
 public:
   
@@ -222,7 +230,7 @@ public:
 
   /*! \brief Creates a new array of the given size containing uninitialized generators.
    *
-   * has_linexpr0 will return false on all elements of the array.
+   * has_linexpr will return false on all elements of the array.
    */
   generator0_array(size_t size);
 
@@ -302,13 +310,13 @@ public:
   //@{
 
   //! Returns the size of the array.
-  size_t get_size() const;
+  size_t size() const;
  
   //! Returns a pointer to the start of the internal array holding the generators.
-  generator0* get_contents();
+  generator0* contents();
 
   //! Returns a pointer to the start of the internal array holding the generators.
-  const generator0* get_contents() const;
+  const generator0* contents() const;
 
   //! Returns a (modifiable) reference to an element, no bound checking.
   generator0& operator[](size_t i);
@@ -350,6 +358,8 @@ public:
   //@{
 
   /*! \brief Printing.
+   *
+   * Variable naming can be configured through the varname stream modifier.
    *
    * \throw std::invalid_argument an underlying expression is missing.
    */

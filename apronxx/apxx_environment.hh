@@ -28,21 +28,22 @@ namespace apron {
 /* environment                       */
 /* ================================= */
 
-/*! \brief ap_environment_t* wrapper.
+/*! \brief Level 1 environment (ap_environment_t wrapper).
  *
- * An environment represents a set of integer and real variable (var) and associates a dimension to each.
+ * An environment associates dimensions to integer and real variable names (var).
  * It stores a number intdim of integer dimensions, a number realdim of real dimensions, and
- * an array of size intdim+realdim variable indexed by dimension.
+ * an array of size intdim+realdim variable names indexed by dimensions.
  * Dimensions 0 to intdim-1 are associated to integer variables while dimensions intdim to intdim+realdim-1
  * are associated to real variables.
  * Variables in both slices [0;intdim-1] and [intdim;intdim+realdim-1] are always sorted in
  * strictly increasing order.
  * (Recall that variables have the following user-specified functions: copy, deallocation, comparison, conversion to string.)
- * This invariant is automatically enforced by the library by performing the appropriate permutation after
- * dimension addition, deletion, or renaming.
+ * This invariant is automatically enforced by the library by performing dimension permutations after
+ * variable name addition, deletion, or renaming. Thus, such an operation can change the dimension associated to existing
+ * variable names.
  *
- * Environments are reference-counted. 
- * Operations are pure (i.e., do not change *this).
+ * Environments are reference-counted and the API is fully functional (i.e., functions do not change *this but return
+ * a new object instead).
  */
 class environment : public use_malloc {
 
@@ -53,11 +54,21 @@ protected:
   //! Used internally only. Wraps the APRON object in an environment object (no copy, no change in reference counter).
   environment(ap_environment_t* x) : e(x) {}
 
+  friend class linexpr1;
+  friend class lincons1;
+  friend class lincons1_array;
+  friend class generator1;
+  friend class generator1_array;
+  friend class texpr1;
+  friend class tcons1;
+  friend class tcons1_array;
+  friend class abstract1;
+
 public:
 
 
-  /* constructor */
-  /* =========== */
+  /* constructors */
+  /* ============ */
 
 
   /** @name Constructors */
@@ -66,46 +77,20 @@ public:
   //! Creates a new empty environment.
   environment();
 
-  /*! \brief Creates a new environment with given integer and real variable (copied).
+  /*! \brief Creates a new environment with given integer and real variable names (copied).
    *
-   * \throw std::invalid_argument if variables are not distinct.
+   * \throw std::invalid_argument if variable names are not distinct.
    */
   environment(const std::vector<var>& intdim, const std::vector<var>& realdim);
 
-  //! Increments the reference counter.
+  /*! \brief Creates a new environment with given integer and real variable names (copied).
+   *
+   * \throw std::invalid_argument if variable names are not distinct.
+   */
+  environment(const var* intdim, size_t intdim_size, const var* realdim, size_t realdim_size);
+
+  //! Creates a copy (i.e., increments the reference counter).
   environment(const environment& x);
-
-  /*! \brief Creates a copy of the environment with some integer and/or real variables added.
-   *
-   * \throw std::invalid_argument if the resulting environment has duplicate variables.
-   */
-  environment(const environment& x, const std::vector<var>& intdim, const std::vector<var>& realdim);
-
-  /*! \brief Creates a copy of the environment with some variables removed.
-   *
-   * \throw std::invalid_argument if some variable does not exist.
-   */
-  environment(const environment& x, const std::vector<var>& dims);
-
-  /*! \brief Creates a copy of the environment with some variables substituted.
-   *
-   * dims[i].first is replaced with dims[i].second.
-   *
-   * \throw std::invalid_argument if some variable does not exist.
-   */
-  environment(const environment& x, const std::vector<std::pair<var,var> >& dims);
-
-  /*! \brief Creates the least common environment of two environments.
-   *
-   * \throw std::invalid_argument if some variable has different type in both environments
-   */
-  environment(const environment& x, const environment& y);
-
-  /*! \brief Creates the least common environment of an array of environments.
-   *
-   * \throw std::invalid_argument if some variable has different type in different environments
-   */
-  environment(const std::vector<environment>& x);
 
   //@}
 
@@ -125,7 +110,7 @@ public:
   /** @name Assignment */
   //@{
 
-  //! Copy (through reference counter manipulation).
+  //! Assignment (reference counter manipulation).
   const environment& operator=(const environment& x);
 
   //@}
@@ -137,74 +122,130 @@ public:
   /** @name Operations */
   //@{
 
-  /*! \brief Returns a new environment with some integer and/or real variables added.
+  /*! \brief Returns a copy of the environment with some integer and/or real variable names added.
    *
-   * \throw std::invalid_argument if the resulting environment has duplicate variables.
+   * \throw std::invalid_argument if the resulting environment has duplicate variable names.
    */
   environment add(const std::vector<var>& intdim, const std::vector<var>& realdim) const;
 
-  /*! \brief Returns a new environment with some integer and/or real variables added.
+  /*! \brief Returns a copy of the environment with intdim_size integer and realdim_size real variable names added.
    *
-   * Returns in perm the permutation that has been performed after adding dimensions at the end of
-   * the integer and real dimensions to get them contiguous and sorted.
+   * \throw std::invalid_argument if the resulting environment has duplicate variable names.
+   */
+  environment add(const var* intdim, size_t intdim_size, const var* realdim, size_t realdim_size) const;
+
+  /*! \brief Returns a copy of the environment with some integer and/or real variable names added.
    *
-   * \throw std::invalid_argument if the resulting environment has duplicate variables.
+   * Sets perm to the dimension permutation that has been performed after appending variable names at the end of
+   * integer (resp. real) dimensions to get them sorted again.
+   *
+   * \throw std::invalid_argument if the resulting environment has duplicate variable names.
    */
   environment add(const std::vector<var>& intdim, const std::vector<var>& realdim, dimperm& perm) const;
 
-  /*! \brief Returns a new environment with some variables removed.
+  /*! \brief Returns a copy of the environment with intdim_size integer and realdim_size real variable names added.
    *
-   * \throw std::invalid_argument if some variable does not exist.
+   * Sets perm to the dimension permutation that has been performed after appending variable names at the end of
+   * integer (resp. real) dimensions to get them sorted again.
+   *
+   * \throw std::invalid_argument if the resulting environment has duplicate variable names.
+   */
+  environment add(const var* intdim, size_t intdim_size, const var* realdim, size_t realdim_size, dimperm& perm) const;
+
+  /*! \brief Returns a copy of the environment with some variable names removed.
+   *
+   * \throw std::invalid_argument if some variable name does not exist.
    */
   environment remove(const std::vector<var>& dims) const;
 
-  /*! \brief Returns a new environment with some variables substituted.
+  /*! \brief Returns a copy of the environment with dims_size variable names removed.
+   *
+   * \throw std::invalid_argument if some variable name does not exist.
+   */
+  environment remove(const var* dims, size_t dims_size) const;
+
+  /*! \brief Returns a copy of the environment with some variable names substituted.
    *
    * dims[i].first is replaced with dims[i].second.
    *
-   * \throw std::invalid_argument if some variable does not exist.
+   * \throw std::invalid_argument if some variable name does not exist.
    */
   environment rename(const std::vector<std::pair<var,var> >& dims) const;
 
-  /*! \brief Returns a new environment with some variables substituted.
+  /*! \brief Returns a copy of the environment with dims_size variable names substituted.
+   *
+   * before[i] is replaced with after[i]. Both array should contain dims_size elements.
+   *
+   * \throw std::invalid_argument if some variable name does not exist.
+   */
+  environment rename(const var* before, const var* after, size_t dims_size) const;
+
+  /*! \brief Returns a copy of the environment with some variable names substituted.
    *
    * dims[i].first is replaced with dims[i].second.
-   * Returns in perm the permutation that has been performed after renaming the variables to get them 
-   * sorted.
+   * Sets perm to the dimension permutation that has been performed after renaming the variable names in-place to get them 
+   * sorted again.
    *
-   * \throw std::invalid_argument if some variable does not exist.
+   * \throw std::invalid_argument if some variable name does not exist.
    */
   environment rename(const std::vector<std::pair<var,var> >& dims, dimperm& perm) const;
 
+  /*! \brief Returns a copy of the environment with dims_size variable names substituted.
+   *
+   * before[i] is replaced with after[i]. Both array should contain dims_size elements.
+   * Sets perm to the dimension permutation that has been performed after renaming the variable names in-place to get them 
+   * sorted again.
+   *
+   * \throw std::invalid_argument if some variable name does not exist.
+   */
+  environment rename(const var* before, const var* after, size_t dims_size, dimperm& perm) const;
+
   /*! \brief Returns the least common environment of two environments.
    *
-   * \throw std::invalid_argument if some variable has different type in both environments
+   * \throw std::invalid_argument if some variable name has different type in both environments
    */
   friend environment lce(const environment& x, const environment& y);
 
   /*! \brief Returns the least common environment of two environments.
    *
-   * Returns in chgx (resp. chgy) the transformation that has been performed after adding the required variables
-   * to x (resp. y) to keep them sorted.
+   * Sets chgx (resp. chgy) to the dimension transformation that has been performed after appending the required 
+   * variable names to x (resp. y) to keep them sorted.
    *
-   * \throw std::invalid_argument if some variable has different type in both environments
+   * \throw std::invalid_argument if some variable name has different type in both environments
    */
   friend environment lce(const environment& x, const environment& y, dimchange& chgx, dimchange& chgy);
 
-  /*! \brief Returns the least common environment of an vector of environments.
+  /*! \brief Returns the least common environment of a vector of environments.
    *
-   * \throw std::invalid_argument if some variable has different type in different environments
+   * \throw std::invalid_argument if some variable name has different type in different environments
    */
   friend environment lce(const std::vector<environment>& x);
 
-  /*! \brief Returns the least common environment of an vector of environments.
+  /*! \brief Returns the least common environment of an array env of env_size environments.
    *
-   * Returns in chg[i] the transformation that has been performed after adding the required variables
+   * \throw std::invalid_argument if some variable name has different type in different environments
+   */
+  friend environment lce(const environment* env, size_t env_size);
+
+  /*! \brief Returns the least common environment of a vector of environments.
+   *
+   * Sets chg[i] to the dimension transformation that has been performed after appending the required variable names
    * to x[i] to keep them sorted.
+   * chg must have space for at least env_size elements.
    *
-   * \throw std::invalid_argument if some variable has different type in different environments
+   * \throw std::invalid_argument if some variable name has different type in different environments
    */
   friend environment lce(const std::vector<environment>& x, std::vector<dimchange>& chg);
+
+  /*! \brief Returns the least common environment of an array env of env_size environments.
+   *
+   * Sets chg[i] to the dimension transformation that has been performed after appending the required variable names
+   * to x[i] to keep them sorted.
+   * chg must have space for at least env_size elements.
+   *
+   * \throw std::invalid_argument if some variable name has different type in different environments
+   */
+  friend environment lce(const environment* env, dimchange* chg, size_t env_size);
 
   /*! \brief Returns the dimension change to transform an environment x into a super-environment y.
    *
@@ -227,31 +268,31 @@ public:
   //! Returns the number of real dimensions in the environment.
   size_t realdim() const;
 
-  //! Whether the environment contains a variable x.
+  //! Whether the environment contains the variable name x.
   bool contains(const var& x) const;
 
-  /*! \brief Returns the dimension associated with the variable.
+  /*! \brief Returns the dimension associated with the variable name.
    *
-   * \throw std::invalid_argument if there is no such variable in the environment.
+   * \throw std::invalid_argument if there is no such variable name in the environment.
    */
   ap_dim_t operator[] (const var& x) const;
 
-  //! \brief Returns the variable at a given dimension (no bound-check).
+  //! \brief Returns the variable name at a given dimension (no bound-check).
   const var& operator[] (ap_dim_t d) const;
 
-  /*! \brief Returns the dimension associated with a variable.
+  /*! \brief Returns the dimension associated with a variable name.
    *
-   * \throw std::invalid_argument if there is no such variable in the environment.
+   * \throw std::invalid_argument if there is no such variable name in the environment.
    */
   ap_dim_t get_dim(const var& x) const;
 
-  /*! \brief Returns the variable at a given dimension (bound-checked).
+  /*! \brief Returns the variable name at a given dimension (bound-checked).
    *
    * \throw std::out_of_range if the dimension is larger than the environment size.
    */
   const var& get_var(ap_dim_t d) const;
 
-  //! Returns (a copy of) the full map form dimensions to variables.
+  //! Returns (a copy of) the full map from dimensions to variable names.
   std::vector<var> get_vars() const;
 
 
@@ -279,7 +320,7 @@ public:
   /*! \brief Environment comparison.
    *
    * \return 
-   *  - -2 if some variable has different type in both environments
+   *  - -2 if some variable name has different type in both environments
    *  - -1 if x is a sub-environment of y
    *  -  0 if x equals y
    *  - +1 if x is a super-environment of y

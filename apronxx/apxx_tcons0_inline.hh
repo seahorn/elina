@@ -17,19 +17,22 @@
 /* tcons0                            */
 /* ================================= */
 
+inline tcons0::tcons0(ap_tcons0_t& l) : l(l) 
+{}
+
 inline tcons0::tcons0(ap_constyp_t constyp)
 {
   l = ap_tcons0_make(constyp, NULL, NULL);
 }
 
-inline tcons0::tcons0(ap_constyp_t constyp, const texpr0_node& t, const scalar& modulo)
+inline tcons0::tcons0(ap_constyp_t constyp, const texpr0::builder& t, const scalar& modulo)
 {
   ap_texpr0_t* lt = ap_texpr0_copy(const_cast<ap_texpr0_t*>(t.get_ap_texpr0_t()));
   ap_scalar_t* mmodulo = ap_scalar_alloc_set(const_cast<ap_scalar_t*>(modulo.get_ap_scalar_t()));
   l = ap_tcons0_make(constyp, lt, mmodulo);
 }
 
-inline tcons0::tcons0(ap_constyp_t constyp, const texpr0_node& t)
+inline tcons0::tcons0(ap_constyp_t constyp, const texpr0::builder& t)
 {
   ap_texpr0_t* lt = ap_texpr0_copy(const_cast<ap_texpr0_t*>(t.get_ap_texpr0_t()));
   l = ap_tcons0_make(constyp, lt, NULL);
@@ -47,7 +50,7 @@ inline tcons0::tcons0(unsat x)
 
 inline tcons0::tcons0(const tcons0& x, const dimchange& d, bool add)
 {
-  if (!x.l.texpr0) throw std::invalid_argument("tcons0::tcons0");
+  if (!x.l.texpr0) throw std::invalid_argument("apron::tcons0::tcons0(const tcons0&, const dimchange&, bool) empty expression");
   if (add)
     l = ap_tcons0_add_dimensions(const_cast<ap_tcons0_t*>(&x.l), 
 				 const_cast<ap_dimchange_t*>(d.get_ap_dimchange_t()));
@@ -58,9 +61,9 @@ inline tcons0::tcons0(const tcons0& x, const dimchange& d, bool add)
 
 inline tcons0::tcons0(const tcons0& x, const dimperm& d)
 { 
-  if (!x.l.texpr0) throw std::invalid_argument("tcons0::tcons0");
+  if (!x.l.texpr0) throw std::invalid_argument("apron::tcons0::tcons0(const tcons0&, const dimperm&) empty expression");
   l = ap_tcons0_permute_dimensions(const_cast<ap_tcons0_t*>(&x.l), 
-				     const_cast<ap_dimperm_t*>(d.get_ap_dimperm_t()));
+				   const_cast<ap_dimperm_t*>(d.get_ap_dimperm_t()));
 }
   
 inline tcons0::tcons0(const lincons0& x)
@@ -81,42 +84,42 @@ inline tcons0::~tcons0()
 /* 'Intelligent' constructors */
 /* ========================== */
 
-inline tcons0 operator>=(const texpr0_node& a, const texpr0_node& b)
+inline tcons0 operator>=(const texpr0::builder& a, const texpr0::builder& b)
 {
   if (b.is_zero())      return tcons0(AP_CONS_SUPEQ,a);
   else if (a.is_zero()) return tcons0(AP_CONS_SUPEQ,-b);
   else         	        return tcons0(AP_CONS_SUPEQ,a-b);
 }
 
-inline tcons0 operator<=(const texpr0_node& a, const texpr0_node& b)
+inline tcons0 operator<=(const texpr0::builder& a, const texpr0::builder& b)
 {
   if (b.is_zero())      return tcons0(AP_CONS_SUPEQ,-a);
   else if (a.is_zero()) return tcons0(AP_CONS_SUPEQ,b);
   else         	        return tcons0(AP_CONS_SUPEQ,b-a);
 }
 
-inline tcons0 operator> (const texpr0_node& a, const texpr0_node& b)
+inline tcons0 operator> (const texpr0::builder& a, const texpr0::builder& b)
 {
   if (b.is_zero())      return tcons0(AP_CONS_SUP,a);
   else if (a.is_zero()) return tcons0(AP_CONS_SUP,-b);
   else         	        return tcons0(AP_CONS_SUP,a-b);
 }
 
-inline tcons0 operator< (const texpr0_node& a, const texpr0_node& b)
+inline tcons0 operator< (const texpr0::builder& a, const texpr0::builder& b)
 {
   if (b.is_zero())      return tcons0(AP_CONS_SUP,-a);
   else if (a.is_zero()) return tcons0(AP_CONS_SUP,b);
   else         	        return tcons0(AP_CONS_SUP,b-a);
 }
 
-inline tcons0 operator==(const texpr0_node& a, const texpr0_node& b)
+inline tcons0 operator==(const texpr0::builder& a, const texpr0::builder& b)
 {
   if (b.is_zero())      return tcons0(AP_CONS_EQ,a);
   else if (a.is_zero()) return tcons0(AP_CONS_EQ,b);
   else         	        return tcons0(AP_CONS_EQ,a-b);
 }
 
-inline tcons0 operator!=(const texpr0_node& a, const texpr0_node& b)
+inline tcons0 operator!=(const texpr0::builder& a, const texpr0::builder& b)
 {
   if (b.is_zero())      return tcons0(AP_CONS_DISEQ,a);
   else if (a.is_zero()) return tcons0(AP_CONS_DISEQ,b);
@@ -156,19 +159,19 @@ inline tcons0& tcons0::operator= (const lincons0& x)
 
 inline void tcons0::add_dimensions(const dimchange& d)
 { 
-  if (!l.texpr0) throw std::invalid_argument("tcons0::add_dimensions");
+  if (!l.texpr0) throw std::invalid_argument("apron::tcons0::add_dimensions(const dimchange&) empty expression");
   ap_tcons0_add_dimensions_with(&l, const_cast<ap_dimchange_t*>(d.get_ap_dimchange_t()));
 }
 
 inline void tcons0::remove_dimensions(const dimchange& d)
 { 
-  if (!l.texpr0) throw std::invalid_argument("tcons0::remove_dimensions");
+  if (!l.texpr0) throw std::invalid_argument("apron::tcons0::remove_dimensions(const dimchange&) empty expression");
   ap_tcons0_remove_dimensions_with(&l, const_cast<ap_dimchange_t*>(d.get_ap_dimchange_t()));
 }
 
 inline void tcons0::permute_dimensions(const dimperm& d)
 { 
-  if (!l.texpr0) throw std::invalid_argument("tcons0::permute_dimensions");
+  if (!l.texpr0) throw std::invalid_argument("apron::tcons0::permute_dimensions(dimperm&) empty expression");
   ap_tcons0_permute_dimensions_with(&l, const_cast<ap_dimperm_t*>(d.get_ap_dimperm_t())); 
 }
 
@@ -193,20 +196,20 @@ inline bool tcons0::has_modulo() const
   return l.scalar!=NULL; 
 }
 
-inline bool tcons0::has_texpr0() const
+inline bool tcons0::has_texpr() const
 {
   return l.texpr0!=NULL; 
 }
 
 inline scalar& tcons0::get_modulo()
 { 
-  if (!l.scalar) throw std::invalid_argument("tcons0::get_modulo");
+  if (!l.scalar) throw std::invalid_argument("apron::tcons0::get_modulo() empty scalar");
   return reinterpret_cast<scalar&>(*l.scalar);
 }
  
 inline const scalar& tcons0::get_modulo() const
 { 
-  if (!l.scalar) throw std::invalid_argument("tcons0::get_modulo");
+  if (!l.scalar) throw std::invalid_argument("apron::tcons0::get_modulo() empty scalar");
   return reinterpret_cast<scalar&>(*l.scalar);
 }
 
@@ -216,22 +219,24 @@ inline void tcons0::set_modulo(const scalar& c)
   else ap_scalar_set(l.scalar, const_cast<ap_scalar_t*>(c.get_ap_scalar_t()));
 }
 
-inline texpr0& tcons0::get_texpr0()
+inline texpr0::const_iterator tcons0::get_texpr() const
 { 
-  if (!l.texpr0) throw std::invalid_argument("tcons0::get_texpr0");
-  return reinterpret_cast<texpr0&>(*l.texpr0); 
+  if (!l.texpr0) 
+    throw std::invalid_argument("apron::tcons0::get_texpr() empty expression");
+  return l.texpr0;
 }
  
-inline const texpr0& tcons0::get_texpr0() const
+inline texpr0::iterator tcons0::get_texpr()
 { 
-  if (!l.texpr0) throw std::invalid_argument("tcons0::get_texpr0");
-  return reinterpret_cast<texpr0&>(*l.texpr0); 
+  if (!l.texpr0) throw std::invalid_argument("apron::tcons0::get_texpr() empty expression");
+  return l.texpr0;
 }
-
-inline void tcons0::set_texpr0(const texpr0& c)
+ 
+inline void tcons0::set_texpr(const texpr0::builder& c)
 { 
+  ap_texpr0_t* cc = ap_texpr0_copy(const_cast<ap_texpr0_t*>(c.get_ap_texpr0_t()));
   if (l.texpr0) ap_texpr0_free(l.texpr0);
-  l.texpr0 = ap_texpr0_copy(const_cast<ap_texpr0_t*>(c.get_ap_texpr0_t()));
+  l.texpr0 = cc;
 }
 
 
@@ -240,14 +245,14 @@ inline void tcons0::set_texpr0(const texpr0& c)
 
 inline std::ostream& operator<< (std::ostream& os, const tcons0& s)
 {
-  os << s.get_texpr0();
+  os << s.get_texpr();
   switch (s.get_constyp()) {
   case AP_CONS_EQ:    return os << " = 0";
   case AP_CONS_SUPEQ: return os << " >= 0";
   case AP_CONS_SUP:   return os << " > 0";
   case AP_CONS_EQMOD: return os << " = 0 mod " << s.get_modulo();
   case AP_CONS_DISEQ: return os << " != 0";
-  default: throw std::invalid_argument("tcons0 operator<<");
+  default: throw std::invalid_argument("apron::operator<<(ostream&, const tcons0&) invalid constraint type");
   }
 }
 
@@ -352,7 +357,7 @@ inline tcons0_array::tcons0_array(const tcons0_array& x, const dimperm& d)
 }
 
 inline tcons0_array::tcons0_array(const lincons0_array& x)
-  : a(ap_tcons0_array_make(x.get_size()))
+  : a(ap_tcons0_array_make(x.size()))
 { 
   for (size_t i=0; i<a.size; i++) 
     a.p[i] = ap_tcons0_from_lincons0(const_cast<ap_lincons0_t*>(x[i].get_ap_lincons0_t()));
@@ -403,7 +408,7 @@ inline tcons0_array& tcons0_array::operator= (const std::vector<tcons0>& x)
 
 inline tcons0_array& tcons0_array::operator= (const lincons0_array& x)
 { 
-  size_t size = x.get_size();
+  size_t size = x.size();
   ap_tcons0_array_clear(&a);
   a = ap_tcons0_array_make(size);
   for (size_t i=0; i<size; i++) 
@@ -439,17 +444,17 @@ inline void tcons0_array::permute_dimensions(const dimperm& d)
 /* access */
 /* ====== */
 
-inline size_t tcons0_array::get_size() const
+inline size_t tcons0_array::size() const
 { 
   return a.size;
 }
  
-inline tcons0* tcons0_array::get_contents()
+inline tcons0* tcons0_array::contents()
 { 
   return reinterpret_cast<tcons0*>(a.p);
 }
 
-inline const tcons0* tcons0_array::get_contents() const
+inline const tcons0* tcons0_array::contents() const
 { 
   return reinterpret_cast<tcons0*>(a.p);
 }
@@ -466,13 +471,13 @@ inline const tcons0& tcons0_array::operator[](size_t i) const
 
 inline tcons0& tcons0_array::get(size_t i)
 { 
-  if (i >= a.size) throw std::out_of_range("tcons0_array::get");
+  if (i >= a.size) throw std::out_of_range("apron::tcons0_array::get()");
   return reinterpret_cast<tcons0&>(a.p[i]); 
 }
 
 inline const tcons0& tcons0_array::get(size_t i) const
 { 
-  if (i >= a.size) throw std::out_of_range("tcons0_array::get");
+  if (i >= a.size) throw std::out_of_range("apron::tcons0_array::get()");
   return reinterpret_cast<tcons0&>(a.p[i]); 
 }
 
@@ -482,9 +487,9 @@ inline const tcons0& tcons0_array::get(size_t i) const
 
 inline tcons0_array::operator std::vector<tcons0>() const
 {
-  size_t size = get_size();
-  std::vector<tcons0> v = std::vector<tcons0>(size);
-  for (size_t i=0;i<size;i++)
+  size_t sz = size();
+  std::vector<tcons0> v = std::vector<tcons0>(sz);
+  for (size_t i=0;i<sz;i++)
     v[i] = (*this)[i];
   return v;
 }
@@ -495,7 +500,7 @@ inline tcons0_array::operator std::vector<tcons0>() const
 
 inline std::ostream& operator<< (std::ostream& os, const tcons0_array& s)
 {
-  size_t size = s.get_size();
+  size_t size = s.size();
   os << "{ ";
   for (size_t i=0;i<size;i++)
     os << s[i] << "; ";

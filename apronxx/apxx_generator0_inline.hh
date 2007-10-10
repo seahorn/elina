@@ -41,14 +41,14 @@ inline generator0::generator0(const generator0& x)
 
 inline generator0::generator0(const generator0& x, const dimchange& d)
 {
-  if (!x.l.linexpr0) throw std::invalid_argument("generator0::generator0");
+  if (!x.l.linexpr0) throw std::invalid_argument("apron::generator0::generator0(const generator0&, cont dimchange&) empty expression");
   l = ap_generator0_add_dimensions(const_cast<ap_generator0_t*>(&x.l), 
 				   const_cast<ap_dimchange_t*>(d.get_ap_dimchange_t()));
 }
   
 inline generator0::generator0(const generator0& x, const dimperm& d)
 { 
-  if (!x.l.linexpr0) throw std::invalid_argument("generator0::generator0");
+  if (!x.l.linexpr0) throw std::invalid_argument("apron::generator0::generator0(const generator0&, cont dimperm&) empty expression");
   l = ap_generator0_permute_dimensions(const_cast<ap_generator0_t*>(&x.l), 
 				       const_cast<ap_dimperm_t*>(d.get_ap_dimperm_t()));
 }
@@ -82,19 +82,19 @@ inline generator0& generator0::operator= (const generator0& x)
 
 inline void generator0::resize(size_t size)
 { 
-  if (!l.linexpr0) throw std::invalid_argument("generator0::resize");
+  if (!l.linexpr0) throw std::invalid_argument("apron::generator0::resize(size_t) empty expression");
   ap_linexpr0_realloc(l.linexpr0, size);
 }
 
 inline void generator0::add_dimensions(const dimchange& d)
 {
-  if (!l.linexpr0) throw std::invalid_argument("generator0::add_dimensions");
+  if (!l.linexpr0) throw std::invalid_argument("apron::generator0::add_dimensions(const dimchange&) empty expression");
   ap_generator0_add_dimensions_with(&l, const_cast<ap_dimchange_t*>(d.get_ap_dimchange_t()));
 }
 
 inline void generator0::permute_dimensions(const dimperm& d)
 { 
-  if (!l.linexpr0) throw std::invalid_argument("generator0::permute_dimensions");
+  if (!l.linexpr0) throw std::invalid_argument("apron::generator0::permute_dimensions(const dimperm&) empty expression");
   ap_generator0_permute_dimensions_with(&l, const_cast<ap_dimperm_t*>(d.get_ap_dimperm_t())); 
 }
 
@@ -104,9 +104,9 @@ inline void generator0::permute_dimensions(const dimperm& d)
 
 /* size */
 
-inline size_t generator0::get_size() const
+inline size_t generator0::size() const
 { 
-  if (!l.linexpr0) throw std::invalid_argument("generator0::get_size");
+  if (!l.linexpr0) throw std::invalid_argument("apron::generator0::size() empty expression");
   return ap_linexpr0_size(const_cast<ap_linexpr0_t*>(l.linexpr0)); 
 }
 
@@ -123,24 +123,24 @@ inline const ap_gentyp_t& generator0::get_gentyp() const
   return l.gentyp; 
 }
   
-inline bool generator0::has_linexpr0() const
+inline bool generator0::has_linexpr() const
 { 
   return l.linexpr0!=NULL; 
 }
 
-inline linexpr0& generator0::get_linexpr0()
+inline linexpr0& generator0::get_linexpr()
 { 
-  if (!l.linexpr0) throw std::invalid_argument("generator0::get_linexpr0");
+  if (!l.linexpr0) throw std::invalid_argument("apron::generator0::get_linexpr() empty expression");
   return reinterpret_cast<linexpr0&>(*l.linexpr0); 
 }
  
-inline const linexpr0& generator0::get_linexpr0() const
+inline const linexpr0& generator0::get_linexpr() const
 { 
-  if (!l.linexpr0) throw std::invalid_argument("generator0::get_linexpr0");
+  if (!l.linexpr0) throw std::invalid_argument("apron::generator0::get_linexpr() empty expression");
   return reinterpret_cast<linexpr0&>(*l.linexpr0); 
 }
 
-inline void generator0::set_linexpr0(const linexpr0& c)
+inline void generator0::set_linexpr(const linexpr0& c)
 { 
   if (l.linexpr0) ap_linexpr0_free(l.linexpr0);
   l.linexpr0 = ap_linexpr0_copy(const_cast<ap_linexpr0_t*>(c.get_ap_linexpr0_t()));
@@ -152,16 +152,17 @@ inline void generator0::set_linexpr0(const linexpr0& c)
 
 inline std::ostream& operator<< (std::ostream& os, const generator0& s)
 {
-  if (!s.l.linexpr0) throw std::invalid_argument("generator0 operator<<");
+  if (!s.has_linexpr())
+      throw std::invalid_argument("apron::operator<<(ostream&, const generator0&) empty expression");
   switch (s.get_gentyp()) {
-  case AP_GEN_LINE:     os << "LINE:    "; break;
-  case AP_GEN_RAY:      os << "RAY:     "; break;
-  case AP_GEN_VERTEX:   os << "VERTEX:  "; break;
+  case AP_GEN_LINE:     os << "LINE: "; break;
+  case AP_GEN_RAY:      os << "RAY: "; break;
+  case AP_GEN_VERTEX:   os << "VERTEX: "; break;
   case AP_GEN_LINEMOD:  os << "LINEMOD: "; break;
-  case AP_GEN_RAYMOD:   os << "RAYMOD:  "; break;
-  default: throw std::invalid_argument("generator0 operator<<");
+  case AP_GEN_RAYMOD:   os << "RAYMOD: "; break;
+  default: throw std::invalid_argument("apron::operator<<(ostream&, const generator0&) invalid generator type");
   }
-  return os << s.get_linexpr0();
+  return os << s.get_linexpr();
 }
 
 
@@ -298,17 +299,17 @@ inline void generator0_array::permute_dimensions(const dimperm& d)
 /* access */
 /* ====== */
 
-inline size_t generator0_array::get_size() const
+inline size_t generator0_array::size() const
 { 
   return a.size;
 }
  
-inline generator0* generator0_array::get_contents()
+inline generator0* generator0_array::contents()
 { 
   return reinterpret_cast<generator0*>(a.p); 
 }
 
-inline const generator0* generator0_array::get_contents() const
+inline const generator0* generator0_array::contents() const
 { 
   return reinterpret_cast<generator0*>(a.p); 
 }
@@ -325,13 +326,13 @@ inline const generator0& generator0_array::operator[](size_t i) const
 
 inline generator0& generator0_array::get(size_t i)
 { 
-  if (i >= a.size) throw std::out_of_range("generator0_array::get");
+  if (i >= a.size) throw std::out_of_range("apron::generator0_array::get(size_t)");
   return reinterpret_cast<generator0&>(a.p[i]);
 }
 
 inline const generator0& generator0_array::get(size_t i) const
 { 
-  if (i >= a.size) throw std::out_of_range("generator0_array::get");
+  if (i >= a.size) throw std::out_of_range("apron::generator0_array::get(size_t)");
   return reinterpret_cast<generator0&>(a.p[i]); 
 }
 
@@ -341,9 +342,9 @@ inline const generator0& generator0_array::get(size_t i) const
 
 inline generator0_array::operator std::vector<generator0>() const
 {
-  size_t size = get_size();
-  std::vector<generator0> v = std::vector<generator0>(size);
-  for (size_t i=0;i<size;i++)
+  size_t sz = size();
+  std::vector<generator0> v = std::vector<generator0>(sz);
+  for (size_t i=0;i<sz;i++)
     v[i] = (*this)[i];
   return v;
 }
@@ -354,7 +355,7 @@ inline generator0_array::operator std::vector<generator0>() const
 
 inline std::ostream& operator<< (std::ostream& os, const generator0_array& s)
 {
-  size_t size = s.get_size();
+  size_t size = s.size();
   os << "{ ";
   for (size_t i=0;i<size;i++)
     os << s[i] << "; ";

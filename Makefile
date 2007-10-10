@@ -49,6 +49,7 @@ c:
 ifneq ($(HAS_PPL),0)
 	(cd ppl; make)
 	(cd products; make)
+	(cd apronxx; make)
 endif
 
 ml: $(MLREQUESTED)
@@ -109,6 +110,7 @@ ifneq ($(HAS_PPL),0)
 	$(INSTALL) apronppltop $(APRON_PREFIX)/bin
 endif
 endif
+	(cd apronxx; make install)
 
 clean:
 	(cd num; make clean)
@@ -121,6 +123,7 @@ clean:
 	(cd octagons; make clean)
 	(cd ppl; make clean)
 	(cd products; make clean)
+	(cd apronxx; make clean)
 	(cd examples; make clean)
 	(cd test; make clean)
 	rm -fr online tmp apronrun aprontop apronpplrun apronppltop
@@ -133,6 +136,7 @@ mostlyclean: clean
 	(cd newpolka; make mostlyclean)
 	(cd ppl; make mostlyclean)
 	(cd products; make mostlyclean)
+	(cd apronxx; make mostlyclean)
 
 distclean:
 	(cd num; make distclean)
@@ -146,6 +150,7 @@ distclean:
 	(cd examples; make distclean)
 	(cd ppl; make distclean)
 	(cd products; make distclean)
+	(cd apronxx; make distclean)
 	(cd $(APRON_PREFIX)/bin; rm -f apronrun aprontop apronpplrun apronppltop)
 
 doc:
@@ -154,12 +159,13 @@ ifneq ($(HAS_OCAML),0)
 	(cd mlgmpidl; make html mlgmpidl.pdf)
 	(cd mlapronidl; make html mlapronidl.pdf)
 endif
+	(cd apronxx; make doc)
 
 # make distribution, update to reflect current version
 
 PKGNAME  = apron-0.9.7
 PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model Changes
-PKGDIRS  = apron num itv octagons box newpolka ppl products mlgmpidl mlapronidl examples test
+PKGDIRS  = apron num itv octagons box newpolka ppl products mlgmpidl mlapronidl examples test apronxx
 
 dist:
 	$(MAKE) all

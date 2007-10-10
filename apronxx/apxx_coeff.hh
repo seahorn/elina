@@ -26,7 +26,7 @@ namespace apron {
 /* ================================= */
 
 
-/*! \brief ap_coeff_t wrapper.
+/*! \brief Coefficient (ap_coeff_t wrapper).
  *
  * A coeff is either a scalar or an interval.
  */
@@ -209,7 +209,7 @@ public:
 
   /*! \brief Whether the coeff is a scalar or an interval.
    *
-   * \return Either AP_COEFF_SCALAR or AP_COEFF_INTERVAL.
+   * \return Either \c AP_COEFF_SCALAR or \c AP_COEFF_INTERVAL.
    */
   ap_coeff_discr_t get_discr() const;
 

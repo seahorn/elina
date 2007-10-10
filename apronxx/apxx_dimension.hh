@@ -20,11 +20,75 @@ namespace apron {
 
 
 /* ================================= */
+/* varname                           */
+/* ================================= */
+
+/*! \brief Stream modifier to set variable names to dimensions.
+ *
+ * By default, all level 0 std::ostream printing functions output \c x0 to 
+ * \c xn to refer to dimensions 0 to n.
+ * By inserting this modifier into a stream, you can customize the variable
+ * name.
+ *
+ * The information is local to the stream.
+ *
+ * The modifier is not used for level 1 printing functions as an environment
+ * mapping dimensions to variable names is already available.
+ * Also, the modifier does not affect the behavior of print functions
+ * that take the mapping as an (optional) argument.
+ */
+class varname {
+
+protected:
+
+  //! Index to stream-local data, allocated with xalloc.
+  static const int xindex;
+
+  //! Names of variables.
+  const std::vector<std::string>& names;
+
+public:
+
+  /*! \brief Creates a modifier to associate variable names to dimensions.
+   *
+   * \arg \c names[i] is the name to give to dimension i.
+   *
+   * If there are not enough names, printing functions will revert to
+   * xi, xi+1... To disable variable names, simply pass an empty vector.
+   *
+   * A reference to \c names is kept by the object and will be passed to the
+   * stream by the modifier. The stream will then make a deep copy and the
+   * varname object and the original vector can be safely deleted.
+   * 
+   */
+  varname(const std::vector<std::string>& names);
+
+  //! Associates the modifier to the stream.
+  template<class charT, class Traits>
+  friend
+  std::basic_ostream<charT,Traits>& 
+  operator<<(std::basic_ostream<charT,Traits>& os, const varname& v);
+
+  /*! \brief Gets the variable name vector associated to the stream
+   *
+   * \return a pointer to the vector formerly associated to the
+   * stream, or NULL.
+   */
+  template<class charT, class Traits>
+  friend
+  std::vector<std::string>* get_varname(std::basic_ostream<charT,Traits>& os);
+
+};
+
+
+
+
+/* ================================= */
 /* dimchange                         */
 /* ================================= */
 
 
-/*! \brief ap_dimchange_t wrapper.
+/*! \brief Dimension change object (ap_dimchange_t wrapper).
  *
  * dimchange objects are used to insert or remove dimensions at arbitrary positions in expressions, 
  * constraints, and domains.
@@ -150,7 +214,10 @@ public:
   /** @name Printing */
   //@{
 
-  //! Printing.
+  /*! \brief Printing.
+   *
+   * Variable naming can be configured through the varname stream modifier.
+   */
   friend std::ostream& operator<< (std::ostream& os, const dimchange& s); 
 
   //! Prints to a C stream.  
@@ -213,7 +280,7 @@ struct id {
 /* ================================= */
 
 
-/*! \brief ap_dimperm_t wrapper.
+/*! \brief Dimension permutation object (ap_dimperm_t wrapper).
  *
  * dimperm objects can be used to permute dimensions in expressions, constraints, and domains.
  * They hold a map i->p[i]: [0,size-1]=>[0,size-1] using an array p of dimensions.
@@ -235,7 +302,7 @@ public:
   //@{
 
   //! Makes an uninitialized dimperm  of the given size.
-  dimperm(size_t size);
+  dimperm(size_t size=0);
 
   /*! \brief Makes a dimperm initialized with the array d.
    *
@@ -304,7 +371,7 @@ public:
   //@{
 
   //! Returns the size of the permutation.
-  size_t get_size() const;
+  size_t size() const;
 
   /*! \brief Returns a (modifiable) reference to the image of dim.
    *
@@ -339,7 +406,10 @@ public:
   /** @name Printing */
   //@{
 
-  //! Printing.
+  /*! \brief Printing.
+   *
+   * Variable naming can be configured through the varname stream modifier.
+   */
   friend std::ostream& operator<< (std::ostream& os, const dimperm& s); 
 
   //! Prints to a C stream.  

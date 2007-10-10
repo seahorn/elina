@@ -92,7 +92,7 @@ inline linexpr0::linexpr0(size_t size, const coeff coeffs[], const coeff& cst, a
 {
   apxx_linexpr0_init(&l, discr, size);
   for (size_t i=0;i<size;i++) (*this)[i] = coeffs[i];
-  this->get_cst() = cst;
+  get_cst() = cst;
 }
   
 inline linexpr0::linexpr0(const std::vector<coeff>& coeffs, const coeff& cst, ap_linexpr_discr_t discr)
@@ -100,14 +100,14 @@ inline linexpr0::linexpr0(const std::vector<coeff>& coeffs, const coeff& cst, ap
   size_t size = coeffs.size();
   apxx_linexpr0_init(&l, discr, size);
   for (size_t i=0;i<size;i++) (*this)[i] = coeffs[i];
-  this->get_cst() = cst;
+  get_cst() = cst;
 }
 
 inline linexpr0::linexpr0(size_t size, const coeff coeffs[], const ap_dim_t dims[], const coeff& cst)
 {
   apxx_linexpr0_init(&l, AP_LINEXPR_SPARSE, size);
   for (size_t i=0;i<size;i++) (*this)[dims[i]] = coeffs[i];
-  this->get_cst() = cst;
+  get_cst() = cst;
 }
 
 
@@ -158,7 +158,7 @@ inline void linexpr0::permute_dimensions(const dimperm& d)
 
 /* size */
 
-inline size_t linexpr0::get_size() const
+inline size_t linexpr0::size() const
 { 
   return ap_linexpr0_size(const_cast<ap_linexpr0_t*>(&l)); 
 }
@@ -181,28 +181,18 @@ inline const coeff& linexpr0::get_cst() const
 { 
   return reinterpret_cast<coeff&>(*ap_linexpr0_cstref(const_cast<ap_linexpr0_t*>(&l))); 
 }
-
-
-inline coeff& linexpr0::get_coeff(ap_dim_t dim)
+  
+inline coeff& linexpr0::operator[](ap_dim_t dim)
 { 
   ap_coeff_t* x = ap_linexpr0_coeffref(&l, dim);
-  if (!x) throw std::out_of_range("linexpr0::get_coeff");
-  return reinterpret_cast<coeff&>(*x); 
-}
-  
-inline coeff& linexpr0::operator[](int dim)
-{ 
-  ap_coeff_t* x = dim < 0 ? ap_linexpr0_cstref(&l) : ap_linexpr0_coeffref(&l, dim);
-  if (!x) throw std::out_of_range("linexpr0::[]");
+  if (!x) throw std::out_of_range("apron::linexpr0::operator[](ap_dim_t)");
   return reinterpret_cast<coeff&>(*x); 
 }
 
-inline const coeff& linexpr0::operator[](int dim) const
+inline const coeff& linexpr0::operator[](ap_dim_t dim) const
 { 
-  const ap_coeff_t* x = dim < 0 ? 
-    ap_linexpr0_cstref(const_cast<ap_linexpr0_t*>(&l)) : 
-    ap_linexpr0_coeffref(const_cast<ap_linexpr0_t*>(&l), dim);
-  if (!x) throw std::out_of_range("linexpr0::[]");
+  const ap_coeff_t* x = ap_linexpr0_coeffref(const_cast<ap_linexpr0_t*>(&l), dim);
+  if (!x) throw std::out_of_range("apron::linexpr0::operator[](ap_dim)t");
   return reinterpret_cast<const coeff&>(*x);
 }
   
@@ -210,12 +200,23 @@ inline const coeff& linexpr0::operator[](int dim) const
 /* print */
 /* ===== */
 
-static inline bool print_coeff_sign(std::ostream& os, const coeff& c, bool& first)
+static inline bool print_coeff_sign(std::ostream& os, const coeff& c, bool& first, bool cst)
 {
   if (c.is_zero()) return false;
-  if (first) os << c;
+  if (c.get_discr()==AP_COEFF_SCALAR) {
+    if (c.get_scalar()==1) {
+      if (!first) os << " + ";
+      if (cst) os << "1";
+    }
+    else if (c.get_scalar().sgn()<0) {
+      if (first) os << "- " << -c;
+      else       os << " - " << -c;
+    }
+    else if (first) os << c;
+    else os << " + " << c;
+  }
   else {
-    if (c.get_discr()==AP_COEFF_SCALAR && c.get_scalar().sgn()<0) os << " - " << -c;
+    if (first) os << c;
     else os << " + " << c;
   }
   first = false;
@@ -224,12 +225,24 @@ static inline bool print_coeff_sign(std::ostream& os, const coeff& c, bool& firs
 
 inline std::ostream& operator<<(std::ostream& os, const linexpr0& s)
 {
+  std::vector<std::string>* names = get_varname(os);
   bool first = true;
-  for (linexpr0::iterator i=const_cast<linexpr0&>(s).begin();!i.end();i++) {
-    if (print_coeff_sign(os, i.get_coeff(), first))
-      os << "x" << i.get_dim();
+  if (names) {
+    size_t sz = (*names).size();
+    for (linexpr0::const_iterator i=s.begin();i.valid();++i) {
+      if (print_coeff_sign(os, i.get_coeff(), first, false)) {
+	if (i.get_dim()<sz) os << (*names)[i.get_dim()];
+	else os << "x" << i.get_dim();
+      }
+    }
   }
-  print_coeff_sign(os, s.get_cst(), first);
+  else {
+    for (linexpr0::const_iterator i=s.begin();i.valid();++i) {
+      if (print_coeff_sign(os, i.get_coeff(), first, false))
+	os << "x" << i.get_dim();
+    }
+  }
+  print_coeff_sign(os, s.get_cst(), first, true);
   if (first) os << "0";
   return os;
 }
@@ -251,6 +264,11 @@ inline bool linexpr0::is_integer(size_t intdim) const
 inline bool linexpr0::is_real(size_t intdim) const
 { 
   return ap_linexpr0_is_real(const_cast<ap_linexpr0_t*>(&l), intdim); 
+}
+
+inline ap_linexpr_type_t linexpr0::get_type() const
+{ 
+  return ap_linexpr0_type(const_cast<ap_linexpr0_t*>(&l));
 }
 
 inline bool linexpr0::is_linear() const
@@ -314,48 +332,105 @@ inline bool operator!= (const linexpr0& x, const linexpr0& y)
 
 #endif
 
+
 /* iterators */
 /* ========= */
 
-inline void linexpr0::iterator::skip_AP_DIM_MAX()
+inline void linexpr0::const_iterator::skip_AP_DIM_MAX()
 { 
   if (l->discr == AP_LINEXPR_DENSE) return;
   while (pos < l->size && l->p.linterm[pos].dim == AP_DIM_MAX) pos++;
 }
 
-inline linexpr0::iterator::iterator(ap_linexpr0_t* l) : l(l), pos(0) 
-{ 
+inline linexpr0::const_iterator::const_iterator(ap_linexpr0_t* e)
+  : l(e), pos(0)
+{
   skip_AP_DIM_MAX(); 
 }
-    
-inline ap_dim_t linexpr0::iterator::get_dim() const
+
+inline linexpr0::const_iterator::const_iterator(const linexpr0& e)
 {
-  if (pos >= l->size) throw std::out_of_range("linexpr0::iterator::get_dim");
+  l = const_cast<ap_linexpr0_t*>(e.get_ap_linexpr0_t());
+  pos = 0;
+  skip_AP_DIM_MAX(); 
+}
+
+inline linexpr0::const_iterator::const_iterator(const const_iterator& i)
+  : l(i.l), pos(i.pos)
+{}
+
+
+inline linexpr0::iterator::iterator(ap_linexpr0_t* e)
+  : linexpr0::const_iterator(e)
+{}
+
+inline linexpr0::iterator::iterator(linexpr0& e)
+  : linexpr0::const_iterator(e.get_ap_linexpr0_t())
+{}
+
+inline linexpr0::iterator::iterator(const iterator& i) 
+  : linexpr0::const_iterator(i.l)
+{}
+
+inline linexpr0::const_iterator& linexpr0::const_iterator::operator=(const const_iterator& i)
+{
+  l = i.l;
+  pos = i.pos;
+  return *this;
+}
+
+inline linexpr0::iterator& linexpr0::iterator::operator=(const iterator& i)
+{
+  l = i.l;
+  pos = i.pos;
+  return *this;
+}
+
+inline ap_dim_t linexpr0::const_iterator::get_dim() const
+{
+  if (pos >= l->size) throw std::out_of_range("apron::linexpr0::const_iterator::get_dim()");
   if (l->discr == AP_LINEXPR_DENSE) return pos;
   else return l->p.linterm[pos].dim;
 }
 
-inline coeff& linexpr0::iterator::get_coeff() const
+inline const coeff& linexpr0::const_iterator::get_coeff() const
 {
-  if (pos >= l->size) throw std::out_of_range("linexpr0::iterator::get_gcoeff");
+  if (pos >= l->size) throw std::out_of_range("apron::linexpr0::const_iterator::get_coeff()");
   if (l->discr == AP_LINEXPR_DENSE) return reinterpret_cast<coeff&>(l->p.coeff[pos]);
   else return reinterpret_cast<coeff&>(l->p.linterm[pos].coeff);
 }
 
-inline void linexpr0::iterator::operator++ (int)
+inline coeff& linexpr0::iterator::get_coeff() const
+{
+  if (pos >= l->size) throw std::out_of_range("apron::linexpr0::iterator::get_coeff()");
+  if (l->discr == AP_LINEXPR_DENSE) return reinterpret_cast<coeff&>(l->p.coeff[pos]);
+  else return reinterpret_cast<coeff&>(l->p.linterm[pos].coeff);
+}
+
+inline void linexpr0::const_iterator::next()
 {
   pos++; 
   skip_AP_DIM_MAX(); 
 }
 
-inline bool linexpr0::iterator::end() const
+inline void linexpr0::const_iterator::operator++()
+{
+  next();
+}
+
+inline bool linexpr0::const_iterator::valid() const
 { 
-  return pos >= l->size;
+  return pos < l->size;
 }
 
 inline linexpr0::iterator linexpr0::begin()
 {
-  return iterator(&l); 
+  return iterator(*this); 
+}
+  
+inline linexpr0::const_iterator linexpr0::begin() const
+{
+  return const_iterator(*this); 
 }
   
 

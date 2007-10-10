@@ -338,7 +338,7 @@ inline ap_interval_t* interval::get_ap_interval_t()
 
 
 inline interval_array::interval_array(size_t size, ap_interval_t** c) 
-  : size(size), c(c)
+  : sz(size), c(c)
 {}
 
   
@@ -346,21 +346,28 @@ inline interval_array::interval_array(size_t size, ap_interval_t** c)
 /* ============ */
 
 inline interval_array::interval_array(size_t size) 
-  : size(size), c(ap_interval_array_alloc(size))
+  : sz(size), c(ap_interval_array_alloc(size))
 {}
 
 inline interval_array::interval_array(const interval_array &x)
-  : size(x.size), c(ap_interval_array_alloc(x.size))
+  : sz(x.sz), c(ap_interval_array_alloc(x.sz))
 {
-  for (size_t i=0;i<size;i++)
+  for (size_t i=0;i<sz;i++)
     ap_interval_set(c[i], x.c[i]);
 }
 
 inline interval_array::interval_array(const std::vector<interval>& x)
-  : size(x.size()), c(ap_interval_array_alloc(size))
+  : sz(x.size()), c(ap_interval_array_alloc(x.size()))
+{
+  for (size_t i=0;i<sz;i++)
+    ap_interval_set(c[i], const_cast<ap_interval_t*>(x[i].get_ap_interval_t()));
+}
+
+inline interval_array::interval_array(size_t size, const interval x[])
+  : sz(size), c(ap_interval_array_alloc(size))
 {
   for (size_t i=0;i<size;i++)
-    ap_interval_set(c[i], const_cast<ap_interval_t*>(x[i].get_ap_interval_t()));
+    ap_interval_set(c[i], const_cast<ap_interval_t*>(x[i].get_ap_interval_t()));  
 }
 
 
@@ -370,7 +377,7 @@ inline interval_array::interval_array(const std::vector<interval>& x)
 
 inline interval_array::~interval_array()
 { 
-  ap_interval_array_free(c, size); 
+  ap_interval_array_free(c, sz); 
 }
 
 
@@ -380,12 +387,12 @@ inline interval_array::~interval_array()
 inline interval_array& interval_array::operator= (const interval_array &x)
 {
   if (&x!=this) {
-    if (size != x.size) {
-      ap_interval_array_free(c, size);
-      size = x.size;
-      c = ap_interval_array_alloc(size);
+    if (sz != x.sz) {
+      ap_interval_array_free(c, sz);
+      sz = x.sz;
+      c = ap_interval_array_alloc(sz);
     }
-    for (size_t i=0;i<size;i++)
+    for (size_t i=0;i<sz;i++)
       ap_interval_set(c[i], x.c[i]);
   }
   return *this;
@@ -393,12 +400,19 @@ inline interval_array& interval_array::operator= (const interval_array &x)
 
 inline interval_array& interval_array::operator= (const std::vector<interval>& x)
 {
-  if (size != x.size()) {
-    ap_interval_array_free(c, size);
-    size = x.size();
-    c = ap_interval_array_alloc(size);
+  if (sz != x.size()) {
+    ap_interval_array_free(c, sz);
+    sz = x.size();
+    c = ap_interval_array_alloc(sz);
   }
-  for (size_t i=0;i<size;i++)
+  for (size_t i=0;i<sz;i++)
+    ap_interval_set(c[i], const_cast<ap_interval_t*>(x[i].get_ap_interval_t()));
+  return *this;
+}
+
+inline interval_array& interval_array::operator= (const interval x[])
+{
+  for (size_t i=0;i<sz;i++)
     ap_interval_set(c[i], const_cast<ap_interval_t*>(x[i].get_ap_interval_t()));
   return *this;
 }
@@ -409,8 +423,8 @@ inline interval_array& interval_array::operator= (const std::vector<interval>& x
 
 inline interval_array::operator std::vector<interval>() const
 {
-  std::vector<interval> v = std::vector<interval>(size);
-  for (size_t i=0;i<size;i++)
+  std::vector<interval> v = std::vector<interval>(sz);
+  for (size_t i=0;i<sz;i++)
     ap_interval_set(v[i].get_ap_interval_t(), c[i]);
   return v;
 }
@@ -422,7 +436,7 @@ inline interval_array::operator std::vector<interval>() const
 inline std::ostream& operator<< (std::ostream& os, const interval_array& s)
 {
   os << "{ ";
-  for (size_t i=0;i<s.size;i++)
+  for (size_t i=0;i<s.sz;i++)
     os << s.get(i) << " ";
   return os << "}";
 }
@@ -430,7 +444,7 @@ inline std::ostream& operator<< (std::ostream& os, const interval_array& s)
 inline void interval_array::print(FILE* stream) const 
 { 
   fprintf(stream, "{ " );
-  for (size_t i=0;i<size;i++) {
+  for (size_t i=0;i<sz;i++) {
     ap_interval_fprint(stream, const_cast<ap_interval_t*>(c[i])); 
     fprintf(stream, " ");
   }
@@ -441,21 +455,21 @@ inline void interval_array::print(FILE* stream) const
 /* access */
 /* ====== */
 
-inline size_t interval_array::get_size() const
-{ return size; }
+inline size_t interval_array::size() const
+{ return sz; }
  
-inline interval** interval_array::get_contents()
+inline interval** interval_array::contents()
 { return reinterpret_cast<interval**>(c); }
 
 inline interval& interval_array::get(size_t i)
 { 
-  if (i >= size) throw std::out_of_range("interval_array::get");
+  if (i >= sz) throw std::out_of_range("apron::interval_array::get(size_t)");
   return reinterpret_cast<interval&>(*c[i]); 
 }
 
 inline const interval& interval_array::get(size_t i) const
 { 
-  if (i >= size) throw std::out_of_range("interval_array::get");
+  if (i >= sz) throw std::out_of_range("apron::interval_array::get(size_t)");
   return reinterpret_cast<interval&>(*c[i]); 
 }
 

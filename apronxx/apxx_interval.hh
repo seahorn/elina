@@ -37,7 +37,7 @@ struct bottom {
 /* ================================= */
 
 
-/*! \brief ap_interval_t wrapper.
+/*! \brief Interval (ap_interval_t wrapper).
  *
  * An interval is represented using two scalar bounds (of double or MPQ type).
  */
@@ -53,6 +53,7 @@ protected:
   interval(ap_interval_t* i);
 
   friend class abstract0;
+  friend class abstract1;
   friend class linexpr0;
   friend class texpr0;
 
@@ -287,20 +288,20 @@ public:
 /* ================================= */
 
 
-/*! \brief ap_interval_t* array wrapper.
+/*! \brief array of interval(s).
  */
 class interval_array : public use_malloc {
 
 protected:
 
-  size_t size;         //!< Array size.
+  size_t sz;           //!< Array size.
   ap_interval_t** c;   //!< Array of pointers to intervals.
 
   //! Internal use only. Reference an array created with ap_interval_array_alloc.
   interval_array(size_t size, ap_interval_t** c);
 
   friend class abstract0;
-
+  friend class abstract1;
 
 public:
   
@@ -321,6 +322,9 @@ public:
 
   //! Makes a interval array from an interval vector (copying all elements).
   interval_array(const std::vector<interval>& x);
+
+  //! Makes a interval array from an interval array of give size (copying all elements).
+  interval_array(size_t size, const interval x[]);
 
   //@}
 
@@ -354,6 +358,13 @@ public:
    * All elements are copied and the array size is updated if necessary.
    */
   interval_array& operator= (const std::vector<interval>& x);
+
+ /*! \brief Copies an interval array into *this.
+   *
+   * The size of the interval_array is not changed.
+   * \c x should have enough elements to fill the interval_array.
+   */
+  interval_array& operator= (const interval x[]);
 
   //@}
 
@@ -392,10 +403,10 @@ public:
   //@{
 
   //! Returns the array size.
-  size_t get_size() const;
+  size_t size() const;
 
   //! Returns a pointer to the start of the array of elements used internally.
-  interval** get_contents();
+  interval** contents();
 
   //! Returns a (modifiable) reference to an element, no bound checking.
   interval& operator[](size_t i);

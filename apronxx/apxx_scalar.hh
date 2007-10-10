@@ -77,7 +77,7 @@ struct use_malloc {
 /* ================================= */
 
 
-/*! \brief ap_scalar_t wrapper.
+/*! \brief Scalar (ap_scalar_t wrapper).
  *
  * A scalar object represents a (possibly +oo or -oo) number, using either a double
  * or a MPQ (multi-precision fraction).
@@ -183,7 +183,7 @@ public:
 
   /*! \brief  Whether the object wraps a double or a MPQ.
    *
-   * \return Either AP_SCALAR_DOUBLE or AP_SCALAR_MPQ.
+   * \return Either \c AP_SCALAR_DOUBLE or \c AP_SCALAR_MPQ.
    */
   ap_scalar_discr_t get_discr() const;
     

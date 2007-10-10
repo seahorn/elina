@@ -12,6 +12,38 @@
    Please read the COPYING file packaged in the distribution.
 */
 
+
+
+/* ================================= */
+/* varname                           */
+/* ================================= */
+
+inline varname::varname(const std::vector<std::string>& names)
+  : names(names)
+{}
+
+template<class charT, class Traits>
+inline
+std::basic_ostream<charT,Traits>& 
+operator<<(std::basic_ostream<charT,Traits>& os, const varname& v)
+{
+  std::vector<std::string>*& vv = 
+    (std::vector<std::string>*&)os.pword(varname::xindex);
+  if (vv) delete vv;
+  if (v.names.size()) vv = new std::vector<std::string>(v.names);
+  else vv = NULL;
+  return os;
+}
+
+template<class charT, class Traits>
+inline
+std::vector<std::string>* get_varname(std::basic_ostream<charT,Traits>& os)
+{
+  return (std::vector<std::string>*)os.pword(varname::xindex);
+}
+
+  
+
 /* ================================= */
 /* dimchange                         */
 /* ================================= */
@@ -41,7 +73,7 @@ inline dimchange::dimchange(const dimchange& x, bool inv)
 inline dimchange::dimchange(size_t intdim, size_t realdim, const std::vector<ap_dim_t>& d)
 {
   if (d.size()<intdim+realdim)
-    throw std::invalid_argument("dimchange::dimchange");
+    throw std::invalid_argument("apron::dimchange::dimchange(size_t, size_t, const vector<ap_dim_t>&) vector too short");
   ap_dimchange_init(&c, intdim, realdim);
   for (size_t i=0; i<intdim+realdim; i++)
     c.dim[i] = d[i];
@@ -79,7 +111,7 @@ inline dimchange& dimchange::operator= (const ap_dim_t d[])
 inline dimchange& dimchange::operator= (const std::vector<ap_dim_t>& d)
 {
   if (d.size()<c.intdim+c.realdim)
-    throw std::invalid_argument("dimchange::operator=");
+    throw std::invalid_argument("apron::dimchange::operator=(const vector<ap_dim_t>&) vector too short");
   for (size_t i=0; i<c.intdim+c.realdim; i++)
     c.dim[i] = d[i];
   return *this;
@@ -100,13 +132,13 @@ inline size_t dimchange::get_realdim() const
 
 inline ap_dim_t& dimchange::get(size_t dim)
 {
-  if (dim >= c.intdim + c.realdim) throw std::out_of_range("dimchange::get");
+  if (dim >= c.intdim + c.realdim) throw std::out_of_range("apron::dimchange::get(size_t)");
   return c.dim[dim];
 }
   
 inline const ap_dim_t& dimchange::get(size_t dim) const
 {
-  if (dim >= c.intdim + c.realdim) throw std::out_of_range("dimchange::get");
+  if (dim >= c.intdim + c.realdim) throw std::out_of_range("apron::dimchange::get(size_t)");
   return c.dim[dim];
 }
   
@@ -126,9 +158,18 @@ inline const ap_dim_t& dimchange::operator[](size_t dim) const
   
 inline std::ostream& operator<< (std::ostream& os, const dimchange& s)
 {
+  std::vector<std::string>* names = get_varname(os);
   os << "dimchange: intdim=" << s.c.intdim << ", realdim=" << s.c.realdim << std::endl;
-  for (size_t i=0;i<s.c.intdim+s.c.realdim;i++)
-    os << s.c.dim[i] << " ";
+  if (names) {
+    size_t sz = (*names).size();
+    for (size_t i=0;i<s.c.intdim+s.c.realdim;i++)
+      if (s.c.dim[i] < sz) os << (*names)[s.c.dim[i]] << " ";
+      else os << "x" << s.c.dim[i] << " ";
+  }
+  else {
+    for (size_t i=0;i<s.c.intdim+s.c.realdim;i++)
+      os << "x" << s.c.dim[i] << " ";
+  }
   return os << std::endl;
 }
 
@@ -268,7 +309,7 @@ inline dimperm& dimperm::operator= (const std::vector<ap_dim_t>& d)
 /* access */
 /* ====== */
 
-inline size_t dimperm::get_size() const
+inline size_t dimperm::size() const
 {
   return c.size; 
 }
@@ -285,13 +326,13 @@ inline const ap_dim_t& dimperm::operator[](size_t dim) const
   
 inline ap_dim_t& dimperm::get(size_t dim)
 {
-  if (dim >= c.size) throw std::out_of_range("dimperm::get");
+  if (dim >= c.size) throw std::out_of_range("apron::dimperm::get(size_t)");
   return c.dim[dim];
 }
   
 inline const ap_dim_t& dimperm::get(size_t dim) const
 {
-  if (dim >= c.size) throw std::out_of_range("dimperm::get");
+  if (dim >= c.size) throw std::out_of_range("apron::dimperm::get(size_t)");
   return c.dim[dim];
 }
   
@@ -301,9 +342,23 @@ inline const ap_dim_t& dimperm::get(size_t dim) const
   
 inline std::ostream& operator<< (std::ostream& os, const dimperm& s)
 {
+  std::vector<std::string>* names = get_varname(os);
   os << "dimperm: size=" << s.c.size << std::endl;
-  for (size_t i=0;i<s.c.size;i++)
-    os << i << " -> " << s.c.dim[i] << std::endl;
+  if (names) {
+    size_t sz = (*names).size();
+    for (size_t i=0;i<s.c.size;i++) {
+      if (i<sz) os << (*names)[i];
+      else os << "x" << i;
+      os << " -> ";
+      if (s.c.dim[i]<sz) os << (*names)[s.c.dim[i]];
+      else os << "x" << s.c.dim[i];
+      os << std::endl;
+    }
+  }
+  else {
+    for (size_t i=0;i<s.c.size;i++)
+      os << "x" << i << " -> " << "x" << s.c.dim[i] << std::endl;
+  }
   return os;
 }
 
@@ -321,7 +376,7 @@ inline void dimperm::print(FILE* stream) const
 inline dimperm& dimperm::operator*= (const dimperm& y)
 { 
   if (c.size!=y.c.size)
-    throw std::invalid_argument("incompatible sizes in dimperm::operator*=");
+    throw std::invalid_argument("apron::dimperm::operator*= (const dimperm&) size mismatch");
   if (&y==this) {
     dimperm tmp = y;
     ap_dimperm_compose(&c, &c, const_cast<ap_dimperm_t*>(&tmp.c));
@@ -334,7 +389,7 @@ inline dimperm& dimperm::operator*= (const dimperm& y)
 inline dimperm operator* (const dimperm& x, const dimperm& y)
 { 
   if (x.c.size!=y.c.size)
-    throw std::invalid_argument("incompatible sizes in dimperm operator*");
+    throw std::invalid_argument("apron::dimperm::operator* (const dimperm&, const dimperm&) size mismatch");
   dimperm r = x.c.size;
   ap_dimperm_compose(&r.c, const_cast<ap_dimperm_t*>(&x.c), const_cast<ap_dimperm_t*>(&y.c)); 
   return r;

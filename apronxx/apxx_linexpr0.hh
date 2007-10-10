@@ -22,16 +22,17 @@
 namespace apron {
 
 
+
 /* ================================= */
 /* linexpr0                          */
 /* ================================= */
 
 
-/*! \brief ap_linexpr0_t wrapper.
+/*! \brief Level 0 linear expression (ap_linexpr0_t wrapper).
  *
- * A linexpr0 object represents a linear expression with scalar or interval coefficients.
+ * A linexpr0 object represents a linear expression with scalar or interval coefficients (coeff).
  * They have a constant coefficient, plus a coefficient for each represented dimension.
- * An expression can be either sparse (AP_LINEXPR_SPARSE) or dense (AP_LINEXPR_DENSE).
+ * An expression can be either sparse (\c AP_LINEXPR_SPARSE) or dense (\c AP_LINEXPR_DENSE).
  * Dense expressions use an array of coefficients to represent dimensions from 0 up to the 
  * expression size.
  * Sparse expressions can have 'holes' between coefficients and grow automatically when 
@@ -60,7 +61,7 @@ public:
 
   /*! \brief Creates a new expression.
    *
-   * \arg \c discr whether the expression is sparse (AP_LINEXPR_SPARSE) or dense (AP_LINEXPR_DENSE).
+   * \arg \c discr whether the expression is sparse (\c AP_LINEXPR_SPARSE) or dense (\c AP_LINEXPR_DENSE).
    * \arg \c size is the initial number of dimensions.
    */
   linexpr0(ap_linexpr_discr_t discr=AP_LINEXPR_SPARSE, size_t size=0);
@@ -76,7 +77,7 @@ public:
 
   /*! \brief Makes a new linear expression with the given size and coefficients (copied).
    *
-   * \arg \c discr whether the expression is sparse (AP_LINEXPR_SPARSE) or dense (AP_LINEXPR_DENSE).
+   * \arg \c discr whether the expression is sparse (\c AP_LINEXPR_SPARSE) or dense (\c AP_LINEXPR_DENSE).
    * \arg \c coeffs has size size, coeffs[i] corresponds to the coefficient for dimension i.
    * \arg \c cst corresponds to the constant coefficient.
    */
@@ -84,7 +85,7 @@ public:
 
   /*! \brief Makes a new linear expression with the given coefficients (copied).
    *
-   * \arg \c discr whether the expression is sparse (AP_LINEXPR_SPARSE) or dense (AP_LINEXPR_DENSE).
+   * \arg \c discr whether the expression is sparse (\c AP_LINEXPR_SPARSE) or dense (\c AP_LINEXPR_DENSE).
    * \arg \c coeffs vector of coefficients, coeffs[i] corresponds to the coefficient for dimension i.
    * \arg \c cst corresponds to the constant coefficient.
    */
@@ -153,7 +154,7 @@ public:
   /* size */
 
   //! Returns the number of coefficients in the expression.
-  size_t get_size() const;
+  size_t size() const;
 
 
   /* get */
@@ -179,26 +180,10 @@ public:
    * \warning as a side-effect, the method renders previous references to coefficients within the
    * same expression invalid. For instance, \code l.get_coeff(0) = l.get_coeff(1) = 0; \endcode is invalid.
    */
-  coeff& get_coeff(ap_dim_t dim);
-  
-  //! Special dimension used to access the constant coefficient in [] (not get_coeff!).
-  static const int dim_cst = -1;
-  
-  /*! \brief Similar to \c get_coeff (or \c get_cst if dim equals \c dim_cst).
-   *
-   * \throw std::out_of_range if the expression is dense and the dimension exceeds the size
-   * of the expression
-   * \warning as a side-effect, the method renders previous references to coefficients within the
-   * same expression invalid. For instance, \code l [0] = l[1] = 0; \endcode is invalid.
-   */
-  coeff& operator[](int dim);
-  
-  /*! \brief Similar to \c get_coeff (or \c get_cst if \c dim equals \c dim_cst).
-   *
-   * \throw std::out_of_range if the expression is dense and the dimension exceeds the size
-   * of the expression
-   */
-  const coeff& operator[](int dim) const;
+  coeff& operator[](ap_dim_t dim);
+ 
+  //! \brief Returns a reference to the coefficient corresponding to the given dimension.
+  const coeff& operator[](ap_dim_t dim) const;
 
   //@}
 
@@ -209,7 +194,10 @@ public:
   /** @name Printing */
   //@{
 
-  //! Printing.
+  /*! \brief Printing.
+   *
+   * Variable naming can be configured through the varname stream modifier.
+   */
   friend std::ostream& operator<< (std::ostream& os, const linexpr0& s);
 
   //! Prints to a C stream.
@@ -230,7 +218,15 @@ public:
   //! Whether only dimensions strictly smaller than \c intdim have a non-zero coefficient.
   bool is_real(size_t intdim) const;
 
-  //! Whether all coefficients are scalar.
+  /*! \brief Gets the type of the linear expression.
+   *
+   * \return Either \c AP_LINEXPR_INTLINEAR (coefficients are interval), 
+   * \c AP_LINEXPR_QUASILINEAR (coefficients are scalar except the constant one), or 
+   * \c AP_LINEXPR_LINEAR (all coefficients are scalar).
+   */
+  ap_linexpr_type_t get_type() const;
+
+ //! Whether all coefficients are scalar.
   bool is_linear() const;
 
   //! Whether all coefficients are scalar, except maybe the constant one.
@@ -271,23 +267,24 @@ public:
   /** @name Iterator */
   //@{
 
-  /*! \brief Iterator to traverse a linear expression.
+
+  /*! \brief Iterator to traverse a constant linexpr0.
    *
    * At each position, there is dimension and its corresponding coefficients.
    * For sparse expressions, there can be a gap between the dimension at two successive position
    * (holes are skipped.)
    * In all cases, the expression is traversed in increasing dimension order.
-   * Caution: Do not modify the expression during traversal.
+   *
+   * To mutate a linear expression, use the iterator class instead.
+   *
+   * Sample code:
+   * \code for (linexpr0::const_iterator i = m.begin();i.valid();++i) cout << i.get_coeff() << " "; \endcode
    */
-  class iterator {
+  class const_iterator {
 
     /* TODO:
        - reverse traversal (operator--).
-       - removing/inserting coefficients at iterator position for sparse expressions.
-       - const iterators?
      */
-
-    friend class linexpr0;
 
   protected:
 
@@ -297,27 +294,96 @@ public:
     //! Internal use only. Skips free coefficients in sparse expressions.
     void skip_AP_DIM_MAX();
 
-    //! Internal use only. Initializes the iterator. Use begin instead.
-    iterator(ap_linexpr0_t* l);
+    //! Internal use only.
+    const_iterator(ap_linexpr0_t* l);
+
+    friend class linexpr0;
 
   public:
-    
-    //! Returns the dimension of the coefficient at the current iterator position.
+   
+    //! Starts a new iterator to traverse the linear expression.
+    const_iterator(const linexpr0& e);
+
+    //! Duplicates the iterator.
+    const_iterator(const const_iterator& i);
+
+    //! Assigns the iterator.
+    const_iterator& operator=(const const_iterator& i);
+
+    /*! \brief Returns the dimension of the coefficient at the current iterator position.
+     *
+     * \throw std::out_of_range if valid() returns false (we are past the last position).
+     */
     ap_dim_t get_dim() const;
 
-    //! Returns a (modifiable) reference to the coefficient at the current iterator position.
-    coeff& get_coeff() const;
+    /*! \brief Returns a reference to the coefficient at the current iterator position.
+     *
+     * \throw std::out_of_range if valid() returns false (we are past the last position).
+     */
+    const coeff& get_coeff() const;
 
     //! Moves the iterator to the following position.
-    void operator++ (int);
+    void next();
 
-    //! Whether we are past the last iterator position.
-    bool end() const;
+    /*! \brief Moves the iterator to the following position.
+     *
+     * (Identical to next()).
+     */
+    void operator++();
+
+    //! Whether we are at a valid position (true) or past the last iterator position (false).
+    bool valid() const;
 
   };
 
-  //! Returns a new iterator to traverse the linear expression.
+
+  /*! \brief Iterator to traverse and mutate a linear expression.
+   *
+   * As const_iterator, but for non-constant linexpr0.
+   *
+   * Caution: do not modify the expression during traversal, except through the iterator.
+   *
+   * Sample code:
+   * \code for (linexpr0::iterator i = m.begin();i.valid();++i) i.get_coeff().neg(); \endcode
+   */
+  class iterator : public const_iterator {
+
+    /* TODO:
+       - removing/inserting coefficients at iterator position for sparse expressions.
+     */
+
+  protected:
+
+    //! Internal use only.
+    iterator(ap_linexpr0_t* l);
+
+    friend class linexpr0;
+
+
+  public:
+   
+    //! Starts a new iterator to traverse the linear expression.
+    iterator(linexpr0& e);
+
+    //! Duplicates the iterator.
+    iterator(const iterator& i);
+
+    //! Assigns the iterator.
+    iterator& operator=(const iterator& i);
+
+    /*! \brief Returns a (modifiable) reference to the coefficient at the current iterator position.
+     *
+     * \throw std::out_of_range if valid() returns false (we are past the last position).
+     */
+    coeff& get_coeff() const;
+
+  };
+
+  //! Returns a new iterator to traverse and mutate the linear expression.
   iterator begin();
+  
+  //! Returns a new constant iterator to traverse the linear expression.
+  const_iterator begin() const;
   
   //@}
 

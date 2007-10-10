@@ -173,25 +173,25 @@ inline ap_scalar_discr_t scalar::get_discr() const
 
 inline double& scalar::get_double()
 {
-  if (c.discr!=AP_SCALAR_DOUBLE) throw(bad_discriminant("scalar::get_double"));
+  if (c.discr!=AP_SCALAR_DOUBLE) throw(bad_discriminant("apron::scalar::get_double()"));
   return c.val.dbl;
 }
 
 inline const double& scalar::get_double() const
 {
-  if (c.discr!=AP_SCALAR_DOUBLE) throw(bad_discriminant("scalar::get_double"));
+  if (c.discr!=AP_SCALAR_DOUBLE) throw(bad_discriminant("apron::scalar::get_double()"));
   return c.val.dbl;
 }
 
 inline mpq_class& scalar::get_mpq()
 {
-  if (c.discr!=AP_SCALAR_MPQ) throw(bad_discriminant("scalar::get_mpq"));
+  if (c.discr!=AP_SCALAR_MPQ) throw(bad_discriminant("apron::scalar::get_mpq()"));
   return reinterpret_cast<mpq_class&>(*c.val.mpq);
 }
 
 inline const mpq_class& scalar::get_mpq() const
 {
-  if (c.discr!=AP_SCALAR_MPQ) throw(bad_discriminant("scalar::get_mpq"));
+  if (c.discr!=AP_SCALAR_MPQ) throw(bad_discriminant("apron::scalar::get_mpq()"));
   return reinterpret_cast<mpq_class&>(*c.val.mpq);
 }
 
@@ -233,6 +233,9 @@ inline scalar::operator double() const
 
 inline std::ostream& operator<< (std::ostream& os, const scalar& s)
 {
+  int i = ap_scalar_infty(const_cast<ap_scalar_t*>(&s.c));
+  if (i>0) return os << "+oo";
+  if (i<0) return os << "-oo";
   switch (s.c.discr) {
   case AP_SCALAR_DOUBLE: return os << s.c.val.dbl;
   case AP_SCALAR_MPQ:    return os << s.c.val.mpq;

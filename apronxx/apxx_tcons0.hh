@@ -25,7 +25,7 @@ namespace apron {
 /* ================================= */
 
 
-/*! \brief ap_tcons0_t wrapper.
+/*! \brief Level 0 arbitrary constraint (ap_tcons0_t wrapper).
  *
  * A tcons0 represents a constraint of the form expr==0, expr>=0, expr>0, expr!=0, or expr==0 mod c
  * where expr is an arbitrary expression tree.
@@ -48,7 +48,7 @@ protected:
   ap_tcons0_t l;  //!< Structure managed by APRON.
 
   //! Internal use only. Performs a shallow copy and takes ownership of the contents.
-  tcons0(ap_tcons0_t& l) : l(l) {}
+  tcons0(ap_tcons0_t& l);
 
   friend class abstract0;
   
@@ -64,25 +64,24 @@ public:
   /*! \brief Creates an empty constraint.
    *
    * Neither the expression tree nor the extra scalar are not created
-   * (has_texpr0 and has_modulo both return false).
-   * \arg \c constyp can be AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, or AP_CONS_DISEQ (but not AP_CONS_EQMOD).
+   * (has_texpr and has_modulo both return false).
+   * \arg \c constyp can be \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, or \c AP_CONS_DISEQ (but not \c AP_CONS_EQMOD).
    */
   tcons0(ap_constyp_t constyp=AP_CONS_SUPEQ);
 
   /*! \brief Creates a new (non-modulo) constraint from an expression tree (copied).
    *
    * The extra scalar is not created (has_modulo returns false).
-   * \arg \c constyp can be AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, or AP_CONS_DISEQ (but not AP_CONS_EQMOD).
+   * \arg \c constyp can be \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, or \c AP_CONS_DISEQ (but not \c AP_CONS_EQMOD).
    */
-  tcons0(ap_constyp_t constyp, const texpr0_node& t);
+  tcons0(ap_constyp_t constyp, const texpr0::builder& t);
 
   /*! \brief Creates a new constraint from an expression tree and a modulo scalar (both copied).
    *
-   * \arg \c constyp can be AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, AP_CONS_EQMOD, or AP_CONS_DISEQ.
+   * \arg \c constyp can be \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, \c AP_CONS_EQMOD, or \c AP_CONS_DISEQ.
    */
-  tcons0(ap_constyp_t constyp, const texpr0_node& t, const scalar& modulo);
+  tcons0(ap_constyp_t constyp, const texpr0::builder& t, const scalar& modulo);
 
-  //! (Deep) copy of a constraint.
   //! (Deep) copy of a constraint.
   tcons0(const tcons0& x);
 
@@ -125,22 +124,22 @@ public:
   //@{
 
   //! Makes a constraint a-b >= 0.
-  friend tcons0 operator>=(const texpr0_node& a, const texpr0_node& b);
+  friend tcons0 operator>=(const texpr0::builder& a, const texpr0::builder& b);
 
   //! Makes a constraint b-a >= 0.
-  friend tcons0 operator<=(const texpr0_node& a, const texpr0_node& b);
+  friend tcons0 operator<=(const texpr0::builder& a, const texpr0::builder& b);
 
   //! Makes a constraint a-b > 0.
-  friend tcons0 operator> (const texpr0_node& a, const texpr0_node& b);
+  friend tcons0 operator> (const texpr0::builder& a, const texpr0::builder& b);
 
   //! Makes a constraint b-a > 0.
-  friend tcons0 operator< (const texpr0_node& a, const texpr0_node& b);
+  friend tcons0 operator< (const texpr0::builder& a, const texpr0::builder& b);
 
   //! Makes a constraint a-b == 0.
-  friend tcons0 operator==(const texpr0_node& a, const texpr0_node& b);
+  friend tcons0 operator==(const texpr0::builder& a, const texpr0::builder& b);
 
   //! Makes a constraint a-b != 0.
-  friend tcons0 operator!=(const texpr0_node& a, const texpr0_node& b);
+  friend tcons0 operator!=(const texpr0::builder& a, const texpr0::builder& b);
   
   //@}
 
@@ -171,10 +170,10 @@ public:
 
   /*! \brief Sets the underlying expression tree to c (copied).
    *
-   * Does not fail as get_texpr0 can: if the constraint was created without an underlying expression, 
+   * Does not fail as get_texpr can: if the constraint was created without an underlying expression, 
    * it is created.
    */
-  void set_texpr0(const texpr0& c);
+  void set_texpr(const texpr0::builder& c);
 
   //@}
 
@@ -216,13 +215,13 @@ public:
  
   /*! \brief Returns a (modifiable) reference to the constraint type.
    *
-   * \return either AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, AP_CONS_EQMOD, or AP_CONS_DISEQ.
+   * \return either \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, \c AP_CONS_EQMOD, or \c AP_CONS_DISEQ.
    */
   ap_constyp_t& get_constyp();
   
   /*! \brief Returns a reference to the constraint type.
    *
-   * \return either AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, AP_CONS_EQMOD, or AP_CONS_DISEQ.
+   * \return either \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, \c AP_CONS_EQMOD, or \c AP_CONS_DISEQ.
    */
   const ap_constyp_t& get_constyp() const;
 
@@ -230,7 +229,7 @@ public:
   bool has_modulo() const;
 
   //! \brief Whether the constraint contains a valid expression tree.
-  bool has_texpr0() const;
+  bool has_texpr() const;
 
   /*! \brief Returns a (modifiable) reference to the extra scalar.
    *
@@ -244,18 +243,18 @@ public:
    */
   const scalar& get_modulo() const;
 
-  /*! \brief Returns a (modifiable) reference to the underlying expression tree.
+  /*! \brief Returns an iterator to the root of the underlying expression tree.
    *
    * \throw std::invalid_argument if no valid expression tree has been defined.
    */
-  texpr0& get_texpr0();
+  texpr0::iterator get_texpr();
  
-  /*! \brief Returns a reference to the underlying expression tree.
+  /*! \brief Returns a const_iterator to the root of the underlying expression tree.
    *
    * \throw std::invalid_argument if no valid expression tree has been defined.
    */
-  const texpr0& get_texpr0() const;
-
+  texpr0::const_iterator get_texpr() const;
+ 
   //@}
 
 
@@ -266,6 +265,8 @@ public:
   //@{
 
   /*! \brief Printing.
+   *
+   * Variable naming can be configured through the varname stream modifier.
    *
    * \throw std::invalid_argument if the underlying expression is missing, or the
    * extra scalar is missing (for modulo).
@@ -339,7 +340,7 @@ public:
 /* ================================= */
 
 
-/*! \brief ap_tcons0_array_t wrapper.
+/*! \brief Array of arbitrary constraints (ap_tcons0_array_t wrapper).
  *
  * A tcons0_array represents an array of constraints on arbitrary expressions.
  */
@@ -353,6 +354,7 @@ protected:
   tcons0_array(ap_tcons0_array_t& a) : a(a) {}
 
   friend class abstract0;
+  friend class tcons1_array;
 
 public:
   
@@ -364,7 +366,7 @@ public:
 
   /*! \brief Creates a new array of the given size containing uninitialized constraints.
    *
-   * has_modulo and has_texpr0 will return false on all elements of the array.
+   * has_modulo and has_texpr will return false on all elements of the array.
    */
   tcons0_array(size_t size);
 
@@ -459,13 +461,13 @@ public:
   //@{
 
   //! Returns the size of the array.
-  size_t get_size() const;
+  size_t size() const;
 
   //! Returns a pointer to the start of the internal array holding the constraints. 
-  tcons0* get_contents();
+  tcons0* contents();
 
   //! Returns a pointer to the start of the internal array holding the constraints. 
-  const tcons0* get_contents() const;
+  const tcons0* contents() const;
   
   //! Returns a (modifiable) reference to an element, no bound checking.
   tcons0& operator[](size_t i);
@@ -506,7 +508,10 @@ public:
   /** @name Printing */
   //@{
 
+  
   /*! \brief Printing.
+   *
+   * Variable naming can be configured through the varname stream modifier.
    *
    * \throw std::invalid_argument an underlying expression is missing, or an
    * extra scalar is missing (for modulo constraint).

@@ -31,11 +31,11 @@ struct unsat {};
 /* ================================= */
 
 
-/*! \brief ap_lincons0_t wrapper.
+/*! \brief Level 0 linear constraint (ap_lincons0_t wrapper).
  *
  * A lincons0 object represents a linear constraint: expr==0, expr>=0, expr>0, expr!=0, or expr==0 mod c.
  * It stores and manages a linexpr0 (linear expression with scalar or interval coefficients), 
- * a constraint type (==, >=, >, !=, mod), and (for modulo constraint) an extra scalar (c).
+ * a constraint type (==, >=, >, !=, mod), and (for modulo constraint) an auxiliary scalar (c).
  */
 class lincons0 : public use_malloc {
 
@@ -44,7 +44,7 @@ protected:
   ap_lincons0_t l;  //!< Structure managed by APRON.
 
   //! Internal use only. Performs a shallow copy and takes ownership of the contents.
-  lincons0(ap_lincons0_t& l) : l(l) {}
+  lincons0(ap_lincons0_t l);
 
   friend class abstract0;
   
@@ -59,22 +59,22 @@ public:
 
   /*! \brief Creates a new (non-modulo) constraint from an empty linear expression.
    *
-   * The extra scalar is not created (has_modulo returns false).
-   * The linear expression is created sparse and empty (has_linexpr0 returns true).
-   * \arg \c constyp can be AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, or AP_CONS_DISEQ (but not AP_CONS_EQMOD).
+   * The auxiliary scalar is not created (has_modulo returns false).
+   * The linear expression is created sparse and empty (has_linexpr returns true).
+   * \arg \c constyp can be \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, or \c AP_CONS_DISEQ (but not \c AP_CONS_EQMOD).
    */
   lincons0(ap_constyp_t constyp=AP_CONS_SUPEQ);
 
   /*! \brief Creates a new (non-modulo) constraint from a linear expression (copied).
    *
-   * The extra scalar is not created (has_modulo returns false).
-   * \arg \c constyp can be AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, or AP_CONS_DISEQ (but not AP_CONS_EQMOD).
+   * The auxiliary scalar is not created (has_modulo returns false).
+   * \arg \c constyp can be \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, or \c AP_CONS_DISEQ (but not \c AP_CONS_EQMOD).
    */
   lincons0(ap_constyp_t constyp, const linexpr0& lin);
 
   /*! \brief Creates a new constraint from a linear expression and a modulo scalar (both copied).
    *
-   * \arg \c constyp can be AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, AP_CONS_EQMOD, or AP_CONS_DISEQ.
+   * \arg \c constyp can be \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, \c AP_CONS_EQMOD, or \c AP_CONS_DISEQ.
    */
   lincons0(ap_constyp_t constyp, const linexpr0& lin, const scalar& modulo);
 
@@ -117,19 +117,19 @@ public:
   //! Assigns an unsatisfiable constraint to *this (-1>=0).
   lincons0& operator= (unsat x);
 
-  /*! \brief Sets the extra scalar modulo to c (copied).
+  /*! \brief Sets the auxiliary scalar modulo to c (copied).
    *
-   * Does not fail as get_modulo can: if the constraint was created without an extra scalar, 
+   * Does not fail as get_modulo can: if the constraint was created without an auxiliary scalar, 
    * it is created.
    */
   void set_modulo(const scalar& c);  
 
   /*! \brief Sets the underlying linear expression to c (copied).
    *
-   * Does not fail as get_linexpr0 can: if the constraint was created without an underlying expression, 
+   * Does not fail as get_linexpr can: if the constraint was created without an underlying expression, 
    * it is created.
    */
-  void set_linexpr0(const linexpr0& c);
+  void set_linexpr(const linexpr0& c);
 
   //@}
 
@@ -173,42 +173,42 @@ public:
    *
    * \throw std::invalid_argument if no valid linear expression has been defined.
    */
-  size_t get_size() const;
+  size_t size() const;
 
 
   /* get */
  
   /*! \brief Returns a (modifiable) reference to the constraint type.
    *
-   * \return either AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, AP_CONS_EQMOD, or AP_CONS_DISEQ.
+   * \return either \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, \c AP_CONS_EQMOD, or \c AP_CONS_DISEQ.
    */
   ap_constyp_t& get_constyp();
   
   /*! \brief Returns a reference to the constraint type.
    *
-   * \return either AP_CONS_EQ, AP_CONS_SUPEQ, AP_CONS_SUP, AP_CONS_EQMOD, or AP_CONS_DISEQ.
+   * \return either \c AP_CONS_EQ, \c AP_CONS_SUPEQ, \c AP_CONS_SUP, \c AP_CONS_EQMOD, or \c AP_CONS_DISEQ.
    */
   const ap_constyp_t& get_constyp() const;
 
-  //! Returns whether the constraint has a valid extra scalar (used in modulo constraints).
+  //! Whether the constraint has a valid auxiliary scalar (used in modulo constraints).
   bool has_modulo() const;
 
-  /*! \brief Returns whether the constraint has a valid linear expression.
+  /*! \brief Whether the constraint has a valid linear expression.
    *
    * \note The only way the linear expression may be invalid is when accessing fields of uninitialised 
    * (or enlarged) lincons0_array.
    */
-  bool has_linexpr0() const;
+  bool has_linexpr() const;
 
-  /*! \brief Returns a (modifiable) reference to the extra scalar.
+  /*! \brief Returns a (modifiable) reference to the auxiliary scalar.
    *
-   * \throw std::invalid_argument if no valid extra scalar has been defined.
+   * \throw std::invalid_argument if no valid auxiliary scalar has been defined.
    */
   scalar& get_modulo();
  
-  /*! \brief Returns a reference to the extra scalar.
+  /*! \brief Returns a reference to the auxiliary scalar.
    *
-   * \throw std::invalid_argument if no valid extra scalar has been defined.
+   * \throw std::invalid_argument if no valid auxiliary scalar has been defined.
    */
   const scalar& get_modulo() const;
 
@@ -216,13 +216,41 @@ public:
    *
    * \throw std::invalid_argument if no valid linear expression has been defined.
    */
-  linexpr0& get_linexpr0();
+  linexpr0& get_linexpr();
  
   /*! \brief Returns a reference to the underlying linear expression.
    *
    * \throw std::invalid_argument if no valid linear expression has been defined.
    */
-  const linexpr0& get_linexpr0() const;
+  const linexpr0& get_linexpr() const;
+
+  /*! \brief Returns a (modifiable) reference to the constant coefficient.
+   *
+   * \throw std::invalid_argument if no valid linear expression has been defined.
+   */
+  coeff& get_cst();
+
+  /*! \brief Returns a reference to the constant coefficient.
+   *
+   * \throw std::invalid_argument if no valid linear expression has been defined.
+   */
+  const coeff& get_cst() const;
+
+  /*! \brief Returns a (modifiable) reference to the coefficient corresponding to the given dimension.
+   *
+   * \throw std::out_of_range if the expression is dense and the dimension exceeds the size
+   * of the expression; if the expression is sparse, it will be extended and no exception is thrown
+   * \throw std::invalid_argument if no valid linear expression has been defined.
+   */
+  coeff& operator[](ap_dim_t dim);
+  
+  /*! \brief Returns a reference to the coefficient corresponding to the given dimension.
+   *
+   * \throw std::out_of_range if the expression is dense and the dimension exceeds the size
+   * of the expression; if the expression is sparse, it will be extended and no exception is thrown
+   * \throw std::invalid_argument if no valid linear expression has been defined.
+   */
+  const coeff& operator[](ap_dim_t dim) const;
 
   //@}
 
@@ -235,8 +263,10 @@ public:
 
   /*! \brief Printing.
    *
+   * Variable naming can be configured through the varname stream modifier.
+   *
    * \throw std::invalid_argument if the underlying expression is missing, or the
-   * extra scalar is missing (for modulo).
+   * auxiliary scalar is missing (for modulo).
    */
   friend std::ostream& operator<< (std::ostream& os, const lincons0& s);
 
@@ -272,6 +302,8 @@ public:
    */
   bool is_quasilinear() const;
 
+  // TODO: equal, compare (currently not in ap_lincons0.h) ???
+
   //@}
 
   /* TODO: evaluation, linearization, intelligent constructors */
@@ -299,7 +331,7 @@ public:
 /* ================================= */
 
 
-/*! \brief ap_lincons0_array_t wrapper.
+/*! \brief Array of linear constraints (ap_lincons0_array_t wrapper).
  *
  * A lincons0_array represents an array of linear constraints.
  */
@@ -312,6 +344,7 @@ protected:
   //! Internal use only. Performs a shallow copy and takes ownership of the contents.
   lincons0_array(ap_lincons0_array_t& a) : a(a) {}
 
+  friend class lincons1_array;
   friend class abstract0;
 
 public:
@@ -324,7 +357,7 @@ public:
 
   /*! \brief Creates a new array of the given size containing uninitialized constraints.
    *
-   * has_modulo and has_linexpr0 will return false on all elements of the array.
+   * has_modulo and has_linexpr will return false on all elements of the array.
    */
   lincons0_array(size_t size);
 
@@ -404,13 +437,13 @@ public:
   //@{
 
   //! Returns the size of the array.
-  size_t get_size() const;
+  size_t size() const;
 
   //! Returns a pointer to the start of the internal array holding the constraints. 
-  lincons0* get_contents();
+  lincons0* contents();
 
   //! Returns a pointer to the start of the internal array holding the constraints. 
-  const lincons0* get_contents() const;
+  const lincons0* contents() const;
   
   //! Returns a (modifiable) reference to an element, no bound checking.
   lincons0& operator[](size_t i);
@@ -453,8 +486,10 @@ public:
 
   /*! \brief Printing.
    *
+   * Variable naming can be configured through the varname stream modifier.
+   *
    * \throw std::invalid_argument an underlying expression is missing, or an
-   * extra scalar is missing (for modulo constraint).
+   * auxiliary scalar is missing (for modulo constraint).
    */
   friend std::ostream& operator<< (std::ostream& os, const lincons0_array& s);
 

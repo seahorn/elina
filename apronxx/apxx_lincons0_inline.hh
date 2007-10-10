@@ -17,6 +17,8 @@
 /* lincons0                          */
 /* ================================= */
 
+inline lincons0::lincons0(ap_lincons0_t l) : l(l) {}
+
 inline lincons0::lincons0(ap_constyp_t constyp)
 {
   ap_linexpr0_t* llin = ap_linexpr0_alloc(AP_LINEXPR_SPARSE,0);
@@ -48,14 +50,14 @@ inline lincons0::lincons0(unsat x)
 
 inline lincons0::lincons0(const lincons0& x, const dimchange& d)
 {
-  if (!x.l.linexpr0) throw std::invalid_argument("lincons0::lincons0");
+  if (!x.l.linexpr0) throw std::invalid_argument("apron::lincons0::lincons0(const dimchange&) empty expression");
   l = ap_lincons0_add_dimensions(const_cast<ap_lincons0_t*>(&x.l), 
 				 const_cast<ap_dimchange_t*>(d.get_ap_dimchange_t()));
 }
 
 inline lincons0::lincons0(const lincons0& x, const dimperm& d)
 { 
-  if (!x.l.linexpr0) throw std::invalid_argument("lincons0::lincons0");
+  if (!x.l.linexpr0) throw std::invalid_argument("apron::lincons0::lincons0(const dimperm&) empty expression");
   l = ap_lincons0_permute_dimensions(const_cast<ap_lincons0_t*>(&x.l), 
 				     const_cast<ap_dimperm_t*>(d.get_ap_dimperm_t()));
 }
@@ -95,20 +97,20 @@ inline lincons0& lincons0::operator= (unsat x)
 
 inline void lincons0::resize(size_t size)
 { 
-  if (!l.linexpr0) throw std::invalid_argument("lincons0::resize");
+  if (!l.linexpr0) throw std::invalid_argument("apron::lincons0::resize(size_t) empty expression");
   ap_linexpr0_realloc(l.linexpr0, size);
 }
 
 
 inline void lincons0::add_dimensions(const dimchange& d)
 { 
-  if (!l.linexpr0) throw std::invalid_argument("lincons0::add_dimensions");
+  if (!l.linexpr0) throw std::invalid_argument("apron::lincons0::add_dimensions(const dimchange&) empty expression");
   ap_lincons0_add_dimensions_with(&l, const_cast<ap_dimchange_t*>(d.get_ap_dimchange_t()));
 }
 
 inline void lincons0::permute_dimensions(const dimperm& d)
 { 
-  if (!l.linexpr0) throw std::invalid_argument("lincons0::permute_dimensions");
+  if (!l.linexpr0) throw std::invalid_argument("apron::lincons0::permute_dimensions(const dimperm&) empty expression");
   ap_lincons0_permute_dimensions_with(&l, const_cast<ap_dimperm_t*>(d.get_ap_dimperm_t())); 
 }
 
@@ -118,9 +120,9 @@ inline void lincons0::permute_dimensions(const dimperm& d)
 
 /* size */
 
-inline size_t lincons0::get_size() const
+inline size_t lincons0::size() const
 { 
-  if (!l.linexpr0) throw std::invalid_argument("lincons0::get_size");
+  if (!l.linexpr0) throw std::invalid_argument("apron::lincons0::size() empty expression");
   return ap_linexpr0_size(const_cast<ap_linexpr0_t*>(l.linexpr0));
 }
 
@@ -142,20 +144,20 @@ inline bool lincons0::has_modulo() const
   return l.scalar!=NULL; 
 }
 
-inline bool lincons0::has_linexpr0() const
+inline bool lincons0::has_linexpr() const
 {
   return l.linexpr0!=NULL; 
 }
 
 inline scalar& lincons0::get_modulo()
 { 
-  if (!l.scalar) throw std::invalid_argument("lincons0::get_modulo");
+  if (!l.scalar) throw std::invalid_argument("apron::lincons0::get_modulo() empty scalar");
   return reinterpret_cast<scalar&>(*l.scalar);
 }
  
 inline const scalar& lincons0::get_modulo() const
 { 
-  if (!l.scalar) throw std::invalid_argument("lincons0::get_modulo");
+  if (!l.scalar) throw std::invalid_argument("apron::lincons0::get_modulo() empty scalar");
   return reinterpret_cast<scalar&>(*l.scalar);
 }
 
@@ -165,23 +167,35 @@ inline void lincons0::set_modulo(const scalar& c)
   else ap_scalar_set(l.scalar, const_cast<ap_scalar_t*>(c.get_ap_scalar_t()));
 }
 
-inline linexpr0& lincons0::get_linexpr0()
+inline linexpr0& lincons0::get_linexpr()
 { 
-  if (!l.linexpr0) throw std::invalid_argument("lincons0::get_linexpr0");
+  if (!l.linexpr0) throw std::invalid_argument("apron::lincons0::get_linexpr() empty expression");
   return reinterpret_cast<linexpr0&>(*l.linexpr0); 
 }
  
-inline const linexpr0& lincons0::get_linexpr0() const
+inline const linexpr0& lincons0::get_linexpr() const
 { 
-  if (!l.linexpr0) throw std::invalid_argument("lincons0::get_linexpr0");
+  if (!l.linexpr0) throw std::invalid_argument("apron::lincons0::get_linexpr() empty expression");
   return reinterpret_cast<linexpr0&>(*l.linexpr0); 
 }
 
-inline void lincons0::set_linexpr0(const linexpr0& c)
+inline void lincons0::set_linexpr(const linexpr0& c)
 { 
   if (l.linexpr0) ap_linexpr0_free(l.linexpr0);
   l.linexpr0 = ap_linexpr0_copy(const_cast<ap_linexpr0_t*>(c.get_ap_linexpr0_t()));
 }
+
+inline coeff& lincons0::get_cst()
+{ return get_linexpr().get_cst(); }
+
+inline const coeff& lincons0::get_cst() const
+{ return get_linexpr().get_cst(); }
+
+inline coeff& lincons0::operator[](ap_dim_t dim)
+{ return get_linexpr()[dim]; }
+
+inline const coeff& lincons0::operator[](ap_dim_t dim) const
+{ return get_linexpr()[dim]; }
 
 
 /* print */
@@ -189,14 +203,14 @@ inline void lincons0::set_linexpr0(const linexpr0& c)
 
 inline std::ostream& operator<< (std::ostream& os, const lincons0& s)
 {
-  os << s.get_linexpr0();
+  os << s.get_linexpr();
   switch (s.get_constyp()) {
   case AP_CONS_EQ:    return os << " = 0";
   case AP_CONS_SUPEQ: return os << " >= 0";
   case AP_CONS_SUP:   return os << " > 0";
   case AP_CONS_EQMOD: return os << " = 0 mod " << s.get_modulo();
   case AP_CONS_DISEQ: return os << " != 0";
-  default: throw std::invalid_argument("lincons0 operator<<");
+  default: throw std::invalid_argument("apron::operator<<(ostream&, const lincons0&) unknown constraint type");
   }
 }
 
@@ -211,19 +225,19 @@ inline void lincons0::print(char** name_of_dim, FILE* stream) const
 
 inline bool lincons0::is_unsat() const
 { 
-  if (!l.linexpr0) throw std::invalid_argument("lincons0::is_unsat");
+  if (!l.linexpr0) throw std::invalid_argument("apron::lincons0::is_unsat() empty expression");
   return ap_lincons0_is_unsat(const_cast<ap_lincons0_t*>(&l));
 }
   
 inline bool lincons0::is_linear() const
 { 
-  if (!l.linexpr0) throw std::invalid_argument("lincons0::is_linear");
+  if (!l.linexpr0) throw std::invalid_argument("apron::lincons0::is_linear() empty expression");
   return ap_linexpr0_is_linear(l.linexpr0);
 }
   
 inline bool lincons0::is_quasilinear() const
 { 
-  if (!l.linexpr0) throw std::invalid_argument("lincons0::is_quasilinear");
+  if (!l.linexpr0) throw std::invalid_argument("apron::lincons0::is_quasilinear() empty expression");
   return ap_linexpr0_is_quasilinear(l.linexpr0);
 }
   
@@ -355,17 +369,17 @@ inline void lincons0_array::permute_dimensions(const dimperm& d)
 /* access */
 /* ====== */
 
-inline size_t lincons0_array::get_size() const
+inline size_t lincons0_array::size() const
 { 
   return a.size;
 }
  
-inline lincons0* lincons0_array::get_contents()
+inline lincons0* lincons0_array::contents()
 { 
   return reinterpret_cast<lincons0*>(a.p);
 }
 
-inline const lincons0* lincons0_array::get_contents() const
+inline const lincons0* lincons0_array::contents() const
 { 
   return reinterpret_cast<lincons0*>(a.p);
 }
@@ -382,13 +396,13 @@ inline const lincons0& lincons0_array::operator[](size_t i) const
 
 inline lincons0& lincons0_array::get(size_t i)
 { 
-  if (i >= a.size) throw std::out_of_range("lincons0_array::get");
+  if (i >= a.size) throw std::out_of_range("apron::lincons0_array::get(size_t)");
   return reinterpret_cast<lincons0&>(a.p[i]); 
 }
 
 inline const lincons0& lincons0_array::get(size_t i) const
 { 
-  if (i >= a.size) throw std::out_of_range("lincons0_array::get");
+  if (i >= a.size) throw std::out_of_range("apron::lincons0_array::get(size_t)");
   return reinterpret_cast<lincons0&>(a.p[i]); 
 }
 
@@ -398,9 +412,9 @@ inline const lincons0& lincons0_array::get(size_t i) const
 
 inline lincons0_array::operator std::vector<lincons0>() const
 {
-  size_t size = get_size();
-  std::vector<lincons0> v = std::vector<lincons0>(size);
-  for (size_t i=0;i<size;i++)
+  size_t sz = size();
+  std::vector<lincons0> v = std::vector<lincons0>(sz);
+  for (size_t i=0;i<sz;i++)
     v[i] = (*this)[i];
   return v;
 }
@@ -411,9 +425,9 @@ inline lincons0_array::operator std::vector<lincons0>() const
 
 inline std::ostream& operator<< (std::ostream& os, const lincons0_array& s)
 {
-  size_t size = s.get_size();
+  size_t sz = s.size();
   os << "{ ";
-  for (size_t i=0;i<size;i++)
+  for (size_t i=0;i<sz;i++)
     os << s[i] << "; ";
   return os << "}";
 }
