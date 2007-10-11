@@ -2727,19 +2727,31 @@ void test_abstract1(manager& m, manager& mm)
 
 }
 
+void set_algo(manager& m, int algo)
+{
+  for (int i=AP_FUNID_COPY;i<=AP_FUNID_CLOSURE;i++)
+    m.get_funopt(ap_funid_t(i)).algorithm = algo;
+}
 
-void test_manager(manager& m, manager& mm)
+void test_manager_algo(manager& m, manager& mm, int algo)
 {
   cout << "library: " << m.get_library() << endl;
   cout << "version: " << m.get_version() << endl;
+  cout << "algo:    " << algo << endl;
   try { m.fpu_init(); mm.fpu_init(); } 
   catch (runtime_error& c) { cout << "fpu_init failed: " << c.what() << endl; }
   cout << endl;
-
-  //test_abstract0(m,mm);
+  set_algo(m,algo);
+  set_algo(mm,algo);
+  test_abstract0(m,mm);
   test_abstract1(m,mm);
 }
 
+void test_manager(manager& m, manager& mm)
+{
+  test_manager_algo(m,mm,0);
+  test_manager_algo(m,mm,-1);
+}
 
 void test_box()
 {
