@@ -37,6 +37,17 @@ libitvD.a libitvD_debug.a \
 libitvDl.a libitvDl_debug.a \
 libitv.a libitv_debug.a
 
+ifneq ($(HAS_LONG_DOUBLE),)
+CCLIB_TO_INSTALL := $(CCLIB_TO_INSTALL) libitvDl.a libitvDl_debug.a
+endif
+
+OFILES = $(CCMODULES:%=%Il.o) $(CCMODULES:%=%Ill.o) $(CCMODULES:%=%Rl.o) $(CCMODULES:%=%Rll.o) $(CCMODULES:%=%MPZ.o) $(CCMODULES:%=%MPQ.o) $(CCMODULES:%=%D.o)
+
+ifneq ($(HAS_LONG_DOUBLE),)
+OFILES := $(OFILES) $(CCMODULES:%=%Dl.o) 
+endif
+
+
 #---------------------------------------
 # Rules
 #---------------------------------------
@@ -88,11 +99,11 @@ dist: $(CCSRC) Makefile COPYING README
 # C part
 #-----------------------------------
 
-libitv.a: $(CCMODULES:%=%Il.o) $(CCMODULES:%=%Ill.o) $(CCMODULES:%=%Rl.o) $(CCMODULES:%=%Rll.o) $(CCMODULES:%=%MPZ.o) $(CCMODULES:%=%MPQ.o) $(CCMODULES:%=%D.o) $(CCMODULES:%=%Dl.o)
+libitv.a: $(OFILES)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-libitv_debug.a: $(CCMODULES:%=%Il_debug.o) $(CCMODULES:%=%Ill_debug.o) $(CCMODULES:%=%Rl_debug.o) $(CCMODULES:%=%Rll_debug.o) $(CCMODULES:%=%MPZ_debug.o) $(CCMODULES:%=%MPQ_debug.o) $(CCMODULES:%=%D_debug.o) $(CCMODULES:%=%Dl_debug.o)
+libitv_debug.a: $(OFILES:%.o=%_debug.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 

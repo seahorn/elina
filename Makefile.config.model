@@ -12,6 +12,11 @@ HAS_OCAML = 1
 
 # HAS_PPL = 1
 
+# If defined to non-empty value, support for "long double" is enabled
+
+# HAS_LONG_DOUBLE = 1
+
+
 ######################################################################
 # Directories
 ######################################################################
@@ -76,7 +81,7 @@ CFLAGS = \
 -Wcast-qual -Wswitch -Werror-implicit-function-declaration \
 -Wall -Wextra -Wundef -Wbad-function-cast -Wcast-align -Wstrict-prototypes \
 -Wno-unused \
--std=c99 \
+-std=c99 -U__STRICT_ANSI__ \
 -O3 -DNDEBUG
 
 # C compilation flags in debug (or profile) mode
@@ -84,7 +89,7 @@ CFLAGS_DEBUG = \
 -Wcast-qual -Wswitch -Werror-implicit-function-declaration \
 -Wall -Wextra -Wundef -Wbad-function-cast -Wcast-align -Wstrict-prototypes \
 -Wno-unused \
--std=c99 \
+-std=c99  -U__STRICT_ANSI__ \
 -g -O0 -UNDEBUG
 
 # Examples of CFLAGS

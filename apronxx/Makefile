@@ -51,7 +51,7 @@ LIBS = \
  -L../octagons -loctMPQ_debug \
  -L../box -lboxMPQ_debug
 
-ifneq ($(HAS_PPL),0)
+ifneq ($(HAS_PPL),)
 DEFS := $(DEFS) -DHAS_PPL
 LIBS := $(LIBS) -L$(PPL_PREFIX)/lib -L../ppl -L../products -lap_pkgrid -lap_ppl -lppl
 ICXXFLAGS := $(ICXXFLAGS) -I$(PPL_PREFIX)/include  -I../ppl -I../products

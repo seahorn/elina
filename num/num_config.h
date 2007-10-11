@@ -2,6 +2,8 @@
 #ifndef _NUM_CONFIG_H_
 #define _NUM_CONFIG_H_
 
+#include "ap_config.h"
+
 #ifdef __cplusplus
 #define HAS_BOOL
 extern "C" {

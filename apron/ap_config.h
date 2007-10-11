@@ -23,7 +23,7 @@ static const bool false = 0;
 static const bool true  = 1;
 #endif
 
-#if !(defined __USE_SVID || defined __USE_BSD || defined __USE_XOPEN_EXTENDED || defined __APPLE__)
+#if !(defined __USE_SVID || defined __USE_BSD || defined __USE_XOPEN_EXTENDED || defined __APPLE__ || defined __CYGWIN__)
 
 static inline char* strdup(const char* s){
   char* s2;
