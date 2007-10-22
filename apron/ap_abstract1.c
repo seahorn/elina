@@ -49,7 +49,7 @@ ap_abstract1_t ap_abstract1_consres(bool destructive, ap_abstract1_t* a, ap_abst
 
 Build a new abstract value level 1 from the old one, a new
 value level 0 and a new environment, depending on
-destructive. The environment is supposed unchanged.
+destructive.
 */
 static
 ap_abstract1_t ap_abstract1_consres2(bool destructive, ap_abstract1_t* a,
@@ -1402,7 +1402,7 @@ in the two abstract values");
   value = ap_abstract0_meet(man,true,value1,value2);
   res = ap_abstract1_consres2(destructive, a1, value, env);
   if (dimchange1) ap_dimchange_free(dimchange1);
-  if (dimchange2) ap_dimchange_free(dimchange1);
+  if (dimchange2) ap_dimchange_free(dimchange2);
   return res;
 }
 
