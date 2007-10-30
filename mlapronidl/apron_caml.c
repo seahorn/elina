@@ -173,7 +173,7 @@ unsigned long camlidl_apron_abstract0_deserialize(void * dst)
       ap_abstract0_deserialize_raw(deserialize_man,data,&realsize);
     free(data);
   }
-  else caml_failwith("you must call Apron.Manager.set_deserialize_manager before deserializing abstract elements.");
+  else caml_failwith("you must call Apron.Manager.set_deserialize before deserializing abstract elements.");
   return sizeof(ap_abstract0_ptr);
 }
 
