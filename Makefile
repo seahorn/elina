@@ -50,7 +50,9 @@ ifneq ($(HAS_PPL),)
 	(cd ppl; make)
 	(cd products; make)
 endif
+ifneq ($(HAS_CPP),)
 	(cd apronxx; make)
+endif
 
 ml: $(MLREQUESTED)
 	(cd mlgmpidl; make all)
@@ -110,7 +112,9 @@ ifneq ($(HAS_PPL),)
 	$(INSTALL) apronppltop $(APRON_PREFIX)/bin
 endif
 endif
+ifneq ($(HAS_CPP),)
 	(cd apronxx; make install)
+endif
 
 clean:
 	(cd num; make clean)
@@ -159,7 +163,9 @@ ifneq ($(HAS_OCAML),)
 	(cd mlgmpidl; make html mlgmpidl.pdf)
 	(cd mlapronidl; make html mlapronidl.pdf)
 endif
+ifneq ($(HAS_CPP),)
 	(cd apronxx; make doc)
+endif
 
 # make distribution, update to reflect current version
 

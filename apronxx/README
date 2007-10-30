@@ -45,6 +45,9 @@ REQUIREMENTS
 - GMPXX
 - Doxygen and LaTeX to build the documentation
 
+Apronxx is known to compile well with gcc 4.1.2, but may not work with other
+versions.
+
 
 
 INSTALLATION
@@ -54,8 +57,10 @@ The apronxx binding should be compiled and installed from the main APRON
 Makefile. It is compiled last: after both APRON and all abstract domains have
 been compiled.
 
+You need to set HAS_CPP to 1 in the toplevel Makefile.configure to enable the 
+compilation of apronxx.
 
-The following variables from the toplevel Makefile.configure are used:
+The following other variables from Makefile.configure are used:
   . GMP_PREFIX: where to find GMP and GMPXX
   . APRON_PREFIX: where to install apronxx
   . HAS_PPL: whether to build support for the PPL library

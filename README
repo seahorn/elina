@@ -37,9 +37,15 @@ products:
 mlgmpidl:
 	OCaml interface for the GMP and MPFR libraries, used by mlapronidl.
 	Requires GMP version 4.2 or up, MPFR 2.2 or up.
+	not compiled unless HAS_OCAML is defined in Makefile.config
 
 mlapronidl:
 	apron interface, OCaml version (require apron)
+	not compiled unless HAS_OCAML is defined in Makefile.config
+
+apronxx:
+	apron interface, C++ version
+	not compiled unless HAS_CPP is defined in Makefile.config
 
 Makefile.config.model:
 	common configuration file model (to be copied to Makefile.config)
@@ -61,5 +67,6 @@ Makefile:
 Minimal Requirements:
 	c: GMP, MPFR
 	ml: OCaml, CamlIDL
+	c++: GCC 4.1.2
 	doc: latex, dvipdf, makeinfo, texi2html, texi2dvi
 	rebuild: GNU sed, GNU m4
