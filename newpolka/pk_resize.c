@@ -171,6 +171,7 @@ matrix_t* matrix_remove_dimensions(pk_internal_t* pk,
   if (destructive){
     matrix_resize_diffcols(nmat, -(int)dimsup);
   }
+  nmat->_sorted = false;
   return nmat;
 }
 static
