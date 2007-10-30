@@ -610,7 +610,7 @@ bool poly_check(pk_internal_t* pk, pk_t* po)
     }
     res = matrix_check3(pk,po->F);
     if (!res){
-      fprintf(stderr,"poly_check: C not sorted although _sorted=true\n");
+      fprintf(stderr,"poly_check: F not sorted although _sorted=true\n");
       return false;
     }
   }
