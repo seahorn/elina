@@ -77,7 +77,8 @@ itv_t* matrix_to_box(pk_internal_t* pk,
   size_t i,dim;
   itv_t* res;
 
-  assert(F && F->nbcolumns>=pk->dec);
+  assert(F);
+  assert(F->nbcolumns>=pk->dec);
   dim = F->nbcolumns - pk->dec;
   res = itv_array_alloc(dim);
   for (i=0;i<dim;i++){
@@ -353,10 +354,6 @@ ap_interval_t* pk_bound_texpr(ap_manager_t* man,
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOUND_TEXPR);
 
   interval = ap_interval_alloc();
-  if (pk_is_bottom(man,po)==tbool_true){
-    ap_interval_set_bottom(interval);
-    return interval;
-  }
   ap_interval_reinit(interval,AP_SCALAR_MPQ);
   if (pk->funopt->algorithm>0)
     poly_chernikova(man,po,NULL);
@@ -366,6 +363,11 @@ ap_interval_t* pk_bound_texpr(ap_manager_t* man,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     ap_interval_set_top(interval);
+    return interval;
+  }
+  if (!po->F){ /* po is empty */
+    ap_interval_set_bottom(interval);
+    man->result.flag_exact = man->result.flag_best = tbool_true;
     return interval;
   }
   env = matrix_to_box(pk,po->F);
