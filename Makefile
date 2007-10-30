@@ -170,7 +170,7 @@ endif
 # make distribution, update to reflect current version
 
 PKGNAME  = apron-0.9.7
-PKGFILES = Makefile README AUTHORS COPYING Makefile.config.model Changes
+PKGFILES = Makefile README README.windows AUTHORS COPYING Makefile.config.model Changes
 PKGDIRS  = apron num itv octagons box newpolka ppl products mlgmpidl mlapronidl examples test apronxx
 
 dist:
