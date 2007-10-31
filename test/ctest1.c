@@ -54,7 +54,7 @@ bool random_abstract2_equal = 1;
 size_t nb_meetjoin_array = 4;
 size_t nb_asssub_array = 4;
 
-#define N 3
+#define N 10
 
 char b1_[N+4]= " [";
 char b2_[N+4];
@@ -1416,11 +1416,17 @@ int main(int argc, char** argv)
   ap_manager_t* manpkl = pk_manager_alloc(false);
   ap_manager_t* manpks = pk_manager_alloc(true);
   ap_manager_t* manpkeq = pkeq_manager_alloc();
+
+  ap_funopt_t funopt = ap_manager_get_funopt(manpkl,AP_FUNID_REMOVE_DIMENSIONS);
+  funopt.algorithm = -1;
+  ap_manager_set_funopt(manpkl,AP_FUNID_REMOVE_DIMENSIONS,&funopt);
+
+  /*
   ap_manager_t* manppll = ap_ppl_poly_manager_alloc(false);
   ap_manager_t* manppls = ap_ppl_poly_manager_alloc(true);
   ap_manager_t* manpplgrid = ap_ppl_grid_manager_alloc();
   ap_manager_t* manpkgrid = ap_pkgrid_manager_alloc(false);
-
+  */
   /* First serie */
   intdim = 0;
   random_linexpr = &random_linexpr_linear;
@@ -1431,20 +1437,23 @@ int main(int argc, char** argv)
     // box/polyhedra
     test(manpkl,manbox);
     test(manpks,manbox);
-    test(manppll,manbox);
-    test(manppls,manbox);
+    //test(manppll,manbox);
+    //test(manppls,manbox);
 
     // polyhedra/polyhedra (same library)
     test(manpks,manpkl);
     test(manpkl,manpks);
-    test(manppls,manppll);
-    test(manppll,manppls);
+    //    test(manppls,manppll);
+    // test(manppll,manppls);
     // Polka polyhedra/PPL polyhedra
+    /*
     test(manppll,manpkl);
     test(manpkl,manppll);
     test(manppls,manpks);
     test(manpks,manppls);
+    */
     // Grid/Equalities
+    /*
     test(manpplgrid,manpkeq);
     random_abstract = &random_abstract_eq;
     test(manpplgrid,manpkeq);
@@ -1454,16 +1463,14 @@ int main(int argc, char** argv)
     random_abstract = &random_abstract_eqmod;
     test(manpkgrid,manpplgrid);
     test(manpkgrid,manpkl);
-
+    */
     // Oct/Box and Oct/Poly
-    /*
     random_abstract = &random_abstract_std;
     test(manoct,manbox);
     test(manpkl,manoct);
     test(manpks,manoct);
-    test(manppll,manoct);
-    test(manppls,manoct);
-    */
+    //    test(manppll,manoct);
+    //test(manppls,manoct);
   }
 
 
@@ -1473,9 +1480,11 @@ int main(int argc, char** argv)
   ap_manager_free(manpkl);
   ap_manager_free(manpks);
   ap_manager_free(manpkeq);
+  /*
   ap_manager_free(manppll);
   ap_manager_free(manppls);
   ap_manager_free(manpplgrid);
   ap_manager_free(manpkgrid);
+  */
   return 0;
 }

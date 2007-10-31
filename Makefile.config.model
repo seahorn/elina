@@ -8,11 +8,12 @@
 
 HAS_OCAML = 1
 
-# If defined to non-empty value, compiles the C++ interface
+# If defined to non-empty value, compiles the C++ interface (beta version)
 
 # HAS_CPP = 1
 
 # If defined to non-empty value, compiles the PPL domain
+# (require included patch to PPL)
 
 # HAS_PPL = 1
 
