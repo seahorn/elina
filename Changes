@@ -1,9 +1,13 @@
 Version 0.9.8
 
-- Several bugs corrections
 - New C++ interface, still experimental 
+
+- Instructions for compilation under Windows
+
 - Clarification of license issues related to the PPL (under GPL license,
   whereas APRON is LGPL)
+
+- Several bugs corrections
 
 Version 0.9.7
 
