@@ -37,7 +37,7 @@ var environment linexpr1 lincons1 generator1 texpr1 tcons1 abstract1
 IDLMODULEStex = ocamldoc.tex \
 Scalar.tex Interval.tex Coeff.tex \
 Dim.tex Linexpr0.tex Lincons0.tex Generator0.tex  Texpr0.tex Tcons0.tex Texpr1.tex Tcons1.tex Manager.tex Abstract0.tex \
-Var.tex Environment.tex Linexpr1.tex Lincons1.tex Generator1.tex Abstract1.tex \
+Var.tex Environment.tex Linexpr1.tex Lincons1.tex Generator1.tex Texpr1.tex Tcons1.tex Abstract1.tex \
 Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Mpf.tex Gmp_random.tex Mpfr.tex Box.tex Oct.tex Polka.tex Ppl.tex PolkaGrid.tex 
 
 MLMODULES = $(IDLMODULES) apron_parser apron_lexer parser
