@@ -35,7 +35,7 @@ CCSRC = box_config.h box.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = box.h
 CCBIN_TO_INSTALL =
-CCLIB_TO_INSTALL = libbox.a libbox_debug.a libboxMPQ.a libboxMPQ_debug.a
+CCLIB_TO_INSTALL = libbox.a libbox_debug.a libboxMPQ.a libboxMPQ_debug.a libboxD.a libboxD_debug.a
 CAML_TO_INSTALL = box.idl box.ml box.mli box.cmi box.cmx box.cma box.cmxa box.a libbox_caml.a libbox_caml_debug.a
 
 #---------------------------------------
@@ -46,9 +46,10 @@ CAML_TO_INSTALL = box.idl box.ml box.mli box.cmi box.cmx box.cma box.cmxa box.a 
 # depend doc install
 # and the following one
 
-all: libbox.a libbox_debug.a allMPQ
+all: libbox.a libbox_debug.a allMPQ allD
 
 allMPQ: libboxMPQ.a libboxMPQ_debug.a
+allD: libboxD.a libboxD_debug.a
 
 ml: box.mli box.ml box.cmi box.cmx box.cma box.cmxa libbox_caml.a libbox_caml_debug.a
 
