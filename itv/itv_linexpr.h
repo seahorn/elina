@@ -163,12 +163,17 @@ static inline void itv_linexpr_sub(itv_internal_t* intern,
 /* IV. Tests and Simplifications */
 /* ********************************************************************** */
 
+static inline bool itv_linexpr_is_integer(itv_linexpr_t* expr, size_t intdim);
+static inline bool itv_lincons_is_integer(itv_lincons_t* cons, size_t intdim);
 static inline bool itv_linexpr_is_scalar(itv_linexpr_t* expr);
 static inline bool itv_linexpr_is_quasilinear(itv_linexpr_t* expr);
+static inline bool itv_linexpr_is_integer(itv_linexpr_t* expr, size_t intdim);
 static inline bool itv_lincons_is_scalar(itv_lincons_t* expr);
 static inline bool itv_lincons_is_quasilinear(itv_lincons_t* expr);
 static inline bool itv_lincons_array_is_scalar(itv_lincons_array_t* array);
 static inline bool itv_lincons_array_is_quasilinear(itv_lincons_array_t* array);
+static inline bool itv_linexpr_is_integer(itv_linexpr_t* expr, size_t intdim);
+static inline bool itv_lincons_is_integer(itv_lincons_t* cons, size_t intdim);
 
 static inline tbool_t itv_eval_cstlincons(itv_internal_t* intern,
 					  itv_lincons_t* lincons);
@@ -185,8 +190,25 @@ static inline bool itv_sat_lincons_is_false(itv_internal_t* intern,
      - the cases where itv_eval_cstlincons returns tbool_false
   */
 
+static inline void itv_lincons_reduce_integer(itv_internal_t* intern,
+					      itv_lincons_t* cons, size_t intdim);
+
 static inline tbool_t itv_lincons_array_reduce(itv_internal_t* intern,
 					       itv_lincons_array_t* array, bool meet);
+  /* Simplify the array as follows:
+     - remove trivially true constraints (like 1>=0)
+     - if a constraint is trivially false, reduce the array to the constraint
+       1=0 
+     Return 
+     - tbool_true if rmpty array
+     - tbool_false if trivially false
+     - tbool_top otherwise
+  */
+static inline tbool_t itv_lincons_array_reduce_integer(itv_internal_t* intern,
+						       itv_lincons_array_t* array, 
+						       size_t intdim);
+  /* Apply first itv_lincons_reduce_integer, and then
+     itv_lincons_array_reduce(.,.,true) */
 
 /* ********************************************************************** */
 /* Definition of inline functions */
@@ -223,10 +245,14 @@ bool ITVFUN(itv_linexpr_is_scalar)(itv_linexpr_t* expr);
 bool ITVFUN(itv_linexpr_is_quasilinear)(itv_linexpr_t* expr);
 bool ITVFUN(itv_lincons_array_is_scalar)(itv_lincons_array_t* array);
 bool ITVFUN(itv_lincons_array_is_quasilinear)(itv_lincons_array_t* array);
+bool ITVFUN(itv_linexpr_is_integer)(itv_linexpr_t* expr, size_t intdim);
+bool ITVFUN(itv_lincons_is_integer)(itv_lincons_t* cons, size_t intdim);
 
 tbool_t ITVFUN(itv_eval_cstlincons)(itv_internal_t* intern, itv_lincons_t* lincons);
 bool ITVFUN(itv_sat_lincons_is_false)(itv_internal_t* intern, itv_lincons_t* lincons);
+  void ITVFUN(itv_lincons_reduce_integer)(itv_internal_t* intern, itv_lincons_t* cons, size_t intdim);
 tbool_t ITVFUN(itv_lincons_array_reduce)(itv_internal_t* intern, itv_lincons_array_t* array, bool meet);
+tbool_t ITVFUN(itv_lincons_array_reduce_integer)(itv_internal_t* intern, itv_lincons_array_t* array, size_t intdim);
 
 
 static inline void itv_linterm_init(itv_linterm_t* term)
@@ -334,12 +360,20 @@ static inline bool itv_lincons_array_is_scalar(itv_lincons_array_t* array)
 { return ITVFUN(itv_lincons_array_is_scalar)(array); }
 static inline bool itv_lincons_array_is_quasilinear(itv_lincons_array_t* array)
 { return ITVFUN(itv_lincons_array_is_quasilinear)(array); }
+static inline bool itv_linexpr_is_integer(itv_linexpr_t* expr, size_t intdim)
+{ return ITVFUN(itv_linexpr_is_integer)(expr,intdim); }
+static inline bool itv_lincons_is_integer(itv_lincons_t* cons, size_t intdim)
+{ return ITVFUN(itv_linexpr_is_integer)(&cons->linexpr,intdim); }
 static inline tbool_t itv_eval_cstlincons(itv_internal_t* intern, itv_lincons_t* lincons)
 { return ITVFUN(itv_eval_cstlincons)(intern,lincons); }
 static inline bool itv_sat_lincons_is_false(itv_internal_t* intern, itv_lincons_t* lincons)
 { return ITVFUN(itv_sat_lincons_is_false)(intern,lincons); }
+static inline void itv_lincons_reduce_integer(itv_internal_t* intern, itv_lincons_t* cons, size_t intdim)
+{ ITVFUN(itv_lincons_reduce_integer)(intern,cons,intdim); }
 static inline tbool_t itv_lincons_array_reduce(itv_internal_t* intern, itv_lincons_array_t* array, bool meet)
 { return ITVFUN(itv_lincons_array_reduce)(intern,array,meet); }
+static inline tbool_t itv_lincons_array_reduce_integer(itv_internal_t* intern, itv_lincons_array_t* array, size_t intdim)
+{ return ITVFUN(itv_lincons_array_reduce_integer)(intern,array,intdim); }
 #ifdef __cplusplus
 }
 #endif

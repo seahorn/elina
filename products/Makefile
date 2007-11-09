@@ -10,15 +10,14 @@ SRCDIR = $(shell pwd)
 
 # Use ICFLAGS to specify machine-independent compilation flags.
 ICFLAGS = \
--I$(GMP_PREFIX)/include \
--I$(MPFR_PREFIX)/include \
 -I../apron \
 -I../num -I../itv \
 -I../newpolka \
 -I../ppl \
 -I../mlgmpidl \
 -I../mlapronidl \
--I $(CAMLIDL_PREFIX)/lib/ocaml -I $(CAML_PREFIX)/lib/ocaml
+-I$(GMP_PREFIX)/include -I$(MPFR_PREFIX)/include \
+-I$(CAMLIDL_PREFIX)/lib/ocaml -I$(CAML_PREFIX)/lib/ocaml
 
 # Caml
 OCAMLINC = -I ../mlgmpidl -I ../mlapronidl -I ../newpolka

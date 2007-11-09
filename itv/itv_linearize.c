@@ -151,6 +151,18 @@ static bool itv_boxize_lincons(itv_internal_t* intern,
 			intern->boxize_lincons_eval->inf,
 			intern->boxize_lincons_itv->inf);
 	    }
+	    if (dim<intdim && !bound_infty(intern->boxize_lincons_bound)){
+	      if (cons->constyp==AP_CONS_SUP &&
+		  num_integer(bound_numref(intern->boxize_lincons_bound))){
+		num_sub_uint(bound_numref(intern->boxize_lincons_bound),
+			     bound_numref(intern->boxize_lincons_bound),
+			     1);
+	      }
+	      else {
+		bound_floor(intern->boxize_lincons_bound,
+			    intern->boxize_lincons_bound);
+	      }
+	    }
 	    /* We update the interval */
 	    if (bound_cmp(intern->boxize_lincons_bound, res[dim]->inf)<0){
 	      change = true;
@@ -172,6 +184,18 @@ static bool itv_boxize_lincons(itv_internal_t* intern,
 	      bound_div(intern->boxize_lincons_bound,
 			intern->boxize_lincons_eval->inf,
 			intern->boxize_lincons_itv->sup);
+	    }
+	    if (dim<intdim && !bound_infty(intern->boxize_lincons_bound)){
+	      if (cons->constyp==AP_CONS_SUP &&
+		  num_integer(bound_numref(intern->boxize_lincons_bound))){
+		num_sub_uint(bound_numref(intern->boxize_lincons_bound),
+			     bound_numref(intern->boxize_lincons_bound),
+			     1);
+	      }
+	      else {
+		bound_floor(intern->boxize_lincons_bound,
+			    intern->boxize_lincons_bound);
+	      }
 	    }
 	    /* We update the interval */
 	    if (bound_cmp(intern->boxize_lincons_bound, res[dim]->sup)<0){
@@ -243,6 +267,18 @@ static bool itv_boxize_lincons(itv_internal_t* intern,
 			  intern->boxize_lincons_bound);
 	      }
 	    }
+	    if (dim<intdim && !bound_infty(intern->boxize_lincons_bound)){
+	      if (cons->constyp==AP_CONS_SUP &&
+		  num_integer(bound_numref(intern->boxize_lincons_bound))){
+		num_sub_uint(bound_numref(intern->boxize_lincons_bound),
+			     bound_numref(intern->boxize_lincons_bound),
+			     1);
+	      }
+	      else {
+		bound_floor(intern->boxize_lincons_bound,
+			    intern->boxize_lincons_bound);
+	      }
+	    }
 	    /* We update the interval */
 	    if (bound_cmp(intern->boxize_lincons_bound, res[dim]->inf)<0){
 	      change = true;
@@ -280,6 +316,18 @@ static bool itv_boxize_lincons(itv_internal_t* intern,
 		bound_div(intern->boxize_lincons_bound,
 			  intern->boxize_lincons_bound,
 			  intern->boxize_lincons_itv->inf);
+	      }
+	    }
+	    if (dim<intdim && !bound_infty(intern->boxize_lincons_bound)){
+	      if (cons->constyp==AP_CONS_SUP &&
+		  num_integer(bound_numref(intern->boxize_lincons_bound))){
+		num_sub_uint(bound_numref(intern->boxize_lincons_bound),
+			     bound_numref(intern->boxize_lincons_bound),
+			     1);
+	      }
+	      else {
+		bound_floor(intern->boxize_lincons_bound,
+			    intern->boxize_lincons_bound);
 	      }
 	    }
 	    /* We update the interval */

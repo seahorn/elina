@@ -472,6 +472,24 @@ bool ITVFUN(itv_lincons_array_is_quasilinear)(itv_lincons_array_t* array)
   return res;
 }
 
+bool ITVFUN(itv_linexpr_is_integer)(itv_linexpr_t* expr, size_t intdim)
+{
+  size_t i;
+  bool res;
+
+  res = true;
+  for (i=0; i<expr->size; i++){
+    if (expr->linterm[i].dim>=intdim){
+      res = false;
+      break;
+    }
+  }
+  return res;
+}
+bool ITVFUN(itv_lincons_is_integer)(itv_lincons_t* cons, size_t intdim)
+{
+  return ITVFUN(itv_linexpr_is_integer)(&cons->linexpr,intdim);
+}
 /* Evaluate a constraint, composed of a constant (interval) expression */
 tbool_t ITVFUN(itv_eval_cstlincons)(itv_internal_t* intern,
 				    itv_lincons_t* lincons)
@@ -631,7 +649,140 @@ itv_lincons_is_useless_for_meet(itv_internal_t* intern,
     }
   }
   return res;
- }
+}
+
+void ITVFUN(itv_lincons_reduce_integer)(itv_internal_t* intern,
+					itv_lincons_t* cons,
+					size_t intdim)
+{
+  itv_linexpr_t* expr;
+  size_t i;
+  itv_ptr pitv;
+  ap_dim_t dim;
+  bool* peq;
+  bool integer;
+
+  switch (cons->constyp){
+  case AP_CONS_EQ:
+  case AP_CONS_SUPEQ:
+  case AP_CONS_SUP:
+    break;
+  default:
+    return;
+  }
+  expr = &cons->linexpr;
+  /* Tests if only integer variables are involved */
+  if (!itv_linexpr_is_integer(expr,intdim))
+    return;
+  /* Check that there are only scalar coefficients for dimensions */
+  itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq) {
+    if (!(*peq))
+      return;
+  }
+#if defined(NUM_NUMRAT)
+  {
+    /* compute lcm of denominators and gcd of numerators */
+    numint_set_int(numrat_denref(intern->quasi_num),1);
+    numint_set_int(numrat_numref(intern->quasi_num),0);
+    itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq) {
+      numint_lcm(numrat_denref(intern->quasi_num),
+		 numrat_denref(intern->quasi_num),
+		 numrat_denref(bound_numref(pitv->sup)));
+      numint_gcd(numrat_numref(intern->quasi_num),
+		 numrat_numref(intern->quasi_num),
+		 numrat_numref(bound_numref(pitv->sup)));
+    }
+    if (numint_sgn(numrat_numref(intern->quasi_num))==0)
+      return;
+    itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq) {
+      numint_divexact(numrat_numref(bound_numref(pitv->sup)),
+		      numrat_numref(bound_numref(pitv->sup)),
+		      numrat_numref(intern->quasi_num));
+      numint_mul(numrat_numref(bound_numref(pitv->sup)),
+		 numrat_numref(bound_numref(pitv->sup)),
+		 numrat_denref(intern->quasi_num));
+      numint_divexact(numrat_numref(bound_numref(pitv->sup)),
+		      numrat_numref(bound_numref(pitv->sup)),
+		      numrat_denref(intern->quasi_num));
+      numint_set_int(numrat_denref(bound_numref(pitv->sup)),
+		     1);
+      bound_neg(pitv->inf,pitv->sup);
+    }
+    numrat_inv(intern->quasi_num,intern->quasi_num);
+    itv_mul_num(expr->cst,expr->cst,intern->quasi_num);
+  }
+#else
+#if defined(NUM_NUMFLT)
+  {
+    /* Assuming that all coefficients are either infinite or integer,
+       compute the pgcd */
+    mpz_set_si(intern->reduce_lincons_gcd,0);
+    itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq) {
+      if (!numflt_integer(pitv->sup)) 
+	return;
+      mpz_set_numflt(intern->reduce_lincons_mpz,pitv->sup);
+      mpz_gcd(intern->reduce_lincons_gcd,
+	      intern->reduce_lincons_gcd,
+	      intern->reduce_lincons_mpz);
+    }
+    if (mpz_sgn(intern->reduce_lincons_gcd)==0 ||
+	mpz_cmp_si(intern->reduce_lincons_gcd,1)==0)
+      return;
+    bool exact = numflt_set_mpz(intern->quasi_num,intern->reduce_lincons_gcd);
+    if (!exact) return;
+  }
+#elif defined(NUM_NUMINT)
+  {
+    num_set_int(intern->quasi_num,0);
+    itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq) {
+      numint_gcd(intern->quasi_num,
+		 intern->quasi_num,
+		 bound_numref(pitv->sup));
+    }
+    if (numint_sgn(intern->quasi_num)==0 ||
+	numint_cmp_int(intern->quasi_num,1)==0)
+      return;
+  }
+#else
+#error "HERE"
+#endif
+  /* divide by gcd put in intern->quasi_num */
+  itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq) {
+    itv_div_num(pitv,pitv,intern->quasi_num);
+  }
+  itv_div_num(expr->cst,expr->cst,intern->quasi_num);
+#endif 
+  /* Constrain bounds */
+  if (!bound_infty(expr->cst->sup)){
+    num_floor(bound_numref(expr->cst->sup),
+	      bound_numref(expr->cst->sup));
+  }
+  if (cons->constyp == AP_CONS_EQ){
+    if (!bound_infty(expr->cst->inf)){
+      if (expr->equality){
+	bound_neg(expr->cst->inf,
+		  expr->cst->sup);
+      }
+      else {
+	num_floor(bound_numref(expr->cst->inf),
+		  bound_numref(expr->cst->inf));
+      }
+    }
+    if (itv_is_bottom(intern,expr->cst)){
+      itv_lincons_set_bool(cons,false);
+    }
+  }
+  else {
+    if (!bound_infty(expr->cst->sup)){
+      bound_neg(expr->cst->inf,expr->cst->sup);
+      expr->equality = true;
+    }
+    if (cons->constyp==AP_CONS_SUP){
+      bound_sub_uint(expr->cst->sup,expr->cst->sup,1);
+      bound_add_uint(expr->cst->inf,expr->cst->inf,1);
+    }
+  }
+}
 
 tbool_t ITVFUN(itv_lincons_array_reduce)(itv_internal_t* intern,
 					 itv_lincons_array_t* array, bool meet)
@@ -674,3 +825,13 @@ tbool_t ITVFUN(itv_lincons_array_reduce)(itv_internal_t* intern,
   return res;
 }
 
+tbool_t ITVFUN(itv_lincons_array_reduce_integer)(itv_internal_t* intern,
+						 itv_lincons_array_t* array,
+						 size_t intdim)
+{
+  size_t i;
+  for (i=0; i<array->size; i++){
+    itv_lincons_reduce_integer(intern,&array->p[i],intdim);
+  }
+  return itv_lincons_array_reduce(intern,array,true);
+}

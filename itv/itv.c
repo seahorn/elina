@@ -65,6 +65,8 @@ void ITVFUN(itv_internal_init)(itv_internal_t* intern)
   itv_init(intern->boxize_lincons_itv);
   itv_init(intern->boxize_lincons_eval);
   bound_init(intern->boxize_lincons_bound);
+  mpz_init(intern->reduce_lincons_gcd);
+  mpz_init(intern->reduce_lincons_mpz);
 
   make_float_const(10,5,15,&intern->cst_half);         /* 16-bit */
   make_float_const(23,8,127,&intern->cst_single);      /* 32-bit */
@@ -95,6 +97,8 @@ void ITVFUN(itv_internal_clear)(itv_internal_t* intern)
   itv_clear(intern->boxize_lincons_itv);
   itv_clear(intern->boxize_lincons_eval);
   bound_clear(intern->boxize_lincons_bound);
+  mpz_clear(intern->reduce_lincons_gcd);
+  mpz_clear(intern->reduce_lincons_mpz);
   float_const_clear(&intern->cst_half);
   float_const_clear(&intern->cst_single);
   float_const_clear(&intern->cst_double);

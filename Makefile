@@ -4,11 +4,10 @@ MLREQUESTED = mlgmpidl/Makefile.config
 
 
 LCFLAGS = \
--L$(GMP_PREFIX)/lib \
--L$(MPFR_PREFIX)/lib \
 -Lapron -Litv -Lbox -Loctagons -Lnewpolka \
 -L$(PPL_PREFIX)/lib -Lppl \
 -Lproducts \
+-L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib \
 -L$(CAMLIDL_PREFIX)/lib/ocaml
 
 OCAMLINC = \

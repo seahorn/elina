@@ -560,6 +560,7 @@ void poly_meet_itv_lincons_array(bool lazy,
     itv_array_free(env,po->intdim+po->realdim);
   }
   itv_linearize_lincons_array(pk->itv,array,true);
+  itv_lincons_array_reduce_integer(pk->itv,array,po->intdim);
   bool exact = matrix_set_itv_lincons_array(pk,&mat,array,po->intdim,po->realdim,true);
   matrix_sort_rows(pk,mat);
   if (!lazy) poly_obtain_satC(pa);

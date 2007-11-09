@@ -434,10 +434,15 @@ box_t* box_meet_lincons_array(ap_manager_t* man,
     if (kmax<1) kmax=2;
     itv_lincons_array_init(&tlincons,array->size);
     itv_lincons_array_set_ap_lincons0_array(intern->itv,&tlincons,array);
+    tbool_t tb = itv_lincons_array_reduce_integer(intern,&tlincons,a->intdim);
+    if (tb==tbool_false){
+      goto _box_meet_lincons_array_bottom;
+    }
     itv_boxize_lincons_array(intern->itv,
 			     res->p,NULL,
 			     &tlincons,res->p,a->intdim,kmax,false);
     if (itv_is_bottom(intern->itv,res->p[0])){
+    _box_meet_lincons_array_bottom:
       box_set_bottom(res);
     }
     itv_lincons_array_clear(&tlincons);
@@ -469,10 +474,15 @@ box_t* box_meet_tcons_array(ap_manager_t* man,
     itv_lincons_array_init(&tlincons,array->size);
     itv_intlinearize_ap_tcons0_array(intern->itv,&tlincons,
 				     array,res->p,res->intdim);
+    tbool_t tb = itv_lincons_array_reduce_integer(intern,&tlincons,a->intdim);
+    if (tb==tbool_false){
+      goto _box_meet_tcons_array_bottom;
+    }
     itv_boxize_lincons_array(intern->itv,
 			     res->p,NULL,
 			     &tlincons,res->p,a->intdim,kmax,false);
     if (itv_is_bottom(intern->itv,res->p[0])){
+    _box_meet_tcons_array_bottom:
       box_set_bottom(res);
     }
     itv_lincons_array_clear(&tlincons);

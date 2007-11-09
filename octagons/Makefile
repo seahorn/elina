@@ -33,12 +33,11 @@ SHARED = gcc -shared
 ICFLAGS = \
 -I../newpolka \
 -I../mlgmpidl \
--I$(MPFR_PREFIX)/include \
--I$(GMP_PREFIX)/include \
 -I../apron \
 -I../mlapronidl \
 -I../num \
 -I../itv \
+-I$(MPFR_PREFIX)/include -I$(GMP_PREFIX)/include \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
 
 # Caml
