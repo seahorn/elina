@@ -117,6 +117,7 @@ static inline int num_sgn(num_t a);
 static inline int num_cmp(num_t a, num_t b);
 static inline int num_cmp_int(num_t a, long int b);
 static inline bool num_equal(num_t a, num_t b);
+static inline bool num_integer(num_t a);
 
 /* ====================================================================== */
 /* Printing */

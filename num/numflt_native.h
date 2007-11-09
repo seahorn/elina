@@ -166,6 +166,13 @@ static inline int numflt_cmp_int(numflt_t a, long int b)
 static inline bool numflt_equal(numflt_t a, numflt_t b)
 { return *a==*b; }
 
+static inline bool numflt_integer(numflt_t a)
+#if defined(NUMFLT_DOUBLE)
+{ return ceil(*a) == *a; }
+#else
+{ return ceill(*a) == *a; }
+#endif
+
 /* ====================================================================== */
 /* Printing */
 /* ====================================================================== */
@@ -330,13 +337,6 @@ static inline bool numflt_infty(numflt_t a)
 #endif
 static inline void numflt_set_infty(numflt_t a)
 { *a = NUMFLT_MAX; }
-
-static inline bool numflt_integer(numflt_t a)
-#if defined(NUMFLT_DOUBLE)
-{ return ceil(*a) == *a; }
-#else
-{ return ceill(*a) == *a; }
-#endif
 
 /* ====================================================================== */
 /* Serialization */

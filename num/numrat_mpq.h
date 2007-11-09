@@ -176,6 +176,8 @@ static inline int numrat_cmp_int(numrat_t a, long int b)
 { return mpq_cmp_si(a,b,1); }
 static inline bool numrat_equal(numrat_t a, numrat_t b)
 { return mpq_equal(a,b); }
+static inline bool numrat_integer(numrat_t a)
+{ return (mpz_cmp_ui(mpq_denref(a),1)==0); }
 
 /* ====================================================================== */
 /* Printing */

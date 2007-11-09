@@ -120,6 +120,8 @@ static inline int num_cmp_int(num_t a, long int b)
       { return numflt_cmp_int(a,b); }
 static inline bool num_equal(num_t a, num_t b)
       { return numflt_equal(a,b); }
+static inline bool num_integer(num_t a)
+      { return numflt_integer(a); }
 
 /* ====================================================================== */
 /* Printing */

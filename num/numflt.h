@@ -82,6 +82,7 @@ static inline int numflt_sgn(numflt_t a);
 static inline int numflt_cmp(numflt_t a, numflt_t b);
 static inline int numflt_cmp_int(numflt_t a, long int b);
 static inline bool numflt_equal(numflt_t a, numflt_t b);
+static inline bool numflt_integer(numflt_t a);
 
 /* ====================================================================== */
 /* Printing */
@@ -135,8 +136,6 @@ static inline bool numflt_set_mpq_tmp(numflt_t a, mpq_t b, mpfr_t mpfr);
 
 static inline bool numflt_infty(numflt_t a);
 static inline void numflt_set_infty(numflt_t a);
-static inline bool numflt_integer(numflt_t a);
-
 
 /* ====================================================================== */
 /* Serialization */

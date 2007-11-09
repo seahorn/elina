@@ -147,6 +147,8 @@ static inline int numint_cmp_int(numint_t a, long int b)
 { return mpz_cmp_si(a,b); }
 static inline bool numint_equal(numint_t a, numint_t b)
 { return mpz_cmp(a,b)==0; }
+static inline bool numint_integer(numint_t a)
+{ return true; }
 
 /* ====================================================================== */
 /* Printing */

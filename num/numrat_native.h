@@ -254,6 +254,9 @@ static inline void numrat_min(numrat_t a, numrat_t b, numrat_t c)
 static inline void numrat_max(numrat_t a, numrat_t b, numrat_t c)
 { numrat_set(a, numrat_cmp(b,c)>=0 ? b : c); }
 
+static inline bool numrat_integer(numrat_t a)
+{ return (*a->d==1); }
+
 /* ====================================================================== */
 /* Printing */
 /* ====================================================================== */

@@ -212,6 +212,8 @@ static inline int numint_cmp_int(numint_t a, long int b)
 { return (*a==b ? 0 : (*a>b ? 1 : -1)); }
 static inline bool numint_equal(numint_t a, numint_t b)
 { return *a==*b; }
+static inline bool numint_integer(numint_t a)
+{ return true; }
 
 /* ====================================================================== */
 /* Printing */
