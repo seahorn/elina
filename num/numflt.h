@@ -135,6 +135,8 @@ static inline bool numflt_set_mpq_tmp(numflt_t a, mpq_t b, mpfr_t mpfr);
 
 static inline bool numflt_infty(numflt_t a);
 static inline void numflt_set_infty(numflt_t a);
+static inline bool numflt_integer(numflt_t a);
+
 
 /* ====================================================================== */
 /* Serialization */

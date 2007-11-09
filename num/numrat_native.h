@@ -107,6 +107,16 @@ static inline void numrat_clear_array(numrat_t* a, size_t size)
 
 static inline void numrat_neg(numrat_t a, numrat_t b)
 { numint_neg(a->n,b->n); numint_set(a->d,b->d); }
+static inline void numrat_inv(numrat_t a, numrat_t b)
+{ 
+  if (a!=b)
+    *a = *b;
+  numint_swap(a->n,a->d);
+  if (*a->d<0){
+    numint_neg(a->n,a->n);
+    numint_neg(a->d,a->d);
+  }
+}
 static inline void numrat_abs(numrat_t a, numrat_t b)
 { numint_abs(a->n,b->n); numint_set(a->d,b->d); }
 static inline void numrat_add(numrat_t a, numrat_t b, numrat_t c)

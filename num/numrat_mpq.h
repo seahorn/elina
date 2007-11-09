@@ -92,6 +92,8 @@ static inline void numrat_clear_array(numrat_t* a, size_t size)
 
 static inline void numrat_neg(numrat_t a, numrat_t b)
 { mpq_neg(a,b); }
+static inline void numrat_inv(numrat_t a, numrat_t b)
+{ mpq_inv(a,b); }
 static inline void numrat_abs(numrat_t a, numrat_t b)
 { mpq_abs(a,b); }
 static inline void numrat_add(numrat_t a, numrat_t b, numrat_t c)

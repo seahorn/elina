@@ -54,6 +54,7 @@ static inline void numrat_swap(numrat_t a, numrat_t b)
 /* ====================================================================== */
 
 static inline void numrat_neg(numrat_t a, numrat_t b);
+static inline void numrat_inv(numrat_t a, numrat_t b);
 static inline void numrat_abs(numrat_t a, numrat_t b);
 static inline void numrat_add(numrat_t a, numrat_t b, numrat_t c);
 static inline void numrat_add_uint(numrat_t a, numrat_t b, unsigned long int c);

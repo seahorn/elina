@@ -331,6 +331,13 @@ static inline bool numflt_infty(numflt_t a)
 static inline void numflt_set_infty(numflt_t a)
 { *a = NUMFLT_MAX; }
 
+static inline bool numflt_integer(numflt_t a)
+#if defined(NUMFLT_DOUBLE)
+{ return ceil(*a) == *a; }
+#else
+{ return ceill(*a) == *a; }
+#endif
+
 /* ====================================================================== */
 /* Serialization */
 /* ====================================================================== */
