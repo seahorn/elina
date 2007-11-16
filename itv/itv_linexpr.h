@@ -132,7 +132,7 @@ static inline void ap_linexpr0_set_itv_linexpr(itv_internal_t* intern,
      If the result *plinexpr0 is not NULL,
      possibly reinitialize *plinexpr0, otherwise allocate it.
   */
-static inline void ap_lincons0_set_itv_lincons(itv_internal_t* intern, 
+static inline void ap_lincons0_set_itv_lincons(itv_internal_t* intern,
 					       ap_lincons0_t* plincons0, itv_lincons_t* lincons);
   /* Convert an itv_linexpr_t into an ap_linexpr0_t.
      The result plincons0 is supposed initialized.
@@ -192,20 +192,31 @@ static inline bool itv_sat_lincons_is_false(itv_internal_t* intern,
 
 static inline void itv_lincons_reduce_integer(itv_internal_t* intern,
 					      itv_lincons_t* cons, size_t intdim);
+  /* Transform a constraint involving only integer variables and only scalar
+     coefficients (with the exception of the constant) as follows:
+     - divide expr by the pgcd of non-constant coefficients
+       details differ according to type of num (integer, rational,
+       floating-point)
+
+     - expr + [min,sup] >= 0  ==>  expr + floor(sup) >= 0
+     - expr + [min,sup] > 0   ==>  expr + sup - 1 >=      if sup is integer
+				   expr + floor(sup) >= 0 otherwise
+     - expr + [min,sup] = 0   ==>  expr + [ceil(min),floor(sup)] = 0
+  */
 
 static inline tbool_t itv_lincons_array_reduce(itv_internal_t* intern,
 					       itv_lincons_array_t* array, bool meet);
   /* Simplify the array as follows:
      - remove trivially true constraints (like 1>=0)
      - if a constraint is trivially false, reduce the array to the constraint
-       1=0 
-     Return 
+       1=0
+     Return
      - tbool_true if rmpty array
      - tbool_false if trivially false
      - tbool_top otherwise
   */
 static inline tbool_t itv_lincons_array_reduce_integer(itv_internal_t* intern,
-						       itv_lincons_array_t* array, 
+						       itv_lincons_array_t* array,
 						       size_t intdim);
   /* Apply first itv_lincons_reduce_integer, and then
      itv_lincons_array_reduce(.,.,true) */

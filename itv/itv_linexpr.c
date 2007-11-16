@@ -714,7 +714,7 @@ void ITVFUN(itv_lincons_reduce_integer)(itv_internal_t* intern,
 #else
 #if defined(NUM_NUMFLT)
   {
-    /* Assuming that all coefficients are either infinite or integer,
+    /* Assuming that all coefficients are either integer,
        compute the pgcd */
     mpz_set_si(intern->reduce_lincons_gcd,0);
     itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq) {
@@ -754,8 +754,20 @@ void ITVFUN(itv_lincons_reduce_integer)(itv_internal_t* intern,
 #endif 
   /* Constrain bounds */
   if (!bound_infty(expr->cst->sup)){
-    num_floor(bound_numref(expr->cst->sup),
-	      bound_numref(expr->cst->sup));
+    if (cons->constyp==AP_CONS_SUP){
+      if (num_integer(bound_numref(expr->cst->sup))){
+	bound_sub_uint(expr->cst->sup,expr->cst->sup,1);
+      }
+      else {
+	num_floor(bound_numref(expr->cst->sup),
+		  bound_numref(expr->cst->sup));
+      }
+      cons->constyp = AP_CONS_SUPEQ;
+    }
+    else {
+      num_floor(bound_numref(expr->cst->sup),
+		bound_numref(expr->cst->sup));
+    }
   }
   if (cons->constyp == AP_CONS_EQ){
     if (!bound_infty(expr->cst->inf)){
@@ -776,10 +788,6 @@ void ITVFUN(itv_lincons_reduce_integer)(itv_internal_t* intern,
     if (!bound_infty(expr->cst->sup)){
       bound_neg(expr->cst->inf,expr->cst->sup);
       expr->equality = true;
-    }
-    if (cons->constyp==AP_CONS_SUP){
-      bound_sub_uint(expr->cst->sup,expr->cst->sup,1);
-      bound_add_uint(expr->cst->inf,expr->cst->inf,1);
     }
   }
 }
