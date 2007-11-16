@@ -7,7 +7,7 @@ include ../Makefile.config
 SRCDIR = $(shell pwd)
 #
 #
-PREFIX = $(APRON_INSTALL)
+PREFIX = $(APRON_PREFIX)
 #
 
 #---------------------------------------
@@ -85,16 +85,16 @@ mostlyclean: clean
 	/bin/rm -f $(IDLMODULES:%=%.ml) $(IDLMODULES:%=%.mli) $(IDLMODULES:%=%_caml.c)
 
 distclean:
-	/bin/rm -f $(MLLIB_TOINSTALL:%=$(MLAPRONIDL_PREFIX)/lib/%)
-	/bin/rm -f $(MLLIB_TOINSTALLx:%=$(MLAPRONIDL_PREFIX)/lib/%)
-	/bin/rm -f $(CCLIB_TOINSTALL:%=$(MLAPRONIDL_PREFIX)/lib/%)
-	/bin/rm -f $(CCINC_TOINSTALL:%=$(MLAPRONIDL_PREFIX)/include/%)
+	/bin/rm -f $(MLLIB_TOINSTALL:%=$(APRON_PREFIX)/lib/%)
+	/bin/rm -f $(MLLIB_TOINSTALLx:%=$(APRON_PREFIX)/lib/%)
+	/bin/rm -f $(CCLIB_TOINSTALL:%=$(APRON_PREFIX)/lib/%)
+	/bin/rm -f $(CCINC_TOINSTALL:%=$(APRON_PREFIX)/include/%)
 
 install: $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(CCINC_TOINSTALL)
-	mkdir -p $(MLAPRONIDL_PREFIX)/lib
-	mkdir -p $(MLAPRONIDL_PREFIX)/include
-	cp $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(MLAPRONIDL_PREFIX)/lib
-	cp $(CCINC_TOINSTALL) $(MLAPRONIDL_PREFIX)/include
+	mkdir -p $(APRON_PREFIX)/lib
+	mkdir -p $(APRON_PREFIX)/include
+	cp $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(APRON_PREFIX)/lib
+	cp $(CCINC_TOINSTALL) $(APRON_PREFIX)/include
 
 #---------------------------------------
 # C rules
@@ -113,12 +113,12 @@ libapron_caml_debug.a: $(CCMODULES:%=%_debug.o)
 
 apron.cma: apron.cmo libapron_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ apron.cmo \
-	-ccopt "-L$(APRON_PREFIX)/lib -L$(MLAPRONIDL_PREFIX)/lib" \
+	-ccopt "-L$(APRON_PREFIX)/lib -L$(APRON_PREFIX)/lib" \
 	-cclib "-lapron_caml" -cclib "-lapron"
 
 apron.cmxa: apron.cmx libapron_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -for-pack Apron -a -o $@ apron.cmx \
-	-ccopt "-L$(APRON_PREFIX)/lib -L$(MLAPRONIDL_PREFIX)/lib" \
+	-ccopt "-L$(APRON_PREFIX)/lib -L$(APRON_PREFIX)/lib" \
 	-cclib "-lapron_caml" -cclib "-lapron" 
 	$(RANLIB) apron.a
 

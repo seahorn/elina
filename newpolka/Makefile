@@ -1,6 +1,6 @@
 include ../Makefile.config
 
-PREFIX = $(POLKA_PREFIX)
+PREFIX = $(APRON_PREFIX)
 
 SRCDIR = $(shell pwd)
 
@@ -188,12 +188,12 @@ libpolka_caml_debug.a: polka_caml_debug.o
 polka.cma: polka.cmo libpolka_caml.a libpolka.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -custom -a -o $@ \
 	polka.cmo \
-	-ccopt "-L$(POLKA_PREFIX)/lib" -cclib "-lpolka_caml -lpolka"
+	-ccopt "-L$(APRON_PREFIX)/lib" -cclib "-lpolka_caml -lpolka"
 
 polka.cmxa: polka.cmx libpolka_caml.a libpolka.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
 	polka.cmx \
-	-ccopt "-L$(POLKA_PREFIX)/lib" -cclib "-lpolka_caml -lpolka"
+	-ccopt "-L$(APRON_PREFIX)/lib" -cclib "-lpolka_caml -lpolka"
 	$(RANLIB) polka.a
 
 #---------------------------------------

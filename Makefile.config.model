@@ -26,6 +26,16 @@ HAS_OCAML = 1
 # Directories
 ######################################################################
 
+# Where to install and to find APRON 
+# ($(APRON_PREFIX)/include, $(APRON_PREFIX)/lib)
+#
+APRON_PREFIX = /usr
+
+# Where to install and to find MLGMPIDL
+# ($(MLGMPIDL_PREFIX)/lib)
+#
+MLGMPIDL_PREFIX = /usr/local
+
 # Where to find GMP ($(GMP_PREFIX)/include, ($GMP_PREFIX)/lib
 #
 GMP_PREFIX = /usr
@@ -38,11 +48,6 @@ MPFR_PREFIX = /usr
 #
 PPL_PREFIX = /usr
 
-# Where to install and to find APRON 
-# ($(APRON_PREFIX)/include, $(APRON_PREFIX)/lib)
-#
-APRON_PREFIX = /usr
-
 # Where to find OCAML ($(CAML_PREFIX)/bin, $(CAML_PREFIX)/lib/ocaml, ...)
 #
 CAML_PREFIX = /usr
@@ -50,29 +55,6 @@ CAML_PREFIX = /usr
 # Where to find CAMLIDL ($(CAMLIDL_PREFIX)/bin, $(CAMLIDL_PREFIX)/lib/ocaml, ...)
 #
 CAMLIDL_PREFIX = /usr
-
-#########
-# Next variables have as default values $(APRON_PREFIX)
-# Should fits standard usage
-#########
-# Where to install and to find NUM ($(NUM)/include)
-NUM_PREFIX = $(APRON_PREFIX)
-# Where to install and to find ITV ($(ITV)/include)
-ITV_PREFIX = $(APRON_PREFIX)
-# Where to install and to find POLKA ($(POLKA_PREFIX)/include, $(POLKA_PREFIX)/lib)
-POLKA_PREFIX = $(APRON_PREFIX)
-# Where to install and to find BOX (intervals) ($(BOX_PREFIX)/include, $(BOX_PREFIX)/lib)
-BOX_PREFIX = $(APRON_PREFIX)
-# Where to install and to find OMEGA
-OMEGA_PREFIX = $(APRON_PREFIX)
-# Where to install and to find the octagon library
-OCT_PREFIX = $(APRON_PREFIX)
-# Where to install and to find the PPL wrapper library
-APRON_PPL_PREFIX = $(APRON_PREFIX)
-# Where to install and to find MLGMPIDL ($(MLGMPIDL)/lib, $(MLGMPIDL)/bin)
-MLGMPIDL_PREFIX = $(APRON_PREFIX)
-# Where to install and to find MLAPRONIDL ($(MLAPRONIDL)/lib)
-MLAPRONIDL_PREFIX = $(APRON_PREFIX)
 
 ######################################################################
 # Tools and Flags

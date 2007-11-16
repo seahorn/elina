@@ -1,7 +1,7 @@
 
 include ../Makefile.config
 
-PREFIX = $(ITV_PREFIX)
+PREFIX = $(APRON_PREFIX)
 
 SRCDIR = $(shell pwd)
 

@@ -1,6 +1,6 @@
 include ../Makefile.config
 
-PREFIX = $(BOX_PREFIX)
+PREFIX = $(APRON_PREFIX)
 
 SRCDIR = $(shell pwd)
 
@@ -153,11 +153,11 @@ libbox_caml_debug.a: box_caml_debug.o
 
 box.cma: box.cmo libbox_caml.a libbox.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ box.cmo \
-	-ccopt "-L$(BOX_PREFIX)/lib" -cclib "-lbox_caml -lbox"
+	-ccopt "-L$(APRON_PREFIX)/lib" -cclib "-lbox_caml -lbox"
 
 box.cmxa: box.cmx libbox_caml.a libbox.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ box.cmx \
-	-ccopt "-L$(BOX_PREFIX)/lib" -cclib "-lbox_caml -lbox"
+	-ccopt "-L$(APRON_PREFIX)/lib" -cclib "-lbox_caml -lbox"
 	$(RANLIB) box.a
 
 

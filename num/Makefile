@@ -20,11 +20,11 @@ bound_def.h
 all:
 
 install:
-	mkdir -p $(NUM_PREFIX)/include
-	cp $(H_FILES) $(NUM_PREFIX)/include
+	mkdir -p $(APRON_PREFIX)/include
+	cp $(H_FILES) $(APRON_PREFIX)/include
 
 distclean:
-	(cd $(NUM_PREFIX)/include; /bin/rm -f $(H_FILES))
+	(cd $(APRON_PREFIX)/include; /bin/rm -f $(H_FILES))
 
 dist: $(H_FILES) Makefile README
 	(cd ..; tar zcvf num.tgz $(^:%=num/%))

@@ -9,7 +9,7 @@
 
 include ../Makefile.config
 
-PREFIX = $(OCT_PREFIX)
+PREFIX = $(APRON_PREFIX)
 
 # C include and lib directories
 INCDIR = $(PREFIX)/include
@@ -217,12 +217,12 @@ octrun%: oct.cma liboct_caml.a
 oct.cma: oct.cmi oct.cmo liboct_caml.a
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -custom -a -o $@ \
 	oct.cmo \
-	-ccopt "-L$(OCT_PREFIX)/lib" -cclib "-loct_caml"
+	-ccopt "-L$(APRON_PREFIX)/lib" -cclib "-loct_caml"
 
 oct.cmxa oct.a: oct.cmi oct.cmx liboct_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
 	oct.cmx \
-	-ccopt "-L$(OCT_PREFIX)/lib" -cclib "-loct_caml"
+	-ccopt "-L$(APRON_PREFIX)/lib" -cclib "-loct_caml"
 	$(RANLIB) oct.a
 
 liboct_caml.a: oct_caml.o
