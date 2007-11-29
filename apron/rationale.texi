@@ -285,6 +285,25 @@ above.
 constraints in which the expression can be possibly an interval linear
 expression, linear equalities modulo a number, and linear disequalities.
 @item generators
+A generator system for a subset of @math{X\subseteq R^n} is a finite
+set of vectors, among which one distinguishes @emph{points}
+@math{p_0,\ldots,p_m} and @emph{rays} @math{r_0,\ldots,r_n}, that
+generates @math{X}:
+@iftex 
+@tex
+$$X=\{ \lambda_0 \vec{p_0} + \ldots \lambda_m \vec{p_m} + \mu_0 \vec{r_0} +\ldots + \mu_n \vec{r_n} ~|~ \sum_i \lambda_i = 1 ~\wedge~ \forall j: \mu_j\geq 0 \}$$
+@end tex 
+@end iftex
+@ifnottex
+@quotation
+X = @{ lambda0 p0 +...+ lambdaM pM + mu0 r0 +...+ muN rN | lambda0 +...+ lambdaN = 1 and forall J : muJ >= 0 @}
+@end quotation
+@end ifnottex
+The APRON datatype for generators distinguishes points (sum of
+coefficients equal to one), rays (positive coefficients), lines (or
+bidirectional rays, with unconstrainted coefficients), integer rays
+(integer positive coefficients) and integer lines (integer
+coefficients).
 @end table
 
 @c -------------------------------------------------------------------

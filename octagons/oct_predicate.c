@@ -23,55 +23,55 @@
 /* Tests */
 /* ============================================================ */
 
-tbool_t oct_is_bottom(ap_manager_t* man, oct_t* a)
+bool oct_is_bottom(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_BOTTOM,0);
   if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
   if (a->closed) {
     /* definitively non empty on Q */
-    if (num_incomplete || a->intdim) { flag_incomplete; return tbool_top; }
-    else return tbool_false;
+    if (num_incomplete || a->intdim) { flag_incomplete; }
+    return false;
   }
   else if (!a->m)
     /* definitively empty */
-    return tbool_true;
+    return true;
   else {
-    /* no closure => we know that we don't know */
+    /* no closure => we don't know */
     flag_algo; 
-    return tbool_top;
+    return false;
   }
 }
 
-tbool_t oct_is_top(ap_manager_t* man, oct_t* a)
+bool oct_is_top(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_TOP,0);
   size_t i,j;
   bound_t* m = a->m ? a->m : a->closed;
-  if (!m) return tbool_false;
+  if (!m) return false;
   for (i=0;i<2*a->dim;i++)
     for (j=0;j<=(i|1);j++,m++)
       if (!bound_infty(*m) && i!=j) 
-	return tbool_false;
-  return tbool_true;
+	return false;
+  return true;
 }
 
-tbool_t oct_is_leq(ap_manager_t* man, oct_t* a1, oct_t* a2)
+bool oct_is_leq(ap_manager_t* man, oct_t* a1, oct_t* a2)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_LEQ,0);
-  arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,return tbool_top;);
+  arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,return false;);
   if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a1);
   if (!a1->closed && !a1->m) {
     /* a1 definitively empty */
-    return tbool_true;   
+    return true;   
   }
   else if (!a2->closed && !a2->m) {
     /* a2 definitively empty */
     if (a1->closed) {
       /* a1 not empty on Q */
-      if (num_incomplete || a1->intdim) { flag_incomplete; return tbool_top; }
-      else return tbool_false;
+      if (num_incomplete || a1->intdim) { flag_incomplete; }
+      return false;
     }
-    else { flag_algo; return tbool_top; }
+    else { flag_algo; return false; }
   }
   else {
     size_t i,j;
@@ -82,22 +82,21 @@ tbool_t oct_is_leq(ap_manager_t* man, oct_t* a1, oct_t* a2)
 	if (bound_cmp(*x,*y)>0) {
 	  if (a1->closed) {
 	    /* not included on Q */
-	    if (num_incomplete || a1->intdim) 
-	      { flag_incomplete; return tbool_top; }
-	    else return tbool_false;
+	    if (num_incomplete || a1->intdim) { flag_incomplete; }
+	    return false;
 	  }
-	  else { flag_algo; return tbool_top; }
+	  else { flag_algo; return false; }
 	}
     /* definitively included */
-    return tbool_true;
+    return true;
   }
 }
 
 
-tbool_t oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2)
+bool oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_IS_EQ,0);
-  arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,return tbool_top;);
+  arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,return false;);
   if (pr->funopt->algorithm>=0) {
     oct_cache_closure(pr,a1);
     oct_cache_closure(pr,a2);
@@ -105,22 +104,22 @@ tbool_t oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2)
   if (!a1->closed && !a1->m) {
     if (!a2->closed && !a2->m) {
       /* both are empty */
-      return tbool_true;
+      return true;
     }
     else if (a2->closed) {
       /* a1 empty, e2 not empty on Q */
-      if (num_incomplete || a1->intdim) { flag_incomplete; return tbool_top; }
-      else return tbool_false;
+      if (num_incomplete || a1->intdim) { flag_incomplete; }
+      return false;
     }
-    else { flag_algo; return tbool_top; }
+    else { flag_algo; return false; }
   }
   else if (!a2->closed && !a2->m) {
     if (a1->closed) {
       /* a2 empty, e1 not empty on Q */
-      if (num_incomplete || a1->intdim) { flag_incomplete; return tbool_top; }
-      else return tbool_false;
+      if (num_incomplete || a1->intdim) { flag_incomplete; }
+      return false;
     }
-    else { flag_algo; return tbool_top; }
+    else { flag_algo; return false; }
   }
   else {
     size_t i,j;
@@ -132,26 +131,26 @@ tbool_t oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2)
 	  if (a1->closed) {
 	    /* not equal on Q */
 	    if (num_incomplete || a1->intdim) 
-	      { flag_incomplete; return tbool_top; }
-	    else return tbool_false;
+	      { flag_incomplete; }
+	    return false;
 	  }
-	  else { flag_algo; return tbool_top; }
+	  else { flag_algo; return false; }
 	}
     /* definitively equal */
-    return tbool_true;
+    return true;
   }
 }
 
 
-tbool_t oct_sat_interval(ap_manager_t* man, oct_t* a,
-			 ap_dim_t dim, ap_interval_t* i)
+bool oct_sat_interval(ap_manager_t* man, oct_t* a,
+		      ap_dim_t dim, ap_interval_t* i)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SAT_INTERVAL,0);
-  arg_assert(dim<a->dim,return tbool_top;);
+  arg_assert(dim<a->dim,return false;);
   if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
   if (!a->closed && !a->m) {
     /* really empty */
-    return tbool_true;
+    return true;
   }
   else {
     bound_t* m = a->closed ? a->closed : a->m;
@@ -163,53 +162,52 @@ tbool_t oct_sat_interval(ap_manager_t* man, oct_t* a,
     /* compare with i */
     r = (ap_scalar_cmp(b->inf,i->inf)>=0) && (ap_scalar_cmp(b->sup,i->sup)<=0);
     ap_interval_free(b);
-    if (r) return tbool_true; /* definitively saturates */
+    if (r) return true; /* definitively saturates */
     else
       /* definitely does not saturate on Q if closed & no conv error */
-      if (num_incomplete || a->intdim) { flag_incomplete; return tbool_top; } 
-      else if (!a->closed) { flag_algo; return tbool_top; } 
-      else if (pr->conv) { flag_conv; return tbool_top; }
-      else return tbool_false;
+      if (num_incomplete || a->intdim) { flag_incomplete; return false; } 
+      else if (!a->closed) { flag_algo; return false; } 
+      else if (pr->conv) { flag_conv; return false; }
+      else return false;
   }
 }
 
 
-tbool_t oct_is_dimension_unconstrained(ap_manager_t* man, oct_t* a,
-				       ap_dim_t dim)
+bool oct_is_dimension_unconstrained(ap_manager_t* man, oct_t* a,
+				    ap_dim_t dim)
 {
   oct_internal_t* pr = 
     oct_init_from_manager(man,AP_FUNID_IS_DIMENSION_UNCONSTRAINED,0);
-  arg_assert(dim<a->dim,return tbool_top;);
+  arg_assert(dim<a->dim,return false;);
   if (!a->closed && !a->m)
     /* definitively empty */
-    return tbool_false;
+    return false;
   else {
     bound_t* b = a->closed ? a->closed : a->m;
     size_t i, d2=2*dim;
     for (i=0;i<2*a->dim;i++) {
-      if (!bound_infty(b[matpos2(i,d2)]) && i!=d2) return tbool_false;
-      if (!bound_infty(b[matpos2(i,d2+1)]) && i!=d2+1) return tbool_false;
+      if (!bound_infty(b[matpos2(i,d2)]) && i!=d2) return false;
+      if (!bound_infty(b[matpos2(i,d2+1)]) && i!=d2+1) return false;
     }
-    return tbool_true;
+    return true;
   }
 }
 
 
 /* not very precise for non unit constraints (always top) */
 /* the semantics of non-deterministic expressions (i.e., intervals) is
-   tbool_true   saturates all expressions
-   tbool_false  some expression definitively not saturated
-   tbool_top    may saturate some, may not saturate some
+   true  saturates all expressions
+   false may saturate some, may not saturate some
 */
-tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a, 
-			ap_lincons0_t* lincons)
+bool oct_sat_lincons(ap_manager_t* man, oct_t* a, 
+		     ap_lincons0_t* lincons)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_SAT_LINCONS,
 					     2*(a->dim+1));
   if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
   if (!a->closed && !a->m) {
     /* really empty */
-    return tbool_true;
+    return true;
   }
   else {
     bound_t* b = a->closed ? a->closed : a->m;
@@ -223,7 +221,7 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
       /* skipped */
     case AP_CONS_EQMOD:
     case AP_CONS_DISEQ:
-      return tbool_top;
+      return false;
 
       /* handled */
     case AP_CONS_EQ:
@@ -242,7 +240,7 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
 
     case EMPTY:
       /* the empty set has all properties */
-      return tbool_true;
+      return true;
 
     case ZERO:
       if ((c==AP_CONS_SUPEQ && bound_sgn(pr->tmp[0])<=0) ||
@@ -252,13 +250,13 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
 	  (c==AP_CONS_EQ && !bound_sgn(pr->tmp[0]) && !bound_sgn(pr->tmp[1]))
   	  /* [-a,b] = 0 <=> a=b=0 */
 	  )
-	return tbool_true; /* always saturates */
+	return true; /* always saturates */
       else {
 	/* does not always saturate on Q, if closed and no conv error */
- 	if (num_incomplete || a->intdim) { flag_incomplete; return tbool_top; }
-	else if (!a->closed) { flag_algo; return tbool_top; }
-	else if (pr->conv) { flag_conv; return tbool_top; }
-	return tbool_false;
+ 	if (num_incomplete || a->intdim) { flag_incomplete; return false; }
+	else if (!a->closed) { flag_algo; return false; }
+	else if (pr->conv) { flag_conv; return false; }
+	return false;
       }
       
    case UNARY:
@@ -274,13 +272,13 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
 	  (c!=AP_CONS_EQ || bound_sgn(pr->tmp[1])<=0)
 	  /* c_i X_i + [-a,b] <= 0 <=>  c_i X_i + b <= 0 */
 	  ) 
-	return tbool_true; /* always saturates */
+	return true; /* always saturates */
       else {
 	/* does not always saturate on Q, if closed and no conv error */
- 	if (num_incomplete || a->intdim) { flag_incomplete; return tbool_top; }
-	else if (!a->closed) { flag_algo; return tbool_top; }
-	else if (pr->conv) { flag_conv; return tbool_top; }
-	return tbool_false;
+ 	if (num_incomplete || a->intdim) { flag_incomplete; return false; }
+	else if (!a->closed) { flag_algo; return false; }
+	else if (pr->conv) { flag_conv; return false; }
+	return false;
       }
       
     case BINARY:
@@ -295,29 +293,29 @@ tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a,
 	  (c!=AP_CONS_EQ || bound_sgn(pr->tmp[1])<=0)
 	  /* c_i X_i + c_j X_j + [-a,b] <= 0 <=>  c_i X_i + c_j X_j + b <= 0 */
 	  )
-	return tbool_true;
+	return true;
       else {
 	/* does not saturate on Q, when closed and no conv error */
- 	if (num_incomplete || a->intdim) { flag_incomplete; return tbool_top; }
-	else if (!a->closed) { flag_algo; return tbool_top; }
-	else if (pr->conv) { flag_conv; return tbool_top; }
-	return tbool_false;
+ 	if (num_incomplete || a->intdim) { flag_incomplete; return false; }
+	else if (!a->closed) { flag_algo; return false; }
+	else if (pr->conv) { flag_conv; return false; }
+	return false;
       }
 
     case OTHER:
       /* no clue */
       flag_incomplete;
-      return tbool_top;
+      return false;
       
     default: 
       assert(0);
-      return tbool_top; /* unreachable */
+      return false; /* unreachable */
     }
   }
 }
 
-tbool_t oct_sat_tcons(ap_manager_t* man, oct_t* a, 
-		      ap_tcons0_t* cons)
+bool oct_sat_tcons(ap_manager_t* man, oct_t* a, 
+		   ap_tcons0_t* cons)
 {
   return ap_generic_sat_tcons(man,a,cons,
 #if defined(NUM_NUMFLT)
@@ -499,7 +497,7 @@ ap_interval_t** oct_to_box(ap_manager_t* man, oct_t* a)
     for (i=0;i<a->dim;i++)
       interval_of_bounds(pr,in[i],
 			 m[matpos(2*i,2*i+1)],m[matpos(2*i+1,2*i)],true);
-    man->result.flag_exact = tbool_false;
+    man->result.flag_exact = false;
     if (!a->closed) flag_algo;
     else if (num_incomplete || a->intdim) flag_incomplete;
     else if (pr->conv) flag_conv;

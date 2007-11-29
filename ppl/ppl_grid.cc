@@ -79,7 +79,7 @@ PPL_Grid::~PPL_Grid() { delete p; }
 #define CATCH_WITH_DIM(funid,intdim,realdim)				\
   catch (cannot_convert w) {						\
     /* bailing out, not an error */					\
-    man->result.flag_exact = man->result.flag_best = tbool_top;		\
+    man->result.flag_exact = man->result.flag_best = false;		\
     return new PPL_Grid(intdim,realdim,UNIVERSE);			\
   }									\
   catch (std::logic_error e) {						\
@@ -96,7 +96,7 @@ PPL_Grid::~PPL_Grid() { delete p; }
 #define CATCH_WITH_VAL(funid,v)						\
   catch (cannot_convert w) {						\
     /* bailing out, not an error */					\
-    man->result.flag_exact = man->result.flag_best = tbool_top;		\
+    man->result.flag_exact = man->result.flag_best = false;		\
     return v;								\
   }									\
   catch (std::logic_error e) {						\
@@ -181,7 +181,7 @@ static itv_t* ap_ppl_grid_to_itv_array(PPL_Grid* a)
 extern "C"
 PPL_Grid* ap_ppl_grid_copy(ap_manager_t* man, PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     return new PPL_Grid(*a); 
   }
@@ -191,7 +191,7 @@ PPL_Grid* ap_ppl_grid_copy(ap_manager_t* man, PPL_Grid* a)
 extern "C" 
 void ap_ppl_grid_free(ap_manager_t* man, PPL_Grid* a)
 { 
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     delete a; 
   }
@@ -201,7 +201,7 @@ void ap_ppl_grid_free(ap_manager_t* man, PPL_Grid* a)
 extern "C" 
 size_t ap_ppl_grid_size(ap_manager_t* man, PPL_Grid* a)
 { 
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     return a->p->total_memory_in_bytes(); 
   }
@@ -215,7 +215,7 @@ size_t ap_ppl_grid_size(ap_manager_t* man, PPL_Grid* a)
 extern "C" 
 void ap_ppl_grid_minimize(ap_manager_t* man, PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     /* re-add integer constraints (should not be needed except after a widening) */
     ((PPL_Grid*)a)->reduce();
@@ -229,7 +229,7 @@ void ap_ppl_grid_minimize(ap_manager_t* man, PPL_Grid* a)
 extern "C" 
 void ap_ppl_grid_canonicalize(ap_manager_t* man, PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     /* re-add integer constraints (should not be needed except after a widening) */
     ((PPL_Grid*)a)->reduce();
@@ -243,7 +243,7 @@ void ap_ppl_grid_canonicalize(ap_manager_t* man, PPL_Grid* a)
 extern "C" 
 void ap_ppl_grid_approximate(ap_manager_t* man, PPL_Grid* a, int algorithm)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   return;
 }
 
@@ -257,7 +257,7 @@ void ap_ppl_grid_fprint(FILE* stream,
 			PPL_Grid* a,
 			char** name_of_dim)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     if (a->p->is_empty()){
       ap_dimension_t dim = ap_ppl_grid_dimension(man,a);
@@ -287,7 +287,7 @@ void ap_ppl_grid_fprintdiff(FILE* stream,
 extern "C" 
 void ap_ppl_grid_fdump(FILE* stream, ap_manager_t* man, PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     /* dump constraints */
     fprintf(stream,"constraints: ");
@@ -333,7 +333,7 @@ PPL_Grid* ap_ppl_grid_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size
 extern "C" 
 PPL_Grid* ap_ppl_grid_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     return new PPL_Grid(intdim,realdim,EMPTY);
   }
@@ -343,7 +343,7 @@ PPL_Grid* ap_ppl_grid_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
 extern "C" 
 PPL_Grid* ap_ppl_grid_top(ap_manager_t* man, size_t intdim, size_t realdim)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     return new PPL_Grid(intdim,realdim,UNIVERSE);
   }
@@ -355,12 +355,13 @@ PPL_Grid* ap_ppl_grid_of_box(ap_manager_t* man,
 			     size_t intdim, size_t realdim,
 			     ap_interval_t** tinterval)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = false;
+  man->result.flag_best = true;
   try {
     PPL_Grid* r = new PPL_Grid(intdim,realdim,UNIVERSE);
     Congruence_System c;
-    if (ap_ppl_of_box(c,tinterval,intdim,realdim))
-      man->result.flag_exact = man->result.flag_best = tbool_top;
+    if (!ap_ppl_of_box(c,tinterval,intdim,realdim))
+      man->result.flag_exact = man->result.flag_best = false;
     r->p->add_recycled_congruences_and_minimize(c);
     return r;
   }
@@ -374,7 +375,7 @@ PPL_Grid* ap_ppl_grid_of_box(ap_manager_t* man,
 extern "C" 
 ap_dimension_t ap_ppl_grid_dimension(ap_manager_t* man, PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   ap_dimension_t d = { 0, 0 };
   try {
     d.intdim = a->intdim;
@@ -389,131 +390,131 @@ ap_dimension_t ap_ppl_grid_dimension(ap_manager_t* man, PPL_Grid* a)
 /* ============================================================ */
 
 extern "C" 
-tbool_t ap_ppl_grid_is_bottom(ap_manager_t* man, PPL_Grid* a)
+bool ap_ppl_grid_is_bottom(ap_manager_t* man, PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
-    return a->p->is_empty() ? tbool_true : tbool_false;
+    return a->p->is_empty();
   }
-  CATCH_WITH_VAL(AP_FUNID_IS_BOTTOM,tbool_top);
+  CATCH_WITH_VAL(AP_FUNID_IS_BOTTOM,false);
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_is_top(ap_manager_t* man, PPL_Grid* a)
+bool ap_ppl_grid_is_top(ap_manager_t* man, PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
-    return a->p->is_universe() ? tbool_true : tbool_false;
+    return a->p->is_universe();
   }
-  CATCH_WITH_VAL(AP_FUNID_IS_TOP,tbool_top);
+  CATCH_WITH_VAL(AP_FUNID_IS_TOP,false);
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_is_leq(ap_manager_t* man, PPL_Grid* a1, 
-			   PPL_Grid* a2)
+bool ap_ppl_grid_is_leq(ap_manager_t* man, PPL_Grid* a1, 
+			PPL_Grid* a2)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
-    return a2->p->contains(*a1->p) ? tbool_true : tbool_false;
+    return a2->p->contains(*a1->p);
   }
-  CATCH_WITH_VAL(AP_FUNID_IS_LEQ,tbool_top);
+  CATCH_WITH_VAL(AP_FUNID_IS_LEQ,false);
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_is_eq(ap_manager_t* man, PPL_Grid* a1, 
-			  PPL_Grid* a2)
+bool ap_ppl_grid_is_eq(ap_manager_t* man, PPL_Grid* a1, 
+		       PPL_Grid* a2)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
-    return *a1->p == *a2->p ? tbool_true : tbool_false;
+    return *a1->p == *a2->p;
   }
-  CATCH_WITH_VAL(AP_FUNID_IS_EQ,tbool_top);
+  CATCH_WITH_VAL(AP_FUNID_IS_EQ,false);
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, PPL_Grid* a, 
-				ap_lincons0_t* lincons0)
+bool ap_ppl_grid_sat_lincons(ap_manager_t* man, PPL_Grid* a, 
+			     ap_lincons0_t* lincons0)
 {
   ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best = tbool_top;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     if (a->p->is_empty()){
-      return tbool_true;
+      return true;
     }
     else {
       itv_lincons_t lincons;
       mpz_class den;
       Congruence c = Congruence::zero_dim_false();
-      tbool_t res;
+      bool res;
     
       if (!ap_linexpr0_is_linear(lincons0->linexpr0)){
-	man->result.flag_exact = man->result.flag_best = tbool_true;
-	return tbool_false;
+	man->result.flag_exact = man->result.flag_best = false;
+	return false;
       }
       itv_lincons_init(&lincons);
-      itv_lincons_set_ap_lincons0(intern->itv,&lincons,lincons0);
-      if (itv_sat_lincons_is_false(intern->itv,&lincons)){
+      if (!itv_lincons_set_ap_lincons0(intern->itv,&lincons,lincons0))
+ 	man->result.flag_exact = man->result.flag_best = false;
+     if (itv_sat_lincons_is_false(intern->itv,&lincons)){
 	itv_lincons_clear(&lincons);
-	man->result.flag_exact = man->result.flag_best = tbool_true;
-	return tbool_false;
+	return false;
       }
       assert(itv_lincons_is_scalar(&lincons));
       try {
-	ap_ppl_of_itv_lincons(c,den,&lincons);
+	if (!ap_ppl_of_itv_lincons(c,den,&lincons))
+	  man->result.flag_exact = man->result.flag_best = false;
 	Poly_Con_Relation relation = a->p->relation_with(c);
 	if (relation.implies(Poly_Con_Relation::is_included())){
-	  res = tbool_true;
+	  res = true;
 	}
 	else {
-	  res = tbool_false;
+	  res = false;
 	}
-	man->result.flag_exact = man->result.flag_best = tbool_true;
+	man->result.flag_exact = man->result.flag_best = true;
       }
       catch (cannot_convert w) {
-	res = tbool_top;
+	man->result.flag_exact = man->result.flag_best = false;
+	res = false;
       }
       itv_lincons_clear(&lincons);
       return res;
     }
   }
-  CATCH_WITH_VAL(AP_FUNID_SAT_LINCONS,tbool_top);
+  CATCH_WITH_VAL(AP_FUNID_SAT_LINCONS,false);
 }
 
 extern "C"
-tbool_t ap_ppl_grid_sat_tcons(ap_manager_t* man, PPL_Grid* a,
-			      ap_tcons0_t* cons)
+bool ap_ppl_grid_sat_tcons(ap_manager_t* man, PPL_Grid* a,
+			   ap_tcons0_t* cons)
 {
   return ap_generic_sat_tcons(man,a,cons,AP_SCALAR_MPQ,true);
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_sat_interval(ap_manager_t* man, PPL_Grid* a,
-				 ap_dim_t dim, ap_interval_t* i)
+bool ap_ppl_grid_sat_interval(ap_manager_t* man, PPL_Grid* a,
+			      ap_dim_t dim, ap_interval_t* i)
 {
   ap_interval_t* ig = ap_interval_alloc();
-  man->result.flag_exact = man->result.flag_best = tbool_top;
+  man->result.flag_exact = man->result.flag_best = false;
   try {
     ap_ppl_grid_bound_dim(ig,a,dim);
     bool r = ap_interval_is_leq(ig,i);
     ap_interval_free(ig);
-    if (a->p->is_empty()) return tbool_true;
-    if (r) return tbool_true;
-    return tbool_false;
+    return r || a->p->is_empty();
   }
-  CATCH_WITH_VAL(AP_FUNID_SAT_INTERVAL,(ap_interval_free(ig),tbool_top)); 
+  CATCH_WITH_VAL(AP_FUNID_SAT_INTERVAL,(ap_interval_free(ig),false)); 
 }
 
 extern "C" 
-tbool_t ap_ppl_grid_is_dimension_unconstrained(ap_manager_t* man, 
-					       PPL_Grid* a, 
-					       ap_dim_t dim)
+bool ap_ppl_grid_is_dimension_unconstrained(ap_manager_t* man, 
+					    PPL_Grid* a, 
+					    ap_dim_t dim)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     Grid_Generator g = Grid_Generator::line(Variable(dim));
-    return a->p->relation_with(g) == Poly_Gen_Relation::subsumes() ? tbool_true : tbool_false;
+    return a->p->relation_with(g) == Poly_Gen_Relation::subsumes();
   }
-  CATCH_WITH_VAL(AP_FUNID_IS_DIMENSION_UNCONSTRAINED,tbool_top);
+  CATCH_WITH_VAL(AP_FUNID_IS_DIMENSION_UNCONSTRAINED,false);
 }
 
 /* ============================================================ */
@@ -526,7 +527,7 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
 					 ap_linexpr0_t* expr)
 {
   ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   ap_interval_t* r = ap_interval_alloc();
   try {
     if (a->p->is_empty()) {
@@ -543,7 +544,7 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
       bool exact = true;
 
       itv_linexpr_init(&linexpr,0);
-      itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,expr);
+      exact = exact && itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,expr);
       if (!itv_linexpr_is_quasilinear(&linexpr)){
 	itv_t* env = ap_ppl_grid_to_itv_array(a);
 	exact = itv_quasilinearize_linexpr(intern->itv,&linexpr,env,false);
@@ -582,6 +583,8 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
 	  }
 	}
       }
+      if (!exact)
+	man->result.flag_exact = man->result.flag_best = false;
       itv_linexpr_clear(&linexpr);
     }
   }
@@ -601,7 +604,7 @@ extern "C"
 ap_interval_t* ap_ppl_grid_bound_dimension(ap_manager_t* man,
 					   PPL_Grid* a, ap_dim_t dim)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   ap_interval_t* r = ap_interval_alloc();
   try {
     if (a->p->is_empty()) ap_interval_set_bottom(r); /* empty */
@@ -615,7 +618,7 @@ extern "C"
 ap_lincons0_array_t ap_ppl_grid_to_lincons_array(ap_manager_t* man, 
 						 PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     return ap_ppl_to_lincons_array(a->p->congruences());
   }
@@ -632,7 +635,7 @@ ap_tcons0_array_t ap_ppl_grid_to_tcons_array(ap_manager_t* man,
 extern "C" 
 ap_interval_t** ap_ppl_grid_to_box(ap_manager_t* man, PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   size_t dim = a->p->space_dimension();
   ap_interval_t** in = ap_interval_array_alloc(dim);
   try {
@@ -657,7 +660,7 @@ extern "C"
 ap_generator0_array_t ap_ppl_grid_to_generator_array(ap_manager_t* man, 
 						     PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     return ap_ppl_to_generator_array(a->p->generators());
   }
@@ -676,7 +679,7 @@ extern "C"
 PPL_Grid* ap_ppl_grid_meet(ap_manager_t* man, bool destructive, 
 			   PPL_Grid* a1, PPL_Grid* a2)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? a1 : new PPL_Grid(*a1);
     r->p->intersection_assign(*a2->p);
@@ -689,8 +692,8 @@ extern "C"
 PPL_Grid* ap_ppl_grid_join(ap_manager_t* man, bool destructive, 
 			   PPL_Grid* a1, PPL_Grid* a2)
 {
-  man->result.flag_exact = tbool_top;
-  man->result.flag_best = tbool_true;
+  man->result.flag_exact = false;
+  man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? a1 : new PPL_Grid(*a1);
     /* TODO: should we use join_assign_if_exact? */
@@ -705,7 +708,7 @@ PPL_Grid* ap_ppl_grid_meet_array(ap_manager_t* man,
 				 PPL_Grid** tab, size_t size)
 {
   assert(size>=1);
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     PPL_Grid* r = new PPL_Grid(*tab[0]);
     for (size_t i=1;i<size;i++)
@@ -720,8 +723,8 @@ PPL_Grid* ap_ppl_grid_join_array(ap_manager_t* man,
 				 PPL_Grid** tab, size_t size)
 {  
   assert(size>=1);
-  man->result.flag_exact = tbool_top;
-  man->result.flag_best = tbool_true;
+  man->result.flag_exact = false;
+  man->result.flag_best = true;
   try {
     PPL_Grid* r = new PPL_Grid(*tab[0]);
     for (size_t i=1;i<size;i++)
@@ -739,12 +742,12 @@ PPL_Grid* ap_ppl_grid_meet_lincons_array(ap_manager_t* man,
 					 ap_lincons0_array_t* array)
 {
   ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
     Congruence_System c;
-    if (ap_ppl_of_lincons_array(intern->itv,c,array))
-      man->result.flag_exact = man->result.flag_best = tbool_top;
+    if (!ap_ppl_of_lincons_array(intern->itv,c,array))
+      man->result.flag_exact = man->result.flag_best = false;
     r->p->add_recycled_congruences_and_minimize(c);
     return r;
   }
@@ -771,12 +774,13 @@ PPL_Grid* ap_ppl_grid_add_ray_array(ap_manager_t* man,
 				    ap_generator0_array_t* array)
 {
   ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
     if (!a->p->is_empty()){
       Grid_Generator_System c;
-      ap_ppl_of_generator_array(intern->itv,c,array);
+      if (!ap_ppl_of_generator_array(intern->itv,c,array))
+	man->result.flag_exact = man->result.flag_best = false;
       r->p->add_recycled_generators_and_minimize(c);
       r->reduce();
     }
@@ -798,7 +802,7 @@ PPL_Grid* ap_ppl_grid_assign_linexpr(ap_manager_t* man,
 {
   bool exact;
   ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? org : new PPL_Grid(*org);
     try {
@@ -816,7 +820,7 @@ PPL_Grid* ap_ppl_grid_assign_linexpr(ap_manager_t* man,
       r->forget_dim(dim);
       if (dim<r->intdim)
 	r->reduce();
-      man->result.flag_exact = man->result.flag_best = tbool_top;
+      man->result.flag_exact = man->result.flag_best = false;
     }
     if (dest) r->p->intersection_assign(*dest->p);
     return r;
@@ -834,7 +838,7 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr(ap_manager_t* man,
 {
   bool exact;
   ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? org : new PPL_Grid(*org);
     try {
@@ -852,7 +856,7 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr(ap_manager_t* man,
       r->forget_dim(dim);
       if (dim<r->intdim)
 	r->reduce();
-      man->result.flag_exact = man->result.flag_best = tbool_top;
+      man->result.flag_exact = man->result.flag_best = false;
     }
     if (dest) r->p->intersection_assign(*dest->p);
     return r;
@@ -886,8 +890,8 @@ PPL_Grid* ap_ppl_grid_assign_linexpr_array(ap_manager_t* man,
 						   tdim,texpr,size,
 						   dest);
   }
-  man->result.flag_exact = man->result.flag_best =
-    (!exact || org->intdim) ? tbool_top : tbool_true;
+  if (!exact || org->intdim)
+    man->result.flag_exact = man->result.flag_best = false;
   return r;
 }
 extern "C"
@@ -916,8 +920,8 @@ PPL_Grid* ap_ppl_grid_substitute_linexpr_array(ap_manager_t* man,
 						       tdim,texpr,size,
 						       dest);
   }
-  man->result.flag_exact = man->result.flag_best =
-    (!exact || org->intdim) ? tbool_top : tbool_true;
+  if (!exact || org->intdim)
+    man->result.flag_exact = man->result.flag_best = false;
   return r;
 }
   
@@ -928,7 +932,7 @@ PPL_Grid* ap_ppl_grid_forget_array(ap_manager_t* man,
 				   ap_dim_t* tdim, size_t size,
 				   bool project)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
     if (!a->p->is_empty()){
@@ -1002,7 +1006,7 @@ PPL_Grid* ap_ppl_grid_add_dimensions(ap_manager_t* man,
 				     ap_dimchange_t* dimchange,
 				     bool project)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   size_t adddim = dimchange->intdim+dimchange->realdim;
   size_t olddim = a->p->space_dimension();
   try {
@@ -1034,7 +1038,7 @@ PPL_Grid* ap_ppl_grid_remove_dimensions(ap_manager_t* man,
 					PPL_Grid* a,
 					ap_dimchange_t* dimchange)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   size_t deldim = dimchange->intdim+dimchange->realdim;
   size_t olddim = a->p->space_dimension();
   try {
@@ -1057,7 +1061,8 @@ PPL_Grid* ap_ppl_grid_permute_dimensions(ap_manager_t* man,
 					 PPL_Grid* a,
 					 ap_dimperm_t* perm)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = false;
+  man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
     ap_ppl_map map = ap_ppl_map(perm->size,perm->size);
@@ -1076,7 +1081,7 @@ PPL_Grid* ap_ppl_grid_expand(ap_manager_t* man,
 			     ap_dim_t dim,
 			     size_t n)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     size_t olddim = a->p->space_dimension();
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
@@ -1106,8 +1111,8 @@ PPL_Grid* ap_ppl_grid_fold(ap_manager_t* man,
 			   ap_dim_t* tdim,
 			   size_t size)
 {
-  man->result.flag_exact = tbool_top;
-  man->result.flag_best = tbool_true;
+  man->result.flag_exact = false;
+  man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
     Variables_Set s;
@@ -1127,7 +1132,7 @@ PPL_Grid* ap_ppl_grid_widening(ap_manager_t* man,
 			       PPL_Grid* a1, 
 			       PPL_Grid* a2)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_top;
+  man->result.flag_exact = man->result.flag_best = false;
   try {
     PPL_Grid* r = new PPL_Grid(*a2);
     r->p->widening_assign(*a1->p);
@@ -1144,7 +1149,7 @@ PPL_Grid* ap_ppl_grid_widening_threshold(ap_manager_t* man,
 					 ap_lincons0_array_t* array)
 {
   ppl_internal_t* intern = get_internal(man);
-  man->result.flag_exact = man->result.flag_best = tbool_top;
+  man->result.flag_exact = man->result.flag_best = false;
   try {
     Congruence_System c;
     /* when a1->strict=false, c will not contain any strict constraint */
@@ -1160,7 +1165,7 @@ PPL_Grid* ap_ppl_grid_widening_threshold(ap_manager_t* man,
 extern "C" 
 PPL_Grid* ap_ppl_grid_closure(ap_manager_t* man, bool destructive, PPL_Grid* a)
 {
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   try {
     PPL_Grid* r = destructive ? a : new PPL_Grid(*a);
     r->p->topological_closure_assign();

@@ -218,10 +218,10 @@ public:
   ap_scalar_discr_t& get_scalar_discr();
 
   //! Returns the 'is exact' flag associated to the last computed abstract function.
-  tbool get_flag_exact();
+  bool get_flag_exact();
 
   //! Returns the 'is best' flag associated to the last computed abstract function.
-  tbool get_flag_best();
+  bool get_flag_best();
 
   //@}
 

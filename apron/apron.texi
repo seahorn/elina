@@ -446,7 +446,7 @@ ap_manager_t* manoct = oct_manager_alloc();    /* manager for octagon */
 
 ap_abstract0_t* abs1 = ap_abstract_top(manpk,3,3);
 ap_abstract0_t* abs2 = ap_abstract_top(manoct,3,3);
-tbool_t tb = ap_abstract0_is_eq(manoct,abs1,abs2);
+bool b = ap_abstract0_is_eq(manoct,abs1,abs2);
   /* Problem: the effective function called (octagon_is_eq) expects
      abs1 to be an octagon, and not a polyhedron ! */
 
@@ -473,7 +473,7 @@ ap_abstract0_t* abs1 = manpk->abstract_top(3,3);
   /* effective type: poly_t */
 ap_abstract0_t* abs2 = manoct->abstract_top(3,3);
   /* effective type: oct_t */
-tbool_t tb = manoct->abstract0_is_eq(abs1,abs2);
+bool b = manoct->abstract0_is_eq(abs1,abs2);
   /* No static typing possible:
      manpk->abstract0_is_eq and manoct->abstract0_is_eq should have the same
      signature (otherwise one cannot interchange manpk and manoct in the code),
@@ -500,7 +500,7 @@ congruences) not included in @code{Apron}.
 Generic abstract values have the type @code{'a Abstract1.t}, generic
 managers the type @code{'a Manager.t}. A typical operation like the
 emptiness test has the type @code{val is_bottom : 'a Manager.t -> 'a
-Abstract1.t -> Manager.tbool}.
+Abstract1.t -> bool}.
 
 Octagons of @sc{Octagon} have the type @code{Oct.t
 Apron.Abstract1.t}. The corresponding managers have thus the type
@@ -791,9 +791,9 @@ Free a manager (dereference a counter, and possibly deallocate).
 Reading the name and the version of the attached underlying library.
 @end deftypefun
 
-@deftypefun tbool_t ap_manager_get_flag_exact (ap_manager_t* @var{man})
-@deftypefunx tbool_t ap_manager_get_flag_best (ap_manager_t* @var{man})
-Return @code{tbool_true} if the last called APRON function returned an
+@deftypefun bool ap_manager_get_flag_exact (ap_manager_t* @var{man})
+@deftypefunx bool ap_manager_get_flag_best (ap_manager_t* @var{man})
+Return @code{true} if the last called APRON function returned an
 exact (resp. a best approximation) result.
 @end deftypefun
 
@@ -953,7 +953,7 @@ implemented by GMP.
 @node Initializing scalars, Assigning scalars, Scalars, Scalars
 @subsection Initializing scalars
 @c -------------------------------------------------------------------
-@deftypefun void ap_scalar_alloc ()
+@deftypefun ap_scalar_t* ap_scalar_alloc ()
 Allocate a scalar, of default type DOUBLE (the most economical)
 @end deftypefun
 
@@ -1932,7 +1932,8 @@ components. Creating the constraint @code{[1,2]x + 5/2 y >=0} and then
 freeing it can be done with
 @example
 ap_lincons1_t cons = ap_lincons1_make(AP_CONS_SUPEQ,
-				      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2));
+				      ap_linexpr1_alloc(env,AP_LINEXPR_SPARSE,2),
+                                      NULL);
 ap_lincons1_set_list(&cons,
 		     AP_COEFF_I_INT, 1,2, "x",
 		     AP_COEFF_S_FRAC, 5,2, "y",
@@ -1969,8 +1970,10 @@ Arrays at level 1 cannot be accessed directly, for example by writing
 @subsection Allocating linear constraints of level 1
 @c -------------------------------------------------------------------
 
-@deftypefun ap_lincons1_t ap_lincons1_make (ap_constyp_t @var{constyp}, ap_linexpr1_t* @var{linexpr})
-Create a constraint of type @var{constyp} with the expression @var{linexpr}.
+@deftypefun ap_lincons1_t ap_lincons1_make (ap_constyp_t @var{constyp}, ap_linexpr1_t* @var{linexpr}, ap_scalar_t* mod)
+Create a constraint of type @var{constyp} with the expression
+@var{linexpr}, and the modulo @var{mod} in case of a congruence
+constraint (@code{constyp==AP_CONS_EQMOD}).
 
 The expression is not duplicated, just pointed to, so it becomes
 managed via the constraint.
@@ -2831,30 +2834,36 @@ Get a reference to the underlying abstract value of level 0 in
 @subsection Tests on abstract values of level 1
 @c -------------------------------------------------------------------
 
-If any of the following functions returns tbool_top, this means that
-an exception has occured, or that the exact computation was
-considered too expensive to be performed (according to the options).
+In abstract tests,
+@itemize
+@item 
+true means that the predicate is certainly true;
+@item 
+false means false @emph{or} don't know (an exception has occurred, or
+the exact computation was considered too expensive to be performed,
+according to the options).
+@end itemize
 
-@deftypefun tbool_t ap_abstract1_is_bottom (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
-@deftypefunx tbool_t ap_abstract1_is_top (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
+@deftypefun bool ap_abstract1_is_bottom (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
+@deftypefunx bool ap_abstract1_is_top (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Emtpiness and universality tests.
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract1_is_leq (ap_manager_t* @var{man}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
-@deftypefunx tbool_t ap_abstract1_is_eq (ap_manager_t* @var{man}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
+@deftypefun bool ap_abstract1_is_leq (ap_manager_t* @var{man}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
+@deftypefunx bool ap_abstract1_is_eq (ap_manager_t* @var{man}, ap_abstract1_t* @var{a1}, ap_abstract1_t* @var{a2})
 Inclusion and equality tests.
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract1_sat_interval (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_var_t @var{var}, ap_interval_t* @var{interval})
+@deftypefun bool ap_abstract1_sat_interval (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_var_t @var{var}, ap_interval_t* @var{interval})
 Is the variable @var{var} included in the interval @var{interval} in the abstract value @var{a} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract1_sat_lincons (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_lincons1_t* @var{cons})
-@deftypefunx tbool_t ap_abstract1_sat_tcons (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_tcons1_t* @var{cons})
+@deftypefun bool ap_abstract1_sat_lincons (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_lincons1_t* @var{cons})
+@deftypefunx bool ap_abstract1_sat_tcons (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_tcons1_t* @var{cons})
 Does the abstract value @var{a} satisfy the constraint @var{cons} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract1_is_variable_unconstrained (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_var_t @var{var})
+@deftypefun bool ap_abstract1_is_variable_unconstrained (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, ap_var_t @var{var})
 Is the dimension @var{dim} unconstrained in the abstract value @var{a} ?
 If it is the case, we have @code{forget(man,a,dim) == a}.
 @end deftypefun
@@ -3618,7 +3627,8 @@ Datatype for constraints.
 Constraints are meant to be manipulated freely via their components. Creating the constraint @code{[1,2]x0 + 5/2x1 >=0} and then freeing it can be done with
 @example
 ap_lincons0_t cons = ap_lincons0_make(AP_CONS_SUPEQ,
-				      ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2));
+				      ap_linexpr0_alloc(AP_LINEXPR_SPARSE,2),
+                                      NULL);
 ap_linexpr0_set_list(cons.linexpr0,
 		     AP_COEFF_I_INT, 1,2, 0,
 		     AP_COEFF_S_FRAC, 5,2, 1,
@@ -3656,8 +3666,10 @@ One can assign a constraint to the index @var{index} by writing:
 @subsection Allocating linear constraints of level 0
 @c -------------------------------------------------------------------
 
-@deftypefun ap_lincons0_t ap_lincons0_make (ap_constyp_t @var{constyp}, ap_linexpr0_t* @var{linexpr})
-Create a constraint of type @var{constyp} with the expression @var{linexpr}.
+@deftypefun ap_lincons0_t ap_lincons0_make (ap_constyp_t @var{constyp}, ap_linexpr0_t* @var{linexpr}, ap_scalar_t* @var{mod})
+Create a constraint of type @var{constyp} with the expression
+@var{linexpr}, and the modulo @var{mod} in case of a congruence
+constraint (@code{constyp==AP_CONS_EQMOD}).
 
 The expression is not duplicated, just pointed to, so it becomes
 managed via the constraint.
@@ -4038,30 +4050,36 @@ Return the dimensionality of @var{a}.
 @subsection Tests on abstract values of level 0
 @c -------------------------------------------------------------------
 
-If any of the following functions returns tbool_top, this means that
-an exception has occured, or that the exact computation was
-considered too expensive to be performed (according to the options).
+In abstract tests,
+@itemize
+@item 
+true means that the predicate is certainly true;
+@item 
+false means false @emph{or} don't know (an exception has occurred, or
+the exact computation was considered too expensive to be performed,
+according to the options).
+@end itemize
 
-@deftypefun tbool_t ap_abstract0_is_bottom (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
-@deftypefunx tbool_t ap_abstract0_is_top (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
+@deftypefun bool ap_abstract0_is_bottom (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
+@deftypefunx bool ap_abstract0_is_top (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
 Emtpiness and universality tests.
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract0_is_leq (ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2})
-@deftypefunx tbool_t ap_abstract0_is_eq (ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2})
+@deftypefun bool ap_abstract0_is_leq (ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2})
+@deftypefunx bool ap_abstract0_is_eq (ap_manager_t* @var{man}, ap_abstract0_t* @var{a1}, ap_abstract0_t* @var{a2})
 Inclusion and equality tests.
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract0_sat_interval (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_dim_t @var{dim}, ap_interval_t* @var{interval})
+@deftypefun bool ap_abstract0_sat_interval (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_dim_t @var{dim}, ap_interval_t* @var{interval})
 Is the dimension @var{dim} included in the interval @var{interval} in the abstract value @var{a} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract0_sat_lincons (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_lincons0_t* @var{cons})
-@deftypefunx tbool_t ap_abstract0_sat_tcons (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_tcons0_t* @var{cons})
+@deftypefun bool ap_abstract0_sat_lincons (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_lincons0_t* @var{cons})
+@deftypefunx bool ap_abstract0_sat_tcons (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_tcons0_t* @var{cons})
 Does the abstract value @var{a} satisfy the constraint @var{cons} ?
 @end deftypefun
 
-@deftypefun tbool_t ap_abstract0_is_dimension_unconstrained (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_dim_t @var{dim})
+@deftypefun bool ap_abstract0_is_dimension_unconstrained (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, ap_dim_t @var{dim})
 Is the dimension @var{dim} unconstrained in the abstract value @var{a} ?
 If it is the case, we have @code{forget(man,a,dim) == a}.
 @end deftypefun

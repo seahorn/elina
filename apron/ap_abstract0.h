@@ -140,30 +140,35 @@ ap_dimension_t ap_abstract0_dimension(ap_manager_t* man, ap_abstract0_t* a);
 /* II.3 Tests */
 /* ============================================================ */
 
-/* If any of the following functions returns tbool_top, this means that
-   an exception has occurred, or that the exact computation was
-   considered too expensive to be performed (according to the options).
-   The flag exact and best should be cleared in such a case. */
+/* In abstract tests,
+
+   - true means that the predicate is certainly true.
+
+   - false means by default don't know (an exception has occurred, or the exact
+     computation was considered too expensive to be performed).
+
+     However, if the flag exact in the manager is true, then false means really
+     that the predicate is false.
+*/
+
+bool ap_abstract0_is_bottom(ap_manager_t* man, ap_abstract0_t* a);
+bool ap_abstract0_is_top(ap_manager_t* man, ap_abstract0_t* a);
 
 
-tbool_t ap_abstract0_is_bottom(ap_manager_t* man, ap_abstract0_t* a);
-tbool_t ap_abstract0_is_top(ap_manager_t* man, ap_abstract0_t* a);
-
-
-tbool_t ap_abstract0_is_leq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2);
+bool ap_abstract0_is_leq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2);
   /* inclusion check */
-tbool_t ap_abstract0_is_eq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2);
+bool ap_abstract0_is_eq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2);
   /* equality check */
 
-tbool_t ap_abstract0_sat_lincons(ap_manager_t* man, ap_abstract0_t* a, ap_lincons0_t* lincons);
-tbool_t ap_abstract0_sat_tcons(ap_manager_t* man, ap_abstract0_t* a, ap_tcons0_t* tcons);
+bool ap_abstract0_sat_lincons(ap_manager_t* man, ap_abstract0_t* a, ap_lincons0_t* lincons);
+bool ap_abstract0_sat_tcons(ap_manager_t* man, ap_abstract0_t* a, ap_tcons0_t* tcons);
   /* does the abstract value satisfy the constraint ? */
-tbool_t ap_abstract0_sat_interval(ap_manager_t* man, ap_abstract0_t* a,
+bool ap_abstract0_sat_interval(ap_manager_t* man, ap_abstract0_t* a,
 			      ap_dim_t dim, ap_interval_t* interval);
   /* is the dimension included in the interval in the abstract value ? */
 
-tbool_t ap_abstract0_is_dimension_unconstrained(ap_manager_t* man,
-						ap_abstract0_t* a, ap_dim_t dim);
+bool ap_abstract0_is_dimension_unconstrained(ap_manager_t* man,
+					     ap_abstract0_t* a, ap_dim_t dim);
   /* is the dimension unconstrained in the abstract value ?  If it is the case,
      we have forget(man,a,dim) == a */
 
@@ -262,13 +267,13 @@ ap_abstract0_assign_texpr_array(ap_manager_t* man,
 				ap_abstract0_t* org,
 				ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
 				ap_abstract0_t* dest);
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_substitute_linexpr_array(ap_manager_t* man,
 				      bool destructive,
 				      ap_abstract0_t* org,
 				      ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
 				      ap_abstract0_t* dest);
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_substitute_texpr_array(ap_manager_t* man,
 				    bool destructive,
 				    ap_abstract0_t* org,
@@ -287,7 +292,7 @@ ap_abstract0_substitute_texpr_array(ap_manager_t* man,
 /* III.3 Projections */
 /* ============================================================ */
 
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_forget_array(ap_manager_t* man,
 			  bool destructive,
 			  ap_abstract0_t* a, ap_dim_t* tdim, size_t size,
@@ -297,7 +302,7 @@ ap_abstract0_forget_array(ap_manager_t* man,
 /* III.4 Change and permutation of dimensions */
 /* ============================================================ */
 
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_add_dimensions(ap_manager_t* man,
 			    bool destructive,
 			    ap_abstract0_t* a,ap_dimchange_t* dimchange,
@@ -308,7 +313,7 @@ ap_abstract0_t*
 				ap_abstract0_t* a, ap_dimchange_t* dimchange);
   /* Size of the permutation is supposed to be equal to
      the dimension of the abstract value */
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_permute_dimensions(ap_manager_t* man,
 				bool destructive,
 				ap_abstract0_t* a, ap_dimperm_t* perm);
@@ -318,7 +323,7 @@ ap_abstract0_permute_dimensions(ap_manager_t* man,
 /* ============================================================ */
 
 
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_expand(ap_manager_t* man,
 		    bool destructive,
 		    ap_abstract0_t* a, ap_dim_t dim, size_t n);
@@ -334,7 +339,7 @@ ap_abstract0_expand(ap_manager_t* man,
   */
 
 
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_fold(ap_manager_t* man,
 		  bool destructive,
 		  ap_abstract0_t* a, ap_dim_t* tdim, size_t size);
@@ -418,12 +423,12 @@ ap_abstract0_widening_threshold(ap_manager_t* man,
 /* ********************************************************************** */
 /* ********************************************************************** */
 
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_meetjoin(ap_funid_t funid,
 		      /* either meet or join */
 		      ap_manager_t* man, bool destructive,
 		      ap_abstract0_t* a1, ap_abstract0_t* a2);
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_asssub_linexpr(ap_funid_t funid,
 			    /* either assign or substitute */
 			    ap_manager_t* man,
@@ -431,7 +436,7 @@ ap_abstract0_asssub_linexpr(ap_funid_t funid,
 			    ap_abstract0_t* a,
 			    ap_dim_t dim, ap_linexpr0_t* expr,
 			    ap_abstract0_t* dest);
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
 				  /* either assign or substitute */
 				  ap_manager_t* man,
@@ -439,7 +444,7 @@ ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
 				  ap_abstract0_t* a,
 				  ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
 				  ap_abstract0_t* dest);
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_asssub_texpr(ap_funid_t funid,
 			    /* either assign or substitute */
 			  ap_manager_t* man,
@@ -447,7 +452,7 @@ ap_abstract0_asssub_texpr(ap_funid_t funid,
 			  ap_abstract0_t* a,
 			  ap_dim_t dim, ap_texpr0_t* expr,
 			  ap_abstract0_t* dest);
-ap_abstract0_t* 
+ap_abstract0_t*
 ap_abstract0_asssub_texpr_array(ap_funid_t funid,
 				/* either assign or substitute */
 				ap_manager_t* man,

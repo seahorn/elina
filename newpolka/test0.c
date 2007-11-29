@@ -173,7 +173,7 @@ void poly1(ap_manager_t* man, char** name_of_dim, poly_t** ppo1, poly_t** ppo2)
   ap_interval_t* itv;
   int i;
   ap_linexpr0_t* expr;
-  tbool_t tb;
+  bool b;
 
   mpq_init(mpq);
   array = ap_lincons0_array_make(5);
@@ -278,98 +278,98 @@ void poly1(ap_manager_t* man, char** name_of_dim, poly_t** ppo1, poly_t** ppo2)
 
   /* 4. Tests top and bottom */
   poly3 = poly_bottom(man,2,3);
-  tb = poly_is_bottom(man,poly3);
-  fprintf(stdout,"poly_is_bottom(poly3)=%d\n",tb);
-  tb = poly_is_top(man,poly3);
-  fprintf(stdout,"poly_is_top(poly3)=%d\n",tb);
+  b = poly_is_bottom(man,poly3);
+  fprintf(stdout,"poly_is_bottom(poly3)=%d\n",b);
+  b = poly_is_top(man,poly3);
+  fprintf(stdout,"poly_is_top(poly3)=%d\n",b);
   poly_free(man,poly3);
 
   poly3 = poly_top(man,2,3);
-  tb = poly_is_bottom(man,poly3);
-  fprintf(stdout,"poly_is_bottom(poly3)=%d\n",tb);
-  tb = poly_is_top(man,poly3);
-  fprintf(stdout,"poly_is_top(poly3)=%d\n",tb);
+  b = poly_is_bottom(man,poly3);
+  fprintf(stdout,"poly_is_bottom(poly3)=%d\n",b);
+  b = poly_is_top(man,poly3);
+  fprintf(stdout,"poly_is_top(poly3)=%d\n",b);
   poly_free(man,poly3);
 
   poly3 = poly_top(man,0,0);
-  tb = poly_is_bottom(man,poly3);
-  fprintf(stdout,"poly_is_bottom(poly3)=%d\n",tb);
-  tb = poly_is_top(man,poly3);
-  fprintf(stdout,"poly_is_top(poly3)=%d\n",tb);
+  b = poly_is_bottom(man,poly3);
+  fprintf(stdout,"poly_is_bottom(poly3)=%d\n",b);
+  b = poly_is_top(man,poly3);
+  fprintf(stdout,"poly_is_top(poly3)=%d\n",b);
   poly_free(man,poly3);
   
   poly_minimize(man,poly2);
   poly_fdump(stdout,man,poly2);  
-  tb = poly_is_bottom(man,poly2);
-  fprintf(stdout,"poly_is_bottom(poly2)=%d\n",tb);
-  tb = poly_is_top(man,poly2);
-  fprintf(stdout,"poly_is_top(poly2)=%d\n",tb);
+  b = poly_is_bottom(man,poly2);
+  fprintf(stdout,"poly_is_bottom(poly2)=%d\n",b);
+  b = poly_is_top(man,poly2);
+  fprintf(stdout,"poly_is_top(poly2)=%d\n",b);
 
   /* 5. Tests leq */
-  tb = poly_is_leq(man,poly,poly2);
-  fprintf(stdout,"poly_is_leq(poly,poly2)=%d\n",tb);
-  tb = poly_is_leq(man,poly2,poly);
-  fprintf(stdout,"poly_is_leq(poly,poly2)=%d\n",tb);
+  b = poly_is_leq(man,poly,poly2);
+  fprintf(stdout,"poly_is_leq(poly,poly2)=%d\n",b);
+  b = poly_is_leq(man,poly2,poly);
+  fprintf(stdout,"poly_is_leq(poly,poly2)=%d\n",b);
 
   /* 6. Tests sat_interval */
   itv = ap_interval_alloc();
   ap_interval_set_int(itv,-6,6);
-  tb = poly_sat_interval(man,poly,2,itv);
+  b = poly_sat_interval(man,poly,2,itv);
   fprintf(stdout,"poly_sat_interval(poly,2)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
-  tb = poly_sat_interval(man,poly,3,itv);
+  fprintf(stdout," = %d\n",b);
+  b = poly_sat_interval(man,poly,3,itv);
   fprintf(stdout,"poly_sat_interval(poly,3)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
-  tb = poly_sat_interval(man,poly,4,itv);
+  fprintf(stdout," = %d\n",b);
+  b = poly_sat_interval(man,poly,4,itv);
   fprintf(stdout,"poly_sat_interval(poly,4)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
+  fprintf(stdout," = %d\n",b);
 
   ap_interval_set_double(itv,-2.5,2.5);
-  tb = poly_sat_interval(man,poly,2,itv);
+  b = poly_sat_interval(man,poly,2,itv);
   fprintf(stdout,"poly_sat_interval(poly,2)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
-  tb = poly_sat_interval(man,poly,3,itv);
+  fprintf(stdout," = %d\n",b);
+  b = poly_sat_interval(man,poly,3,itv);
   fprintf(stdout,"poly_sat_interval(poly,3)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
-  tb = poly_sat_interval(man,poly,4,itv);
+  fprintf(stdout," = %d\n",b);
+  b = poly_sat_interval(man,poly,4,itv);
   fprintf(stdout,"poly_sat_interval(poly,4)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
+  fprintf(stdout," = %d\n",b);
 
   ap_interval_set_double(itv,-1.4,2.0);
-  tb = poly_sat_interval(man,poly,2,itv);
+  b = poly_sat_interval(man,poly,2,itv);
   fprintf(stdout,"poly_sat_interval(poly,2)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
-  tb = poly_sat_interval(man,poly,3,itv);
+  fprintf(stdout," = %d\n",b);
+  b = poly_sat_interval(man,poly,3,itv);
   fprintf(stdout,"poly_sat_interval(poly,3)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
-  tb = poly_sat_interval(man,poly,4,itv);
+  fprintf(stdout," = %d\n",b);
+  b = poly_sat_interval(man,poly,4,itv);
   fprintf(stdout,"poly_sat_interval(poly,4)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
+  fprintf(stdout," = %d\n",b);
 
   mpq_set_si(mpq,-14,10);
   ap_scalar_set_mpq(itv->inf,mpq);
   ap_scalar_set_double(itv->sup,2.0);
-  tb = poly_sat_interval(man,poly,2,itv);
+  b = poly_sat_interval(man,poly,2,itv);
   fprintf(stdout,"poly_sat_interval(poly,2)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
-  tb = poly_sat_interval(man,poly,3,itv);
+  fprintf(stdout," = %d\n",b);
+  b = poly_sat_interval(man,poly,3,itv);
   fprintf(stdout,"poly_sat_interval(poly,3)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
-  tb = poly_sat_interval(man,poly,4,itv);
+  fprintf(stdout," = %d\n",b);
+  b = poly_sat_interval(man,poly,4,itv);
   fprintf(stdout,"poly_sat_interval(poly,4)");
   ap_interval_fprint(stdout,itv);
-  fprintf(stdout," = %d\n",tb);
+  fprintf(stdout," = %d\n",b);
 
   ap_interval_free(itv);
 
@@ -396,15 +396,15 @@ void poly1(ap_manager_t* man, char** name_of_dim, poly_t** ppo1, poly_t** ppo2)
   for (i=0; i<6; i++){
     ap_linexpr0_set_cst_scalar_frac(expr,-26 + i*10, 5);
     cons.constyp = AP_CONS_SUPEQ;
-    tb = poly_sat_lincons(man,poly,&cons);
+    b = poly_sat_lincons(man,poly,&cons);
     fprintf(stdout,"poly_sat_lincons(poly)");
     ap_lincons0_fprint(stdout,&cons,name_of_dim);
-    fprintf(stdout,": %d\n",tb);
+    fprintf(stdout,": %d\n",b);
     cons.constyp = AP_CONS_SUP;
-    tb = poly_sat_lincons(man,poly,&cons);
+    b = poly_sat_lincons(man,poly,&cons);
     fprintf(stdout,"poly_sat_lincons(poly)");
     ap_lincons0_fprint(stdout,&cons,name_of_dim);
-    fprintf(stdout,": %d\n",tb);
+    fprintf(stdout,": %d\n",b);
   }
   
   ap_linexpr0_set_list(expr,
@@ -424,15 +424,15 @@ void poly1(ap_manager_t* man, char** name_of_dim, poly_t** ppo1, poly_t** ppo2)
   for (i=0; i<6; i++){
     ap_linexpr0_set_cst_scalar_int(expr,-1+i);
     cons.constyp = AP_CONS_SUPEQ;
-    tb = poly_sat_lincons(man,poly,&cons);
+    b = poly_sat_lincons(man,poly,&cons);
     fprintf(stdout,"poly_sat_lincons(poly)");
     ap_lincons0_fprint(stdout,&cons,name_of_dim);
-    fprintf(stdout,": %d\n",tb);
+    fprintf(stdout,": %d\n",b);
     cons.constyp = AP_CONS_SUP;
-    tb = poly_sat_lincons(man,poly,&cons);
+    b = poly_sat_lincons(man,poly,&cons);
     fprintf(stdout,"poly_sat_lincons(poly)");
     ap_lincons0_fprint(stdout,&cons,name_of_dim);
-    fprintf(stdout,": %d\n",tb);
+    fprintf(stdout,": %d\n",b);
   }
   
 
@@ -451,7 +451,7 @@ void poly1(ap_manager_t* man, char** name_of_dim, poly_t** ppo1, poly_t** ppo2)
 
 void poly2(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
 {
-  tbool_t tb;
+  bool b;
   poly_t* po;
   ap_linexpr0_t* expr[2];
   ap_lincons0_t cons;
@@ -470,66 +470,66 @@ void poly2(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
   fprintf(stdout,"po=meet(po1,po2)\n");
   po = poly_meet(man,false,po1,po2);
   poly_fprint(stdout,man,po,name_of_dim);
-  tb = poly_is_leq(man,po,po1);
-  fprintf(stdout,"poly_is_leq(man,po,po1)=%d\n",tb);
-  assert(tb==tbool_true);
-  tb = poly_is_leq(man,po,po2);
-  fprintf(stdout,"poly_is_leq(man,po,po2)=%d\n",tb);
-  assert(tb==tbool_true);
-  tb = poly_is_leq(man,po1,po);
-  fprintf(stdout,"poly_is_leq(man,po1,po)=%d\n",tb);
-  tb = poly_is_leq(man,po2,po);
-  fprintf(stdout,"poly_is_leq(man,po2,po)=%d\n",tb);
+  b = poly_is_leq(man,po,po1);
+  fprintf(stdout,"poly_is_leq(man,po,po1)=%d\n",b);
+  assert(b);
+  b = poly_is_leq(man,po,po2);
+  fprintf(stdout,"poly_is_leq(man,po,po2)=%d\n",b);
+  assert(b);
+  b = poly_is_leq(man,po1,po);
+  fprintf(stdout,"poly_is_leq(man,po1,po)=%d\n",b);
+  b = poly_is_leq(man,po2,po);
+  fprintf(stdout,"poly_is_leq(man,po2,po)=%d\n",b);
   poly_free(man,po);
 
   fprintf(stdout,"po=po1; meet_with(po,po2)\n");
   po = poly_copy(man,po1);
   po = poly_meet(man,true,po,po2);
   poly_fprint(stdout,man,po,name_of_dim);
-  tb = poly_is_leq(man,po,po1);
-  fprintf(stdout,"poly_is_leq(man,po,po1)=%d\n",tb);
-  assert(tb==tbool_true);
-  tb = poly_is_leq(man,po,po2);
-  fprintf(stdout,"poly_is_leq(man,po,po2)=%d\n",tb);
-  assert(tb==tbool_true);
-  tb = poly_is_leq(man,po1,po);
-  fprintf(stdout,"poly_is_leq(man,po1,po)=%d\n",tb);
-  tb = poly_is_leq(man,po2,po);
-  fprintf(stdout,"poly_is_leq(man,po2,po)=%d\n",tb);
+  b = poly_is_leq(man,po,po1);
+  fprintf(stdout,"poly_is_leq(man,po,po1)=%d\n",b);
+  assert(b);
+  b = poly_is_leq(man,po,po2);
+  fprintf(stdout,"poly_is_leq(man,po,po2)=%d\n",b);
+  assert(b);
+  b = poly_is_leq(man,po1,po);
+  fprintf(stdout,"poly_is_leq(man,po1,po)=%d\n",b);
+  b = poly_is_leq(man,po2,po);
+  fprintf(stdout,"poly_is_leq(man,po2,po)=%d\n",b);
   poly_free(man,po);
   
   fprintf(stdout,"po = join(po1,po2)\n");
   po = poly_join(man,false,po1,po2);
   poly_fprint(stdout,man,po,name_of_dim);
-  tb = poly_is_top(man,po);
-  fprintf(stdout,"poly_is_top(man,po)=%d\n",tb);
+  b = poly_is_top(man,po);
+  fprintf(stdout,"poly_is_top(man,po)=%d\n",b);
   
-  tb = poly_is_leq(man,po,po1);
-  fprintf(stdout,"poly_is_leq(man,po,po1)=%d\n",tb);
-  tb = poly_is_leq(man,po,po2);
-  fprintf(stdout,"poly_is_leq(man,po,po2)=%d\n",tb);
-  tb = poly_is_leq(man,po1,po);
-  fprintf(stdout,"poly_is_leq(man,po1,po)=%d\n",tb);
-  assert(tb==tbool_true);
-  tb = poly_is_leq(man,po2,po);
-  fprintf(stdout,"poly_is_leq(man,po2,po)=%d\n",tb);
-  assert(tb==tbool_true);
+  b = poly_is_leq(man,po,po1);
+  fprintf(stdout,"poly_is_leq(man,po,po1)=%d\n",b);
+  b = poly_is_leq(man,po,po2);
+  fprintf(stdout,"poly_is_leq(man,po,po2)=%d\n",b);
+  b = poly_is_leq(man,po1,po);
+  fprintf(stdout,"poly_is_leq(man,po1,po)=%d\n",b);
+  assert(b);
+  b = poly_is_leq(man,po2,po);
+  fprintf(stdout,"poly_is_leq(man,po2,po)=%d\n",b);
+  assert(b);
   poly_free(man,po);
   
   fprintf(stdout,"po = po1; join_with(po,po2)\n");
   po = poly_copy(man,po1);
   po = poly_join(man,true,po,po2);
   poly_fprint(stdout,man,po,name_of_dim);
-  tb = poly_is_leq(man,po,po1);
-  fprintf(stdout,"poly_is_leq(man,po,po1)=%d\n",tb);
-  tb = poly_is_leq(man,po,po2);
-  fprintf(stdout,"poly_is_leq(man,po,po2)=%d\n",tb);
-  tb = poly_is_leq(man,po1,po);
-  fprintf(stdout,"poly_is_leq(man,po1,po)=%d\n",tb);
-  assert(tb==tbool_true);
-  tb = poly_is_leq(man,po2,po);
-  fprintf(stdout,"poly_is_leq(man,po2,po)=%d\n",tb);
-  assert(tb==tbool_true);
+  b = poly_is_leq(man,po,po1);
+  fprintf(stdout,"poly_is_leq(man,po,po1)=%d\n",b);
+  b = poly_is_leq(man,po,po2);
+  fprintf(stdout,"poly_is_leq(man,po,po2)=%d\n",b);
+  b = poly_is_leq(man,po1,po);
+  fprintf(stdout,"poly_is_leq(man,po1,po)=%d\n",b);
+  assert(b);
+  b = poly_is_leq(man,po2,po);
+  fprintf(stdout,"poly_is_leq(man,po2,po)=%d\n",b);
+  assert(b);
   poly_free(man,po);
 
   /* Additions of constraints */
@@ -562,11 +562,11 @@ void poly2(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
       garray = poly_to_generator_array(man,po);
       ap_generator0_array_fprint(stdout,&garray,name_of_dim);
       ap_generator0_array_clear(&garray);
-      tb = poly_is_leq(man,po,po1);
-      fprintf(stdout,"poly_is_leq(po,po1)=%d\n",tb);
-      assert(tb==tbool_true);
-      tb = poly_is_leq(man,po1,po);
-      fprintf(stdout,"poly_is_leq(po1,po)=%d\n",tb);
+      b = poly_is_leq(man,po,po1);
+      fprintf(stdout,"poly_is_leq(po,po1)=%d\n",b);
+      assert(b);
+      b = poly_is_leq(man,po1,po);
+      fprintf(stdout,"poly_is_leq(po1,po)=%d\n",b);
       poly_free(man,po);
 
       fprintf(stdout,"po=po1; meet_lincons_with(po) ");
@@ -578,11 +578,11 @@ void poly2(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
       garray = poly_to_generator_array(man,po);
       ap_generator0_array_fprint(stdout,&garray,name_of_dim);
       ap_generator0_array_clear(&garray);
-      tb = poly_is_leq(man,po,po1);
-      fprintf(stdout,"poly_is_leq(po,po1)=%d\n",tb);
-      assert(tb==tbool_true);
-      tb = poly_is_leq(man,po1,po);
-      fprintf(stdout,"poly_is_leq(po1,po)=%d\n",tb);
+      b = poly_is_leq(man,po,po1);
+      fprintf(stdout,"poly_is_leq(po,po1)=%d\n",b);
+      assert(b);
+      b = poly_is_leq(man,po1,po);
+      fprintf(stdout,"poly_is_leq(po1,po)=%d\n",b);
       poly_free(man,po);
     }
     ap_linexpr0_free(expr[i]);
@@ -621,11 +621,11 @@ void poly2(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
     garray = poly_to_generator_array(man,po);
     ap_generator0_array_fprint(stdout,&garray,name_of_dim);
     ap_generator0_array_clear(&garray);
-    tb = poly_is_leq(man,po,po1);
-    fprintf(stdout,"poly_is_leq(po,po1)=%d\n",tb);
-    tb = poly_is_leq(man,po1,po);
-    fprintf(stdout,"poly_is_leq(po1,po)=%d\n",tb);
-    assert(tb==tbool_true);
+    b = poly_is_leq(man,po,po1);
+    fprintf(stdout,"poly_is_leq(po,po1)=%d\n",b);
+    b = poly_is_leq(man,po1,po);
+    fprintf(stdout,"poly_is_leq(po1,po)=%d\n",b);
+    assert(b);
     poly_free(man,po);
     
     fprintf(stdout,"po=po1; add_ray_array_with(po) ");
@@ -637,10 +637,10 @@ void poly2(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
     garray = poly_to_generator_array(man,po);
     ap_generator0_array_fprint(stdout,&garray,name_of_dim);
     ap_generator0_array_clear(&garray);
-    tb = poly_is_leq(man,po,po1);
-    fprintf(stdout,"poly_is_leq(po,po1)=%d\n",tb);
-    tb = poly_is_leq(man,po1,po);
-    fprintf(stdout,"poly_is_leq(po1,po)=%d\n",tb);
+    b = poly_is_leq(man,po,po1);
+    fprintf(stdout,"poly_is_leq(po,po1)=%d\n",b);
+    b = poly_is_leq(man,po1,po);
+    fprintf(stdout,"poly_is_leq(po1,po)=%d\n",b);
     poly_free(man,po);
     ap_linexpr0_free(expr[i]);
   }
@@ -655,7 +655,7 @@ void poly2(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
 
 void poly3(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
 {
-  tbool_t tb;
+  bool b;
   poly_t* poly1;
   poly_t* poly2;
   poly_t* poly3;
@@ -737,13 +737,13 @@ void poly3(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
 	  ap_generator0_array_fprint(stdout,&garray,name_of_dim);
 	  ap_generator0_array_clear(&garray);
 
-	  tb = poly_is_leq(man,tpo[i],poly2);
-	  fprintf(stdout,"poly_is_leq(po%d,poly2)=%d\n",i+1,tb);
-	  assert(tb==tbool_true);
+	  b = poly_is_leq(man,tpo[i],poly2);
+	  fprintf(stdout,"poly_is_leq(po%d,poly2)=%d\n",i+1,b);
+	  assert(b);
 
-	  tb = poly_is_leq(man,poly2,tpo[i]);
-	  fprintf(stdout,"poly_is_leq(poly2,po%d)=%d\n",i+1,tb);
-	  assert(!undet && j==0 ? tb==tbool_true : true);
+	  b = poly_is_leq(man,poly2,tpo[i]);
+	  fprintf(stdout,"poly_is_leq(poly2,po%d)=%d\n",i+1,b);
+	  assert(!undet && j==0 ? b : true);
 
 	  fprintf(stdout,
 		  inplace ?
@@ -763,9 +763,9 @@ void poly3(ap_manager_t* man, char** name_of_dim, poly_t* po1, poly_t* po2)
 	  ap_generator0_array_fprint(stdout,&garray,name_of_dim);
 	  ap_generator0_array_clear(&garray);
 
-	  tb = poly_is_eq(man,poly1,poly3);
-	  fprintf(stdout,"poly_is_eq(poly1,poly3)=%d\n",tb);
-	  assert(!(undet && j==0) ? tb==tbool_true : true);
+	  b = poly_is_eq(man,poly1,poly3);
+	  fprintf(stdout,"poly_is_eq(poly1,poly3)=%d\n",b);
+	  assert(!(undet && j==0) ? b : true);
        
 	  poly_free(man,poly1);
 	  poly_free(man,poly2);
@@ -981,14 +981,14 @@ void test_approximate()
   poly_approximate(man,pa,3);
   poly_fprint(stdout,man,po,NULL);
   poly_fprint(stdout,man,pa,NULL);
-  assert(poly_is_leq(man,po,pa)==tbool_true);
+  assert(poly_is_leq(man,po,pa));
   poly_free(man,pa);
 
   pa = poly_copy(man,po);
   poly_approximate(man,pa,10);
   poly_fprint(stdout,man,po,NULL);
   poly_fprint(stdout,man,pa,NULL);
-  assert(poly_is_leq(man,po,pa)==tbool_true);
+  assert(poly_is_leq(man,po,pa));
   poly_free(man,pa);
 
   poly_free(man,po);
@@ -1097,7 +1097,7 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   double* pdbl;
   ap_interval_t** box;
   ap_linexpr0_t* expr;
-  tbool_t res;
+  t res;
   ap_dim_t dim;
   ap_dimchange_t* dimchange;
 
@@ -1125,28 +1125,28 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   PRINT((printf("minimize\n")));
   p3 = poly_copy(man,p1);
   poly_minimize(man,p3);
-  assert(poly_is_eq(man,p1,p3)==tbool_true);
+  assert(poly_is_eq(man,p1,p3));
   poly_free(man,p3);
 
   /* canonicalize */
   PRINT((printf("canonicalize\n")));
   p3 = poly_copy(man,p1);
   poly_canonicalize(man,p3);
-  assert(poly_is_eq(man,p1,p3)==tbool_true);
-  assert(poly_is_canonical(man,p3)==tbool_true);
+  assert(poly_is_eq(man,p1,p3));
+  assert(poly_is_canonical(man,p3));
   poly_free(man,p3);
 
   /* approximate */
   p3 = poly_copy(man,p1);
   poly_approximate(man,p3,0);
-  assert(poly_is_eq(man,p1,p3)==tbool_true);
+  assert(poly_is_eq(man,p1,p3));
   poly_free(man,p3);
   p3 = poly_copy(man,p1);
   poly_approximate(man,p3,-1);
   poly_fprint(stdout,man,p1,name_of_dim);
   poly_fprint(stdout,man,p3,name_of_dim);
-  assert(poly_is_leq(man,p3,p1)==tbool_true);
-  if (poly_is_leq(man,p1,p3)!=tbool_true){
+  assert(poly_is_leq(man,p3,p1));
+  if (poly_is_leq(man,p1,p3)!=true){
     printf("approximate(-1) smaller\n");
   }
   poly_free(man,p3);
@@ -1155,10 +1155,10 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   poly_approximate(man,p3,3);
   poly_fprint(stdout,man,p1,name_of_dim);
   poly_fprint(stdout,man,p3,name_of_dim);
-  assert(poly_is_leq(man,p1,p3)==tbool_true);
-  if (poly_is_leq(man,p3,p1)!=tbool_true){
+  assert(poly_is_leq(man,p1,p3));
+  if (poly_is_leq(man,p3,p1)!=true){
     printf("approximate(3) greater\n");
-    assert(man->result.flag_exact!=tbool_true);
+    assert(man->result.flag_exact!=true);
   }
   poly_free(man,p3);
 
@@ -1166,10 +1166,10 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   poly_approximate(man,p3,10);
   poly_fprint(stdout,man,p1,name_of_dim);
   poly_fprint(stdout,man,p3,name_of_dim);
-  assert(poly_is_leq(man,p1,p3)==tbool_true);
-  if (poly_is_leq(man,p3,p1)!=tbool_true){
+  assert(poly_is_leq(man,p1,p3));
+  if (poly_is_leq(man,p3,p1)!=true){
     printf("approximate(10) greater\n");
-    assert(man->result.flag_exact!=tbool_true);
+    assert(man->result.flag_exact!=true);
   }
   poly_free(man,p3);
 
@@ -1177,7 +1177,7 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   PRINT((printf("bound_dimension and sat_interval\n")));
   for (i=0;i<intdim+realdim; i++){
     interval = poly_bound_dimension(man,p1,i);
-    assert(poly_sat_interval(man,p1,i,interval)==tbool_true);
+    assert(poly_sat_interval(man,p1,i,interval));
     if (!ap_scalar_infty(interval->inf) && !ap_scalar_infty(interval->sup)){
       ap_mpq_set_scalar(mpq,interval->inf,0);
       mpq_add(mpq,mpq,mpqone);
@@ -1185,7 +1185,7 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
       ap_mpq_set_scalar(mpq,interval->sup,0);
       mpq_sub(mpq,mpq,mpqone);
       ap_scalar_set_mpq(interval->sup,mpq);
-      assert(poly_sat_interval(man,p1,i,interval)==tbool_false || poly_is_bottom(man,p1));
+      assert(poly_sat_interval(man,p1,i,interval)==false || poly_is_bottom(man,p1));
     }
     if (!ap_scalar_infty(interval->inf)){
       ap_mpq_set_scalar(mpq,interval->inf,0);
@@ -1199,7 +1199,7 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
       mpq_add(mpq,mpq,mpqone);
       ap_scalar_set_mpq(interval->sup,mpq);
     }
-    assert(poly_sat_interval(man,p1,i,interval)==tbool_true);
+    assert(poly_sat_interval(man,p1,i,interval));
     ap_interval_free(interval);
   }
 
@@ -1215,10 +1215,10 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
     interval = poly_bound_linexpr(man,p1,expr);
     if (!ap_scalar_infty(interval->inf)){
       *pdbl = d + 1.0 - ap_scalar_get_double(interval->inf,0);
-      assert(poly_sat_lincons(man,p1,&cons)==tbool_true);
+      assert(poly_sat_lincons(man,p1,&cons));
       
       *pdbl = d - 1.0 - ap_scalar_get_double(interval->inf,0);
-      assert(poly_sat_lincons(man,p1,&cons)==tbool_false ||
+      assert(poly_sat_lincons(man,p1,&cons)==false ||
 	     poly_is_bottom(man,p1));
     }
     if (!ap_scalar_infty(interval->sup)){
@@ -1226,9 +1226,9 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
 	ap_coeff_neg(&expr->p.coeff[i],&expr->p.coeff[i]);
       }
       *pdbl = ap_scalar_get_double(interval->sup,0) - d + 1.0;
-      assert(poly_sat_lincons(man,p1,&cons)==tbool_true);
+      assert(poly_sat_lincons(man,p1,&cons));
       *pdbl = ap_scalar_get_double(interval->sup,0) - d - 1.0;
-      assert(poly_sat_lincons(man,p1,&cons)==tbool_false ||
+      assert(poly_sat_lincons(man,p1,&cons)==false ||
 	     poly_is_bottom(man,p1));
     }
     *pdbl = d;
@@ -1239,11 +1239,11 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   PRINT((printf("to_box\n")));
   box = poly_to_box(man,p1);
   for (i=0;i<intdim+realdim; i++){
-    assert(poly_sat_interval(man,p1,i,box[i])==tbool_true);
+    assert(poly_sat_interval(man,p1,i,box[i]));
   }
   p3 = poly_of_box(man,intdim,realdim,(ap_interval_t**)box);
-  if (poly_is_leq(man,p1,p3)!=tbool_true &&
-      poly_is_bottom(man,p1)==tbool_false){
+  if (poly_is_leq(man,p1,p3)!=true &&
+      poly_is_bottom(man,p1)==false){
     if (intdim==0) assert(false);
     else {
       printf("of_box(to_box) not greater\n");
@@ -1257,14 +1257,14 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   array = poly_to_lincons_array(man,p1);
   for (k=0; k<array.size; k++){
     res = poly_sat_lincons(man,p1,&array.p[k]);
-    if (intdim==0) assert(res==tbool_true);
-    else if (res!=tbool_true){
+    if (intdim==0) assert(res);
+    else if (res!=true){
       printf("sat_lincons(to_lincons) not true\n");
     }
   }
   p3 = poly_of_lincons_array(man,intdim,realdim,&array);
-  assert(poly_is_leq(man,p3,p1)==tbool_true);
-  if (poly_is_leq(man,p1,p3)!=tbool_true){
+  assert(poly_is_leq(man,p3,p1));
+  if (poly_is_leq(man,p1,p3)!=true){
     if (intdim==0) assert(false);
     else
       printf("of_lincons(to_lincons) smaller\n");
@@ -1277,16 +1277,16 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   p3 = poly_meet(man,false,p1,p2);
   p4 = poly_copy(man,p1);
   p4 = poly_meet(man,true,p4,p2);
-  assert(poly_is_eq(man,p3,p4)==tbool_true);
-  assert(poly_is_leq(man,p3,p1)==tbool_true);
-  assert(poly_is_leq(man,p3,p2)==tbool_true);
+  assert(poly_is_eq(man,p3,p4));
+  assert(poly_is_leq(man,p3,p1));
+  assert(poly_is_leq(man,p3,p2));
   poly_free(man,p4);
   PRINT((printf("meet_array\n")));
   p4 = poly_meet_array(man,tpoly,6);
   for (k=0;k<6;k++){
-    assert(poly_is_leq(man,p4,tpoly[k])==tbool_true);
+    assert(poly_is_leq(man,p4,tpoly[k]));
   }
-  assert(poly_is_leq(man,p4,p3)==tbool_true);
+  assert(poly_is_leq(man,p4,p3));
   poly_free(man,p3);
   poly_free(man,p4);
 
@@ -1294,31 +1294,31 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   p3 = poly_join(man,false,p1,p2);
   p4 = poly_copy(man,p1);
   p4 = poly_join(man,true,p4,p2);
-  assert(poly_is_eq(man,p3,p4)==tbool_true);
-  assert(poly_is_leq(man,p1,p3)==tbool_true);
-  assert(poly_is_leq(man,p2,p3)==tbool_true);
+  assert(poly_is_eq(man,p3,p4));
+  assert(poly_is_leq(man,p1,p3));
+  assert(poly_is_leq(man,p2,p3));
   poly_free(man,p4);
   PRINT((printf("join_array\n")));
   count++;
   p4 = poly_join_array(man,tpoly,6);
   poly_fprint(stdout,man,p4,name_of_dim);
-  assert(poly_is_leq(man,p3,p4)==tbool_true);
+  assert(poly_is_leq(man,p3,p4));
   for (k=0;k<6;k++){
     printf("k = %d\n",k);
-    assert(poly_is_leq(man,tpoly[k],p4)==tbool_true);
+    assert(poly_is_leq(man,tpoly[k],p4));
   }
   /* approximate */
   PRINT((printf("approximate on the result of join_array\n")));
   p5 = poly_copy(man,p4);
   poly_approximate(man,p5,0);
-  assert(poly_is_eq(man,p4,p5)==tbool_true);
+  assert(poly_is_eq(man,p4,p5));
   poly_free(man,p5);
 
   p5 = poly_copy(man,p4);
   poly_approximate(man,p5,-1);
   poly_fprint(stdout,man,p5,name_of_dim);
-  assert(poly_is_leq(man,p5,p4)==tbool_true);
-  if (poly_is_leq(man,p4,p5)!=tbool_true){
+  assert(poly_is_leq(man,p5,p4));
+  if (poly_is_leq(man,p4,p5)!=true){
     printf("approximate(-1) smaller\n");
   }
   poly_free(man,p5);
@@ -1327,13 +1327,13 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   poly_approximate(man,p5,3);
   res = man->result.flag_exact;
   poly_fprint(stdout,man,p5,name_of_dim);
-  assert(poly_is_leq(man,p4,p5)==tbool_true);
-  if (poly_is_leq(man,p5,p4)!=tbool_true){
+  assert(poly_is_leq(man,p4,p5));
+  if (poly_is_leq(man,p5,p4)!=true){
     printf("approximate(3) greater\n");
-    assert(res!=tbool_true);
+    assert(res!=true);
   }
   else {
-    assert(res==tbool_true);
+    assert(res);
   }
   poly_free(man,p5);
 
@@ -1342,13 +1342,13 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   poly_approximate(man,p5,10);
   res = man->result.flag_exact;
   poly_fprint(stdout,man,p5,name_of_dim);
-  assert(poly_is_leq(man,p4,p5)==tbool_true);
-  if (poly_is_leq(man,p5,p4)!=tbool_true){
+  assert(poly_is_leq(man,p4,p5));
+  if (poly_is_leq(man,p5,p4)!=true){
     printf("approximate(10) greater\n");
-    assert(res!=tbool_true);
+    assert(res!=true);
   }
   else {
-    assert(res==tbool_true);
+    assert(res);
   }
   poly_free(man,p5);
 
@@ -1364,8 +1364,8 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
     p3 = poly_meet_lincons_array(man,false,p1,&consarray);
     p4 = poly_copy(man,p1);
     p4 = poly_meet_lincons_array(man,true,p4,&consarray);
-    assert(poly_is_eq(man,p3,p4)==tbool_true);
-    assert(poly_is_leq(man,p3,p1)==tbool_true);
+    assert(poly_is_eq(man,p3,p4));
+    assert(poly_is_leq(man,p3,p1));
     poly_free(man,p3);
     poly_free(man,p4);
     garray = ap_generator0_array_make(1);
@@ -1374,8 +1374,8 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
     p3 = poly_add_ray_array(man,false,p1,&garray);
     p4 = poly_copy(man,p1);
     p4 = poly_add_ray_array(man,true,p4,&garray);
-    assert(poly_is_eq(man,p3,p4)==tbool_true);
-    assert(poly_is_leq(man,p1,p3)==tbool_true);
+    assert(poly_is_eq(man,p3,p4));
+    assert(poly_is_leq(man,p1,p3));
     free(garray.p);
     poly_free(man,p3);
     poly_free(man,p4);
@@ -1388,16 +1388,16 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
     p3 = poly_assign_linexpr(man,false,p1,dim,expr,NULL);
     p4 = poly_copy(man,p1);
     p4 = poly_assign_linexpr(man,true,p4,dim,expr,NULL);
-    assert(poly_is_eq(man,p3,p4)==tbool_true);
+    assert(poly_is_eq(man,p3,p4));
     poly_free(man,p4);
     p4 = poly_substitute_linexpr(man,false,p3,dim,expr,NULL);
     p5 = poly_copy(man,p3);
     p5 = poly_substitute_linexpr(man,true,p5,dim,expr,NULL);
-    assert(poly_is_eq(man,p4,p5)==tbool_true);
+    assert(poly_is_eq(man,p4,p5));
     poly_free(man,p5);
     p5 = poly_assign_linexpr(man,false,p4,dim,expr,NULL);
-    assert(poly_is_leq(man,p1,p4)==tbool_true);
-    assert(poly_is_eq(man,p3,p5)==tbool_true);
+    assert(poly_is_leq(man,p1,p4));
+    assert(poly_is_eq(man,p3,p5));
     poly_free(man,p3);
     poly_free(man,p4);
     poly_free(man,p5);
@@ -1407,16 +1407,16 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   p3 = poly_assign_linexpr_array(man,false,p1,tdim,texpr,3,NULL);
   p4 = poly_copy(man,p1);
   p4 = poly_assign_linexpr_array(man,true,p4,tdim,texpr,3,NULL);
-  assert(poly_is_eq(man,p3,p4)==tbool_true);
+  assert(poly_is_eq(man,p3,p4));
   poly_free(man,p4);
   p4 = poly_substitute_linexpr_array(man,false,p3,tdim,texpr,3,NULL);
   p5 = poly_copy(man,p3);
   p5 = poly_substitute_linexpr_array(man,true,p5,tdim,texpr,3,NULL);
-  assert(poly_is_eq(man,p4,p5)==tbool_true);
+  assert(poly_is_eq(man,p4,p5));
   poly_free(man,p5);
   p5 = poly_assign_linexpr_array(man,false,p4,tdim,texpr,3,NULL);
-  assert(poly_is_leq(man,p1,p4)==tbool_true);
-  assert(poly_is_eq(man,p3,p5)==tbool_true);
+  assert(poly_is_leq(man,p1,p4));
+  assert(poly_is_eq(man,p3,p5));
   poly_free(man,p3);
   poly_free(man,p4);
   poly_free(man,p5);
@@ -1429,15 +1429,15 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
     p3 = poly_forget_array(man,false,p1,&dim,1,true);
     p4 = poly_copy(man,p1);
     p4 = poly_forget_array(man,true,p4,&dim,1,true);  
-    assert(poly_is_eq(man,p3,p4)==tbool_true);
+    assert(poly_is_eq(man,p3,p4));
     poly_free(man,p4);
     p4 = poly_forget_array(man,false,p1,&dim,1,false);
     p5 = poly_copy(man,p1);
     poly_forget_array(man,true,p5,&dim,1,false);  
-    assert(poly_is_eq(man,p4,p5)==tbool_true);
+    assert(poly_is_eq(man,p4,p5));
     poly_free(man,p5);
-    assert(poly_is_leq(man,p3,p4)==tbool_true);
-    assert(poly_is_leq(man,p4,p3)==tbool_false || 
+    assert(poly_is_leq(man,p3,p4));
+    assert(poly_is_leq(man,p4,p3)==false || 
 	   poly_is_bottom(man,p1));
 
     interval = poly_bound_dimension(man,p3,dim);
@@ -1473,15 +1473,15 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   p3 = poly_forget_array(man,false,p1,tdim,3,true);
   p4 = poly_copy(man,p1);
   p4 = poly_forget_array(man,true,p4,tdim,3,true);  
-  assert(poly_is_eq(man,p3,p4)==tbool_true);
+  assert(poly_is_eq(man,p3,p4));
   poly_free(man,p4);
   p4 = poly_forget_array(man,false,p1,tdim,3,false);
   p5 = poly_copy(man,p1);
   p5 = poly_forget_array(man,true,p5,tdim,3,false);  
-  assert(poly_is_eq(man,p4,p5)==tbool_true);
+  assert(poly_is_eq(man,p4,p5));
   poly_free(man,p5);
-  assert(poly_is_leq(man,p3,p4)==tbool_true);
-  assert(poly_is_leq(man,p4,p3)==tbool_false || 
+  assert(poly_is_leq(man,p3,p4));
+  assert(poly_is_leq(man,p4,p3)==false || 
 	   poly_is_bottom(man,p1));
   for (k=0;k<3;k++){
     dim = tdim[k];
@@ -1517,28 +1517,28 @@ void poly_test_check(ap_manager_t* man, size_t intdim, size_t realdim,
   p3 = poly_add_dimensions(man,false,p1,dimchange,true);
   p4 = poly_copy(man,p1);
   p4 = poly_add_dimensions(man,true,p4,dimchange,true);
-  assert(poly_is_eq(man,p3,p4)==tbool_true);
+  assert(poly_is_eq(man,p3,p4));
   poly_free(man,p3);
   poly_free(man,p4);
   p3 = poly_add_dimensions(man,false,p1,dimchange,false);
   p4 = poly_copy(man,p1);
   p4 = poly_add_dimensions(man,true,p4,dimchange,false);
-  assert(poly_is_eq(man,p3,p4)==tbool_true);
+  assert(poly_is_eq(man,p3,p4));
   poly_free(man,p4);
   p4 = poly_permute_dimensions(man,false,p3,&perm);
   p5 = poly_copy(man,p3);
   p5 = poly_permute_dimensions(man,true,p5,&perm);
-  assert(poly_is_eq(man,p4,p5)==tbool_true);
+  assert(poly_is_eq(man,p4,p5));
   p5 = poly_permute_dimensions(man,true,p5,&perm);
-  assert(poly_is_eq(man,p3,p5)==tbool_true);
+  assert(poly_is_eq(man,p3,p5));
   poly_free(man,p4);
   poly_free(man,p5);
   ap_dimchange_add_invert(dimchange);
   p4 = poly_remove_dimensions(man,false,p3,dimchange);
-  assert(poly_is_eq(man,p1,p4)==tbool_true);
+  assert(poly_is_eq(man,p1,p4));
   p5 = poly_copy(man,p3);
   p5 = poly_remove_dimensions(man,true,p5,dimchange);
-  assert(poly_is_eq(man,p4,p5)==tbool_true);
+  assert(poly_is_eq(man,p4,p5));
   poly_free(man,p3);
   poly_free(man,p4);
   poly_free(man,p5);

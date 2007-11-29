@@ -279,7 +279,7 @@ ap_interval_t* pk_bound_dimension(ap_manager_t* man,
 
   if (!po->F){ /* po is empty */
     ap_interval_set_bottom(interval);
-    man->result.flag_exact = man->result.flag_best = tbool_true;
+    man->result.flag_exact = man->result.flag_best = true;
     return interval;
   }
 
@@ -288,7 +288,7 @@ ap_interval_t* pk_bound_dimension(ap_manager_t* man,
   ap_interval_set_itv(pk->itv,interval, itv);
   itv_clear(itv);
   man->result.flag_exact = man->result.flag_best = 
-    dim<po->intdim ? tbool_top : tbool_true;
+    dim<po->intdim ? false : true;
 
   return interval;
 }
@@ -321,7 +321,7 @@ ap_interval_t* pk_bound_linexpr(ap_manager_t* man,
 
   if (!po->F){ /* po is empty */
     ap_interval_set_bottom(interval);
-    man->result.flag_exact = man->result.flag_best = tbool_true;
+    man->result.flag_exact = man->result.flag_best = true;
     return interval;
   }
   
@@ -338,8 +338,8 @@ ap_interval_t* pk_bound_linexpr(ap_manager_t* man,
   man->result.flag_exact = man->result.flag_best = 
     ( (pk->funopt->flag_exact_wanted || pk->funopt->flag_best_wanted) &&
       ap_linexpr0_is_real(expr,po->intdim) ) ? 
-    tbool_of_bool(exact) : 
-    tbool_top;
+    exact :
+    false;
   
   return interval;
 }
@@ -367,7 +367,7 @@ ap_interval_t* pk_bound_texpr(ap_manager_t* man,
   }
   if (!po->F){ /* po is empty */
     ap_interval_set_bottom(interval);
-    man->result.flag_exact = man->result.flag_best = tbool_true;
+    man->result.flag_exact = man->result.flag_best = true;
     return interval;
   }
   env = matrix_to_box(pk,po->F);
@@ -380,7 +380,7 @@ ap_interval_t* pk_bound_texpr(ap_manager_t* man,
   ap_interval_set_itv(pk->itv,interval,itv1);
   itv_clear(itv1); itv_clear(itv2);
   itv_array_free(env,po->intdim+po->realdim);
-  man->result.flag_exact = man->result.flag_best = ap_texpr0_is_interval_linear(expr) ? tbool_true : tbool_top;
+  man->result.flag_exact = man->result.flag_best = ap_texpr0_is_interval_linear(expr);
 
   return interval;
 }
@@ -398,12 +398,12 @@ ap_lincons0_array_t pk_to_lincons_array(ap_manager_t* man,
   size_t i,k;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_TO_LINCONS_ARRAY);
 
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
 
   poly_chernikova3(man,po,NULL);
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
-    man->result.flag_exact = man->result.flag_best = tbool_false;
+    man->result.flag_exact = man->result.flag_best = false;
     array = ap_lincons0_array_make(0);
     return array;
   }
@@ -452,7 +452,7 @@ ap_interval_t** pk_to_box(ap_manager_t* man,
 
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
-    man->result.flag_exact = man->result.flag_best = tbool_false;
+    man->result.flag_exact = man->result.flag_best = false;
     interval = ap_interval_array_alloc(dim);
     for (i=0; i<dim; i++){
       ap_interval_set_top(interval[i]);
@@ -472,7 +472,7 @@ ap_interval_t** pk_to_box(ap_manager_t* man,
     }
     itv_array_free(titv,dim);
   }
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   return interval;
 }
 
@@ -491,12 +491,12 @@ ap_generator0_array_t pk_to_generator_array(ap_manager_t* man,
   size_t i,k;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_TO_GENERATOR_ARRAY);
 
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
 
   poly_chernikova3(man,po,NULL);
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
-    man->result.flag_exact = man->result.flag_best = tbool_false;
+    man->result.flag_exact = man->result.flag_best = false;
     array = ap_generator0_array_make(0);
     return array;
   }

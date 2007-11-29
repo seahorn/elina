@@ -146,13 +146,13 @@ pk_t* pk_widening(ap_manager_t* man, pk_t* pa, pk_t* pb)
   poly_chernikova2(man,pa,"of the first argument");
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
-    man->result.flag_best = man->result.flag_exact = tbool_false;
+    man->result.flag_best = man->result.flag_exact = false;
     return pk_top(man,pa->intdim,pa->realdim);
   }
   poly_chernikova2(man,pb,"of the second argument");
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
-    man->result.flag_best = man->result.flag_exact = tbool_false;
+    man->result.flag_best = man->result.flag_exact = false;
     return pk_top(man,pa->intdim,pa->realdim);
   }
   if (!pa->C && !pa->F) /* pa is empty */
@@ -201,7 +201,7 @@ pk_t* pk_widening(ap_manager_t* man, pk_t* pa, pk_t* pb)
     free(tab);
     bitstring_free(bitstringp);
     po->C->nbrows = nbrows;
-    man->result.flag_best = man->result.flag_exact = tbool_top;
+    man->result.flag_best = man->result.flag_exact = false;
     return po;
   }
 }

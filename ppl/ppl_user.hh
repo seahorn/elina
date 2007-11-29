@@ -134,14 +134,14 @@ extern void ap_ppl_box_universe(ap_interval_t** i,size_t nb);
 /* reference booleans are set to true when exact, false otherwise */
 
 /* Linear expressions */
-extern void ap_ppl_of_itv_linexpr(Linear_Expression& r, 
+extern bool ap_ppl_of_itv_linexpr(Linear_Expression& r, 
 				  mpz_class& den,
 				  itv_linexpr_t* c,
 				  int mode);
 
 /* Linear constraints */
 extern bool ap_ppl_of_itv_lincons(Constraint& r, mpz_class& den, itv_lincons_t* c, bool allow_strict);
-extern void ap_ppl_of_itv_lincons(Congruence& r, mpz_class& den, itv_lincons_t* c);
+extern bool ap_ppl_of_itv_lincons(Congruence& r, mpz_class& den, itv_lincons_t* c);
 extern bool ap_ppl_of_itv_lincons_array(Constraint_System& r, mpz_class& den,itv_lincons_array_t* a,bool allow_strict);
 extern bool ap_ppl_of_itv_lincons_array(Congruence_System& r, mpz_class& den,itv_lincons_array_t* a);
 

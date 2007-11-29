@@ -28,8 +28,8 @@ box_t* box_assign_linexpr_array(ap_manager_t* man,
   
   exact = true;
   if (a->p==NULL || (dest && dest->p==NULL)){
-    man->result.flag_best = tbool_true;
-    man->result.flag_exact = tbool_top;
+    man->result.flag_best = true;
+    man->result.flag_exact = true;
     return destructive ? a : box_copy(man,a);
   }
   if (size==1){
@@ -47,8 +47,8 @@ box_t* box_assign_linexpr_array(ap_manager_t* man,
   }
   if (dest)
     res = box_meet(man,true,res,dest);
-  man->result.flag_best = size==1 && exact ? tbool_true : tbool_top;
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = size==1 && exact;
+  man->result.flag_exact = false;
   return res;
 }
 
@@ -75,16 +75,17 @@ box_t* box_assign_texpr(ap_manager_t* man,
   box_t* res;
   box_internal_t* intern = man->internal;
 
-  man->result.flag_best = tbool_true;
   res = destructive ? a : box_copy(man,a);
   if (a->p==NULL || (dest!=NULL && dest->p==NULL)){
-    man->result.flag_exact = tbool_true;
+    man->result.flag_best = true;
+    man->result.flag_exact = true;
     return res;
   }
   itv_eval_ap_texpr0(intern->itv,res->p[dim],texpr,a->p);
   if (dest)
     res = box_meet(man,true,res,dest);
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = false;
+  man->result.flag_exact = false;
   return res;
 }
 
@@ -101,8 +102,8 @@ box_t* box_assign_texpr_array(ap_manager_t* man,
   box_internal_t* intern = man->internal;
   
   if (a->p==NULL || (dest && dest->p==NULL)){
-    man->result.flag_best = tbool_true;
-    man->result.flag_exact = tbool_top;
+    man->result.flag_best = true;
+    man->result.flag_exact = true;
     return destructive ? a : box_copy(man,a);
   }
   if (size==1){
@@ -118,8 +119,8 @@ box_t* box_assign_texpr_array(ap_manager_t* man,
   }
   if (dest)
     res = box_meet(man,true,res,dest);
-  man->result.flag_best = tbool_top;
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = false;
+  man->result.flag_exact = false;
   return res;
 }
 

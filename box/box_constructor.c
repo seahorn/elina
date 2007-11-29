@@ -22,8 +22,8 @@
 /* Create a bottom (empty) value */
 box_t* box_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
 {
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   return box_alloc(intdim,realdim);
 }
 
@@ -36,8 +36,8 @@ box_t* box_top(ap_manager_t* man, size_t intdim, size_t realdim)
   for(i=0;i<a->intdim+a->realdim; i++){
     itv_set_top(a->p[i]);
   }
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   return a;
 }
 
@@ -60,8 +60,8 @@ box_t* box_of_box(ap_manager_t* man,
       if (exc) { box_set_bottom(a); break; }
     }
   }
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   return a;
 }
 
@@ -81,33 +81,28 @@ ap_dimension_t box_dimension(ap_manager_t* man, box_t* a)
 /* 3. Tests */
 /* ********************************************************************** */
 
-/* If any of the following functions returns tbool_top, this means that
-   an exception has occured, or that the exact computation was
-   considered too expensive to be performed (according to the options).
-   The flag exact and best should be cleared in such a case. */
-
-tbool_t box_is_bottom(ap_manager_t* man, box_t* a)
+bool box_is_bottom(ap_manager_t* man, box_t* a)
 {
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
-  return tbool_of_bool(a->p==NULL);
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
+  return a->p==NULL;
 }
 
-tbool_t box_is_top(ap_manager_t* man, box_t* a)
+bool box_is_top(ap_manager_t* man, box_t* a)
 {
   size_t i;
-  tbool_t res;
+  bool res;
   size_t nbdims = a->intdim + a->realdim;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   if (a->p==NULL)
-    return tbool_false;
+    return false;
 
-  res = tbool_true;
+  res = true;
   for (i=0;i<nbdims;i++){
     if (! itv_is_top(a->p[i])){
-      res = tbool_false;
+      res = false;
       break;
     }
   }
@@ -115,24 +110,24 @@ tbool_t box_is_top(ap_manager_t* man, box_t* a)
 }
 
 /* inclusion check */
-tbool_t box_is_leq(ap_manager_t* man, box_t* a, box_t* b)
+bool box_is_leq(ap_manager_t* man, box_t* a, box_t* b)
 {
   size_t i;
-  tbool_t res;
+  bool res;
   size_t nbdims;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   nbdims = a->intdim + a->realdim;
   if (a->p==NULL)
-    return tbool_true;
+    return true;
   else if (b->p==NULL)
-    return tbool_false;
+    return false;
 
-  res = tbool_true;
+  res = true;
   for (i=0;i<nbdims;i++){
     if (! itv_is_leq(a->p[i],b->p[i])){
-      res = tbool_false;
+      res = false;
       break;
     }
   }
@@ -140,52 +135,52 @@ tbool_t box_is_leq(ap_manager_t* man, box_t* a, box_t* b)
 }
 
 /* equality check */
-tbool_t box_is_eq(ap_manager_t* man, box_t* a, box_t* b)
+bool box_is_eq(ap_manager_t* man, box_t* a, box_t* b)
 {
   size_t i;
-  tbool_t res;
+  bool res;
   size_t nbdims;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   nbdims = a->intdim + a->realdim;
   if (a->p==NULL)
-    return tbool_of_bool(b->p==NULL);
+    return b->p==NULL;
   else if (b->p==NULL)
-    return tbool_false;
+    return false;
 
-  res = tbool_true;
+  res = true;
   for (i=0;i<nbdims;i++){
     if (! itv_is_eq(a->p[i],b->p[i])){
-      res = tbool_false;
+      res = false;
       break;
     }
   }
   return res;
 }
 
-tbool_t box_is_dimension_unconstrained(ap_manager_t* man, box_t* a, ap_dim_t dim)
+bool box_is_dimension_unconstrained(ap_manager_t* man, box_t* a, ap_dim_t dim)
 {
-  return (a->p && itv_is_top(a->p[dim])) ? tbool_true : tbool_false;
+  return a->p && itv_is_top(a->p[dim]);
 }
 
 /* is the dimension included in the interval in the abstract value ? */
-tbool_t box_sat_interval(ap_manager_t* man, 
+bool box_sat_interval(ap_manager_t* man, 
 			 box_t* a,
 			 ap_dim_t dim, ap_interval_t* interval)
 {
   box_internal_t* intern = box_init_from_manager(man,AP_FUNID_SAT_INTERVAL);
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   if (a->p==NULL)
-    return tbool_true;
+    return true;
 
   ap_interval_set_itv(intern->itv, intern->sat_interval_interval, a->p[dim]);
-  return tbool_of_bool(ap_interval_is_leq(intern->sat_interval_interval,interval));
+  return ap_interval_is_leq(intern->sat_interval_interval,interval);
 }
 
 /* does the abstract value satisfy the linear constraint ? */
-tbool_t box_sat_lincons(ap_manager_t* man,
+bool box_sat_lincons(ap_manager_t* man,
 			box_t* a, ap_lincons0_t* cons)
 {
   itv_lincons_t lincons;
@@ -193,10 +188,10 @@ tbool_t box_sat_lincons(ap_manager_t* man,
   tbool_t res;
   box_internal_t* intern = box_init_from_manager(man,AP_FUNID_SAT_LINCONS);
   
-  man->result.flag_best = man->result.flag_exact = tbool_true;
+  man->result.flag_best = man->result.flag_exact = true;
   
   if (a->p==NULL)
-    return tbool_true;
+    return true;
 
   itv_lincons_init(&lincons);
   itv_lincons_set_ap_lincons0(intern->itv,&lincons,cons);
@@ -207,13 +202,13 @@ tbool_t box_sat_lincons(ap_manager_t* man,
   res = itv_eval_cstlincons(intern->itv,&lincons);
   itv_lincons_clear(&lincons);
   
-  man->result.flag_exact = exact ? tbool_true : tbool_top;
+  man->result.flag_exact = exact;
   
-  return res;
+  return res==tbool_true;
 }
 
 /* does the abstract value satisfy the tree constraint ? */
-tbool_t box_sat_tcons(ap_manager_t* man, 
+bool box_sat_tcons(ap_manager_t* man, 
 		      box_t* a, ap_tcons0_t* cons)
 {
   itv_lincons_t lincons;
@@ -221,12 +216,12 @@ tbool_t box_sat_tcons(ap_manager_t* man,
   tbool_t res;
   box_internal_t* intern = box_init_from_manager(man,AP_FUNID_SAT_TCONS);
   
-  man->result.flag_best = man->result.flag_exact = tbool_true;
+  man->result.flag_best = man->result.flag_exact = true;
   
   if (a->p==NULL)
-    return tbool_true;
+    return true;
   
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = man->result.flag_exact = false;
   itv_lincons_init(&lincons);
   itv_eval_ap_texpr0(intern->itv,
 		     lincons.linexpr.cst, cons->texpr0, a->p);
@@ -239,7 +234,7 @@ tbool_t box_sat_tcons(ap_manager_t* man,
   res = itv_eval_cstlincons(intern->itv,&lincons);
   if (res==tbool_top) res = tbool_false;
   itv_lincons_clear(&lincons);
-  return res;
+  return res==tbool_true;
 }
 
 /* ********************************************************************** */
@@ -260,8 +255,8 @@ ap_interval_t* box_bound_dimension(ap_manager_t* man,
     exact = ap_interval_set_itv(intern->itv,interval,a->p[dim]);
     
   }
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = exact ? tbool_true : tbool_top;
+  man->result.flag_best = true;
+  man->result.flag_exact = exact;
   return interval;
 }
 
@@ -284,8 +279,8 @@ ap_interval_t* box_bound_linexpr(ap_manager_t* man,
 				 
     ap_interval_set_itv(intern->itv, interval,intern->bound_linexpr_itv);
   }
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = exact ? tbool_true : tbool_top;
+  man->result.flag_best = true;
+  man->result.flag_exact = exact;
   return interval;
 }
 
@@ -308,8 +303,8 @@ ap_interval_t* box_bound_texpr(ap_manager_t* man,
 		       intern->bound_linexpr_itv,expr,a->p);
     ap_interval_set_itv(intern->itv, interval, intern->bound_linexpr_itv);
   }
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = true;
+  man->result.flag_exact = false;
   return interval;
 }
 
@@ -324,8 +319,8 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, box_t* a)
 
   size_t nbdims = a->intdim + a->realdim;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   if (nbdims==0){
     array = ap_lincons0_array_make(0);
   }
@@ -392,8 +387,8 @@ ap_generator0_array_t box_to_generator_array(ap_manager_t* man, box_t* a)
   ap_linexpr0_t* vertex;
   ap_scalar_t scalar;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   
   size = a->intdim+a->realdim;
   if (size==0 || a->p==NULL){
@@ -509,8 +504,8 @@ ap_interval_t** box_to_box(ap_manager_t* man, box_t* a)
   size_t nbdims;
   box_internal_t* intern = (box_internal_t*)man->internal;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   nbdims = a->intdim+a->realdim;
   if (nbdims==0){
     interval = NULL;

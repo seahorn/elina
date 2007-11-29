@@ -237,55 +237,50 @@ ap_dimension_t pk_dimension(ap_manager_t* man, pk_t* a);
 /* II.3 Tests */
 /* ============================================================ */
 
-/* If any of the following functions returns tbool_top, this means that
-   an exception has occured, or that the exact computation was
-   considered too expensive to be performed (according to the options).
-   The flag exact and best should be cleared in such a case. */
-
-tbool_t pk_is_bottom(ap_manager_t* man, pk_t* a);
+bool pk_is_bottom(ap_manager_t* man, pk_t* a);
   /* Emptiness test 
      algorithm >= 0: strict behaviour, compute canonical form if necessary
      algorithm < 0: lazy behaviour, always cheap
   */
-tbool_t pk_is_top(ap_manager_t* man, pk_t* a);
+bool pk_is_top(ap_manager_t* man, pk_t* a);
   /* Universe test 
      algorithm >= 0: strict behaviour, compute canonical form if necessary
      algorithm < 0: lazy behaviour, always cheap
   */
 
-tbool_t pk_is_leq(ap_manager_t* man, pk_t* a1, pk_t* a2);
+bool pk_is_leq(ap_manager_t* man, pk_t* a1, pk_t* a2);
   /* Inclusion test: 
      Is always strict
      algorithm > 0: (nearly always) compute canonical forms
      algorithm <= 0: compute dual representations only if necessary
   */
   
-tbool_t pk_is_eq(ap_manager_t* man, pk_t* a1, pk_t* a2);
+bool pk_is_eq(ap_manager_t* man, pk_t* a1, pk_t* a2);
   /* Equality test:
      Is always strict
      Use algorithm field of is_leq.
   */
  
-tbool_t pk_sat_lincons(ap_manager_t* man, pk_t* a, ap_lincons0_t* lincons);
+bool pk_sat_lincons(ap_manager_t* man, pk_t* a, ap_lincons0_t* lincons);
   /* Satisfiability of a linear constraint
      Is always strict
      algorithm > 0: (nearly always) compute canonical form
      algorithm <= 0: compute dual representation only if necessary
   */
 
-tbool_t pk_sat_tcons(ap_manager_t* man, pk_t* a, ap_tcons0_t* cons);
+bool pk_sat_tcons(ap_manager_t* man, pk_t* a, ap_tcons0_t* cons);
   /* Satisfiability of a tree expression constraint. */
 
-tbool_t pk_sat_interval(ap_manager_t* man, pk_t* a,
-			ap_dim_t dim, ap_interval_t* interval);
+bool pk_sat_interval(ap_manager_t* man, pk_t* a,
+		     ap_dim_t dim, ap_interval_t* interval);
   /* Inclusion of a dimension in an interval 
      Is always strict
      algorithm > 0: (nearly always) compute canonical form
      algorithm <= 0: compute dual representation only if necessary
   */
 
-tbool_t pk_is_dimension_unconstrained(ap_manager_t* man, pk_t* po,
-				      ap_dim_t dim);
+bool pk_is_dimension_unconstrained(ap_manager_t* man, pk_t* po,
+				   ap_dim_t dim);
   /* Is a dimension unconstrained ?
      Is always strict
      algorithm > 0: compute canonical form

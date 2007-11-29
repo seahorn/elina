@@ -55,12 +55,10 @@ exactness flag;
       fflush(stdout);							\
       flag = exact;							\
       
-#define FLAG(m) \
-if (m->result.flag_exact==tbool_true) ;		      \
- else if (m->result.flag_best==tbool_true)	      \
-   { if (flag==exact) flag = best; else flag = none;} \
- else flag = none;
-
+#define FLAG(m)						    \
+  if (m->result.flag_exact) ;				    \
+  else if (m->result.flag_best && flag==exact) flag = best; \
+  else flag = none;
 
 #define RESULT(c) b1_[i_+2]=c
 
@@ -369,6 +367,17 @@ void print_interval(const char*msg, ap_interval_t* i)
   fprintf(stderr,"\n");
 }
 
+bool oct_is_nleq(ap_manager_t* man, oct_t* a1, oct_t* a2)
+{
+  return !oct_is_leq(man,a1,a2) && man->result.flag_exact;
+}
+
+
+bool oct_is_neq(ap_manager_t* man, oct_t* a1, oct_t* a2)
+{
+  return !oct_is_eq(man,a1,a2) && man->result.flag_exact;
+}
+
 
 /* ********************************* */
 /*             infos                 */
@@ -405,31 +414,31 @@ void test_misc(void)
   check(bot); check(top);
   if (d1.intdim || d1.realdim!=D) printf("oct_dimension failed #1\n");
   if (d2.intdim || d2.realdim!=D) printf("oct_dimension failed #2\n");
-  if (oct_is_bottom(mo,bot)==tbool_false)  printf("oct_is_bottom failed #3\n");
-  if (oct_is_bottom(mo,top)==tbool_true)   printf("oct_is_bottom failed #4\n");
-  if (oct_is_top(mo,bot)==tbool_true)      printf("oct_is_top failed #5\n");
-  if (oct_is_top(mo,top)==tbool_false)     printf("oct_is_top failed #6\n");
-  if (oct_is_leq(mo,bot,top)==tbool_false) printf("oct_is_leq failed #7\n");
-  if (oct_is_leq(mo,top,bot)==tbool_true)  printf("oct_is_leq failed #8\n");
-  if (oct_is_eq(mo,bot,bot)==tbool_false)  printf("oct_is_eq failed #9\n");
-  if (oct_is_eq(mo,top,top)==tbool_false)  printf("oct_is_eq failed #10\n");
-  if (oct_is_eq(mo,bot,top)==tbool_true)   printf("oct_is_eq failed #11\n");
-  if (oct_is_dimension_unconstrained(mo,bot,0)==tbool_true)
+  if (!oct_is_bottom(mo,bot))  printf("oct_is_bottom failed #3\n");
+  if (oct_is_bottom(mo,top))   printf("oct_is_bottom failed #4\n");
+  if (oct_is_top(mo,bot))      printf("oct_is_top failed #5\n");
+  if (!oct_is_top(mo,top))     printf("oct_is_top failed #6\n");
+  if (!oct_is_leq(mo,bot,top)) printf("oct_is_leq failed #7\n");
+  if (oct_is_leq(mo,top,bot))  printf("oct_is_leq failed #8\n");
+  if (!oct_is_eq(mo,bot,bot))  printf("oct_is_eq failed #9\n");
+  if (!oct_is_eq(mo,top,top))  printf("oct_is_eq failed #10\n");
+  if (oct_is_eq(mo,bot,top))   printf("oct_is_eq failed #11\n");
+  if (oct_is_dimension_unconstrained(mo,bot,0))
     printf("oct_is_dimension_unconstrained #12\n");
-  if (oct_is_dimension_unconstrained(mo,top,0)==tbool_false)
+  if (!oct_is_dimension_unconstrained(mo,top,0))
     printf("oct_is_dimension_unconstrained #13\n");
-  if (ap_abstract0_is_bottom(mp,bot2)==tbool_false) printf("ap_abstract0_is_bottom failed\n");
-  if (ap_abstract0_is_top(mp,top2)==tbool_false)    printf("poly_is_top failed\n");
+  if (!ap_abstract0_is_bottom(mp,bot2) && mp->result.flag_exact) printf("poly_is_bottom failed\n");
+  if (!ap_abstract0_is_top(mp,top2) && mp->result.flag_exact) printf("poly_is_top failed\n");
   for (i=0;i<N;i++) {
     oct_t* o = random_oct(D,.1);
     oct_t* c = oct_copy(mo,o);
     oct_t* l = oct_closure(mo,false,o);
     ap_dimension_t d = oct_dimension(mo,o);
     if (d.intdim || d.realdim!=D) printf("oct_dimension failed #14\n");
-    if (oct_is_leq(mo,bot,o)==tbool_false)  printf("oct_is_leq failed #15\n");
-    if (oct_is_leq(mo,o,top)==tbool_false)  printf("oct_is_leq failed #16\n");
-    if (oct_is_eq(mo,o,c)==tbool_false)     printf("oct_is_eq failed #17\n");
-    if (oct_is_eq(mo,o,l)==tbool_false)     printf("oct_is_eq failed #18\n");
+    if (!oct_is_leq(mo,bot,o))  printf("oct_is_leq failed #15\n");
+    if (!oct_is_leq(mo,o,top))  printf("oct_is_leq failed #16\n");
+    if (!oct_is_eq(mo,o,c))     printf("oct_is_eq failed #17\n");
+    if (oct_is_neq(mo,o,l))     printf("oct_is_eq failed #18\n");
     oct_size(mo,o);
     oct_close(pr,o);
     // not implemented
@@ -501,42 +510,40 @@ void test_polyhedra_conversion(void)
     o2 = oct_of_poly(p);
     p2 = poly_of_oct(o2);
     RESULT(check(o)); check(o2);
-    if (oct_is_leq(mo,o,o2)==tbool_false) {
+    if (oct_is_nleq(mo,o,o2)) {
       ERROR("oct not included in");
       print_oct("o",o); 
       print_poly("p",p); 
       print_oct("o2",o2); 
     }
-    if (ap_abstract0_is_leq(mp,p,p2)==tbool_false) {
+    if (!ap_abstract0_is_leq(mp,p,p2)) {
       ERROR("poly not included in");
       print_oct("o",o); 
       print_poly("p",p); 
       print_oct("o2",o2); 
       print_poly("p2",p2);
     }
-    if (oct_is_eq(mo,o,o2)==tbool_true && ap_abstract0_is_eq(mp,p,p2)==tbool_true)
-      RESULT('*');
-    if (flag==exact && (oct_is_eq(mo,o,o2)==tbool_false || ap_abstract0_is_eq(mp,p,p2)==tbool_false)) ERROR("exact flag");
+    if (oct_is_eq(mo,o,o2) && ap_abstract0_is_eq(mp,p,p2)) RESULT('*');
+    if (flag>=best && (oct_is_neq(mo,o,o2) || !ap_abstract0_is_eq(mp,p,p2))) ERROR("best flag");
     oct_free(mo,o); oct_free(mo,o2); ap_abstract0_free(mp,p); ap_abstract0_free(mp,p2);
   } ENDLOOP;
   {
     oct_t *o;
     ap_abstract0_t *p;
-    tbool_t r;
+    bool r;
+    flag = exact;
     o = oct_bottom(mo,0,7);
     p = poly_of_oct(o);
     r = ap_abstract0_is_bottom(mp,p); FLAG(mp);
-    if (flag>=best && r!=tbool_true) printf("poly_is_bottom failed\n");
+    if (flag>=best && !r) printf("poly_is_bottom failed\n");
     oct_free(mo,o); ap_abstract0_free(mp,p);
   }
   {
     oct_t *o;
     ap_abstract0_t *p;
-    tbool_t r;
     o = oct_top(mo,0,7);
     p = poly_of_oct(o);
-    r = ap_abstract0_is_top(mp,p); FLAG(mp);
-    if (flag>=best && r!=tbool_true) printf("poly_is_top failed\n");
+    if (!ap_abstract0_is_top(mp,p) && mp->result.flag_exact) printf("poly_is_top failed\n");
     oct_free(mo,o); ap_abstract0_free(mp,p);
   }
 }
@@ -552,31 +559,33 @@ void test_polyhedra_conversion2(void)
     p2 = poly_of_oct(o);
     o2 = oct_of_poly(p2);
     RESULT(check(o)); check(o2);
-    if (oct_is_leq(mo,o,o2)==tbool_false || ap_abstract0_is_leq(mp,p,p2)==tbool_false) {
+    if (oct_is_nleq(mo,o,o2) || !ap_abstract0_is_leq(mp,p,p2)) {
       ERROR("not included in"); 
       print_poly("p",p); 
       print_oct("o",o); 
       print_poly("p2",p2); 
       print_oct("o2",o2); 
     }
-    if (oct_is_eq(mo,o,o2)==tbool_true) RESULT('*');
-    if (flag==exact && oct_is_eq(mo,o,o2)==tbool_false) ERROR("exact flag");
+    if (oct_is_eq(mo,o,o2)) RESULT('*');
+    if (flag>=best && oct_is_neq(mo,o,o2)) ERROR("best flag");
     oct_free(mo,o); oct_free(mo,o2); ap_abstract0_free(mp,p); ap_abstract0_free(mp,p2);
   } ENDLOOP;
   {
     ap_abstract0_t *p;
     oct_t *o;
+    flag = exact;
     p = ap_abstract0_bottom(mp,0,7);
     o = oct_of_poly(p);
-    if (oct_is_bottom(mo,o)!=tbool_true) printf("oct_is_bottom failed\n");
+    if (flag>=best && !oct_is_bottom(mo,o)) printf("oct_is_bottom failed\n");
     oct_free(mo,o); ap_abstract0_free(mp,p);
   }
   {
     ap_abstract0_t *p;
     oct_t *o;
+    flag = exact;
     p = ap_abstract0_top(mp,0,7);
     o = oct_of_poly(p);
-    if (oct_is_top(mo,o)!=tbool_true) printf("oct_is_top failed\n");
+    if (flag>=best && !oct_is_top(mo,o)) printf("oct_is_top failed\n");
     oct_free(mo,o); ap_abstract0_free(mp,p);
   }
 }
@@ -600,23 +609,22 @@ void test_lincons_conversion(exprmode mode)
       tt.p[i] = random_from_lincons(t.p[i]);
     }
     p  = ap_abstract0_of_lincons_array(mp,0,dim,&tt);
-    o = oct_top(mo,0,dim);
+    o  = oct_top(mo,0,dim);
     o  = oct_meet_lincons_array(mo,true,o,&t); FLAG(mo);
     p2 = poly_of_oct(o);
     oo = oct_of_poly(p);
     RESULT(check(o));
-    if (ap_abstract0_is_leq(mp,p,p2)==tbool_false) {
+    if (!ap_abstract0_is_leq(mp,p,p2)) {
       ERROR("not included in"); 
       print_poly("p",p); 
       fprintf(stderr,"t = "); ap_lincons0_array_fprint(stderr,&t,NULL);
       print_oct("o",o); 
       print_poly("p2",p2); 
     }
-    if (ap_abstract0_is_eq(mp,p,p2)==tbool_true) RESULT('*');
-    else if (oct_is_eq(mo,o,oo)==tbool_true) RESULT('x');
-    if (flag==best && oct_is_eq(mo,o,oo)==tbool_false) ERROR("best flag");
-    if (flag==exact && ap_abstract0_is_eq(mp,p,p2)==tbool_false) 
-      ERROR("exact flag");
+    if (ap_abstract0_is_eq(mp,p,p2)) RESULT('*');
+    else if (oct_is_eq(mo,o,oo)) RESULT('x');
+    if (flag>=best && oct_is_neq(mo,o,oo)) ERROR("best flag");
+    if (flag==exact && !ap_abstract0_is_eq(mp,p,p2)) ERROR("exact flag");
     oct_free(mo,o); oct_free(mo,oo); 
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,p2);
     ap_lincons0_array_clear(&t); ap_lincons0_array_clear(&tt);
@@ -634,14 +642,14 @@ void test_generator_conversion(void)
     t  = oct_to_generator_array(mo,o); FLAG(mo);
     o2 = oct_of_generator_array(mo,0,dim,&t); FLAG(mo);
     RESULT(check(o2));
-    if (oct_is_leq(mo,o,o2)==tbool_false) {
+    if (oct_is_nleq(mo,o,o2)) {
       ERROR("not included in"); 
       print_oct("o",o); 
       fprintf(stderr,"t = "); ap_generator0_array_fprint(stderr,&t,NULL);
       print_oct("o2",o2); 
     }
-    if (oct_is_eq(mo,o,o2)==tbool_true) RESULT('*');
-    if (flag==exact && oct_is_eq(mo,o,o2)==tbool_false) ERROR("exact flag");
+    if (oct_is_eq(mo,o,o2)) RESULT('*');
+    if (flag==exact && oct_is_neq(mo,o,o2)) ERROR("exact flag");
     oct_free(mo,o); oct_free(mo,o2); ap_generator0_array_clear(&t);
   } ENDLOOP;
 }
@@ -660,14 +668,14 @@ void test_box_conversion(void)
     b2 = oct_to_box(mo,o2); FLAG(mo);
     o3 = oct_of_box(mo,0,dim,b2); FLAG(mo);
     RESULT(check(o)); check(o2);
-    if (oct_is_leq(mo,o,o2)==tbool_false || oct_is_leq(mo,o2,o3)==tbool_false) {
+    if (oct_is_nleq(mo,o,o2) || oct_is_nleq(mo,o2,o3)) {
       ERROR("not included in"); 
       print_oct("o",o); 
       print_oct("o2",o2); 
       print_oct("o3",o3); 
     }
-    if (oct_is_eq(mo,o2,o3)==tbool_true) RESULT('*');
-    if (flag==exact && oct_is_eq(mo,o2,o3)==tbool_false) ERROR("exact flag");
+    if (oct_is_eq(mo,o2,o3)) RESULT('*');
+    if (flag==exact && oct_is_neq(mo,o2,o3)) ERROR("exact flag");
     ap_interval_array_free(b,dim);
     ap_interval_array_free(b2,dim);
     oct_free(mo,o); oct_free(mo,o2); oct_free(mo,o3);
@@ -691,13 +699,13 @@ void test_serialize(void)
     b  = oct_serialize_raw(mo,o); FLAG(mo);
     o2 = oct_deserialize_raw(mo,b.ptr,&sz); FLAG(mo);
     RESULT(check(o)); check(o2);
-    if (oct_is_leq(mo,o,o2)==tbool_false) {
+    if (oct_is_nleq(mo,o,o2)) {
       ERROR("not included in");
       print_oct("o",o); 
       print_oct("o2",o2); 
     }
-    if (oct_is_eq(mo,o,o2)==tbool_true) RESULT('*');
-    if (flag==exact && oct_is_eq(mo,o,o2)==tbool_false) ERROR("exact flag");
+    if (oct_is_eq(mo,o,o2)) RESULT('*');
+    if (flag==exact && oct_is_neq(mo,o,o2)) ERROR("exact flag");
     if (b.size!=sz) ERROR("different size");
     oct_free(mo,o); oct_free(mo,o2); free(b.ptr);
   } ENDLOOP;
@@ -722,9 +730,9 @@ void test_bound_dim(void)
     io = oct_bound_dimension(mo,o,v); FLAG(mo);
     ip = ap_abstract0_bound_dimension(mp,p,v); FLAG(mp);
     RESULT(check(o));
-    if (oct_sat_interval(mo,o,v,io)==tbool_false) ERROR("not sat oct");
+    if (!oct_sat_interval(mo,o,v,io)) ERROR("not sat oct");
     FLAG(mo);
-    if (ap_abstract0_sat_interval(mp,p,v,io)==tbool_false) {
+    if (!ap_abstract0_sat_interval(mp,p,v,io)) {
       ERROR("not sat poly");
       print_oct("o",o);
       print_poly("p",p);
@@ -733,13 +741,13 @@ void test_bound_dim(void)
       print_interval("ip",ip);
     }
     FLAG(mp);
-    if (ap_interval_cmp(ip,io)==0 &&
-	oct_sat_interval(mo,o,v,ip)==tbool_true) RESULT('*');
+    if (!ap_interval_cmp(ip,io) &&
+	oct_sat_interval(mo,o,v,ip)) RESULT('*');
     else if (ap_interval_cmp(ip,io)==-1) RESULT('.');
     else ERROR("not included in");
-    if (flag==exact && ap_interval_cmp(ip,io)!=0) ERROR("exact flag");
-    if (oct_is_dimension_unconstrained(mo,o,v)!=tbool_true &&
-	ap_abstract0_is_dimension_unconstrained(mp,p,v)==tbool_true)
+    if (flag==exact && ap_interval_cmp(ip,io)) ERROR("exact flag");
+    if (!oct_is_dimension_unconstrained(mo,o,v) &&
+	ap_abstract0_is_dimension_unconstrained(mp,p,v))
       ERROR("not unconstrained");
     oct_free(mo,o); ap_abstract0_free(mp,p);
     ap_interval_free(io); ap_interval_free(ip);
@@ -761,10 +769,10 @@ void test_bound_linexpr(exprmode mode)
     ee = random_from_linexpr(e);
     io = oct_bound_linexpr(mo,o,e); FLAG(mo);
     ip = ap_abstract0_bound_linexpr(mp,p,ee); FLAG(mp);
-    if (ap_interval_cmp(ip,io)==0) RESULT('*');
+    if (!ap_interval_cmp(ip,io)) RESULT('*');
     else if (ap_interval_cmp(ip,io)==-1) RESULT('.');
     else ERROR("not included in");
-    if (flag==exact && ap_interval_cmp(ip,io)!=0) ERROR("exact flag");
+    if (flag==exact && ap_interval_cmp(ip,io)) ERROR("exact flag");
     oct_free(mo,o); ap_abstract0_free(mp,p);
     ap_linexpr0_free(e); ap_linexpr0_free(ee);
     ap_interval_free(io); ap_interval_free(ip);
@@ -784,9 +792,9 @@ void test_bound_texpr(void)
     e  = random_texpr(dim,3);
     io = oct_bound_texpr(mo,o,e); FLAG(mo);
     ip = ap_abstract0_bound_texpr(mp,p,e); FLAG(mp);
-    if (ap_interval_cmp(ip,io)==0) RESULT('*');
+    if (!ap_interval_cmp(ip,io)) RESULT('*');
     else RESULT('.');
-    if (flag==exact && ap_interval_cmp(ip,io)!=0) ERROR("exact flag");
+    if (flag==exact && ap_interval_cmp(ip,io)) ERROR("exact flag");
     oct_free(mo,o); ap_abstract0_free(mp,p);
     ap_texpr0_free(e);
     ap_interval_free(io); ap_interval_free(ip);
@@ -811,19 +819,18 @@ void test_meet(void)
     p  = ap_abstract0_meet(mp,false,p1,p2); FLAG(mp);
     pp = poly_of_oct(o);
     RESULT(check(o)); check(o1); check(o2);
-    if (oct_is_leq(mo,o,o1)==tbool_false || oct_is_leq(mo,o,o2)==tbool_false) {
+    if (oct_is_nleq(mo,o,o1) || oct_is_nleq(mo,o,o2)) {
       ERROR("not lower bound");
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o",o);
       print_poly("p",p);
     }
-    if (ap_abstract0_is_leq(mp,p,pp)==tbool_false) {
+    if (!ap_abstract0_is_leq(mp,p,pp)) {
       ERROR("not poly approx");
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o",o);
       print_poly("p",p);
     }
-    if (ap_abstract0_is_eq(mp,p,pp)==tbool_true) RESULT('*');
-    if (flag==exact && ap_abstract0_is_eq(mp,p,pp)==tbool_false)
-      ERROR("exact flag");
+    if (ap_abstract0_is_eq(mp,p,pp)) RESULT('*');
+    if (flag==exact && !ap_abstract0_is_eq(mp,p,pp)) ERROR("exact flag");
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2);
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,pp); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
   } ENDLOOP;
@@ -836,11 +843,11 @@ void test_meet(void)
     o  = oct_meet(mo,false,o1,o2);
     oo = oct_meet(mo,false,o,o1);
     check(o1); check(o2); check(o);
-    if (oct_is_eq(mo,o,o1)!=tbool_true) {
+    if (oct_is_neq(mo,o,o1)) {
       ERROR("not eq #1");
       print_oct("o1",o1); print_oct("o",o);
     }
-    else if (oct_is_eq(mo,o,oo)!=tbool_true) {
+    else if (oct_is_neq(mo,o,oo)) {
       ERROR("not eq #2");
       print_oct("o1",o1); print_oct("o",o); print_oct("oo",oo);
     }
@@ -855,7 +862,7 @@ void test_meet(void)
     o2 = oct_bottom(mo,0,dim);
     o  = oct_meet(mo,false,o1,o2);
     check(o1); check(o2); check(o);
-    if (oct_is_bottom(mo,o)!=tbool_true) {
+    if (!oct_is_bottom(mo,o)) {
       ERROR("not bottom");
       print_oct("o1",o1); print_oct("o",o);
     }
@@ -880,11 +887,10 @@ void test_meet_array(void)
     FLAG(mp);
     RESULT(check(oo));
     for (i=0;i<NB_MEET;i++)
-      if (oct_is_leq(mo,oo,o[i])==tbool_false) ERROR("not lower bound");
-    if (ap_abstract0_is_leq(mp,ppp,pp)==tbool_false) ERROR("not poly approx");
-    if (ap_abstract0_is_eq(mp,ppp,pp)==tbool_true) RESULT('*');
-    if (flag==exact && ap_abstract0_is_eq(mp,ppp,pp)==tbool_false)
-      ERROR("exact flag");
+      if (oct_is_nleq(mo,oo,o[i])) ERROR("not lower bound");
+    if (!ap_abstract0_is_leq(mp,ppp,pp)) ERROR("not poly approx");
+    if (ap_abstract0_is_eq(mp,ppp,pp)) RESULT('*');
+    if (flag==exact && !ap_abstract0_is_eq(mp,ppp,pp)) ERROR("exact flag");
     for (i=0;i<NB_MEET;i++) { oct_free(mo,o[i]); ap_abstract0_free(mp,p[i]); }
     oct_free(mo,oo); ap_abstract0_free(mp,pp); ap_abstract0_free(mp,ppp);
   } ENDLOOP;
@@ -895,7 +901,7 @@ void test_add_lincons(exprmode mode)
   printf("\nadd %slincons %s\n",exprname[mode],
 	 num_incomplete?"":(mode<=expr_oct)?"(* expected)":"(*,x,. expected)");
   LOOP {
-    size_t i, dim = /*6*/3, nb = 1/*4*/;
+    size_t i, dim = 6, nb = 4;
     oct_t *o, *o1, *o2;
     ap_abstract0_t *p, *p1, *p2;
     ap_lincons0_array_t ar = ap_lincons0_array_make(nb);
@@ -915,18 +921,16 @@ void test_add_lincons(exprmode mode)
     p2 = poly_of_oct(o1);
     o2 = oct_of_poly(p1);
     check(o); RESULT(check(o1));
-    if (ap_abstract0_is_leq(mp,p1,p2)==tbool_false) {
+    if (!ap_abstract0_is_leq(mp,p1,p2)) {
       ERROR("not included in");
       ap_lincons0_array_fprint(stderr,&ar,NULL);
       print_poly("p",p); print_poly("p1",p1); print_poly("p2",p2);
       print_oct("o",o); print_oct("o1",o1); print_oct("o2",o2);
     }
-    if (ap_abstract0_is_eq(mp,p1,p2)==tbool_true) RESULT('*');
-    else if (oct_is_eq(mo,o1,o2)==tbool_true) RESULT('x');
-    if (flag==best && ap_abstract0_is_eq(mp,p1,p2)==tbool_false) 
-      ERROR("best flag");
-    if (flag==exact && oct_is_eq(mo,o1,o2)==tbool_false) 
-      ERROR("exact flag");
+    if (ap_abstract0_is_eq(mp,p1,p2)) RESULT('*');
+    else if (oct_is_eq(mo,o1,o2)) RESULT('x');
+    if (flag>=best && !ap_abstract0_is_eq(mp,p1,p2)) ERROR("best flag");
+    if (flag==exact && oct_is_neq(mo,o1,o2)) ERROR("exact flag");
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2);
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
     ap_lincons0_array_clear(&ar); ap_lincons0_array_clear(&arr);
@@ -948,7 +952,7 @@ void test_sat_lincons(exprmode mode)
     ap_abstract0_t* p;
     ap_lincons0_t l, ll;
     ap_lincons0_array_t ar = ap_lincons0_array_make(1);
-    tbool_t ro,ro1,rp;
+    bool ro,ro1,rp;
     random_poly_oct(dim, .1, &o, &p);
     l = ap_lincons0_make((lrand48()%100>=90)?AP_CONS_EQ: AP_CONS_SUPEQ,
 			 random_linexpr(mode,dim),
@@ -960,24 +964,28 @@ void test_sat_lincons(exprmode mode)
     ro  = oct_sat_lincons(mo,o,&l); FLAG(mo);
     ro1 = oct_sat_lincons(mo,o1,&l); FLAG(mo);
     rp  = ap_abstract0_sat_lincons(mp,p,&ll); FLAG(mp);   
-    if (ro1==tbool_false) {
-      ERROR("not sat");
+    if (!ro1 && flag==exact) {
+      ERROR("not sat #1");
       ap_lincons0_fprint(stderr,&l,NULL);
       fprintf(stderr,"\n");
       print_oct("o1",o1);
     }
-    else if ((ro==tbool_true  && rp==tbool_false) ||
-	     (ro==tbool_false && rp==tbool_true) ||
-	     (ro!=tbool_top   && rp==tbool_top)) {
+    else if (ro && !ro1) {
+      ERROR("not sat #2");
+      ap_lincons0_fprint(stderr,&l,NULL);
+      fprintf(stderr,"\n");
+      print_oct("o",o);
+      print_oct("o1",o1);
+    }
+    else if (ro && !rp) {
       ERROR("sat oct =/=> sat poly");
       ap_lincons0_fprint(stderr,&l,NULL);
       fprintf(stderr,"\nsat oct = %s\nsat poly = %s\n",
-	      ro==tbool_true ? "T" : ro==tbool_false ? "F" : "?",
-	      rp==tbool_true ? "T" : rp==tbool_false ? "F" : "?");
+	      ro ? "T" : "F", rp ? "T" : "F" );
       print_oct("o",o);
     }
-    else if (ro==rp && ro==tbool_top) RESULT('?');
     else if (ro==rp) RESULT('*');
+    else RESULT('.');
     if (flag==exact && ro!=rp) ERROR("exact flag");
     oct_free(mo,o); oct_free(mo,o1); ap_abstract0_free(mp,p);
     ap_lincons0_array_clear(&ar); ap_lincons0_clear(&ll);
@@ -1004,22 +1012,20 @@ void test_join(void)
     pp = poly_of_oct(o);
     o3 = oct_of_poly(p);
     RESULT(check(o)); check(o1); check(o2);
-    if (oct_is_leq(mo,o1,o)==tbool_false || oct_is_leq(mo,o2,o)==tbool_false) {
+    if (oct_is_nleq(mo,o1,o) || oct_is_nleq(mo,o2,o)) {
       ERROR("not upper bound");
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o",o);
       print_poly("p",p);
     }
-    if (ap_abstract0_is_leq(mp,p,pp)==tbool_false) {
+    if (!ap_abstract0_is_leq(mp,p,pp)) {
       ERROR("not poly approx");
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o",o);
       print_poly("p1",p1); print_poly("p2",p2); print_poly("p",p);
     }
-    if (ap_abstract0_is_eq(mp,p,pp)==tbool_true) RESULT('*');
-    else if (oct_is_eq(mo,o,o3)==tbool_true) RESULT('x');
-    if (flag==exact && ap_abstract0_is_eq(mp,p,pp)==tbool_false) 
-      ERROR("exact flag");
-    if (flag==best && oct_is_eq(mo,o,o3)==tbool_false)
-      ERROR("best flag");
+    if (ap_abstract0_is_eq(mp,p,pp)) RESULT('*');
+    else if (oct_is_eq(mo,o,o3)) RESULT('x');
+    if (flag==exact && !ap_abstract0_is_eq(mp,p,pp)) ERROR("exact flag");
+    if (flag>=best && oct_is_neq(mo,o,o3)) ERROR("best flag");
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2); oct_free(mo,o3);
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,pp); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
   } ENDLOOP;
@@ -1032,11 +1038,11 @@ void test_join(void)
     o  = oct_join(mo,false,o1,o2);
     oo = oct_join(mo,false,o,o1);
     RESULT(check(o1)); check(o2); check(o);
-    if (oct_is_eq(mo,o,o1)!=tbool_true) {
+    if (oct_is_neq(mo,o,o1)) {
       ERROR("not eq #1");
       print_oct("o1",o1); print_oct("o",o);
     }
-    else if (oct_is_eq(mo,o,oo)!=tbool_true) {
+    else if (oct_is_neq(mo,o,oo)) {
       ERROR("not eq #2");
       print_oct("o1",o1); print_oct("o",o); print_oct("oo",oo);
     }
@@ -1051,7 +1057,7 @@ void test_join(void)
     o2 = oct_top(mo,0,dim);
     o  = oct_join(mo,false,o1,o2);
     RESULT(check(o1)); check(o2); check(o);
-    if (oct_is_top(mo,o)!=tbool_true) {
+    if (!oct_is_top(mo,o)) {
       ERROR("not top");
       print_oct("o1",o1); print_oct("o",o);
     }
@@ -1079,24 +1085,21 @@ void test_join_array(void)
     ooo = oct_of_poly(ps);
     RESULT(check(oo));
     for (i=0;i<NB_JOIN;i++)
-      if (oct_is_leq(mo,o[i],oo)==tbool_false) ERROR("not upper bound");
-    if (ap_abstract0_is_leq(mp,ppp,pp)==tbool_false) {
+      if (oct_is_nleq(mo,o[i],oo)) ERROR("not upper bound");
+    if (!ap_abstract0_is_leq(mp,ppp,pp)) {
       ERROR("not poly approx");
-      if (ap_abstract0_is_eq(mp,ppp,ps)!=tbool_true) fprintf(stderr,"BLHA\n");
-       for (i=0;i<NB_JOIN;i++) 
+      for (i=0;i<NB_JOIN;i++) 
 	{ char n[3] = { 'o', '0'+i, 0 }; print_oct(n,o[i]); }
       for (i=0;i<NB_JOIN;i++) 
 	{ char n[3] = { 'p', '0'+i, 0 }; print_poly(n,p[i]); }
       print_poly("pp",pp);
       print_poly("ppp",ppp);
     }
-    if (ap_abstract0_is_eq(mp,ppp,pp)==tbool_true) RESULT('*');
-    else if (oct_is_eq(mo,oo,ooo)==tbool_true) RESULT('x');
-    if (flag==exact && ap_abstract0_is_eq(mp,ppp,pp)==tbool_false) 
-      ERROR("exact flag");
-    if (flag==best && oct_is_eq(mo,oo,ooo)==tbool_false)
-      ERROR("best flag");
-    if (ap_abstract0_is_eq(mp,ppp,ps)!=tbool_true) {
+    if (ap_abstract0_is_eq(mp,ppp,pp)) RESULT('*');
+    else if (oct_is_eq(mo,oo,ooo)) RESULT('x');
+    if (flag==exact && !ap_abstract0_is_eq(mp,ppp,pp)) ERROR("exact flag");
+    if (flag>=best && oct_is_neq(mo,oo,ooo)) ERROR("best flag");
+    if (!ap_abstract0_is_eq(mp,ppp,ps)) {
       ERROR("poly_join_array not equivalent to poly_join");
       for (i=0;i<NB_JOIN;i++) 
 	{ char n[3] = { 'p', '0'+i, 0 }; print_poly(n,p[i]); }
@@ -1127,17 +1130,15 @@ void test_add_ray(void)
     p2 = poly_of_oct(o1);
     o2 = oct_of_poly(p1);
     check(o); RESULT(check(o1));
-    if (ap_abstract0_is_leq(mp,p1,p2)==tbool_false) {
+    if (!ap_abstract0_is_leq(mp,p1,p2)) {
       ERROR("not included in");
       ap_generator0_array_fprint(stderr,&ar,NULL);
       print_poly("p",p); print_poly("p1",p1); print_poly("p2",p2);
     }
-    if (ap_abstract0_is_eq(mp,p1,p2)==tbool_true) RESULT('*');
-    else if (oct_is_eq(mo,o1,o2)==tbool_true) RESULT('x');
-    if (flag==exact && ap_abstract0_is_eq(mp,p1,p2)==tbool_false)
-      ERROR("exact flag");
-    if (flag==best && oct_is_eq(mo,o1,o2)==tbool_false)
-      ERROR("best flag");
+    if (ap_abstract0_is_eq(mp,p1,p2)) RESULT('*');
+    else if (oct_is_eq(mo,o1,o2)) RESULT('x');
+    if (flag==exact && !ap_abstract0_is_eq(mp,p1,p2)) ERROR("exact flag");
+    if (flag>=best && oct_is_neq(mo,o1,o2)) ERROR("best flag");
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2); 
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
     ap_generator0_array_clear(&ar);
@@ -1167,7 +1168,7 @@ void test_dimadd(void)
     o2 = oct_add_dimensions(mo,false,o1,a,true);
     o3 = oct_remove_dimensions(mo,false,o2,r);
     RESULT(check(o1)); check(o2); check(o3);
-    if (oct_is_eq(mo,o1,o3)==tbool_false) {
+    if (oct_is_neq(mo,o1,o3)) {
       ERROR("not eq");
       ap_dimchange_fprint(stderr,a); ap_dimchange_fprint(stderr,r);
       print_oct("o1",o1); print_oct("o2",o2);print_oct("o3",o3);
@@ -1196,13 +1197,12 @@ void test_dimrem(void)
     o3 = oct_add_dimensions(mo,false,o2,a,false);
     o4 = oct_forget_array(mo,false,o1,r->dim,r->realdim,false);
     RESULT(check(o1)); check(o2); check(o3); check(o4);
-    if (oct_is_eq(mo,o3,o4)==tbool_false) {
+    if (oct_is_neq(mo,o3,o4)) {
       ERROR("not eq");
       ap_dimchange_fprint(stderr,r); ap_dimchange_fprint(stderr,a);
       print_oct("o1",o1); print_oct("o2",o2);
       print_oct("o3",o3); print_oct("o4",o4);
     }
-
     oct_free(mo,o1); oct_free(mo,o2); oct_free(mo,o3); oct_free(mo,o4);
     ap_dimchange_free(a); ap_dimchange_free(r);
   } ENDLOOP;
@@ -1232,7 +1232,7 @@ void test_permute(void)
     o2 = oct_permute_dimensions(mo,false,o1,p);
     o3 = oct_permute_dimensions(mo,false,o2,q);
     RESULT(check(o1)); check(o2); check(o3);
-    if (oct_is_eq(mo,o1,o3)!=tbool_true) {
+    if (oct_is_neq(mo,o1,o3)) {
       ERROR("not eq");
       ap_dimperm_fprint(stderr,p); ap_dimperm_fprint(stderr,q);
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o3",o3);
@@ -1258,20 +1258,19 @@ void test_expand(void)
     p2 = ap_abstract0_expand(mp,false,p1,d,n); FLAG(mp);
     p3 = poly_of_oct(o2);
     RESULT(check(o1)); check(o2); check(o3); check(o3);
-    if (flag>=best && oct_is_eq(mo,o1,o3)!=tbool_true) {
+    if (flag>=best && oct_is_neq(mo,o1,o3)) {
       ERROR("not eq");
       fprintf(stderr,"dim %i expanded %i times\n",(int)d,(int)n);
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o3",o3);
     }
-    if (ap_abstract0_is_leq(mp,p2,p3)==tbool_false) {
+    if (!ap_abstract0_is_leq(mp,p2,p3)) {
       ERROR("not leq");
       fprintf(stderr,"dim %i expanded %i times\n",(int)d,(int)n);
       print_oct("o1",o1); print_oct("o2",o2); 
       print_poly("p1",p1); print_poly("p2",p2); print_poly("p3",p3);
     }
-    if (ap_abstract0_is_eq(mp,p2,p3)==tbool_true) RESULT('*');
-    if (flag==exact && ap_abstract0_is_eq(mp,p2,p3)==tbool_false)
-      ERROR("exact flag");
+    if (ap_abstract0_is_eq(mp,p2,p3)) RESULT('*');
+    if (flag==exact && !ap_abstract0_is_eq(mp,p2,p3)) ERROR("exact flag");
     oct_free(mo,o1); oct_free(mo,o2); oct_free(mo,o3);
     ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2); ap_abstract0_free(mp,p3);
   } ENDLOOP;
@@ -1293,15 +1292,14 @@ void test_fold(void)
     p2 = ap_abstract0_fold(mp,false,p1,dd,3); FLAG(mp);
     p3 = poly_of_oct(o2);
     RESULT(check(o1)); check(o2);
-    if (ap_abstract0_is_leq(mp,p2,p3)==tbool_false) {
+    if (!ap_abstract0_is_leq(mp,p2,p3)) {
       ERROR("not leq");
       fprintf(stderr,"fold %i,%i,%i\n",(int)dd[0],(int)dd[1],(int)dd[2]);
       print_oct("o1",o1); print_oct("o2",o2); 
       print_poly("p1",p1); print_poly("p2",p2); print_poly("p3",p3);
     }
-    if (ap_abstract0_is_eq(mp,p2,p3)==tbool_true) RESULT('*');
-    if (flag==exact && ap_abstract0_is_eq(mp,p2,p3)==tbool_false)
-      ERROR("exact flag");
+    if (ap_abstract0_is_eq(mp,p2,p3)) RESULT('*');
+    if (flag==exact && !ap_abstract0_is_eq(mp,p2,p3)) ERROR("exact flag");
     oct_free(mo,o1); oct_free(mo,o2);
     ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2); ap_abstract0_free(mp,p3);
   } ENDLOOP;
@@ -1322,7 +1320,7 @@ void test_widening(void)
     o2 = random_oct(dim,.1);
     o  = oct_widening(mo,o1,o2);
     RESULT(check(o));
-    if (oct_is_leq(mo,o1,o)==tbool_false || oct_is_leq(mo,o2,o)==tbool_false) {
+    if (oct_is_nleq(mo,o1,o) || oct_is_nleq(mo,o2,o)) {
       ERROR("not upper bound");
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o",o);
     }
@@ -1357,7 +1355,7 @@ void test_widening_thrs(void)
     for (n=0;n<10;n++) t[n]=ap_scalar_alloc_set_double((lrand48()%30-15)*0.25);
     o = oct_widening_thresholds(mo,o1,o2,t,10);
     RESULT(check(o));
-    if (oct_is_leq(mo,o1,o)==tbool_false || oct_is_leq(mo,o2,o)==tbool_false) {
+    if (oct_is_nleq(mo,o1,o) || oct_is_nleq(mo,o2,o)) {
       ERROR("not upper bound");
       print_oct("o1",o1); print_oct("o2",o2); print_oct("o",o);
     }
@@ -1400,7 +1398,7 @@ void test_narrowing(void)
     o  = oct_narrowing(mo,o1,o2);
     oo = oct_meet(mo,false,o1,o2);
     RESULT(check(o));
-    if (oct_is_leq(mo,o,o1)==tbool_false || oct_is_leq(mo,oo,o)==tbool_false) {
+    if (oct_is_nleq(mo,o,o1) || oct_is_nleq(mo,oo,o)) {
       ERROR("not decreasing");
       print_oct("o1",o1); print_oct("o2",o2); 
       print_oct("o",o); print_oct("oo",oo);
@@ -1449,7 +1447,7 @@ void test_assign(int subst, exprmode mode)
     p2 = poly_of_oct(o1);
     o2 = oct_of_poly(p1);
     RESULT(check(o1));
-    if (ap_abstract0_is_leq(mp,p1,p2)!=tbool_true) {
+    if (!ap_abstract0_is_leq(mp,p1,p2)) {
       ERROR("not included in");
       fprintf(stderr,"x%i %s ",(int)d,subst?"->":"<-");
       ap_linexpr0_fprint(stderr,l,NULL);
@@ -1460,12 +1458,10 @@ void test_assign(int subst, exprmode mode)
       print_poly("p1",p1);
       print_poly("p2",p2);
     }
-    if (ap_abstract0_is_eq(mp,p1,p2)==tbool_true) RESULT('*');
-    else if (oct_is_eq(mo,o1,o2)==tbool_true) RESULT('x');
-    if (flag==exact && ap_abstract0_is_eq(mp,p1,p2)==tbool_false)
-      ERROR("exact flag");
-    if (flag==best && oct_is_eq(mo,o1,o2)==tbool_false)
-      ERROR("best flag");
+    if (ap_abstract0_is_eq(mp,p1,p2)) RESULT('*');
+    else if (oct_is_eq(mo,o1,o2)) RESULT('x');
+    if (flag==exact && !ap_abstract0_is_eq(mp,p1,p2)) ERROR("exact flag");
+    if (flag>=best && oct_is_neq(mo,o1,o2)) ERROR("best flag");
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2); 
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
     ap_linexpr0_free(l); ap_linexpr0_free(ll);
@@ -1503,7 +1499,7 @@ void test_par_assign(int subst, exprmode mode)
     p2 = poly_of_oct(o1);
     o2 = oct_of_poly(p1);
     RESULT(check(o1));
-    if (ap_abstract0_is_leq(mp,p1,p2)!=tbool_true) {
+    if (!ap_abstract0_is_leq(mp,p1,p2)) {
       ERROR("not included in");
       for (i=0;i<NB_ASSIGN;i++) {
 	fprintf(stderr,"x%i %s ",(int)d[i],subst?"->":"<-");
@@ -1516,12 +1512,10 @@ void test_par_assign(int subst, exprmode mode)
       print_poly("p1",p1);
       print_poly("p2",p2);
     }
-    else if (ap_abstract0_is_eq(mp,p1,p2)==tbool_true) RESULT('*');
-    else if (oct_is_eq(mo,o1,o2)==tbool_true) RESULT('x');
-    if (flag==exact && ap_abstract0_is_eq(mp,p1,p2)==tbool_false)
-      ERROR("exact flag");
-    if (flag==best && oct_is_eq(mo,o1,o2)==tbool_false)
-      ERROR("best flag");
+    else if (ap_abstract0_is_eq(mp,p1,p2)) RESULT('*');
+    else if (oct_is_eq(mo,o1,o2)) RESULT('x');
+    if (flag==exact && !ap_abstract0_is_eq(mp,p1,p2)) ERROR("exact flag");
+    if (flag>=best && oct_is_neq(mo,o1,o2)) ERROR("best flag");
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2); 
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
     for (i=0;i<NB_ASSIGN;i++) 
@@ -1547,11 +1541,11 @@ void test_par_assign2(int subst, exprmode mode)
       oct_assign_linexpr_array(mo,false,o,&d,&l,1,NULL);
     FLAG(mo);
     check(o1); check(o2);
-    if (oct_is_eq(mo,o1,o2)==tbool_true) RESULT('=');
-    else if (oct_is_leq(mo,o1,o2)==tbool_true) RESULT('<');
-    else if (oct_is_leq(mo,o2,o1)==tbool_true) RESULT('>');
+    if (oct_is_eq(mo,o1,o2)) RESULT('=');
+    else if (oct_is_leq(mo,o1,o2)) RESULT('<');
+    else if (oct_is_leq(mo,o2,o1)) RESULT('>');
     else RESULT('.');
-    if (flag==exact && oct_is_eq(mo,o1,o2)==tbool_false) ERROR("exact flag");
+    if (flag==exact && oct_is_neq(mo,o1,o2)) ERROR("exact flag");
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2);
     ap_linexpr0_free(l);
   } ENDLOOP;
@@ -1576,13 +1570,11 @@ void test_assign_texpr(int subst)
     p2 = poly_of_oct(o1);
     o2 = oct_of_poly(p1);
     RESULT(check(o1));
-    if (ap_abstract0_is_eq(mp,p1,p2)==tbool_true) RESULT('*');
-    else if (oct_is_eq(mo,o1,o2)==tbool_true) RESULT('x');
+    if (ap_abstract0_is_eq(mp,p1,p2)) RESULT('*');
+    else if (oct_is_eq(mo,o1,o2)) RESULT('x');
     else RESULT('.');
-    if (flag==exact && ap_abstract0_is_eq(mp,p1,p2)==tbool_false)
-      ERROR("exact flag");
-    if (flag==best && oct_is_eq(mo,o1,o2)==tbool_false)
-      ERROR("best flag");
+    if (flag==exact && !ap_abstract0_is_eq(mp,p1,p2)) ERROR("exact flag");
+    if (flag>=best && oct_is_neq(mo,o1,o2)) ERROR("best flag");
     oct_free(mo,o); oct_free(mo,o1); oct_free(mo,o2); 
     ap_abstract0_free(mp,p); ap_abstract0_free(mp,p1); ap_abstract0_free(mp,p2);
     ap_texpr0_free(e);

@@ -524,7 +524,7 @@ oct_t* oct_add_ray_array(ap_manager_t* man,
     if (!destructive) m = hmat_copy(pr,m,a->dim);
     hmat_add_generators(pr,m,a->dim,array);
     /* result is best on Q if closed and no conversion errors */
-    man->result.flag_exact = tbool_top;
+    man->result.flag_exact = false;
     if (num_incomplete || a->intdim) flag_incomplete;
     else if (!a->closed) flag_algo;
     else if (pr->conv) flag_conv;

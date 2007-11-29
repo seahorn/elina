@@ -87,14 +87,14 @@ allMPQ: MPQ mlMPQ
 allD: D mlD
 allDl: Dl mlDl
 
-Il: liboctIl.a octtestIl
-Ill: liboctIll.a octtestIll
-MPZ: liboctMPZ.a octtestMPZ
-Ri: liboctRi.a octtestRi
-Rll: liboctRll.a octtestRll
+Il: liboctIl.a liboctIl_debug.a octtestIl
+Ill: liboctIll.a liboctIll_debug.a octtestIll
+MPZ: liboctMPZ.a liboctMPZ_debug.a octtestMPZ
+Ri: liboctRi.a liboctRi_debug.a octtestRi
+Rll: liboctRll.a liboctRll_debug.a octtestRll
 MPQ: liboctMPQ.a liboctMPQ_debug.a octtestMPQ
-D: liboctD.a octtestD
-Dl: liboctDl.a octtestDl
+D: liboctD.a liboctD_debug.a octtestD
+Dl: liboctDl.a liboctDl_debug.a octtestDl
 
 clean:
 	/bin/rm -f *.[ao] *.so octtest*
@@ -154,9 +154,9 @@ liboct%_debug.a: $(subst .c,%_debug.o,$(CCSOURCES))
 liboct%.so: $(subst .c,%.o,$(CCSOURCES))
 	$(SHARED) -o $@ $^
 
-octtest%: liboct%.a oct_test%.o
+octtest%: liboct%_debug.a oct_test%.o
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -o $@ oct_test$*.o \
-	-L. -loct$* \
+	-L. -loct$*_debug \
 	-L../newpolka -lpolkaMPQ_debug \
 	-L../apron -lapron_debug \
 	-L$(MPFR_PREFIX)/lib -lmpfr \
@@ -168,15 +168,25 @@ octtest%: liboct%.a oct_test%.o
 
 %Il.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGINT -c -o $@ $<
+%Il_debug.o: %.c $(CCINC) $(DEPS)
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGINT -c -o $@ $<
 %Ill.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGINT -c -o $@ $<
+%Ill_debug.o: %.c $(CCINC) $(DEPS)
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGLONGINT -c -o $@ $<
 %MPZ.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
+%MPZ_debug.o: %.c $(CCINC) $(DEPS)
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPZ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 %Ri.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGRAT -c -o $@ $<
+%Ri_debug.o: %.c $(CCINC) $(DEPS)
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGRAT -c -o $@ $<
 %Rll.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
+%Rll_debug.o: %.c $(CCINC) $(DEPS)
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
 %MPQ.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
 %MPQ_debug.o: %.c $(CCINC) $(DEPS)

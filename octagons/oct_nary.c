@@ -66,7 +66,7 @@ oct_t* oct_join(ap_manager_t* man, bool destructive, oct_t* a1, oct_t* a2)
    bound_t* m2 = a2->closed ? a2->closed : a2->m;
    bound_t* m = destructive ? m1 : hmat_alloc(pr,a1->dim);
    size_t i;
-   man->result.flag_exact = tbool_top;
+   man->result.flag_exact = false;
    for (i=0;i<matsize(a1->dim);i++)
      bound_max(m[i],m1[i],m2[i]);
    if (a1->closed && a2->closed) {
@@ -137,7 +137,7 @@ oct_t* oct_join_array(ap_manager_t* man, oct_t** tab, size_t size)
   }
   else if (closed) { 
     /* closed, optimal result, in Q */
-    man->result.flag_exact = tbool_top;
+    man->result.flag_exact = false;
     r->closed = m; 
     if (num_incomplete || r->intdim) flag_incomplete;
   }

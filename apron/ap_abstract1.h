@@ -144,31 +144,37 @@ ap_abstract0_t* ap_abstract1_abstract0(ap_manager_t* man, ap_abstract1_t* a);
 /* II.3 Tests */
 /* ============================================================ */
 
-/* If any of the following functions returns tbool_top, this means that
-   an exception has occurred, or that the exact computation was
-   considered too expensive to be performed (according to the options).
-   The flag exact and best should be cleared in such a case. */
+/* In abstract tests,
 
-tbool_t ap_abstract1_is_bottom(ap_manager_t* man, ap_abstract1_t* a);
-tbool_t ap_abstract1_is_top(ap_manager_t* man, ap_abstract1_t* a);
+   - true means that the predicate is certainly true.
 
-tbool_t ap_abstract1_is_leq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2);
+   - false means by default don't know (an exception has occurred, or the exact
+     computation was considered too expensive to be performed).
+
+     However, if the flag exact in the manager is true, then false means really
+     that the predicate is false.
+*/
+
+bool ap_abstract1_is_bottom(ap_manager_t* man, ap_abstract1_t* a);
+bool ap_abstract1_is_top(ap_manager_t* man, ap_abstract1_t* a);
+
+bool ap_abstract1_is_leq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2);
   /* inclusion check */
 
-tbool_t ap_abstract1_is_eq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2);
+bool ap_abstract1_is_eq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2);
   /* equality check */
 
-tbool_t ap_abstract1_sat_lincons(ap_manager_t* man, ap_abstract1_t* a, ap_lincons1_t* lincons);
-tbool_t ap_abstract1_sat_tcons(ap_manager_t* man, ap_abstract1_t* a, ap_tcons1_t* tcons);
+bool ap_abstract1_sat_lincons(ap_manager_t* man, ap_abstract1_t* a, ap_lincons1_t* lincons);
+bool ap_abstract1_sat_tcons(ap_manager_t* man, ap_abstract1_t* a, ap_tcons1_t* tcons);
   /* does the abstract value satisfy the constraint ? */
 
-tbool_t ap_abstract1_sat_interval(ap_manager_t* man, ap_abstract1_t* a,
-				  ap_var_t var, ap_interval_t* interval);
+bool ap_abstract1_sat_interval(ap_manager_t* man, ap_abstract1_t* a,
+			       ap_var_t var, ap_interval_t* interval);
   /* is the dimension included in the interval in the abstract value ?
      - Raises an exception if var is unknown in the environment of the abstract value
   */
-tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_t* man, ap_abstract1_t* a,
-					       ap_var_t var);
+bool ap_abstract1_is_variable_unconstrained(ap_manager_t* man, ap_abstract1_t* a,
+					    ap_var_t var);
   /* is the variable unconstrained in the abstract value ?
      - Raises an exception if var is unknown in the environment of the abstract value
   */

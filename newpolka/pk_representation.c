@@ -339,11 +339,11 @@ void pk_canonicalize(ap_manager_t* man, pk_t* po)
 
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
-    man->result.flag_exact = man->result.flag_best = tbool_false;
+    man->result.flag_exact = man->result.flag_best = false;
     return;
   }
   man->result.flag_exact = man->result.flag_best =
-    po->intdim>0 && (po->C || po->F) ? tbool_top : tbool_true;
+    po->intdim>0 && (po->C || po->F) ? false : true;
 }
 
 /* Minimize the size of the representation of the polyhedron */
@@ -355,7 +355,7 @@ void pk_minimize(ap_manager_t* man, pk_t* po)
     poly_chernikova2(man,po,NULL);
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
-      man->result.flag_exact = man->result.flag_best = tbool_false;
+      man->result.flag_exact = man->result.flag_best = false;
       return;
     }
     if (po->C || po->F){
@@ -378,7 +378,7 @@ void pk_minimize(ap_manager_t* man, pk_t* po)
     }
   }
   man->result.flag_exact = man->result.flag_best =
-    po->intdim>0 && (po->C || po->F) ? tbool_top : tbool_true;
+    po->intdim>0 && (po->C || po->F) ? false : true;
 }
 
 /* ====================================================================== */
@@ -386,36 +386,34 @@ void pk_minimize(ap_manager_t* man, pk_t* po)
 /* ====================================================================== */
 
 /* Is the polyhedron in a minimal representation ? */
-tbool_t pk_is_minimal(ap_manager_t* man, pk_t* po)
+bool pk_is_minimal(ap_manager_t* man, pk_t* po)
 {
   if ( (!po->C && !po->F) ||
        (po->status & pk_status_minimal) )
-    return tbool_true;
-  else if (po->C && po->F)
-    return tbool_false;
-  else
-    return tbool_top;
+    return true;
+  else 
+    return false;
 }
 
 /* Is the polyhedron in a canonical representation ?
    (depends on the algorithm option of canonicalize) */
-tbool_t pk_is_canonical(ap_manager_t* man, pk_t* po)
+bool pk_is_canonical(ap_manager_t* man, pk_t* po)
 {
-  tbool_t res;
+  bool res;
 
   if (!po->C && !po->F)
-    res = tbool_true;
+    res = true;
   else if (!po->C || !po->F)
-    res = tbool_false;
+    res = false;
   else {
     pk_internal_t* pk = (pk_internal_t*)man->internal;
     if (po->C->_sorted && po->F->_sorted &&
 	po->status & pk_status_consgauss &&
 	po->status & pk_status_gengauss &&
 	poly_is_conseps(pk,po))
-      res = tbool_true;
+      res = true;
     else
-      res = tbool_top;
+      res = false;
   }
   return res;
 }

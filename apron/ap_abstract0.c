@@ -791,92 +791,100 @@ ap_dimension_t ap_abstract0_dimension(ap_manager_t* man, ap_abstract0_t* a)
 /* ============================================================ */
 /* II.3 Tests */
 /* ============================================================ */
-tbool_t ap_abstract0_is_bottom(ap_manager_t* man, ap_abstract0_t* a)
+bool ap_abstract0_is_bottom(ap_manager_t* man, ap_abstract0_t* a)
 {
   if (ap_abstract0_checkman1(AP_FUNID_IS_BOTTOM,man,a)){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
     return ptr(man,a->value);
   }
   else {
-    return tbool_top;
+    man->result.flag_exact = false;
+    return false;
   }
 }
-tbool_t ap_abstract0_is_top(ap_manager_t* man, ap_abstract0_t* a)
+bool ap_abstract0_is_top(ap_manager_t* man, ap_abstract0_t* a)
 {
   if (ap_abstract0_checkman1(AP_FUNID_IS_TOP,man,a)){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_TOP];
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_TOP];
     return ptr(man,a->value);
   }
   else {
-    return tbool_top;
+    man->result.flag_exact = false;
+    return false;
   }
 }
-tbool_t ap_abstract0_is_leq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2)
+bool ap_abstract0_is_leq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2)
 {
   if (ap_abstract0_checkman2(AP_FUNID_IS_LEQ,man,a1,a2) &&
       ap_abstract0_check_abstract2(AP_FUNID_IS_EQ,man,a1,a2)){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_LEQ];
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_LEQ];
     return ptr(man,a1->value,a2->value);
   }
   else {
-    return tbool_top;
+    man->result.flag_exact = false;
+    return false;
   }
 }
-tbool_t ap_abstract0_is_eq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2)
+bool ap_abstract0_is_eq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2)
 {
   if (ap_abstract0_checkman2(AP_FUNID_IS_EQ,man,a1,a2) &&
       ap_abstract0_check_abstract2(AP_FUNID_IS_EQ,man,a1,a2)){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_EQ];
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_EQ];
     return ptr(man,a1->value,a2->value);
   }
   else {
-    return tbool_top;
+    man->result.flag_exact = false;
+    return false;
   }
 }
-tbool_t ap_abstract0_sat_lincons(ap_manager_t* man, ap_abstract0_t* a, ap_lincons0_t* lincons)
+bool ap_abstract0_sat_lincons(ap_manager_t* man, ap_abstract0_t* a, ap_lincons0_t* lincons)
 {
   if (ap_abstract0_checkman1(AP_FUNID_SAT_LINCONS,man,a) &&
       ap_abstract0_check_linexpr(AP_FUNID_SAT_LINCONS,man,_ap_abstract0_dimension(a),lincons->linexpr0) ){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_LINCONS];
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_LINCONS];
     return ptr(man,a->value,lincons);
   }
   else {
-    return tbool_top;
+    man->result.flag_exact = false;
+    return false;
   }
 }
-tbool_t ap_abstract0_sat_tcons(ap_manager_t* man, ap_abstract0_t* a, ap_tcons0_t* tcons)
+bool ap_abstract0_sat_tcons(ap_manager_t* man, ap_abstract0_t* a, ap_tcons0_t* tcons)
 {
   if (ap_abstract0_checkman1(AP_FUNID_SAT_TCONS,man,a) &&
       ap_abstract0_check_texpr(AP_FUNID_SAT_TCONS,man,_ap_abstract0_dimension(a),tcons->texpr0) ){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_TCONS];
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_TCONS];
     return ptr(man,a->value,tcons);
   }
   else {
-    return tbool_top;
+    man->result.flag_exact = false;
+    return false;
   }
 }
-tbool_t ap_abstract0_sat_interval(ap_manager_t* man, ap_abstract0_t* a,
-				  ap_dim_t dim, ap_interval_t* interval)
+bool ap_abstract0_sat_interval(ap_manager_t* man, ap_abstract0_t* a,
+			       ap_dim_t dim, ap_interval_t* interval)
 {
   if (ap_abstract0_checkman1(AP_FUNID_SAT_INTERVAL,man,a) &&
       ap_abstract0_check_dim(AP_FUNID_SAT_INTERVAL,man,_ap_abstract0_dimension(a),dim)){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_INTERVAL];
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_INTERVAL];
     return ptr(man,a->value,dim,interval);
   }
   else {
-    return tbool_top;
+    man->result.flag_exact = false;
+    return false;
   }
 }
-tbool_t ap_abstract0_is_dimension_unconstrained(ap_manager_t* man, ap_abstract0_t* a,
-						ap_dim_t dim)
+bool ap_abstract0_is_dimension_unconstrained(ap_manager_t* man, ap_abstract0_t* a,
+					     ap_dim_t dim)
 {
   if (ap_abstract0_checkman1(AP_FUNID_IS_DIMENSION_UNCONSTRAINED,man,a) &&
       ap_abstract0_check_dim(AP_FUNID_IS_DIMENSION_UNCONSTRAINED,man,_ap_abstract0_dimension(a),dim)){
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED];
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED];
     return ptr(man,a->value,dim);
   }
   else {
-    return tbool_top;
+    man->result.flag_exact = false;
+    return false;
   }
 }
 
@@ -1466,7 +1474,7 @@ ap_abstract0_t* ap_abstract0_widening_threshold(ap_manager_t* man,
 						ap_lincons0_array_t* array)
 {
   void* (*ptr)(ap_manager_t*,...);
-  tbool_t (*ptr2)(ap_manager_t*,...);
+  bool (*ptr2)(ap_manager_t*,...);
   void* value;
   size_t i,j,size;
   ap_lincons0_t tmp;
@@ -1482,7 +1490,7 @@ ap_abstract0_t* ap_abstract0_widening_threshold(ap_manager_t* man,
     size = array->size;
     i = j = 0;
     while (i<size-j){
-      if (ptr2(man,a2->value,&array->p[i])==tbool_true){
+      if (ptr2(man,a2->value,&array->p[i])){
 	i++;
       }
       else {

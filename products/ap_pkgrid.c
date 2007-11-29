@@ -45,7 +45,7 @@ void ap_pkgrid_reduce(ap_manager_t* manager,
   /* 1. Reduction from poly to grid:
      one add equalities of poly to grid */
   pk_canonicalize(manpoly,poly);
-  if (pk_is_bottom(manpoly,poly)==tbool_true){
+  if (pk_is_bottom(manpoly,poly)){
   ap_pkgrid_reduce_exit1:
     ap_ppl_grid_free(mangrid,grid);
     grid = ap_ppl_grid_bottom(mangrid,
@@ -61,7 +61,7 @@ void ap_pkgrid_reduce(ap_manager_t* manager,
     }
     grid = ap_ppl_grid_meet_lincons_array(mangrid,true,grid,&array);
     ap_lincons0_array_clear(&array);
-    if (ap_ppl_grid_is_bottom(mangrid,grid)==tbool_true){
+    if (ap_ppl_grid_is_bottom(mangrid,grid)){
     ap_pkgrid_reduce_exit2:
       pk_free(manpoly,poly);
       poly = pk_bottom(manpoly,
@@ -82,7 +82,7 @@ void ap_pkgrid_reduce(ap_manager_t* manager,
   */
   /* 2.1 Extract constraints */
   ap_ppl_grid_canonicalize(mangrid,grid);
-  if (ap_ppl_grid_is_bottom(mangrid,grid)==tbool_true){
+  if (ap_ppl_grid_is_bottom(mangrid,grid)){
     goto ap_pkgrid_reduce_exit2;
   }
   array = ap_ppl_grid_to_lincons_array(mangrid,grid);

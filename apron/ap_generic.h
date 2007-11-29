@@ -30,8 +30,8 @@ extern "C" {
 /* I. Constructors, accessors, tests and property extraction */
 /* ********************************************************************** */
 
-tbool_t ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
-			     ap_scalar_discr_t discr, bool quasilinearize);
+bool ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
+			  ap_scalar_discr_t discr, bool quasilinearize);
   /* This function implements a generic sat_tcons operation using
      ap_linearize_texpr0 and sat_lincons operations. */
 

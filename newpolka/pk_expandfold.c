@@ -100,7 +100,7 @@ pk_t* pk_expand(ap_manager_t* man,
 
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_EXPAND);
   pk_internal_realloc_lazy(pk,pa->intdim+pa->realdim+dimsup);
-  man->result.flag_best = man->result.flag_exact = tbool_true;   
+  man->result.flag_best = man->result.flag_exact = true;   
 
   if (dim<pa->intdim){
     intdimsup = dimsup;
@@ -135,7 +135,7 @@ pk_t* pk_expand(ap_manager_t* man,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     if (!pa->C){
-      man->result.flag_best = man->result.flag_exact = tbool_false;   
+      man->result.flag_best = man->result.flag_exact = false;   
       poly_set_top(pk,po);
       return po;
     }
@@ -168,7 +168,7 @@ pk_t* pk_expand(ap_manager_t* man,
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
       if (!po->C){
-	man->result.flag_best = man->result.flag_exact = tbool_false;   
+	man->result.flag_best = man->result.flag_exact = false;   
 	poly_set_top(pk,po);
 	return po;
       }
@@ -252,7 +252,7 @@ pk_t* pk_fold(ap_manager_t* man,
   size_t intdimsup,realdimsup;
   pk_t* po;
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_FOLD);
-  man->result.flag_best = man->result.flag_exact = tbool_true;   
+  man->result.flag_best = man->result.flag_exact = true;   
 
   if (tdim[0]<pa->intdim){
     intdimsup = size - 1;
@@ -277,14 +277,14 @@ pk_t* pk_fold(ap_manager_t* man,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     if (!pa->F){
-      man->result.flag_best = man->result.flag_exact = tbool_false;   
+      man->result.flag_best = man->result.flag_exact = false;   
       poly_set_top(pk,po);
       return po;
     }
   }
   /* if empty, return empty */
   if (!pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;   
+    man->result.flag_best = man->result.flag_exact = true;   
     poly_set_bottom(pk,po);
     return po;
   }
@@ -306,14 +306,14 @@ pk_t* pk_fold(ap_manager_t* man,
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
       if (!po->C){
-	man->result.flag_best = man->result.flag_exact = tbool_false;   
+	man->result.flag_best = man->result.flag_exact = false;   
 	poly_set_top(pk,po);
 	return po;
       }
     }
   }
 
-  man->result.flag_best = intdimsup>0 ? tbool_top : tbool_true;
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = (intdimsup==0);
+  man->result.flag_exact = (intdimsup==0);
   return po;
 }

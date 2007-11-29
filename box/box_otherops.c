@@ -15,8 +15,8 @@ box_t* box_forget_array(ap_manager_t* man,
   box_t* res;
   size_t i;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   
   res = destructive ? a : box_copy(man,a);
   if (a->p==NULL){
@@ -49,8 +49,8 @@ box_t* box_expand(ap_manager_t* man,
   size_t i;
   box_t* res;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   if (dim<a->intdim){
     intdimsup = dimsup;
     realdimsup = 0;
@@ -90,8 +90,8 @@ box_t* box_fold(ap_manager_t* man,
   size_t i;
   box_t* res;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
 
   dim = tdim[0];
   dimsup = size-1;
@@ -128,8 +128,8 @@ box_t* box_widening(ap_manager_t* man,
   size_t nbdims;
   box_t* res;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   nbdims = a1->intdim+a1->realdim;
   if (a1->p==NULL){
     return box_copy(man,a2);
@@ -144,7 +144,7 @@ box_t* box_widening(ap_manager_t* man,
 
 box_t* box_closure(ap_manager_t* man, bool destructive, box_t* a)
 {
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   return destructive ? a : box_copy(man,a);
 }

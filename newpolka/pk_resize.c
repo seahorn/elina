@@ -317,7 +317,7 @@ pk_t* pk_add_dimensions(ap_manager_t* man,
   }
   /* Return empty if empty */
   if (!pa->C && !pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;
+    man->result.flag_best = man->result.flag_exact = true;
     if (destructive){
       pa->intdim += dimchange->intdim;
       pa->realdim += dimchange->realdim;
@@ -371,7 +371,7 @@ pk_t* pk_remove_dimensions(ap_manager_t* man,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     if (!pa->F){
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       poly_set_top(pk,po);
       return po;
     }
@@ -379,7 +379,7 @@ pk_t* pk_remove_dimensions(ap_manager_t* man,
   }
   /* Return empty if empty */
   if (!pa->C && !pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;
+    man->result.flag_best = man->result.flag_exact = true;
     if (!destructive){
       poly_set_bottom(pk,po);
     }
@@ -397,7 +397,7 @@ pk_t* pk_remove_dimensions(ap_manager_t* man,
     }
   }
   man->result.flag_best = man->result.flag_exact =
-    dimchange->intdim>0 ? tbool_top : tbool_true;
+    dimchange->intdim==0;
   assert(poly_check(pk,po));
   return po;
 }
@@ -418,7 +418,7 @@ pk_t* pk_permute_dimensions(ap_manager_t* man,
       /* we can still operate on the available matrix */
     }
   }
-  man->result.flag_best = man->result.flag_exact = tbool_true;
+  man->result.flag_best = man->result.flag_exact = true;
   po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
   if (pa->C){
     po->C = matrix_permute_dimensions(pk,destructive,pa->C,permutation->dim);

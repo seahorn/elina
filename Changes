@@ -1,3 +1,12 @@
+Version 0.9.9:
+
+- *Change in API*: tbool_t replaced by bool in abstract tests
+  and for the manager flags exact and best. 
+  In source code, 
+  * tbool_top should be replaced by false,
+  * f(...)==tbool_true by f(...)
+  * f(...)!=tbool_true by !f(...)
+
 Version 0.9.8
 
 - New C++ interface, still experimental 

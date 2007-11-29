@@ -381,38 +381,37 @@ ap_abstract0_t* ap_abstract1_abstract0(ap_manager_t* man, ap_abstract1_t* a){
 /* II.3 Tests */
 /* ============================================================ */
 
-/* If any of the following functions returns tbool_top, this means that
-   an exception has occured, or that the exact computation was
-   considered too expensive to be performed (according to the options).
-   The flag exact and best should be cleared in such a case. */
-
-tbool_t ap_abstract1_is_bottom(ap_manager_t* man, ap_abstract1_t* a){
+bool ap_abstract1_is_bottom(ap_manager_t* man, ap_abstract1_t* a){
   return ap_abstract0_is_bottom(man,a->abstract0);
 }
-tbool_t ap_abstract1_is_top(ap_manager_t* man, ap_abstract1_t* a){
+bool ap_abstract1_is_top(ap_manager_t* man, ap_abstract1_t* a){
   return ap_abstract0_is_top(man,a->abstract0);
 }
 
 /* inclusion check */
-tbool_t ap_abstract1_is_leq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2)
+bool ap_abstract1_is_leq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2)
 {
   if (ap_abstract1_check_env2(AP_FUNID_IS_LEQ,man,a1,a2))
     return ap_abstract0_is_leq(man,a1->abstract0,a2->abstract0);
-  else
-    return tbool_top;
+  else {
+    man->result.flag_exact = false;
+    return false;
+  }
 }
 /* equality check */
-tbool_t ap_abstract1_is_eq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2)
+bool ap_abstract1_is_eq(ap_manager_t* man, ap_abstract1_t* a1, ap_abstract1_t* a2)
 {
   if (ap_abstract1_check_env2(AP_FUNID_IS_EQ,man,a1,a2))
     return ap_abstract0_is_eq(man,a1->abstract0,a2->abstract0);
-  else
-    return tbool_top;
+  else {
+    man->result.flag_exact = false;
+    return false;
+  }
 }
 /* does the abstract value satisfy the linear constraint ? */
-tbool_t ap_abstract1_sat_lincons(ap_manager_t* man, ap_abstract1_t* a, ap_lincons1_t* cons)
+bool ap_abstract1_sat_lincons(ap_manager_t* man, ap_abstract1_t* a, ap_lincons1_t* cons)
 {
-  tbool_t res;
+  bool res;
 
   if (ap_environment_is_eq(a->env,cons->env)){
     res = ap_abstract0_sat_lincons(man,a->abstract0,&cons->lincons0);
@@ -425,8 +424,8 @@ tbool_t ap_abstract1_sat_lincons(ap_manager_t* man, ap_abstract1_t* a, ap_lincon
     if (dimchange==NULL){
       ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,AP_FUNID_SAT_LINCONS,
 				 "the environment of the constraint is not a subset of the environment of the abstract value");
-      res = tbool_top;
-      return res;
+      man->result.flag_exact = false;
+      return false;
     }
     cons0 = ap_lincons0_add_dimensions(&cons->lincons0,dimchange);
     res = ap_abstract0_sat_lincons(man,a->abstract0,&cons0);
@@ -436,9 +435,9 @@ tbool_t ap_abstract1_sat_lincons(ap_manager_t* man, ap_abstract1_t* a, ap_lincon
   return res;
 }
 /* does the abstract value satisfy the tree expression constraint ? */
-tbool_t ap_abstract1_sat_tcons(ap_manager_t* man, ap_abstract1_t* a, ap_tcons1_t* cons)
+bool ap_abstract1_sat_tcons(ap_manager_t* man, ap_abstract1_t* a, ap_tcons1_t* cons)
 {
-  tbool_t res;
+  bool res;
 
   if (ap_environment_is_eq(a->env,cons->env)){
     res = ap_abstract0_sat_tcons(man,a->abstract0,&cons->tcons0);
@@ -451,8 +450,8 @@ tbool_t ap_abstract1_sat_tcons(ap_manager_t* man, ap_abstract1_t* a, ap_tcons1_t
     if (dimchange==NULL){
       ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,AP_FUNID_SAT_TCONS,
 				 "the environment of the constraint is not a subset of the environment of the abstract value");
-      res = tbool_top;
-      return res;
+      man->result.flag_exact = false;
+      return false;
     }
     cons0 = ap_tcons0_add_dimensions(&cons->tcons0,dimchange);
     res = ap_abstract0_sat_tcons(man,a->abstract0,&cons0);
@@ -463,33 +462,33 @@ tbool_t ap_abstract1_sat_tcons(ap_manager_t* man, ap_abstract1_t* a, ap_tcons1_t
 }
 
 /* Is the dimension included in the interval in the abstract value ? */
-tbool_t ap_abstract1_sat_interval(ap_manager_t* man, ap_abstract1_t* a,
-				  ap_var_t var, ap_interval_t* interval)
+bool ap_abstract1_sat_interval(ap_manager_t* man, ap_abstract1_t* a,
+			       ap_var_t var, ap_interval_t* interval)
 {
   ap_dim_t dim;
-  tbool_t res;
+  bool res;
 
   dim = ap_environment_dim_of_var(a->env, var);
   if (dim==AP_DIM_MAX){
     ap_abstract1_raise_invalid_var(man,AP_FUNID_SAT_INTERVAL,var);
-    res = tbool_top;
-    return res;
+    man->result.flag_exact = false;
+    return false;
   }
   return ap_abstract0_sat_interval(man, a->abstract0, dim, interval);
 }
 
 /* Is the dimension included in the interval in the abstract value ? */
-tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_t* man, ap_abstract1_t* a,
-					       ap_var_t var)
+bool ap_abstract1_is_variable_unconstrained(ap_manager_t* man, ap_abstract1_t* a,
+					    ap_var_t var)
 {
   ap_dim_t dim;
-  tbool_t res;
+  bool res;
 
   dim = ap_environment_dim_of_var(a->env, var);
   if (dim==AP_DIM_MAX){
     ap_abstract1_raise_invalid_var(man,AP_FUNID_IS_DIMENSION_UNCONSTRAINED,var);
-    res = tbool_top;
-    return res;
+    man->result.flag_exact = false;
+    return false;
   }
   return ap_abstract0_is_dimension_unconstrained(man, a->abstract0, dim);
 }
@@ -1024,8 +1023,8 @@ ap_abstract1_t ap_abstract1_minimize_environment(ap_manager_t* man,
   tvar = malloc(size*sizeof(ap_var_t));
   nbdims = 0;
   for (i=0; i<size;i++){
-    tbool_t tb = ap_abstract0_is_dimension_unconstrained(man,a->abstract0,i);
-    if (tb==tbool_true){
+    bool b = ap_abstract0_is_dimension_unconstrained(man,a->abstract0,i);
+    if (b){
       var = ap_environment_var_of_dim(a->env,i);
       tvar[nbdims] = var;
       nbdims++;

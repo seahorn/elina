@@ -25,8 +25,8 @@ box_t* box_meet(ap_manager_t* man, bool destructive, box_t* a1, box_t* a2)
   box_t* res;
   box_internal_t* intern = (box_internal_t*)man->internal;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   res = destructive ? a1 : box_alloc(a1->intdim,a1->realdim);
   if (a1->p==NULL || a2->p==NULL){
     box_set_bottom(res);
@@ -52,22 +52,22 @@ box_t* box_join(ap_manager_t* man, bool destructive, box_t* a1, box_t* a2)
   size_t nbdims;
   box_t* res;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = true;
+  man->result.flag_exact = false;
   res = destructive ? a1 : box_alloc(a1->intdim,a1->realdim);
   if (a1->p==NULL){
     if (a2->p!=NULL){
-      man->result.flag_exact = tbool_true;
+      man->result.flag_exact = true;
       box_set(res,a2);
     }
     return res;
   }
   else if (a2->p==NULL){
-    man->result.flag_exact = tbool_true;
+    man->result.flag_exact = true;
     if (!destructive) box_set(res,a1);
     return res;
   }
-  man->result.flag_exact = tbool_top;
+  man->result.flag_exact = false;
   if (!destructive){
     box_init(res);
   }
@@ -87,8 +87,8 @@ box_t* box_meet_array(ap_manager_t* man, box_t** tab, size_t size)
     box_meet(man,true,res,tab[i]);
     if (res->p==NULL) break;
   }
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   return res;
 }
 box_t* box_join_array(ap_manager_t* man, box_t** tab, size_t size)
@@ -99,8 +99,8 @@ box_t* box_join_array(ap_manager_t* man, box_t** tab, size_t size)
   for (i=1;i<size;i++){
     box_join(man,true,res,tab[i]);
   }
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = true;
+  man->result.flag_exact = false;
   return res;
 }
 
@@ -150,10 +150,11 @@ box_t* box_add_ray_array(ap_manager_t* man,
   box_t* res;
   box_internal_t* intern = (box_internal_t*)man->internal;
 
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_top;
+  man->result.flag_best = true;
+  man->result.flag_exact = false;
   res = destructive ? a : box_copy(man,a);
   if (a->p==NULL)
+    man->result.flag_exact = true;
     return res;
 
   for (i=0;i<array->size; i++){
@@ -424,17 +425,17 @@ box_t* box_meet_lincons_array(ap_manager_t* man,
 
   res = destructive ? a : box_copy(man,a);
   if (a->p==NULL){
-    man->result.flag_best = tbool_true;
-    man->result.flag_exact = tbool_true;
+    man->result.flag_best = true;
+    man->result.flag_exact = true;
   }
   else {
-    man->result.flag_best = array->size>1 ? tbool_top : tbool_true;
-    man->result.flag_exact = tbool_top;
+    man->result.flag_best = array->size==1;
+    man->result.flag_exact = false;
     kmax = man->option.funopt[AP_FUNID_MEET_LINCONS_ARRAY].algorithm;
     if (kmax<1) kmax=2;
     itv_lincons_array_init(&tlincons,array->size);
     itv_lincons_array_set_ap_lincons0_array(intern->itv,&tlincons,array);
-    tbool_t tb = itv_lincons_array_reduce_integer(intern,&tlincons,a->intdim);
+    tbool_t tb = itv_lincons_array_reduce_integer(intern->itv,&tlincons,a->intdim);
     if (tb==tbool_false){
       goto _box_meet_lincons_array_bottom;
     }
@@ -462,19 +463,19 @@ box_t* box_meet_tcons_array(ap_manager_t* man,
 
   res = destructive ? a : box_copy(man,a);
   if (a->p==NULL){
-    man->result.flag_best = tbool_true;
-    man->result.flag_exact = tbool_true;
+    man->result.flag_best = true;
+    man->result.flag_exact = true;
   }
   else {
-    man->result.flag_best = array->size>1 ? tbool_top : tbool_true;
-    man->result.flag_exact = tbool_top;
+    man->result.flag_best = array->size==1;
+    man->result.flag_exact = false;
     kmax = man->option.funopt[AP_FUNID_MEET_TCONS_ARRAY].algorithm;
     if (kmax<1) kmax=2;
     
     itv_lincons_array_init(&tlincons,array->size);
     itv_intlinearize_ap_tcons0_array(intern->itv,&tlincons,
 				     array,res->p,res->intdim);
-    tbool_t tb = itv_lincons_array_reduce_integer(intern,&tlincons,a->intdim);
+    tbool_t tb = itv_lincons_array_reduce_integer(intern->itv,&tlincons,a->intdim);
     if (tb==tbool_false){
       goto _box_meet_tcons_array_bottom;
     }

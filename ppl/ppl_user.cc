@@ -122,7 +122,7 @@ ap_lincons0_array_t ap_ppl_to_lincons_array(const Congruence_System& c)
 /* Generators */
 /* ====================================================================== */
 
-/* Generator => ap_generator0_t (may set inexact to true) */
+/* Generator => ap_generator0_t */
 ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& exact)
 {
   ap_gentyp_t t;
@@ -148,7 +148,7 @@ ap_generator0_t ap_ppl_to_generator(const Generator& c, bool& exact)
   }
 }
 
-/* Generator_System => ap_generator0_array_t (may set inexact to true) */
+/* Generator_System => ap_generator0_array_t */
 ap_generator0_array_t ap_ppl_to_generator_array(const Generator_System& c,
 						bool& exact)
 {
@@ -239,7 +239,7 @@ void ap_ppl_box_universe(ap_interval_t** i,size_t nb)
     ap_interval_set_top(i[j]);
 }
 
-/* ap_interval_t box => Constraint_System (return exact) */
+/* ap_interval_t box => Constraint_System (return exactness) */
 bool ap_ppl_of_box(Constraint_System& r, ap_interval_t** a, size_t intdim, size_t realdim)
 {
   bool exact = true;
@@ -254,7 +254,7 @@ bool ap_ppl_of_box(Constraint_System& r, ap_interval_t** a, size_t intdim, size_
     switch (ap_scalar_infty(a[i]->inf)) {
     case 0:
       exact =
-	ap_mpq_set_scalar(mpq,a[i]->inf,GMP_RNDD) && exact;
+	!ap_mpq_set_scalar(mpq,a[i]->inf,GMP_RNDD) && exact;
       if (i<intdim){
 	mpz_fdiv_q(mpq_numref(mpq),mpq_numref(mpq),mpq_denref(mpq));
 	mpz_set_ui(mpq_denref(mpq),1);
@@ -273,7 +273,7 @@ bool ap_ppl_of_box(Constraint_System& r, ap_interval_t** a, size_t intdim, size_
     switch (ap_scalar_infty(a[i]->sup)) {
     case 0:
       exact =
-	ap_mpq_set_scalar(mpq,a[i]->sup,GMP_RNDU) && exact;
+	!ap_mpq_set_scalar(mpq,a[i]->sup,GMP_RNDU) && exact;
       if (i<intdim){
 	mpz_fdiv_q(mpq_numref(mpq),mpq_numref(mpq),mpq_denref(mpq));
 	mpz_set_ui(mpq_denref(mpq),1);
@@ -292,7 +292,7 @@ bool ap_ppl_of_box(Constraint_System& r, ap_interval_t** a, size_t intdim, size_
   return exact;
 }
 
-/* ap_interval_t box => Congruence_System (return exact) */
+/* ap_interval_t box => Congruence_System (return exactness) */
 bool ap_ppl_of_box(Congruence_System& r, ap_interval_t** a, size_t intdim, size_t realdim)
 {
   bool exact = true;
@@ -326,9 +326,9 @@ bool ap_ppl_of_box(Congruence_System& r, ap_interval_t** a, size_t intdim, size_
 /* ====================================================================== */
 
 /* Assume a quasilinear expressions,
-   with the selected bound of constant coefficient differetn from +oo
+   with the selected bound of constant coefficient different from +oo
 */
-void ap_ppl_of_itv_linexpr(Linear_Expression& r,
+bool ap_ppl_of_itv_linexpr(Linear_Expression& r,
 			   mpz_class& den,
 			   itv_linexpr_t* linexpr,
 			   int mode)
@@ -379,6 +379,7 @@ void ap_ppl_of_itv_linexpr(Linear_Expression& r,
   }
   temp *= den;
   r += temp.get_num();
+  return true;
 }
 
 /* ap_linexpr0_t => ppl */
@@ -442,7 +443,7 @@ bool ap_ppl_of_lincons(itv_internal_t* intern,
   return exact;
 }
 
-void ap_ppl_of_itv_lincons(Congruence& r, mpz_class& den, itv_lincons_t* c)
+bool ap_ppl_of_itv_lincons(Congruence& r, mpz_class& den, itv_lincons_t* c)
 {
   Linear_Expression l;
   if (!itv_linexpr_is_scalar(&c->linexpr)){
@@ -470,6 +471,7 @@ void ap_ppl_of_itv_lincons(Congruence& r, mpz_class& den, itv_lincons_t* c)
   default:
     throw invalid_argument("Constraint type in ap_ppl_of_lincons");
   }
+  return true;
 }
 
 /* ap_lincons0_t => Congruence (may raise cannot_convert, return exact) */
@@ -481,7 +483,7 @@ bool ap_ppl_of_lincons(itv_internal_t* intern,
 
   itv_lincons_init(&lincons);
   bool exact = itv_lincons_set_ap_lincons0(intern,&lincons,c);
-  ap_ppl_of_itv_lincons(r,den,&lincons);
+  exact = exact && ap_ppl_of_itv_lincons(r,den,&lincons);
   itv_lincons_clear(&lincons);
   return exact;
 }
@@ -512,7 +514,7 @@ bool ap_ppl_of_lincons_array(itv_internal_t* intern,
   mpz_class den;
   itv_lincons_array_init(&array,a->size);
   bool exact = itv_lincons_array_set_ap_lincons0_array(intern,&array,a);
-  exact = ap_ppl_of_itv_lincons_array(r,den,&array,allow_strict);
+  exact = exact && ap_ppl_of_itv_lincons_array(r,den,&array,allow_strict);
   itv_lincons_array_clear(&array);
   return exact;
 }
@@ -527,7 +529,7 @@ bool ap_ppl_of_itv_lincons_array(Congruence_System& r, mpz_class& den, itv_linco
   r.clear();
   for (i=0;i<a->size;i++) {
     try {
-      ap_ppl_of_itv_lincons(c,den,&a->p[i]);
+      exact = exact && ap_ppl_of_itv_lincons(c,den,&a->p[i]);
       r.insert(c);
     }
     catch (cannot_convert w) { exact = false; }
@@ -543,7 +545,7 @@ bool ap_ppl_of_lincons_array(itv_internal_t* intern,
   mpz_class den;
   itv_lincons_array_init(&array,a->size);
   bool exact = itv_lincons_array_set_ap_lincons0_array(intern,&array,a);
-  exact = ap_ppl_of_itv_lincons_array(r,den,&array);
+  exact = exact && ap_ppl_of_itv_lincons_array(r,den,&array);
   itv_lincons_array_clear(&array);
   return exact;
 }

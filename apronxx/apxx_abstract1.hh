@@ -353,66 +353,66 @@ public:
   //@{
   
   //! \brief Whether *this represents the empty set.
-  tbool is_bottom(manager& m) const;
+  bool is_bottom(manager& m) const;
 
   //! Whether *this represents the full space.
-  tbool is_top(manager& m) const;
+  bool is_top(manager& m) const;
 
   //! Whether *this and x represent the same set.
-  tbool is_eq(manager& m, const abstract1& x) const;
+  bool is_eq(manager& m, const abstract1& x) const;
 
   //! Whether *this is included in x (set-wise).
-  tbool is_leq(manager& m, const abstract1& x) const;
+  bool is_leq(manager& m, const abstract1& x) const;
 
   //! Whether all points in *this satisfy a linear constraint.
-  tbool sat(manager& m, const lincons1& l) const;
+  bool sat(manager& m, const lincons1& l) const;
 
   //! Whether all points in *this satisfy an arbitrary constraint.
-  tbool sat(manager& m, const tcons1& l) const;
+  bool sat(manager& m, const tcons1& l) const;
 
   /*! \brief Whether the component v of all points in *this is included
    * in the given interval.
    */
-  tbool sat(manager& m, const var& v, const interval& i) const;
+  bool sat(manager& m, const var& v, const interval& i) const;
 
   //! \brief Whether the points in *this are unbounded in the given variable.
-  tbool is_variable_unconstrained(manager& m, const var& v) const;
+  bool is_variable_unconstrained(manager& m, const var& v) const;
 
   /*! \brief Whether x and y represent the same set.
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator== (const abstract1& x, const abstract1& y);
+  friend bool operator== (const abstract1& x, const abstract1& y);
   
   /*! \brief Whether x and y represent different sets.
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator!= (const abstract1& x, const abstract1& y);
+  friend bool operator!= (const abstract1& x, const abstract1& y);
   
   /*! \brief Whether x is included within y (set-wise).
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator<= (const abstract1& x, const abstract1& y);
+  friend bool operator<= (const abstract1& x, const abstract1& y);
   
   /*! \brief Whether x contains y (set-wise).
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator>= (const abstract1& x, const abstract1& y);
+  friend bool operator>= (const abstract1& x, const abstract1& y);
 
   /*! \brief Whether x strictly contains y (set-wise).
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator> (const abstract1& x, const abstract1& y);
+  friend bool operator> (const abstract1& x, const abstract1& y);
   
   /*! \brief Whether x is strictly included within y (set-wise).
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator< (const abstract1& x, const abstract1& y);
+  friend bool operator< (const abstract1& x, const abstract1& y);
 
   
 

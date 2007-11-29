@@ -354,7 +354,7 @@ oct_t* oct_fold(ap_manager_t* man,
     bound_set_int(mm[matpos(tdim[0]*2  ,tdim[0]*2  )],0);
     bound_set_int(mm[matpos(tdim[0]*2+1,tdim[0]*2+1)],0);
 
-    man->result.flag_exact = tbool_top;
+    man->result.flag_exact = false;
   }
 
   if (a->closed) {

@@ -69,12 +69,12 @@ void collect_results0(ap_manager_t* manager)
   size_t i;
   ap_reducedproduct_internal_t* intern = get_internal_init0(manager);
   ap_result_t* gresult = &manager->result;
-  gresult->flag_best = tbool_top;
-  gresult->flag_exact = tbool_true;
+  gresult->flag_best = true;
+  gresult->flag_exact = true;
   for (i=0;i<intern->size; i++){
     ap_manager_t* man = intern->tmanagers[i];
     ap_result_t* result = &man->result;
-    gresult->flag_exact = tbool_and(gresult->flag_exact,result->flag_exact);
+    gresult->flag_exact = gresult->flag_exact && result->flag_exact;
 
     if (result->exclog != NULL){
       ap_exclog_t* last = result->exclog;
@@ -349,8 +349,8 @@ ap_reducedproduct_t* ap_reducedproduct_of_box(ap_manager_t* manager,
     ap_manager_t* man = intern->tmanagers[i];
     void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_OF_BOX];
     res->p[i] = ptr(man,intdim,realdim,tinterval);
-    tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-    if (is_bottom(man,res->p[i])==tbool_true){
+    bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+    if (is_bottom(man,res->p[i])){
       set_bottom(intern,false,res,i);
       break;
     }
@@ -371,129 +371,124 @@ ap_dimension_t ap_reducedproduct_dimension(ap_manager_t* manager, ap_reducedprod
 /* II.3 Tests */
 /* ============================================================ */
 
-tbool_t ap_reducedproduct_is_bottom(ap_manager_t* manager, ap_reducedproduct_t* a)
+bool ap_reducedproduct_is_bottom(ap_manager_t* manager, ap_reducedproduct_t* a)
 {
   ap_reducedproduct_internal_t* intern = get_internal_init1(manager,AP_FUNID_IS_BOTTOM,a);
   size_t i;
-  tbool_t gres = tbool_false;
+  bool gres = false;
 
   for (i=0;i<intern->size;i++){
     ap_manager_t* man = intern->tmanagers[i];
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-    tbool_t res = ptr(man,a->p[i]);
-    gres = tbool_or(gres,res);
-    if (gres==tbool_true) break;
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+    bool res = ptr(man,a->p[i]);
+    gres = gres || res;
+    if (gres) break;
   }
   collect_results0(manager);
   return gres;
 }
-tbool_t ap_reducedproduct_is_top(ap_manager_t* manager, ap_reducedproduct_t* a)
+bool ap_reducedproduct_is_top(ap_manager_t* manager, ap_reducedproduct_t* a)
 {
   ap_reducedproduct_internal_t* intern = get_internal_init1(manager,AP_FUNID_IS_TOP,a);
   size_t i;
-  tbool_t gres = tbool_true;
+  bool gres = true;
 
   for (i=0;i<intern->size;i++){
     ap_manager_t* man = intern->tmanagers[i];
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_TOP];
-    tbool_t res = ptr(man,a->p[i]);
-    gres = tbool_and(gres,res);
-    if (gres==tbool_false) break;
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_TOP];
+    bool res = ptr(man,a->p[i]);
+    gres = gres && res;
+    if (!gres) break;
   }
   collect_results0(manager);
   return gres;
 }
 
-static inline tbool_t tbool_join(tbool_t a, tbool_t b)
-{
-  if (a==tbool_top || b==tbool_top || a!=b) return tbool_top;
-  else return a;
-}
-#define TBOOL_MAN_VAL2(NAME,FUNID)					\
-tbool_t ap_reducedproduct_##NAME(ap_manager_t* manager, ap_reducedproduct_t* a,  ap_reducedproduct_t* b) \
+#define BOOL_MAN_VAL2(NAME,FUNID)					\
+bool ap_reducedproduct_##NAME(ap_manager_t* manager, ap_reducedproduct_t* a,  ap_reducedproduct_t* b) \
 {									\
   ap_reducedproduct_internal_t* intern =				\
     get_internal_init2(manager,FUNID,a,b);				\
   size_t i;								\
-  tbool_t gres = tbool_top;						\
+  bool gres = true;							\
 									\
   for (i=0;i<intern->size;i++){						\
     ap_manager_t* man = intern->tmanagers[i];				\
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[FUNID];		\
-    tbool_t res = ptr(man,a->p[i],b->p[i]);					\
-    gres = (i==0) ? res : tbool_join(gres,res);				\
-    if (gres==tbool_top) break;						\
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[FUNID];		\
+    bool res = ptr(man,a->p[i],b->p[i]);			       	\
+    gres = gres && res;							\
+    if (!gres) break;							\
   }									\
   collect_results0(manager);						\
   return gres;								\
 }
 
-TBOOL_MAN_VAL2(is_leq,AP_FUNID_IS_LEQ)
-TBOOL_MAN_VAL2(is_eq,AP_FUNID_IS_EQ)
+BOOL_MAN_VAL2(is_leq,AP_FUNID_IS_LEQ)
+BOOL_MAN_VAL2(is_eq,AP_FUNID_IS_EQ)
 
-tbool_t ap_reducedproduct_sat_lincons(ap_manager_t* manager, ap_reducedproduct_t* a, ap_lincons0_t* lincons)
+bool ap_reducedproduct_sat_lincons(ap_manager_t* manager, ap_reducedproduct_t* a, ap_lincons0_t* lincons)
 {
   ap_reducedproduct_internal_t* intern = get_internal_init1(manager,AP_FUNID_SAT_LINCONS,a);
   size_t i;
-  tbool_t gres = tbool_false;
+  bool gres = false;
 
   for (i=0;i<intern->size;i++){
     ap_manager_t* man = intern->tmanagers[i];
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_LINCONS];
-    tbool_t res = ptr(man,a->p[i],lincons);
-    gres = tbool_or(gres,res);
-    if (gres==tbool_true) break;
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_LINCONS];
+    bool res = ptr(man,a->p[i],lincons);
+    gres = gres || res;
+    if (gres) break;
   }
   collect_results0(manager);
   return gres;
 }
-tbool_t ap_reducedproduct_sat_tcons(ap_manager_t* manager, ap_reducedproduct_t* a, ap_tcons0_t* tcons)
+bool ap_reducedproduct_sat_tcons(ap_manager_t* manager, ap_reducedproduct_t* a, ap_tcons0_t* tcons)
 {
   ap_reducedproduct_internal_t* intern = get_internal_init1(manager,AP_FUNID_SAT_TCONS,a);
   size_t i;
-  tbool_t gres = tbool_false;
+  bool gres = false;
 
   for (i=0;i<intern->size;i++){
     ap_manager_t* man = intern->tmanagers[i];
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_TCONS];
-    tbool_t res = ptr(man,a->p[i],tcons);
-    gres = tbool_or(gres,res);
-    if (gres==tbool_true) break;
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_TCONS];
+    bool res = ptr(man,a->p[i],tcons);
+    gres = gres || res;
+    if (gres) break;
   }
   collect_results0(manager);
   return gres;
 }
-tbool_t ap_reducedproduct_sat_interval(ap_manager_t* manager, ap_reducedproduct_t* a,
+bool ap_reducedproduct_sat_interval(ap_manager_t* manager, ap_reducedproduct_t* a,
 				       ap_dim_t dim, ap_interval_t* interval)
 {
   ap_reducedproduct_internal_t* intern = get_internal_init1(manager,AP_FUNID_SAT_INTERVAL,a);
   size_t i;
-  tbool_t gres = tbool_false;
+  bool gres = false;
 
   for (i=0;i<intern->size;i++){
     ap_manager_t* man = intern->tmanagers[i];
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_INTERVAL];
-    tbool_t res = ptr(man,a->p[i],dim,interval);
-    gres = tbool_or(gres,res);
-    if (gres==tbool_true) break;
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_INTERVAL];
+    bool res = ptr(man,a->p[i],dim,interval);
+    gres = gres || res;
+    if (gres) break;
   }
   collect_results0(manager);
   return gres;
 }
-tbool_t ap_reducedproduct_is_dimension_unconstrained(ap_manager_t* manager, ap_reducedproduct_t* a,
+bool ap_reducedproduct_is_dimension_unconstrained(ap_manager_t* manager, ap_reducedproduct_t* a,
 						ap_dim_t dim)
 {
   ap_reducedproduct_internal_t* intern =
     get_internal_init1(manager,AP_FUNID_IS_DIMENSION_UNCONSTRAINED,a);
   size_t i;
-  tbool_t gres = tbool_true;
+  bool gres = true;
 
   for (i=0;i<intern->size;i++){
     ap_manager_t* man = intern->tmanagers[i];
-    tbool_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED];
-    tbool_t res = ptr(man,a->p[i],dim);
-    gres = tbool_and(gres,res);
-    if (gres==tbool_false) break;
+    bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_DIMENSION_UNCONSTRAINED];
+    bool res = ptr(man,a->p[i],dim);
+    gres = gres && res;
+    if (!gres) break;
   }
   collect_results0(manager);
   return gres;
@@ -693,8 +688,8 @@ ap_reducedproduct_t* ap_reducedproduct_meetjoin(ap_funid_t funid,
     void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
     res->p[i] = ptr(man,destructive,a1->p[i],a2->p[i]);
     if (funid==AP_FUNID_MEET){
-      tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-      if (is_bottom(man,res->p[i])==tbool_true){
+      bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+      if (is_bottom(man,res->p[i])){
 	set_bottom(intern,destructive,res,i);
 	goto ap_reducedproduct_meetjoin_exit;
       }
@@ -736,8 +731,8 @@ ap_reducedproduct_t* ap_reducedproduct_meetjoin_array(ap_funid_t funid,
     }
     res->p[i] = ptr(man,a,size);
     if (funid==AP_FUNID_MEET_ARRAY){
-      tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-      if (is_bottom(man,res->p[i])==tbool_true){
+      bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+      if (is_bottom(man,res->p[i])){
 	set_bottom(intern,false,res,i);
 	goto ap_reducedproduct_meetjoin_array_exit;
       }
@@ -784,8 +779,8 @@ ap_reducedproduct_t* ap_reducedproduct_meet_lincons_array(ap_manager_t* manager,
     ap_manager_t* man = intern->tmanagers[i];
     void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_LINCONS_ARRAY];
     res->p[i] = ptr(man,destructive,a->p[i],array);
-    tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-    if (is_bottom(man,res->p[i])==tbool_true){
+    bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+    if (is_bottom(man,res->p[i])){
       set_bottom(intern,destructive,res,i);
       break;
     }
@@ -809,8 +804,8 @@ ap_reducedproduct_t* ap_reducedproduct_meet_tcons_array(ap_manager_t* manager,
     ap_manager_t* man = intern->tmanagers[i];
     void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET_TCONS_ARRAY];
     res->p[i] = ptr(man,destructive,a->p[i],array);
-    tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-    if (is_bottom(man,res->p[i])==tbool_true){
+    bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+    if (is_bottom(man,res->p[i])){
       set_bottom(intern,destructive,res,i);
       break;
     }
@@ -864,8 +859,8 @@ ap_reducedproduct_asssub_linexpr_array(ap_funid_t funid,
     void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
     res->p[i] = ptr(man,destructive,a->p[i],tdim,texpr,size, dest ? dest->p[i] : NULL);
     if (dest || funid==AP_FUNID_SUBSTITUTE_LINEXPR_ARRAY){
-      tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-      if (is_bottom(man,res->p[i])==tbool_true){
+      bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+      if (is_bottom(man,res->p[i])){
 	set_bottom(intern,destructive,res,i);
 	break;
       }
@@ -918,8 +913,8 @@ ap_reducedproduct_asssub_texpr_array(ap_funid_t funid,
     void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
     res->p[i] = ptr(man,destructive,a->p[i],tdim,texpr,size, dest ? dest->p[i] : NULL);
     if (dest || funid==AP_FUNID_SUBSTITUTE_TEXPR_ARRAY){
-      tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-      if (is_bottom(man,res->p[i])==tbool_true){
+      bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+      if (is_bottom(man,res->p[i])){
 	set_bottom(intern,destructive,res,i);
 	break;
       }

@@ -139,10 +139,8 @@ typedef struct ap_exclog_t {
 typedef struct ap_result_t {
   ap_exclog_t* exclog; /* history of exceptions */
   ap_exc_t exn;        /* exception for the last called function */
-  tbool_t flag_exact;  /* result is mathematically exact or not
-			  or don't know */
-  tbool_t flag_best;   /* result is best correct approximation or not
-			  or don't know */
+  bool flag_exact;  /* result is mathematically exact or don't know */
+  bool flag_best;   /* result is best correct approximation or don't know */
 } ap_result_t;
 
 
@@ -222,8 +220,8 @@ ap_exc_t ap_manager_get_exception(ap_manager_t* man);
   /* Get the last exception raised */
 ap_exclog_t* ap_manager_get_exclog(ap_manager_t* man);
   /* Get the full log of exception */
-tbool_t ap_manager_get_flag_exact(ap_manager_t* man);
-tbool_t ap_manager_get_flag_best(ap_manager_t* man);
+bool ap_manager_get_flag_exact(ap_manager_t* man);
+bool ap_manager_get_flag_best(ap_manager_t* man);
 
 /* Settings fields */
 void ap_funopt_init(ap_funopt_t* fopt);
@@ -248,7 +246,7 @@ void ap_manager_raise_exception(ap_manager_t* man,
 				ap_exc_t exn, ap_funid_t funid, const char* msg);
   /* raise an exception and put fields
      man->result.flag_exact and man->result.flag_best to
-     tbool_false
+     false
   */
 ap_exclog_t* ap_exc_cons(ap_exc_t exn,
 			 ap_funid_t funid, const char* msg,

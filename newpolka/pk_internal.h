@@ -91,7 +91,7 @@ static inline pk_internal_t* pk_init_from_manager(ap_manager_t* man, ap_funid_t 
   pk_internal_t* pk = (pk_internal_t*)man->internal;
   pk->funid = funid;
   pk->funopt = &man->option.funopt[funid];
-  man->result.flag_exact = man->result.flag_best = tbool_top;
+  man->result.flag_exact = man->result.flag_best = false;
   return pk;
 }
 

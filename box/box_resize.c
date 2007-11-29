@@ -15,8 +15,8 @@ box_t* box_add_dimensions(ap_manager_t* man,
   size_t dimsup;
   int i,k;
 
-  man->result.flag_best = tbool_true;  
-  man->result.flag_exact = tbool_true;  
+  man->result.flag_best = true;  
+  man->result.flag_exact = true;  
   res = destructive ? a : box_copy(man,a);
   if (a->p==NULL){
     goto box_add_dimensions_exit;
@@ -58,8 +58,8 @@ box_t* box_remove_dimensions(ap_manager_t* man,
   size_t dimsup;
   size_t i,k;
   
-  man->result.flag_best = tbool_true;  
-  man->result.flag_exact = tbool_true;  
+  man->result.flag_best = true;  
+  man->result.flag_exact = true;  
   res = destructive ? a : box_copy(man,a);
   if (a->p==NULL){
     goto box_remove_dimensions_exit;
@@ -93,8 +93,8 @@ box_t* box_permute_dimensions(ap_manager_t* man,
   size_t size;
   size_t i;
   
-  man->result.flag_best = tbool_true;  
-  man->result.flag_exact = tbool_true;  
+  man->result.flag_best = true;  
+  man->result.flag_exact = true;  
   if (a->p==NULL){
     return destructive ? a : box_copy(man,a);
   }

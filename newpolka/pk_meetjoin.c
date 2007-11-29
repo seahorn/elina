@@ -60,11 +60,8 @@ bool poly_meet_matrix(bool meet,
 
   assert(mat->_sorted);
 
-  man->result.flag_best = meet ? 
-    tbool_true : 
-    (pa->intdim>0 ? tbool_top : tbool_true);
-
-  man->result.flag_exact = meet ? tbool_true : tbool_top;
+  man->result.flag_best = (pa->intdim==0);
+  man->result.flag_exact = meet;
 
   /* lazy behaviour */
   if (lazy){
@@ -141,7 +138,7 @@ bool poly_meet_particularcases(bool meet, bool lazy,
   assert(pa!=pb);
 
   pk_internal_t* pk = (pk_internal_t*)man->internal;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_exact = true;
   if (meet){
     /* Meet */
     /* if one is bottom, return bottom */
@@ -173,11 +170,11 @@ bool poly_meet_particularcases(bool meet, bool lazy,
     if (pk->funopt->flag_exact_wanted){
       poly_dual(pa);
       poly_dual(pb);
-      if (pk_is_leq(man,pa,pb)==tbool_true){
+      if (pk_is_leq(man,pa,pb)){
 	poly_set(po,pb);
 	goto _poly_meet_particularcases_exit;
       }
-      else if (pk_is_leq(man,pb,pa)==tbool_true){
+      else if (pk_is_leq(man,pb,pa)){
 	poly_set(po,pa);
       _poly_meet_particularcases_exit:
 	poly_dual(pa);
@@ -187,7 +184,7 @@ bool poly_meet_particularcases(bool meet, bool lazy,
       }
     }
   }
-  man->result.flag_exact = tbool_false;
+  man->result.flag_exact = false;
   return false;
 }
 
@@ -198,13 +195,13 @@ void poly_meet(bool meet,
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
-  man->result.flag_best = tbool_true;
+  man->result.flag_best = true;
 
   if (pa==pb){
     if (!lazy) poly_chernikova_dual(man,pa,"of the first argument", meet);
     pk->exn = AP_EXC_NONE;
     poly_set(po,pa);
-    man->result.flag_exact = tbool_true;
+    man->result.flag_exact = true;
     return;
   }   
   
@@ -223,7 +220,7 @@ void poly_meet(bool meet,
   if (pk->exn){
     assert(!pa->C);
     pk->exn = AP_EXC_NONE;
-    man->result.flag_best = man->result.flag_exact = tbool_false;
+    man->result.flag_best = man->result.flag_exact = false;
     if (meet) poly_set(po,pb);
     else { poly_set_top(pk,po); poly_dual(po); }
     return;
@@ -233,7 +230,7 @@ void poly_meet(bool meet,
   if (pk->exn){
     assert(!pb->C);
     pk->exn = AP_EXC_NONE;
-    man->result.flag_best = man->result.flag_exact = tbool_false;
+    man->result.flag_best = man->result.flag_exact = false;
     if (meet) poly_set(po,pa);
     else { poly_set_top(pk,po); poly_dual(po); }
     return;
@@ -328,14 +325,14 @@ pk_t* poly_meet_array(bool meet,
   pk_t* poly;
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
-  man->result.flag_best = tbool_true;
+  man->result.flag_best = true;
 
   /* 1. Special cases */
   if (size==0){
     ap_manager_raise_exception(man,
 			    AP_EXC_INVALID_ARGUMENT,
 			    pk->funid, "empty array");
-    man->result.flag_best = man->result.flag_exact = tbool_false;
+    man->result.flag_best = man->result.flag_exact = false;
     poly = pk_top(man,0,1);
     if (!meet) poly_dual(poly);
     return poly;    
@@ -361,8 +358,8 @@ pk_t* poly_meet_array(bool meet,
     size_t nbrows;
     size_t i,j;
 
-    man->result.flag_best = tbool_true;
-    man->result.flag_exact = meet ? tbool_true : tbool_top;
+    man->result.flag_best = true;
+    man->result.flag_exact = meet;
 
     /* Count the total number of constraints */
     nbrows = 0;
@@ -377,7 +374,7 @@ pk_t* poly_meet_array(bool meet,
       if (pk->exn){
 	pk->exn = AP_EXC_NONE;
 	if (!po[i]->C){ 
-	  man->result.flag_best = man->result.flag_exact = tbool_false;
+	  man->result.flag_best = man->result.flag_exact = false;
 	  poly_set_top(pk, poly);
 	  if (!meet) poly_dual(poly);
 	  return poly;
@@ -407,12 +404,12 @@ pk_t* poly_meet_array(bool meet,
     if (size<=2){
       assert(!meet);
       if (size==0){ 
-	man->result.flag_exact = tbool_true;
+	man->result.flag_exact = true;
 	poly_set_bottom(pk,poly);
 	poly_dual(poly);
       } 
       else if (size==1){
-	man->result.flag_exact = tbool_true;
+	man->result.flag_exact = true;
 	poly_set(poly,po[0]);
       }
       else if (size==2){
@@ -541,14 +538,14 @@ void poly_meet_itv_lincons_array(bool lazy,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     if (!pa->C){
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       poly_set_top(pk,po);
       return;
     }
   }
   /* if pa is bottom, return bottom */
   if ( !pa->C && !pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;
+    man->result.flag_best = man->result.flag_exact = true;
     poly_set(po,pa);
     return;
   }
@@ -568,10 +565,10 @@ void poly_meet_itv_lincons_array(bool lazy,
   matrix_free(mat);
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
-    man->result.flag_exact = man->result.flag_best = tbool_false;
+    man->result.flag_exact = man->result.flag_best = false;
   }
   else {
-    man->result.flag_best = man->result.flag_exact = exact ? tbool_true : tbool_false;
+    man->result.flag_best = man->result.flag_exact = exact ? true : false;
   }
 }
 
@@ -637,7 +634,7 @@ pk_t* pk_join_array(ap_manager_t* man, pk_t** po, size_t size)
     ap_manager_raise_exception(man,
 			    AP_EXC_INVALID_ARGUMENT,
 			    AP_FUNID_JOIN_ARRAY, "empty array");
-    man->result.flag_best = man->result.flag_exact = tbool_false;
+    man->result.flag_best = man->result.flag_exact = false;
     poly = pk_top(man,0,1);
     return poly;
   }
@@ -685,7 +682,7 @@ void poly_add_ray_array(bool lazy,
 
   pk_internal_t* pk = (pk_internal_t*)man->internal;
 
-  man->result.flag_best = man->result.flag_exact = tbool_true;
+  man->result.flag_best = man->result.flag_exact = true;
 
   /* Get the generator systems */
   if (lazy){
@@ -696,7 +693,7 @@ void poly_add_ray_array(bool lazy,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     if (!pa->F){
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       poly_set_top(pk,po);
       return;
     }
@@ -716,7 +713,7 @@ void poly_add_ray_array(bool lazy,
   poly_dual(po);
   if (po!=pa) poly_dual(pa);
   matrix_free(mat);
-  man->result.flag_exact = tbool_of_bool(exact);
+  man->result.flag_exact = exact;
 }
 
 pk_t* pk_add_ray_array(ap_manager_t* man, bool destructive, pk_t* pa, ap_generator0_array_t* array)

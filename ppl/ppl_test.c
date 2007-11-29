@@ -107,10 +107,10 @@ ap_abstract0_t* convert(ap_manager_t* man, ap_abstract0_t* a)
 }
 
 /* compare */
-tbool_t is_eq(ap_abstract0_t* a1,ap_abstract0_t* a2)
+bool is_eq(ap_abstract0_t* a1,ap_abstract0_t* a2)
 {
   ap_abstract0_t* aa2 = convert(a1->man,a2);
-  tbool_t r = ap_abstract0_is_eq(a1->man,a1,aa2);
+  bool r = ap_abstract0_is_eq(a1->man,a1,aa2);
   if (a2!=aa2) ap_abstract0_free(aa2->man,aa2);
   return r;
 }
@@ -170,7 +170,7 @@ void test_conv(void)
     ap_abstract0_t* pk1 = convert(pk,ppl0);
     ap_abstract0_t* ppl1 = convert(ppl,pk1);
     RESULT('*');
-    if (is_eq(pk0,pk1)!=tbool_true || is_eq(ppl0,ppl1)!=tbool_true) {
+    if (!is_eq(pk0,pk1) || !is_eq(ppl0,ppl1)) {
       ERROR("different results");
       print_poly("pk0",pk0); print_poly("ppl0",ppl0);
       print_poly("pk1",pk1); print_poly("ppl1",ppl1);
@@ -193,7 +193,7 @@ void test_join(void)
     ap_abstract0_t* ppl1 = convert(ppl,pk1);
     ap_abstract0_t* pplr = ap_abstract0_join(ppl,false,ppl0,ppl1);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       print_poly("pk0",pk0); print_poly("pk1",pk1);
       print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -219,7 +219,7 @@ void test_join_array(void)
     pkr = ap_abstract0_join_array(pk,(ap_abstract0_t**)pka,NB);
     pplr = ap_abstract0_join_array(ppl,(ap_abstract0_t**)ppla,NB);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       print_poly("pkr",pkr); print_poly("pplr",pplr);
     }
@@ -240,7 +240,7 @@ void test_meet(void)
     ap_abstract0_t* ppl1 = convert(ppl,pk1);
     ap_abstract0_t* pplr = ap_abstract0_meet(ppl,false,ppl0,ppl1);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       print_poly("pk0",pk0); print_poly("pk1",pk1); 
       print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -264,7 +264,7 @@ void test_meet_array(void)
     pkr = ap_abstract0_meet_array(pk,(ap_abstract0_t**)pka,NB);
     pplr = ap_abstract0_meet_array(ppl,(ap_abstract0_t**)ppla,NB);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       print_poly("pkr",pkr); print_poly("pplr",pplr);
     }
@@ -295,7 +295,7 @@ void test_dimadd(void)
     pkr = ap_abstract0_add_dimensions(pk,false,pka,a,proj);
     pplr = ap_abstract0_add_dimensions(ppl,false,ppla,a,proj);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       ap_dimchange_fprint(stderr,a);
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -326,7 +326,7 @@ void test_dimrem(void)
     pkr = ap_abstract0_remove_dimensions(pk,false,pka,a);
     pplr = ap_abstract0_remove_dimensions(ppl,false,ppla,a);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       ap_dimchange_fprint(stderr,a);
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -358,7 +358,7 @@ void test_forget(void)
     pkr = ap_abstract0_forget_array(pk,false,pka,a->dim,a->realdim,proj);
     pplr = ap_abstract0_forget_array(ppl,false,ppla,a->dim,a->realdim,proj);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       ap_dimchange_fprint(stderr,a);
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -391,7 +391,7 @@ void test_permute(void)
     pkr = ap_abstract0_permute_dimensions(pk,false,pka,p);
     pplr = ap_abstract0_permute_dimensions(ppl,false,ppla,p);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       ap_dimperm_fprint(stderr,p);
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -417,7 +417,7 @@ void test_expand(void)
     pkr = ap_abstract0_expand(pk,false,pka,dd,n);
     pplr = ap_abstract0_expand(ppl,false,ppla,dd,n);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       fprintf(stderr,"dim %i expanded %i times\n",(int)dd,(int)n);
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -447,7 +447,7 @@ void test_fold(void)
     pkr = ap_abstract0_fold(pk,false,pka,dd,2);
     pplr = ap_abstract0_fold(ppl,false,ppla,dd,2);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       fprintf(stderr,"fold %i,%i,%i\n",(int)dd[0],(int)dd[1],(int)dd[2]);
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -475,7 +475,7 @@ void test_add_lincons(void)
     pkr = ap_abstract0_meet_lincons_array(pk,false,pka,&ar);
     pplr = ap_abstract0_meet_lincons_array(ppl,false,ppla,&ar);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       ap_lincons0_array_fprint(stderr,&ar,NULL);
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -500,7 +500,7 @@ void test_add_ray(void)
     pkr = ap_abstract0_add_ray_array(pk,false,pka,&ar);
     pplr = ap_abstract0_add_ray_array(ppl,false,ppla,&ar);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       ap_generator0_array_fprint(stderr,&ar,NULL);
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -525,7 +525,7 @@ void test_box(void)
     pkr = ap_abstract0_of_box(pk,0,dim,(ap_interval_t**)pki);
     pplr = ap_abstract0_of_box(ppl,0,dim,(ap_interval_t**)ppli);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       for (i=0;i<dim;i++) {
 	fprintf(stderr,"pki[%i]=",(int)i); ap_interval_fprint(stderr,pki[i]);
@@ -551,7 +551,7 @@ void test_vbound(void)
     ppla = convert(ppl,pka);
     RESULT('*');
     for (i=0;i<dim;i++) {
-      tbool_t pkd,ppld;
+      bool pkd,ppld;
       ap_interval_t* pki,*ppli;
       pkd = ap_abstract0_is_dimension_unconstrained(pk,pka,i);
       ppld = ap_abstract0_is_dimension_unconstrained(ppl,ppla,i);
@@ -607,7 +607,7 @@ void test_csat(void)
     ap_lincons0_t l = ap_lincons0_make((rand()%100>=90)?AP_CONS_EQ:
 				       (rand()%100>=90)?AP_CONS_SUP:AP_CONS_SUPEQ,
 				       random_linexpr(dim),NULL);
-    tbool_t pks,ppls;
+    bool pks,ppls;
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
     pks = ap_abstract0_sat_lincons(pk,pka,&l);
@@ -632,7 +632,7 @@ void test_isat(void)
     size_t p = rand() % dim;
     ap_abstract0_t* pka,*ppla;
     ap_interval_t* i = ap_interval_alloc();
-    tbool_t pks,ppls;
+    bool pks,ppls;
     random_interval(i);
     pka = random_poly(pk,dim);
     ppla = convert(ppl,pka);
@@ -664,7 +664,7 @@ void test_assign(void)
     pkr = ap_abstract0_assign_linexpr(pk,false,pka,p,l,NULL);
     pplr = ap_abstract0_assign_linexpr(ppl,false,ppla,p,l,NULL);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       fprintf(stderr,"x%i <- ",(int)p); ap_linexpr0_fprint(stderr,l,NULL); fprintf(stderr,"\n");
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -694,7 +694,7 @@ void test_par_assign(void)
     pkr = ap_abstract0_assign_linexpr_array(pk,false,pka,d,(ap_linexpr0_t**)l,NB,NULL);
     pplr = ap_abstract0_assign_linexpr_array(ppl,false,ppla,d,(ap_linexpr0_t**)l,NB,NULL);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results"); 
       for (i=0;i<NB;i++) {
 	fprintf(stderr,"x%i <- ",d[i]); 
@@ -722,7 +722,7 @@ void test_subst(void)
     pkr = ap_abstract0_substitute_linexpr(pk,false,pka,p,l,NULL);
     pplr = ap_abstract0_substitute_linexpr(ppl,false,ppla,p,l,NULL);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       fprintf(stderr,"x%i -> ",(int)p); ap_linexpr0_fprint(stderr,l,NULL); fprintf(stderr,"\n");
       print_poly("pka",pka); print_poly("pkr",pkr); print_poly("pplr",pplr);
@@ -752,7 +752,7 @@ void test_par_subst(void)
     pkr = ap_abstract0_substitute_linexpr_array(pk,false,pka,d,(ap_linexpr0_t**)l,NB,NULL);
     pplr = ap_abstract0_substitute_linexpr_array(ppl,false,ppla,d,(ap_linexpr0_t**)l,NB,NULL);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results"); 
       for (i=0;i<NB;i++) {
 	fprintf(stderr,"x%i -> ",d[i]); 
@@ -782,7 +782,7 @@ void test_widen(void)
     ppl1 = convert(ppl,pk1);
     pplr = ap_abstract0_widening(ppl,ppl0,ppl1);
     RESULT('*');
-    if (is_eq(pkr,pplr)!=tbool_true) {
+    if (!is_eq(pkr,pplr)) {
       ERROR("different results");
       print_poly("pk0",pk0); print_poly("pk1",pk1);
       print_poly("pkr",pkr); print_poly("pplr",pplr);

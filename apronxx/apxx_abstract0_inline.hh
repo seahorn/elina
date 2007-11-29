@@ -346,93 +346,93 @@ inline size_t abstract0::size(manager& m) const
 /* predicates */
 /* ========== */
 
-inline tbool abstract0::is_bottom(manager& m) const
+inline bool abstract0::is_bottom(manager& m) const
 {
-  tbool r = ap_abstract0_is_bottom(m.get_ap_manager_t(), a);
+  bool r = ap_abstract0_is_bottom(m.get_ap_manager_t(), a);
   m.raise("apron::abstract0::is_bottom(manager&)");
   return r;
 }
   
-inline tbool abstract0::is_top(manager& m) const
+inline bool abstract0::is_top(manager& m) const
 {
-  tbool r = ap_abstract0_is_top(m.get_ap_manager_t(), a);
+  bool r = ap_abstract0_is_top(m.get_ap_manager_t(), a);
   m.raise("apron::abstract0::is_top(manager&)");
   return r;
 }
   
-inline tbool abstract0::is_eq(manager& m, const abstract0& x) const
+inline bool abstract0::is_eq(manager& m, const abstract0& x) const
 {
-  tbool r = ap_abstract0_is_eq(m.get_ap_manager_t(), a, x.a);
+  bool r = ap_abstract0_is_eq(m.get_ap_manager_t(), a, x.a);
   m.raise("apron::abstract0::is_eq(manager&, const abstract&)");   
   return r;
 }
   
-inline tbool abstract0::is_leq(manager& m, const abstract0& x) const
+inline bool abstract0::is_leq(manager& m, const abstract0& x) const
 {
-  tbool r = ap_abstract0_is_leq(m.get_ap_manager_t(), a, x.a);
+  bool r = ap_abstract0_is_leq(m.get_ap_manager_t(), a, x.a);
   m.raise("apron::abstract0::is_leq(manager&, const abstract&)");   
   return r;
 }
 
-inline tbool abstract0::sat(manager& m, const lincons0& l) const
+inline bool abstract0::sat(manager& m, const lincons0& l) const
 {
-  tbool r = ap_abstract0_sat_lincons(m.get_ap_manager_t(), a, const_cast<ap_lincons0_t*>(l.get_ap_lincons0_t()));
+  bool r = ap_abstract0_sat_lincons(m.get_ap_manager_t(), a, const_cast<ap_lincons0_t*>(l.get_ap_lincons0_t()));
   m.raise("apron::abstract0::sat(manager&, const lincons0&)");   
   return r;
 }
 
-inline tbool abstract0::sat(manager& m, const tcons0& l) const
+inline bool abstract0::sat(manager& m, const tcons0& l) const
 {
-  tbool r = ap_abstract0_sat_tcons(m.get_ap_manager_t(), a, const_cast<ap_tcons0_t*>(l.get_ap_tcons0_t()));
+  bool r = ap_abstract0_sat_tcons(m.get_ap_manager_t(), a, const_cast<ap_tcons0_t*>(l.get_ap_tcons0_t()));
   m.raise("apron::abstract0::sat(manager&, const tcons0&)");   
   return r;
 }
 
-inline tbool abstract0::sat(manager& m, ap_dim_t dim, const interval& i) const
+inline bool abstract0::sat(manager& m, ap_dim_t dim, const interval& i) const
 {
-  tbool r = ap_abstract0_sat_interval(m.get_ap_manager_t(), a, dim, const_cast<ap_interval_t*>(i.get_ap_interval_t()));
+  bool r = ap_abstract0_sat_interval(m.get_ap_manager_t(), a, dim, const_cast<ap_interval_t*>(i.get_ap_interval_t()));
   m.raise("apron::abstract0::sat(manager&, ap_dim_t, const interval&)");   
   return r;
 }
 
-inline tbool abstract0::is_dimension_unconstrained(manager& m, ap_dim_t dim) const
+inline bool abstract0::is_dimension_unconstrained(manager& m, ap_dim_t dim) const
 {
-  tbool r = ap_abstract0_is_dimension_unconstrained(m.get_ap_manager_t(), a, dim);
+  bool r = ap_abstract0_is_dimension_unconstrained(m.get_ap_manager_t(), a, dim);
   m.raise("apron::abstract0::is_dimension_unconstrained(manager&, ap_dim_t)");   
   return r;
 }
 
 
-inline tbool operator== (const abstract0& x, const abstract0& y)
+inline bool operator== (const abstract0& x, const abstract0& y)
 {
-  tbool r = ap_abstract0_is_eq(x.a->man, x.a, y.a);
+  bool r = ap_abstract0_is_eq(x.a->man, x.a, y.a);
   manager::raise(x.a->man, "apron::operator==(const abstract0&, const abstract0&)");
   return r;
 }
   
-inline tbool operator!= (const abstract0& x, const abstract0& y)
+inline bool operator!= (const abstract0& x, const abstract0& y)
 { 
   return !(x==y); 
 }
 
-inline tbool operator<= (const abstract0& x, const abstract0& y)
+inline bool operator<= (const abstract0& x, const abstract0& y)
 {
-  tbool r = ap_abstract0_is_leq(x.a->man, x.a, y.a);
+  bool r = ap_abstract0_is_leq(x.a->man, x.a, y.a);
   manager::raise(x.a->man, "apron::operator<=(const abstract0&, const abstract0&)");
   return r;
 }
   
-inline tbool operator>= (const abstract0& x, const abstract0& y)
+inline bool operator>= (const abstract0& x, const abstract0& y)
 { 
   return y<=x; 
 }
 
-inline tbool operator> (const abstract0& x, const abstract0& y)
+inline bool operator> (const abstract0& x, const abstract0& y)
 { 
   return !(x<=y); 
 }
 
-inline tbool operator< (const abstract0& x, const abstract0& y)
+inline bool operator< (const abstract0& x, const abstract0& y)
 {
   return !(y<=x); 
 }

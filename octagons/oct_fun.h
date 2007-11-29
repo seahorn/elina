@@ -80,9 +80,9 @@ void oct_canonicalize(ap_manager_t* man, oct_t* a);
 
 void oct_approximate(ap_manager_t* man, oct_t* a, int algorithm);
 
-tbool_t oct_is_minimal(ap_manager_t* man, oct_t* a);
+bool oct_is_minimal(ap_manager_t* man, oct_t* a);
 
-tbool_t oct_is_canonical(ap_manager_t* man, oct_t* a);
+bool oct_is_canonical(ap_manager_t* man, oct_t* a);
 
 
 
@@ -177,33 +177,28 @@ ap_dimension_t oct_dimension(ap_manager_t* man, oct_t* a);
 /* II.3 Tests */
 /* ============================================================ */
 
-/* If any of the following functions returns tbool_top, this means that
-   an exception has occured, or that the exact computation was
-   considered too expensive to be performed (according to the options).
-   The flag exact and best should be cleared in such a case. */
+bool oct_is_bottom(ap_manager_t* man, oct_t* a);
+bool oct_is_top(ap_manager_t* man, oct_t* a);
 
-tbool_t oct_is_bottom(ap_manager_t* man, oct_t* a);
-tbool_t oct_is_top(ap_manager_t* man, oct_t* a);
-
-tbool_t oct_is_leq(ap_manager_t* man, oct_t* a1, oct_t* a2);
+bool oct_is_leq(ap_manager_t* man, oct_t* a1, oct_t* a2);
   /* inclusion check */
 
-tbool_t oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2);
+bool oct_is_eq(ap_manager_t* man, oct_t* a1, oct_t* a2);
   /* equality check */
 
 /* NOT IMPLEMENTED */
-tbool_t oct_sat_lincons(ap_manager_t* man, oct_t* a, ap_lincons0_t* cons);
+bool oct_sat_lincons(ap_manager_t* man, oct_t* a, ap_lincons0_t* cons);
   /* does the abstract value satisfy the linear constraint ? */
 
-tbool_t oct_sat_tcons(ap_manager_t* man, oct_t* a, ap_tcons0_t* cons);
+bool oct_sat_tcons(ap_manager_t* man, oct_t* a, ap_tcons0_t* cons);
   /* does the abstract value satisfy the tree expression constraint ? */
 
-tbool_t oct_sat_interval(ap_manager_t* man, oct_t* a,
-			 ap_dim_t dim, ap_interval_t* interval);
+bool oct_sat_interval(ap_manager_t* man, oct_t* a,
+		      ap_dim_t dim, ap_interval_t* interval);
   /* is the dimension included in the interval in the abstract value ? */
 
-tbool_t oct_is_dimension_unconstrained(ap_manager_t* man, oct_t* a,
-				       ap_dim_t dim);
+bool oct_is_dimension_unconstrained(ap_manager_t* man, oct_t* a,
+				    ap_dim_t dim);
   /* is the dimension unconstrained ? */
 
 /* ============================================================ */

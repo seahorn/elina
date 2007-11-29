@@ -428,112 +428,112 @@ inline size_t abstract1::size(manager& m) const
 
 
 
-inline tbool abstract1::is_bottom(manager& m) const
+inline bool abstract1::is_bottom(manager& m) const
 {
-  tbool r = ap_abstract1_is_bottom(m.get_ap_manager_t(), 
-				   const_cast<ap_abstract1_t*>(&a));
+  bool r = ap_abstract1_is_bottom(m.get_ap_manager_t(), 
+				  const_cast<ap_abstract1_t*>(&a));
   m.raise("apron::abstract1::is_bottom(manager&)");
   return r;
 }
   
-inline tbool abstract1::is_top(manager& m) const
+inline bool abstract1::is_top(manager& m) const
 {
-  tbool r = ap_abstract1_is_top(m.get_ap_manager_t(), 
-				const_cast<ap_abstract1_t*>(&a));
+  bool r = ap_abstract1_is_top(m.get_ap_manager_t(), 
+			       const_cast<ap_abstract1_t*>(&a));
   m.raise("apron::abstract1::is_top(manager&)");
   return r;
 }
   
-inline tbool abstract1::is_eq(manager& m, const abstract1& x) const
+inline bool abstract1::is_eq(manager& m, const abstract1& x) const
 {
-  tbool r = ap_abstract1_is_eq(m.get_ap_manager_t(), 
-			       const_cast<ap_abstract1_t*>(&a), 
-			       const_cast<ap_abstract1_t*>(&x.a));
+  bool r = ap_abstract1_is_eq(m.get_ap_manager_t(), 
+			      const_cast<ap_abstract1_t*>(&a), 
+			      const_cast<ap_abstract1_t*>(&x.a));
   m.raise("apron::abstract1::is_eq(manager&, const abstract&)");   
   return r;
 }
   
-inline tbool abstract1::is_leq(manager& m, const abstract1& x) const
+inline bool abstract1::is_leq(manager& m, const abstract1& x) const
 {
-  tbool r = ap_abstract1_is_leq(m.get_ap_manager_t(), 
-				const_cast<ap_abstract1_t*>(&a), 
-				const_cast<ap_abstract1_t*>(&x.a));
+  bool r = ap_abstract1_is_leq(m.get_ap_manager_t(), 
+			       const_cast<ap_abstract1_t*>(&a), 
+			       const_cast<ap_abstract1_t*>(&x.a));
   m.raise("apron::abstract1::is_leq(manager&, const abstract&)");   
   return r;
 }
 
-inline tbool abstract1::sat(manager& m, const lincons1& l) const
+inline bool abstract1::sat(manager& m, const lincons1& l) const
 {
-  tbool r = ap_abstract1_sat_lincons(m.get_ap_manager_t(), 
-				     const_cast<ap_abstract1_t*>(&a), 
-				     const_cast<ap_lincons1_t*>(l.get_ap_lincons1_t()));
+  bool r = ap_abstract1_sat_lincons(m.get_ap_manager_t(), 
+				    const_cast<ap_abstract1_t*>(&a), 
+				    const_cast<ap_lincons1_t*>(l.get_ap_lincons1_t()));
   m.raise("apron::abstract1::sat(manager&, const lincons1&)");   
   return r;
 }
 
-inline tbool abstract1::sat(manager& m, const tcons1& l) const
+inline bool abstract1::sat(manager& m, const tcons1& l) const
 {
-  tbool r = ap_abstract1_sat_tcons(m.get_ap_manager_t(), 
-				   const_cast<ap_abstract1_t*>(&a), 
-				   const_cast<ap_tcons1_t*>(l.get_ap_tcons1_t()));
+  bool r = ap_abstract1_sat_tcons(m.get_ap_manager_t(), 
+				  const_cast<ap_abstract1_t*>(&a), 
+				  const_cast<ap_tcons1_t*>(l.get_ap_tcons1_t()));
   m.raise("apron::abstract1::sat(manager&, const tcons1&)");   
   return r;
 }
 
-inline tbool abstract1::sat(manager& m, const var& v, const interval& i) const
+inline bool abstract1::sat(manager& m, const var& v, const interval& i) const
 {
-  tbool r = ap_abstract1_sat_interval(m.get_ap_manager_t(), 
-				      const_cast<ap_abstract1_t*>(&a), 
-				      v.get_ap_var_t(), 
-				      const_cast<ap_interval_t*>(i.get_ap_interval_t()));
+  bool r = ap_abstract1_sat_interval(m.get_ap_manager_t(), 
+				     const_cast<ap_abstract1_t*>(&a), 
+				     v.get_ap_var_t(), 
+				     const_cast<ap_interval_t*>(i.get_ap_interval_t()));
   m.raise("apron::abstract1::sat(manager&, const var&, const interval&)");   
   return r;
 }
 
-inline tbool abstract1::is_variable_unconstrained(manager& m, const var& v) const
+inline bool abstract1::is_variable_unconstrained(manager& m, const var& v) const
 {
-  tbool r = ap_abstract1_is_variable_unconstrained(m.get_ap_manager_t(), 
-						   const_cast<ap_abstract1_t*>(&a), 
-						   v.get_ap_var_t());
+  bool r = ap_abstract1_is_variable_unconstrained(m.get_ap_manager_t(), 
+						  const_cast<ap_abstract1_t*>(&a), 
+						  v.get_ap_var_t());
   m.raise("apron::abstract1::is_variable_unconstrained(manager&, const var&)");   
   return r;
 }
 
 
-inline tbool operator== (const abstract1& x, const abstract1& y)
+inline bool operator== (const abstract1& x, const abstract1& y)
 {
-  tbool r = ap_abstract1_is_eq(x.a.abstract0->man, 
-			       const_cast<ap_abstract1_t*>(&x.a), 
-			       const_cast<ap_abstract1_t*>(&y.a));
+  bool r = ap_abstract1_is_eq(x.a.abstract0->man, 
+			      const_cast<ap_abstract1_t*>(&x.a), 
+			      const_cast<ap_abstract1_t*>(&y.a));
   manager::raise(x.a.abstract0->man, "apron::operator==(const abstract1&, const abstract1&)");
   return r;
 }
   
-inline tbool operator!= (const abstract1& x, const abstract1& y)
+inline bool operator!= (const abstract1& x, const abstract1& y)
 { 
   return !(x==y); 
 }
 
-inline tbool operator<= (const abstract1& x, const abstract1& y)
+inline bool operator<= (const abstract1& x, const abstract1& y)
 {
-  tbool r = ap_abstract1_is_leq(x.a.abstract0->man, 
-				const_cast<ap_abstract1_t*>(&x.a), 
-				const_cast<ap_abstract1_t*>(&y.a));
+  bool r = ap_abstract1_is_leq(x.a.abstract0->man, 
+			       const_cast<ap_abstract1_t*>(&x.a), 
+			       const_cast<ap_abstract1_t*>(&y.a));
   manager::raise(x.a.abstract0->man, "apron::operator<=(const abstract1&, const abstract1&)");
   return r;
 }
   
-inline tbool operator>= (const abstract1& x, const abstract1& y)
+inline bool operator>= (const abstract1& x, const abstract1& y)
 { 
   return y<=x; 
 }
 
-inline tbool operator> (const abstract1& x, const abstract1& y)
+inline bool operator> (const abstract1& x, const abstract1& y)
 { 
   return !(x<=y); 
 }
 
-inline tbool operator< (const abstract1& x, const abstract1& y)
+inline bool operator< (const abstract1& x, const abstract1& y)
 {
   return !(y<=x); 
 }

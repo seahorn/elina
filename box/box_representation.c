@@ -90,8 +90,8 @@ box_t* box_copy(ap_manager_t* man, box_t* a)
     /* Add an unused dimension to differentiate
        empty and top values in dimension 0+0 */ 
   }
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   return b;
 }
 
@@ -120,16 +120,16 @@ size_t box_size(ap_manager_t* man, box_t* a)
 */
 void box_minimize(ap_manager_t* man, box_t* a)
 {
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   return;
 }
 
 /* Put the abstract value in canonical form. (not yet clear definition) */
 void box_canonicalize(ap_manager_t* man, box_t* a)
 {
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
   return;
 }
 
@@ -141,8 +141,8 @@ void box_canonicalize(ap_manager_t* man, box_t* a)
    associated to box_approximate (commodity feature). */
 void box_approximate(ap_manager_t* man, box_t* a, int algorithm)
 {
-  man->result.flag_best = tbool_true;
-  man->result.flag_exact = tbool_true;
+  man->result.flag_best = true;
+  man->result.flag_exact = true;
  return;
 }
 

@@ -31,11 +31,11 @@ bool quasilinearize_alloc(ap_manager_t* man, ap_abstract0_t* abs,
   ap_interval_t** tinterval;
   size_t size;
 
-  assert(ap_abstract0_is_bottom(man,abs)!=tbool_true);
+  assert(!ap_abstract0_is_bottom(man,abs));
   exact = true;
 
   tinterval = ap_abstract0_to_box(man,abs);
-  exact = (man->result.flag_exact == tbool_true) && exact;
+  exact = man->result.flag_exact && exact;
 
   *pdim = ap_abstract0_dimension(man,abs);
   size = pdim->intdim+pdim->realdim;
@@ -226,11 +226,11 @@ bool intlinearize_alloc(ap_manager_t* man, ap_abstract0_t* abs,
   ap_interval_t** tinterval;
   size_t size;
 
-  assert(ap_abstract0_is_bottom(man,abs)!=tbool_true);
+  assert(!ap_abstract0_is_bottom(man,abs));
   exact = true;
 
   tinterval = ap_abstract0_to_box(man,abs);
-  exact = (man->result.flag_exact == tbool_true) && exact;
+  exact = man->result.flag_exact && exact;
 
   *pdim = ap_abstract0_dimension(man,abs);
   size = pdim->intdim+pdim->realdim;

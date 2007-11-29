@@ -188,7 +188,7 @@ pkeq_t* pkeq_of_box(ap_manager_t* man,
   po->C->nbrows = pk->dec - 1 + row;
   matrix_reduce(po->C);
   pk_canonicalize(man,po);
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   return po;
 }
 
@@ -196,29 +196,29 @@ pkeq_t* pkeq_of_box(ap_manager_t* man,
 /* II.3 Tests */
 /* ============================================================ */
 
-tbool_t pkeq_is_eq(ap_manager_t* man, pkeq_t* pa, pkeq_t* pb)
+bool pkeq_is_eq(ap_manager_t* man, pkeq_t* pa, pkeq_t* pb)
 {
   pk_init_from_manager(man,AP_FUNID_IS_EQ);
   pkeq_canonicalize(man,pa);
   pkeq_canonicalize(man,pb);
 
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
 
   if (pa->C){
     if (pb->C){
       if (pa->nbeq != pb->nbeq || pa->nbline != pb->nbline){
-	return tbool_false;
+	return false;
       }
       else {
 	size_t i,j;
 
 	matrix_t* mata = pa->C;
 	matrix_t* matb = pb->C;
-	tbool_t res = tbool_true;
+	bool res = true;
 	for (i=0; i<mata->nbrows; i++){
 	  for (j=0; j<matb->nbcolumns; j++){
 	    if (numint_cmp(mata->p[i][j],matb->p[i][j])!=0){
-	      res = tbool_false;
+	      res = false;
 	      goto _pkeq_is_eq_exit;
 	    }
 	  }
@@ -228,11 +228,11 @@ tbool_t pkeq_is_eq(ap_manager_t* man, pkeq_t* pa, pkeq_t* pb)
       }
     }
     else {
-      return tbool_false;
+      return false;
     }
   }
   else {
-    return pb->C ? tbool_false : tbool_true;
+    return pb->C ? false : true;
   }
 }
 
@@ -332,7 +332,7 @@ pkeq_t* equality_asssub_linexpr(bool assign,
   
   /* Return empty if empty */
   if (!pa->C && !pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;
+    man->result.flag_best = man->result.flag_exact = true;
     return destructive ? pa : pk_bottom(man,pa->intdim,pa->realdim);
   }
   /* Choose the right technique */
@@ -348,12 +348,11 @@ pkeq_t* equality_asssub_linexpr(bool assign,
       if (pk->funopt->flag_best_wanted || pk->funopt->flag_exact_wanted){
 	man->result.flag_best = man->result.flag_exact = 
 	  (dim < pa->intdim || !ap_linexpr0_is_real(linexpr, pa->intdim)) ?
-	  tbool_top :
-	  tbool_true;
+	  false :
+	  true;
       }
       else {
-	man->result.flag_best = man->result.flag_exact = 
-	  pa->intdim>0 ? tbool_top : tbool_true;
+	man->result.flag_best = man->result.flag_exact = (pa->intdim==0);
       }
     }
     break;
@@ -367,7 +366,7 @@ pkeq_t* equality_asssub_linexpr(bool assign,
  _equality_asssub_linexpr_error:
   pk->exn = AP_EXC_NONE;
   poly_set_top(pk,po);
-  man->result.flag_best = man->result.flag_exact = tbool_false;
+  man->result.flag_best = man->result.flag_exact = false;
   return po;
 }
 
@@ -393,7 +392,7 @@ pkeq_t* equality_asssub_linexpr_array(bool assign,
 
   /* Return empty if empty */
   if (!pa->C && !pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;
+    man->result.flag_best = man->result.flag_exact = true;
     return destructive ? pa : pk_bottom(man,pa->intdim,pa->realdim);
   }
   /* Choose the right technique */
@@ -427,18 +426,17 @@ pkeq_t* equality_asssub_linexpr_array(bool assign,
   }
   /* Is the result exact or best ? */
   if (pk->funopt->flag_best_wanted || pk->funopt->flag_exact_wanted){
-    man->result.flag_best = tbool_true;
+    man->result.flag_best = true;
     for (i=0;i<size;i++){
       if (tdim[i] < pa->intdim || !ap_linexpr0_is_real(texpr[i], pa->intdim)){
-	man->result.flag_best = tbool_top;
+	man->result.flag_best = false;
 	break;
       }
     }
     man->result.flag_exact = man->result.flag_best;
   }
   else {
-    man->result.flag_best = man->result.flag_exact = 
-      pa->intdim>0 ? tbool_top : tbool_true;
+    man->result.flag_best = man->result.flag_exact = (pa->intdim==0);
   }
   free(tdimp);
   free(texprp); 
@@ -450,7 +448,7 @@ pkeq_t* equality_asssub_linexpr_array(bool assign,
   free(tdimforget);
   pk->exn = AP_EXC_NONE;
   poly_set_top(pk,po);
-  man->result.flag_best = man->result.flag_exact = tbool_false;
+  man->result.flag_best = man->result.flag_exact = false;
   return po;
 }
 

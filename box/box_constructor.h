@@ -27,18 +27,18 @@ box_t* box_of_tcons_array(ap_manager_t* man,
 			  size_t intdim, size_t realdim,
 			  ap_tcons0_array_t* array);
 ap_dimension_t box_dimension(ap_manager_t* man, box_t* a);
-tbool_t box_is_bottom(ap_manager_t* man, box_t* a);
-tbool_t box_is_top(ap_manager_t* man, box_t* a);
-tbool_t box_is_leq(ap_manager_t* man, box_t* a, box_t* b);
-tbool_t box_is_eq(ap_manager_t* man, box_t* a, box_t* b);
-tbool_t box_is_dimension_unconstrained(ap_manager_t* man, box_t* a, ap_dim_t dim);
-tbool_t box_sat_interval(ap_manager_t* man, 
-			 box_t* a,
-			 ap_dim_t dim, ap_interval_t* interval);
-tbool_t box_sat_lincons(ap_manager_t* man, 
-			box_t* a, ap_lincons0_t* cons);
-tbool_t box_sat_tcons(ap_manager_t* man, 
-		      box_t* a, ap_tcons0_t* cons);
+bool box_is_bottom(ap_manager_t* man, box_t* a);
+bool box_is_top(ap_manager_t* man, box_t* a);
+bool box_is_leq(ap_manager_t* man, box_t* a, box_t* b);
+bool box_is_eq(ap_manager_t* man, box_t* a, box_t* b);
+bool box_is_dimension_unconstrained(ap_manager_t* man, box_t* a, ap_dim_t dim);
+bool box_sat_interval(ap_manager_t* man, 
+		      box_t* a,
+		      ap_dim_t dim, ap_interval_t* interval);
+bool box_sat_lincons(ap_manager_t* man, 
+		     box_t* a, ap_lincons0_t* cons);
+bool box_sat_tcons(ap_manager_t* man, 
+		   box_t* a, ap_tcons0_t* cons);
 ap_interval_t* box_bound_dimension(ap_manager_t* man,
 				   box_t* a, ap_dim_t dim);
 ap_interval_t* box_bound_linexpr(ap_manager_t* man,

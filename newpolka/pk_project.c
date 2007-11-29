@@ -46,14 +46,14 @@ void poly_projectforget_array(bool project,
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
     if (!pa->F){
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       poly_set_top(pk,po);
       return;
     }
   }
   /* if empty, return empty */
   if (!pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;
+    man->result.flag_best = man->result.flag_exact = true;
     poly_set_bottom(pk,po);
     return;
   }
@@ -99,7 +99,7 @@ void poly_projectforget_array(bool project,
   if (res || pk->exn){
     pk->exn = AP_EXC_NONE;
     if (!po->F){
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       poly_set_top(pk,po);
       return;
     }
@@ -115,11 +115,11 @@ void poly_projectforget_array(bool project,
       }
     }
     man->result.flag_best = man->result.flag_exact = 
-      real ? tbool_true : tbool_top;
+      real;
   }
   else {
     man->result.flag_best = man->result.flag_exact =
-      pa->intdim>0 ? tbool_top : tbool_true;
+      pa->intdim==0;
   }
 }
 

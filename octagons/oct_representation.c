@@ -182,7 +182,7 @@ oct_t* oct_of_generator_array(ap_manager_t* man,
     /* not empty */
     hmat_add_generators(pr,r->m,dim,ar);
     /* best in Q and Z, except for conversion errors */
-    man->result.flag_exact = tbool_top;
+    man->result.flag_exact = false;
     if (pr->conv) flag_conv;
   }
   return r;

@@ -141,8 +141,8 @@ void ap_result_init(ap_result_t* result)
 {
   result->exclog = NULL;
   result->exn = AP_EXC_NONE;
-  result->flag_exact = tbool_top;
-  result->flag_best = tbool_top;
+  result->flag_exact = false;
+  result->flag_best = false;
 }
 void ap_result_clear(ap_result_t* result)
 {
@@ -208,9 +208,9 @@ ap_funopt_t ap_manager_get_funopt(ap_manager_t* man, ap_funid_t funid)
 }
 bool ap_manager_get_abort_if_exception(ap_manager_t* man, ap_exc_t exn)
 { return man->option.abort_if_exception[exn]; }
-tbool_t ap_manager_get_flag_exact(ap_manager_t* man)
+bool ap_manager_get_flag_exact(ap_manager_t* man)
 { return man->result.flag_exact; }
-tbool_t ap_manager_get_flag_best(ap_manager_t* man)
+bool ap_manager_get_flag_best(ap_manager_t* man)
 { return man->result.flag_best; }
 
 
@@ -246,7 +246,7 @@ void ap_manager_raise_exception(ap_manager_t* man,
     }
     else {
       ap_result_add_exception(&man->result,exn,funid,msg);
-      man->result.flag_exact = man->result.flag_best = tbool_false;
+      man->result.flag_exact = man->result.flag_best = false;
     }
   }
   return;

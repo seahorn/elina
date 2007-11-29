@@ -53,8 +53,8 @@ void box_approximate(ap_manager_t* man, box_t* a, int algorithm);
 
      The transformation may lose information. */
 
-tbool_t box_is_minimal(ap_manager_t* man, box_t* a);
-tbool_t box_is_canonical(ap_manager_t* man, box_t* a);
+bool box_is_minimal(ap_manager_t* man, box_t* a);
+bool box_is_canonical(ap_manager_t* man, box_t* a);
 
 /* ============================================================ */
 /* I.3 Printing */
@@ -126,32 +126,27 @@ ap_dimension_t box_dimension(ap_manager_t* man, box_t* a);
 /* II.3 Tests */
 /* ============================================================ */
 
-/* If any of the following functions returns tbool_top, this means that 
-   an exception has occured, or that the exact computation was 
-   considered too expensive to be performed (according to the options). 
-   The flag exact and best should be cleared in such a case. */
+bool box_is_bottom(ap_manager_t* man, box_t* a);
+bool box_is_top(ap_manager_t* man, box_t* a);
 
-tbool_t box_is_bottom(ap_manager_t* man, box_t* a);
-tbool_t box_is_top(ap_manager_t* man, box_t* a);
-
-tbool_t box_is_leq(ap_manager_t* man, box_t* a1, box_t* a2);
+bool box_is_leq(ap_manager_t* man, box_t* a1, box_t* a2);
   /* inclusion check */
 
-tbool_t box_is_eq(ap_manager_t* man, box_t* a1, box_t* a2);
+bool box_is_eq(ap_manager_t* man, box_t* a1, box_t* a2);
   /* equality check */
 
-tbool_t box_sat_lincons(ap_manager_t* man, box_t* a, ap_lincons0_t* cons);
+bool box_sat_lincons(ap_manager_t* man, box_t* a, ap_lincons0_t* cons);
   /* does the box value satisfy the linear constraint ? */
-tbool_t box_sat_tcons(ap_manager_t* man, box_t* a, ap_tcons0_t* tcons);
+bool box_sat_tcons(ap_manager_t* man, box_t* a, ap_tcons0_t* tcons);
   /* does the box value satisfy the tree expression constraint ? */
 
-tbool_t box_sat_interval(ap_manager_t* man,
-			 box_t* a, 
-			 ap_dim_t dim, ap_interval_t* interval);
+bool box_sat_interval(ap_manager_t* man,
+		      box_t* a, 
+		      ap_dim_t dim, ap_interval_t* interval);
   /* is the dimension included in the interval in the box value ? */
 
-tbool_t box_is_dimension_unconstrained(ap_manager_t* man, 
-				       box_t* a, ap_dim_t dim);
+bool box_is_dimension_unconstrained(ap_manager_t* man, 
+				    box_t* a, ap_dim_t dim);
   /* is the dimension unconstrained in the box value ?  If it
      is the case, we have forget(man,a,dim) == a */
 

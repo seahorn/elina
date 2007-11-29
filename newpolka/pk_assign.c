@@ -466,13 +466,13 @@ pk_t* poly_asssub_linexpr_array_det(bool assign,
   poly_obtain_F_dual(man,pa,"of the argument",assign);
   if (pk->exn){
     pk->exn = AP_EXC_NONE;
-    man->result.flag_best = man->result.flag_exact = tbool_false;
+    man->result.flag_best = man->result.flag_exact = false;
     poly_set_top(pk,po);
     goto _poly_asssub_linexpr_array_det_exit;
   }
   /* Return empty if empty */
   if (!pa->C && !pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;
+    man->result.flag_best = man->result.flag_exact = true;
     poly_set_bottom(pk,po);
     return po;
   }
@@ -540,7 +540,7 @@ pk_t* poly_asssub_linexpr_array(bool assign,
     poly_chernikova(man,pa,"of the argument");
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       if (destructive){
 	poly_set_top(pk,pa);
 	return pa;
@@ -551,7 +551,7 @@ pk_t* poly_asssub_linexpr_array(bool assign,
   }
   /* Return empty if empty */
   if (!pa->C && !pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;
+    man->result.flag_best = man->result.flag_exact = true;
     return destructive ? pa : pk_bottom(man,pa->intdim,pa->realdim);
   }
   /* Choose the right technique */
@@ -569,7 +569,7 @@ pk_t* poly_asssub_linexpr_array(bool assign,
     poly_chernikova(man,po,"of the result");
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       if (pb) poly_set(po,pb); else poly_set_top(pk,po);
       return po;
     }
@@ -577,18 +577,17 @@ pk_t* poly_asssub_linexpr_array(bool assign,
   /* Is the result exact or best ? */
   if (pk->funopt->flag_best_wanted || pk->funopt->flag_exact_wanted){
     size_t i;
-    man->result.flag_best = tbool_true;
+    man->result.flag_best = true;
     for (i=0;i<size;i++){
       if (tdim[i] < pa->intdim || !ap_linexpr0_is_real(texpr[i], pa->intdim)){
-	man->result.flag_best = tbool_top;
+	man->result.flag_best = false;
 	break;
       }
     }
     man->result.flag_exact = man->result.flag_best;
   }
   else {
-    man->result.flag_best = man->result.flag_exact = 
-      pa->intdim>0 ? tbool_top : tbool_true;
+    man->result.flag_best = man->result.flag_exact = (pa->intdim==0);
   }
   return po;
 }
@@ -631,7 +630,7 @@ pk_t* poly_asssub_linexpr_det(bool assign,
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
       poly_set_top(pk,po);
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       goto  _poly_asssub_linear_linexpr_exit;
     }
     if (destructive){
@@ -700,7 +699,7 @@ pk_t* poly_asssub_linexpr(bool assign,
     poly_chernikova(man,pa,"of the argument");
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       if (destructive){
 	poly_set_top(pk,pa);
 	return pa;
@@ -711,7 +710,7 @@ pk_t* poly_asssub_linexpr(bool assign,
   }
   /* Return empty if empty */
   if (!pa->C && !pa->F){
-    man->result.flag_best = man->result.flag_exact = tbool_true;
+    man->result.flag_best = man->result.flag_exact = true;
     return destructive ? pa : pk_bottom(man,pa->intdim,pa->realdim);
   }
   /* Choose the right technique */
@@ -729,7 +728,7 @@ pk_t* poly_asssub_linexpr(bool assign,
     poly_chernikova(man,po,"of the result");
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
-      man->result.flag_best = man->result.flag_exact = tbool_false;
+      man->result.flag_best = man->result.flag_exact = false;
       if (pb) poly_set(po,pb); else poly_set_top(pk,po);
       return po;
     }
@@ -738,12 +737,11 @@ pk_t* poly_asssub_linexpr(bool assign,
   if (pk->funopt->flag_best_wanted || pk->funopt->flag_exact_wanted){
     man->result.flag_best = man->result.flag_exact = 
       (dim < pa->intdim || !ap_linexpr0_is_real(linexpr, pa->intdim)) ?
-      tbool_top :
-      tbool_true;
+      false :
+      true;
   }
   else {
-    man->result.flag_best = man->result.flag_exact = 
-      pa->intdim>0 ? tbool_top : tbool_true;
+    man->result.flag_best = man->result.flag_exact = (pa->intdim==0);
   }
   return po;
 }

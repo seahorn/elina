@@ -63,7 +63,7 @@ bool poly_approximate_n1(ap_manager_t* man, pk_t* po, pk_t* pa, int algorithm)
       }
       po->status = 0;
       po->C->_sorted = false;
-      man->result.flag_exact = tbool_false;
+      man->result.flag_exact = false;
     } else {
       poly_set_save_C(po,pa);
     }
@@ -126,10 +126,10 @@ bool poly_approximate_1(ap_manager_t* man, pk_t* po, pk_t* pa)
        if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
      }
      po->status = 0;
-     man->result.flag_exact = tbool_false;
+     man->result.flag_exact = false;
    } else {
      poly_set_save_C(po,pa);
-     man->result.flag_exact = tbool_true;
+     man->result.flag_exact = true;
    }
    return change;
 }
@@ -168,7 +168,7 @@ void poly_approximate_123(ap_manager_t* man, pk_t* po, int algorithm)
       if (!po->C){
 	pk_free(man,pa);
 	poly_set_bottom(pk,po);
-	man->result.flag_exact = tbool_true;
+	man->result.flag_exact = true;
 	return;
       }
       else {
@@ -346,10 +346,10 @@ void poly_approximate_10(ap_manager_t* man, pk_t* po)
     po->F = NULL;
     po->satC = NULL;
     po->satF = NULL;
-    man->result.flag_exact = tbool_false;
+    man->result.flag_exact = false;
   }
   else {
-     man->result.flag_exact = tbool_true;
+     man->result.flag_exact = true;
   }
 }
 
@@ -374,8 +374,8 @@ void pk_approximate(ap_manager_t* man, pk_t* po, int algorithm)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_APPROXIMATE);
 
-  man->result.flag_exact = tbool_true;
-  man->result.flag_best = tbool_top;
+  man->result.flag_exact = false;
+  man->result.flag_best = false;
 
   if (!po->C && !po->F)
     return;

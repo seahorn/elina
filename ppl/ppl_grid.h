@@ -148,31 +148,26 @@ ap_dimension_t ap_ppl_grid_dimension(ap_manager_t* man, struct ppl_grid* a);
 /* II.3 Tests */
 /* ============================================================ */
 
-/* If any of the following functions returns tbool_top, this means that
-   an exception has occured, or that the exact computation was
-   considered too expensive to be performed (according to the options).
-   The flag exact and best should be cleared in such a case. */
-
-tbool_t ap_ppl_grid_is_bottom(ap_manager_t* man, struct ppl_grid* a);
+bool ap_ppl_grid_is_bottom(ap_manager_t* man, struct ppl_grid* a);
   /* Emptiness test */
-tbool_t ap_ppl_grid_is_top(ap_manager_t* man, struct ppl_grid* a);
+bool ap_ppl_grid_is_top(ap_manager_t* man, struct ppl_grid* a);
   /* Universe test */
 
-tbool_t ap_ppl_grid_is_leq(ap_manager_t* man, struct ppl_grid* a1, struct ppl_grid* a2);
+bool ap_ppl_grid_is_leq(ap_manager_t* man, struct ppl_grid* a1, struct ppl_grid* a2);
   /* Inclusion test */
   
-tbool_t ap_ppl_grid_is_eq(ap_manager_t* man, struct ppl_grid* a1, struct ppl_grid* a2);
+bool ap_ppl_grid_is_eq(ap_manager_t* man, struct ppl_grid* a1, struct ppl_grid* a2);
   /* Equality test */
  
-tbool_t ap_ppl_grid_sat_lincons(ap_manager_t* man, struct ppl_grid* a, ap_lincons0_t* lincons);
+bool ap_ppl_grid_sat_lincons(ap_manager_t* man, struct ppl_grid* a, ap_lincons0_t* lincons);
   /* Satisfiability of a linear constraint */
 
-tbool_t ap_ppl_grid_sat_interval(ap_manager_t* man, struct ppl_grid* a,
-				 ap_dim_t dim, ap_interval_t* interval);
+bool ap_ppl_grid_sat_interval(ap_manager_t* man, struct ppl_grid* a,
+			      ap_dim_t dim, ap_interval_t* interval);
   /* Inclusion of a dimension in an interval */
 
-tbool_t ap_ppl_grid_is_dimension_unconstrained(ap_manager_t* man, struct ppl_grid* po,
-					       ap_dim_t dim);
+bool ap_ppl_grid_is_dimension_unconstrained(ap_manager_t* man, struct ppl_grid* po,
+					    ap_dim_t dim);
   /* Is a dimension unconstrained ? */
 
 /* ============================================================ */

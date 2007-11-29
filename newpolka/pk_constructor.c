@@ -50,7 +50,7 @@ pk_t* pk_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOTTOM);
   pk_internal_realloc_lazy(pk,intdim+realdim);
   po->status = pk_status_minimal;
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   return po;
 }
 
@@ -139,7 +139,7 @@ pk_t* pk_top(ap_manager_t* man, size_t intdim, size_t realdim)
 
   po = poly_alloc(intdim,realdim);
   poly_set_top(pk,po);
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   assert(poly_check(pk,po));
   return po;
 }
@@ -235,7 +235,7 @@ pk_t* pk_of_box(ap_manager_t* man,
   
 
   assert(poly_check(pk,po));
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
   return po;
 }
 

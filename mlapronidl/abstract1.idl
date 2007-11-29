@@ -151,10 +151,10 @@ quote(MLMLI,"(* ============================================================ *)"
 
 quote(MLI,"\n\
 (** Emptiness test *)
-val is_bottom : 'a Manager.t -> 'a t -> Manager.tbool_t\n\
+val is_bottom : 'a Manager.t -> 'a t -> bool\n\
 \n\
 (** Universality test *)
-val is_top : 'a Manager.t -> 'a t -> Manager.tbool_t\n\
+val is_top : 'a Manager.t -> 'a t -> bool\n\
 ")
 quote(ML,"\n\
 let is_bottom man x = Abstract0.is_bottom man x.abstract0\n\
@@ -162,29 +162,29 @@ let is_top man x = Abstract0.is_top man x.abstract0\n\
 ")
 
 quote(MLI,"\n(** Inclusion test. The 2 abstract values should be compatible. *)")
-enum tbool_t ap_abstract1_is_leq(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
+boolean ap_abstract1_is_leq(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
     quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Equality test. The 2 abstract values should be compatible. *)")
-enum tbool_t ap_abstract1_is_eq(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
+boolean ap_abstract1_is_eq(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1, [ref]struct ap_abstract1_t* a2)
     quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Does the abstract value satisfy the linear constraint ? *)")
-enum tbool_t ap_abstract1_sat_lincons(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, [ref]struct ap_lincons1_t* v)
+boolean ap_abstract1_sat_lincons(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, [ref]struct ap_lincons1_t* v)
     quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Does the abstract value satisfy the tree expression constraint ? *)")
-enum tbool_t ap_abstract1_sat_tcons(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, [ref]struct ap_tcons1_t* v)
+boolean ap_abstract1_sat_tcons(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, [ref]struct ap_tcons1_t* v)
     quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Does the abstract value satisfy the constraint [dim in interval] ? *)")
-enum tbool_t ap_abstract1_sat_interval(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
-				    ap_var_t v1,
-				    [ref]struct ap_interval_t* v2)
+boolean ap_abstract1_sat_interval(ap_manager_ptr man, [ref]struct ap_abstract1_t* a,
+				  ap_var_t v1,
+				  [ref]struct ap_interval_t* v2)
     quote(dealloc,"I0_CHECK_EXC(man)");
 
 quote(MLI,"\n(** Is the variable unconstrained in the abstract value ? If yes, this means that the existential quantification of the dimension does not change the value. *)")
-enum tbool_t ap_abstract1_is_variable_unconstrained(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, ap_var_t v)
+boolean ap_abstract1_is_variable_unconstrained(ap_manager_ptr man, [ref]struct ap_abstract1_t* a, ap_var_t v)
     quote(dealloc,"I0_CHECK_EXC(man)");
 
 
@@ -730,9 +730,9 @@ void ap_abstract1_unify_with(ap_manager_ptr man, [ref]struct ap_abstract1_t* a1,
 quote(ML,"\n\
 let print fmt a =\n\
 let man = manager a in\n\
-if is_bottom man a = Manager.True then\n\
+if is_bottom man a then\n\
   Format.pp_print_string fmt \"bottom\"\n\
-else if is_top man a = Manager.True then\n\
+else if is_top man a then\n\
   Format.pp_print_string fmt \"top\"\n\
 else begin\n\
   let tab = to_lincons_array man a in\n\

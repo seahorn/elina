@@ -25,20 +25,20 @@
 /* I. Constructors */
 /* ********************************************************************** */
 
-tbool_t ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
+bool ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
 			     ap_scalar_discr_t discr, 
 			     bool quasilinearize)
 {
-  tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
-  tbool_t (*sat_lincons)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_LINCONS];
+  bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+  bool (*sat_lincons)(ap_manager_t*,...) = man->funptr[AP_FUNID_SAT_LINCONS];
   bool exact;
   ap_lincons0_t lincons0;
-  tbool_t res;
+  bool res;
   ap_abstract0_t a0;
 
-  if (is_bottom(man,abs)==tbool_true){
-  man->result.flag_exact = man->result.flag_best = tbool_true;
-    return tbool_true;
+  if (is_bottom(man,abs)){
+  man->result.flag_exact = man->result.flag_best = true;
+    return true;
   }
 
   a0.value = abs;
@@ -47,7 +47,7 @@ tbool_t ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
   res = sat_lincons(man,abs,&lincons0);
   ap_lincons0_clear(&lincons0);
   if (!exact){
-    man->result.flag_exact = man->result.flag_best = tbool_top;
+    man->result.flag_exact = man->result.flag_best = false;
   }
   return res;
 }
@@ -59,14 +59,14 @@ tbool_t ap_generic_sat_tcons(ap_manager_t* man, void* abs, ap_tcons0_t* cons,
 ap_interval_t* ap_generic_bound_texpr(ap_manager_t* man, void* abs, ap_texpr0_t* expr,
 				      ap_scalar_discr_t discr, bool quasilinearize)
 {
-  tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+  bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
   ap_interval_t* (*bound_linexpr)(ap_manager_t*,...) = man->funptr[AP_FUNID_BOUND_LINEXPR];
   bool exact;
   ap_linexpr0_t* linexpr0;
   ap_interval_t* res;
   ap_abstract0_t a0;
 
-  if (is_bottom(man,abs)==tbool_true){
+  if (is_bottom(man,abs)){
     res = ap_interval_alloc();
     ap_interval_set_bottom(res);
     return res;
@@ -78,7 +78,7 @@ ap_interval_t* ap_generic_bound_texpr(ap_manager_t* man, void* abs, ap_texpr0_t*
   res = bound_linexpr(man,abs,linexpr0);
   ap_linexpr0_free(linexpr0);
   if (!exact){
-    man->result.flag_exact = man->result.flag_best = tbool_top;
+    man->result.flag_exact = man->result.flag_best = false;
   }
   return res;
 }
@@ -118,7 +118,7 @@ void* ap_generic_meetjoin_array(bool meet,
   void* (*meetjoin)(ap_manager_t*,...) = man->funptr[meet ? AP_FUNID_MEET : AP_FUNID_JOIN];
   size_t i;
   void* res;
-  tbool_t exact,best;
+  bool exact,best;
   if (size==1){
     return copy(man,tab[0]);
   }
@@ -128,8 +128,8 @@ void* ap_generic_meetjoin_array(bool meet,
     best =  man->result.flag_best;
     for (i=2; i<size; i++){
       res = meetjoin(man,true,res,tab[i]);
-      exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-      best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+      exact = exact && man->result.flag_exact;
+      best =  best && man->result.flag_best;
     }
     man->result.flag_exact = exact;
     man->result.flag_best = best;
@@ -156,11 +156,11 @@ ap_generic_meet_quasilinearize_lincons_array(ap_manager_t* man,
   ap_lincons0_array_t array2;
   void* res;
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
-  tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+  bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
 
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
 
-  if (is_bottom(man,abs)==tbool_true || array->size==0){
+  if (is_bottom(man,abs) || array->size==0){
     res = destructive ? abs : copy(abs);
   }
   else {
@@ -168,7 +168,7 @@ ap_generic_meet_quasilinearize_lincons_array(ap_manager_t* man,
 					      discr,linearize,true);
     res = meet_lincons_array(man,destructive,abs,&array2);
     if (!exact){
-      man->result.flag_exact = man->result.flag_best = tbool_top;
+      man->result.flag_exact = man->result.flag_best = false;
     }
     if (array2.p!=array->p){
       ap_lincons0_array_clear(&array2);
@@ -192,12 +192,12 @@ ap_generic_meet_intlinearize_tcons_array(ap_manager_t* man,
   ap_lincons0_array_t array2;
   void* res;
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
-  tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+  bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
   ap_abstract0_t a0;
 
-  man->result.flag_exact = man->result.flag_best = tbool_true;
+  man->result.flag_exact = man->result.flag_best = true;
 
-  if (is_bottom(man,abs)==tbool_true || array->size==0){
+  if (is_bottom(man,abs) || array->size==0){
     res = destructive ? abs : copy(man,abs);
   }
   else {
@@ -206,7 +206,7 @@ ap_generic_meet_intlinearize_tcons_array(ap_manager_t* man,
     array2 = ap_intlinearize_tcons0_array(man,&a0,array,&exact,discr,linearize,true,true,2,false);
     res = meet_lincons_array(man,destructive,abs,&array2);
     if (!exact){
-      man->result.flag_exact = man->result.flag_best = tbool_top;
+      man->result.flag_exact = man->result.flag_best = false;
     }
     ap_lincons0_array_clear(&array2);
   }
@@ -246,7 +246,7 @@ void* ap_generic_asssub_linexpr_array(bool assign,
 				      bool destructive, void* abs, ap_dim_t* tdim, ap_linexpr0_t** texpr, size_t size,
 				      void* dest)
 {
-  tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+  bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
   void* (*add_dimensions)(ap_manager_t*,...) = man->funptr[AP_FUNID_ADD_DIMENSIONS];
   void* (*permute_dimensions)(ap_manager_t*,...) = man->funptr[AP_FUNID_PERMUTE_DIMENSIONS];
@@ -261,10 +261,10 @@ void* ap_generic_asssub_linexpr_array(bool assign,
   ap_dimperm_t permutation;
   ap_lincons0_array_t array;
   void* abs2;
-  tbool_t exact,best;
+  bool exact,best;
 
   if (is_bottom(man,abs)){
-    man->result.flag_exact = man->result.flag_best = tbool_true;
+    man->result.flag_exact = man->result.flag_best = true;
     return destructive ? abs : copy(man,abs);
   }
   /* 1. Compute the number of integer and real dimensions assigned */
@@ -328,42 +328,42 @@ void* ap_generic_asssub_linexpr_array(bool assign,
   /* 6. Permute unprimed and primed dimensions if !assign */
   if (!assign){
     abs2 = permute_dimensions(man,true,abs2,&permutation);
-    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+    exact = exact && man->result.flag_exact;
+    best =  best && man->result.flag_best;
   }
   /* 7. If dest!=NULL, perform intersection */
   if (dest!=NULL){
     void* dest2 = add_dimensions(man,false,dest,&dimchange,false);
-    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+    exact = exact && man->result.flag_exact;
+    best =  best && man->result.flag_best;
 
     if (assign){
       dest2 = permute_dimensions(man,true,dest2,&permutation);
-      exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-      best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+      exact = exact && man->result.flag_exact;
+      best =  best && man->result.flag_best;
     }
     abs2 = meet(man,true,abs2,dest2);
-    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+    exact = exact && man->result.flag_exact;
+    best =  best && man->result.flag_best;
 
     ap_free(man,dest2);
   }
   /* 8. Perform meet of abs2 with constraints */
   abs2 = meet_lincons_array(man,true,abs2,&array);
-  exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-  best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+  exact = exact && man->result.flag_exact;
+  best =  best && man->result.flag_best;
 
   /* 9. Permute unprimed and primed dimensions if assign */
   if (assign){
     abs2 = permute_dimensions(man,true,abs2,&permutation);
-    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+    exact = exact && man->result.flag_exact;
+    best =  best && man->result.flag_best;
   }
   /* 10. Remove extra dimensions */
   ap_dimchange_add_invert(&dimchange);
   abs2 = remove_dimensions(man,true,abs2,&dimchange);
-  exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-  best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+  exact = exact && man->result.flag_exact;
+  best =  best && man->result.flag_best;
 
   /* 11. Free allocated objects */
   ap_dimperm_clear(&permutation);
@@ -380,7 +380,7 @@ void* ap_generic_asssub_texpr_array(bool assign,
 				    bool destructive, void* abs, ap_dim_t* tdim, ap_texpr0_t** texpr, size_t size,
 				    void* dest)
 {
-  tbool_t (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
+  bool (*is_bottom)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_BOTTOM];
   void* (*copy)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
   void* (*add_dimensions)(ap_manager_t*,...) = man->funptr[AP_FUNID_ADD_DIMENSIONS];
   void* (*permute_dimensions)(ap_manager_t*,...) = man->funptr[AP_FUNID_PERMUTE_DIMENSIONS];
@@ -395,10 +395,10 @@ void* ap_generic_asssub_texpr_array(bool assign,
   ap_dimperm_t permutation;
   ap_tcons0_array_t array;
   void* abs2;
-  tbool_t exact,best;
+  bool exact,best;
 
-  if (is_bottom(man,abs)==tbool_true){
-    man->result.flag_exact = man->result.flag_best = tbool_true;
+  if (is_bottom(man,abs)){
+    man->result.flag_exact = man->result.flag_best = true;
     return destructive ? abs : copy(man,abs);
   }
   /* 1. Compute the number of integer and real dimensions assigned */
@@ -463,42 +463,42 @@ void* ap_generic_asssub_texpr_array(bool assign,
   /* 6. Permute unprimed and primed dimensions if !assign */
   if (!assign){
     abs2 = permute_dimensions(man,true,abs2,&permutation);
-    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+    exact = exact && man->result.flag_exact;
+    best =  best && man->result.flag_best;
   }
   /* 7. If dest!=NULL, perform intersection */
   if (dest!=NULL){
     void* dest2 = add_dimensions(man,false,dest,&dimchange,false);
-    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+    exact = exact && man->result.flag_exact;
+    best =  best && man->result.flag_best;
 
     if (assign){
       dest2 = permute_dimensions(man,true,dest2,&permutation);
-      exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-      best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+      exact = exact && man->result.flag_exact;
+      best =  best && man->result.flag_best;
     }
     abs2 = meet(man,true,abs2,dest2);
-    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+    exact = exact && man->result.flag_exact;
+    best =  best && man->result.flag_best;
 
     ap_free(man,dest2);
   }
   /* 8. Perform meet of abs2 with constraints */
   abs2 = meet_tcons_array(man,true,abs2,&array);
-  exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-  best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+  exact = exact && man->result.flag_exact;
+  best =  best && man->result.flag_best;
 
   /* 9. Permute unprimed and primed dimensions if assign */
   if (assign){
     abs2 = permute_dimensions(man,true,abs2,&permutation);
-    exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-    best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+    exact = exact && man->result.flag_exact;
+    best =  best && man->result.flag_best;
   }
   /* 10. Remove extra dimensions */
   ap_dimchange_add_invert(&dimchange);
   abs2 = remove_dimensions(man,true,abs2,&dimchange);
-  exact = (exact==tbool_true ? man->result.flag_exact : tbool_top);
-  best =  (best==tbool_true ? man->result.flag_best : tbool_top);
+  exact = exact && man->result.flag_exact;
+  best =  best && man->result.flag_best;
 
   /* 11. Free allocated objects */
   ap_dimperm_clear(&permutation);

@@ -188,14 +188,14 @@ inline ap_scalar_discr_t& manager::get_scalar_discr()
   return m->option.scalar_discr; 
 }
 
-inline tbool manager::get_flag_exact()
+inline bool manager::get_flag_exact()
 {
-  return tbool(ap_manager_get_flag_exact(m)); 
+  return ap_manager_get_flag_exact(m);
 }
 
-inline tbool manager::get_flag_best()
+inline bool manager::get_flag_best()
 {
-  return tbool(ap_manager_get_flag_best(m)); 
+  return ap_manager_get_flag_best(m);
 }
 
 

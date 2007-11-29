@@ -23,7 +23,7 @@ pk_t* pk_closure(ap_manager_t* man, bool destructive, pk_t* pa)
   pk_t* po;
 
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_CLOSURE);
-  man->result.flag_best = man->result.flag_exact = tbool_true;
+  man->result.flag_best = man->result.flag_exact = true;
   if (!pk->strict){
     return destructive ? pa : pk_copy(man,pa);
   }
@@ -38,7 +38,7 @@ pk_t* pk_closure(ap_manager_t* man, bool destructive, pk_t* pa)
   po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
   if (pk->exn){
     poly_set_top(pk,po);
-    man->result.flag_best = man->result.flag_exact = tbool_false;
+    man->result.flag_best = man->result.flag_exact = false;
     return po;
   }
   if (!destructive){

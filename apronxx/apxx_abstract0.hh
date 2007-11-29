@@ -38,8 +38,9 @@ namespace apron {
  * - returned abstract elements and intervals are over-approximations of the actual result on sets,
  * - returned constraint conjunction may satisfy more points than the original abstract element,
  * - returned generators may span more points than the original abstract element,
- * - predicates return \c tbool_true if the predicate is definitively true, \c tbool_false if it is
- * definitely false, and \c tbool_top if, due to abstraction, the domain cannot conclude.
+ * - predicates return \c true if the predicate is definitively true,
+ * and \c false if either the predicate is false (flag_exact is then true), or 
+ * due to abstraction, the domain cannot conclude (flag_exact is then false).
  *
  * An abstract0 is always created with a manager that indicates the underlying library. This
  * defines its internal representation and algorithms, which in turns defines the expressiveness and
@@ -352,66 +353,66 @@ public:
   //@{
   
   //! \brief Whether *this represents the empty set.
-  tbool is_bottom(manager& m) const;
+  bool is_bottom(manager& m) const;
 
   //! Whether *this represents the full space.
-  tbool is_top(manager& m) const;
+  bool is_top(manager& m) const;
 
   //! Whether *this and x represent the same set.
-  tbool is_eq(manager& m, const abstract0& x) const;
+  bool is_eq(manager& m, const abstract0& x) const;
 
   //! Whether *this is included in x (set-wise).
-  tbool is_leq(manager& m, const abstract0& x) const;
+  bool is_leq(manager& m, const abstract0& x) const;
 
   //! Whether all points in *this satisfy a linear constraint.
-  tbool sat(manager& m, const lincons0& l) const;
+  bool sat(manager& m, const lincons0& l) const;
 
   //! Whether all points in *this satisfy an arbitrary constraint.
-  tbool sat(manager& m, const tcons0& l) const;
+  bool sat(manager& m, const tcons0& l) const;
 
   /*! \brief Whether the dimension dim of all points in *this is included
    * in the given interval.
    */
-  tbool sat(manager& m, ap_dim_t dim, const interval& i) const;
+  bool sat(manager& m, ap_dim_t dim, const interval& i) const;
 
   //! \brief Whether the points in *this are unbounded in the given dimension.  
-  tbool is_dimension_unconstrained(manager& m, ap_dim_t dim) const;
+  bool is_dimension_unconstrained(manager& m, ap_dim_t dim) const;
 
   /*! \brief Whether x and y represent the same set.
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator== (const abstract0& x, const abstract0& y);
+  friend bool operator== (const abstract0& x, const abstract0& y);
   
   /*! \brief Whether x and y represent different sets.
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator!= (const abstract0& x, const abstract0& y);
+  friend bool operator!= (const abstract0& x, const abstract0& y);
   
   /*! \brief Whether x is included within y (set-wise).
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator<= (const abstract0& x, const abstract0& y);
+  friend bool operator<= (const abstract0& x, const abstract0& y);
   
   /*! \brief Whether x contains y (set-wise).
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator>= (const abstract0& x, const abstract0& y);
+  friend bool operator>= (const abstract0& x, const abstract0& y);
 
   /*! \brief Whether x strictly contains y (set-wise).
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator> (const abstract0& x, const abstract0& y);
+  friend bool operator> (const abstract0& x, const abstract0& y);
   
   /*! \brief Whether x is strictly included within y (set-wise).
    *
    * The manager for the left argument is used implicitly.
    */
-  friend tbool operator< (const abstract0& x, const abstract0& y);
+  friend bool operator< (const abstract0& x, const abstract0& y);
 
   
 

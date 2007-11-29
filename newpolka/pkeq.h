@@ -166,29 +166,24 @@ ap_dimension_t pkeq_dimension(ap_manager_t* man, pkeq_t* a);
 /* II.3 Tests */
 /* ============================================================ */
 
-/* If any of the following functions returns tbool_top, this means that
-   an exception has occured, or that the exact computation was
-   considered too expensive to be performed (according to the options).
-   The flag exact and best should be cleared in such a case. */
+bool pkeq_is_bottom(ap_manager_t* man, pkeq_t* a);
+bool pkeq_is_top(ap_manager_t* man, pkeq_t* a);
 
-tbool_t pkeq_is_bottom(ap_manager_t* man, pkeq_t* a);
-tbool_t pkeq_is_top(ap_manager_t* man, pkeq_t* a);
-
-tbool_t pkeq_is_leq(ap_manager_t* man, pkeq_t* a1, pkeq_t* a2);
+bool pkeq_is_leq(ap_manager_t* man, pkeq_t* a1, pkeq_t* a2);
   /* inclusion check */
 
-tbool_t pkeq_is_eq(ap_manager_t* man, pkeq_t* a1, pkeq_t* a2);
+bool pkeq_is_eq(ap_manager_t* man, pkeq_t* a1, pkeq_t* a2);
   /* equality check */
 
-tbool_t pkeq_sat_lincons(ap_manager_t* man, pkeq_t* a, ap_lincons0_t* lincons);
+bool pkeq_sat_lincons(ap_manager_t* man, pkeq_t* a, ap_lincons0_t* lincons);
   /* does the abstract value satisfy the linear constraint ? */
 
-tbool_t pkeq_sat_interval(ap_manager_t* man, pkeq_t* a,
-			  ap_dim_t dim, ap_interval_t* interval);
+bool pkeq_sat_interval(ap_manager_t* man, pkeq_t* a,
+		       ap_dim_t dim, ap_interval_t* interval);
   /* is the dimension included in the interval in the abstract value ? */
 
-tbool_t pkeq_is_dimension_unconstrained(ap_manager_t* man, pkeq_t* po,
-					ap_dim_t dim);
+bool pkeq_is_dimension_unconstrained(ap_manager_t* man, pkeq_t* po,
+				     ap_dim_t dim);
   /* is the dimension unconstrained ? */
 
 /* ============================================================ */
