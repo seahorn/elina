@@ -281,7 +281,7 @@ static bool test_fpu(void)
   return true;
 }
 
-#if defined(__linux)
+#if defined(__linux) || defined (__APPLE__)
 #include <fenv.h>
 bool ap_fpu_init(void) 
 { 
