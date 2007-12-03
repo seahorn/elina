@@ -194,7 +194,11 @@ octtest%: liboct%_debug.a oct_test%.o
 
 %D.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -c -o $@ $<
+%D_debug.o: %.c $(CCINC) $(DEPS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -c -o $@ $<
 %Dl.o: %.c $(CCINC) $(DEPS)
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGDOUBLE -c -o $@ $<
+%Dl_debug.o: %.c $(CCINC) $(DEPS)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGDOUBLE -c -o $@ $<
 
 # TODO: mpfr ?
