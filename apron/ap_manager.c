@@ -281,7 +281,14 @@ static bool test_fpu(void)
   return true;
 }
 
-#if defined(__linux) || defined (__APPLE__)
+#if defined(__ppc__)
+bool ap_fpu_init(void) 
+{ 
+  __asm volatile ("mtfsfi 7,2");
+  return test_fpu();
+}
+
+#elif defined(__linux) || defined (__APPLE__)
 #include <fenv.h>
 bool ap_fpu_init(void) 
 { 
@@ -295,13 +302,6 @@ bool ap_fpu_init(void)
 bool ap_fpu_init(void)
 { 
   fpsetround(FP_RP); 
-  return test_fpu();
-}
-
-#elif defined(__ppc__)
-bool ap_fpu_init(void) 
-{ 
-  __asm volatile ("mtfsfi 7,2");
   return test_fpu();
 }
 
