@@ -850,7 +850,7 @@ int ap_linexpr0_compare(ap_linexpr0_t* expr1,
     }
     else { /* if (dim2<dim1) */
       i2++;
-      res = ap_coeff_cmp(coeff2,coeffzero);
+      res = ap_coeff_cmp(coeffzero,coeff2);
     }
   }
   if (res==0){
