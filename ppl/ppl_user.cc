@@ -483,7 +483,7 @@ bool ap_ppl_of_lincons(itv_internal_t* intern,
 
   itv_lincons_init(&lincons);
   bool exact = itv_lincons_set_ap_lincons0(intern,&lincons,c);
-  exact = exact && ap_ppl_of_itv_lincons(r,den,&lincons);
+  exact = ap_ppl_of_itv_lincons(r,den,&lincons) && exact;
   itv_lincons_clear(&lincons);
   return exact;
 }
@@ -514,7 +514,7 @@ bool ap_ppl_of_lincons_array(itv_internal_t* intern,
   mpz_class den;
   itv_lincons_array_init(&array,a->size);
   bool exact = itv_lincons_array_set_ap_lincons0_array(intern,&array,a);
-  exact = exact && ap_ppl_of_itv_lincons_array(r,den,&array,allow_strict);
+  exact = ap_ppl_of_itv_lincons_array(r,den,&array,allow_strict) && exact;
   itv_lincons_array_clear(&array);
   return exact;
 }
@@ -529,7 +529,7 @@ bool ap_ppl_of_itv_lincons_array(Congruence_System& r, mpz_class& den, itv_linco
   r.clear();
   for (i=0;i<a->size;i++) {
     try {
-      exact = exact && ap_ppl_of_itv_lincons(c,den,&a->p[i]);
+      exact = ap_ppl_of_itv_lincons(c,den,&a->p[i]) && exact;
       r.insert(c);
     }
     catch (cannot_convert w) { exact = false; }
@@ -545,7 +545,7 @@ bool ap_ppl_of_lincons_array(itv_internal_t* intern,
   mpz_class den;
   itv_lincons_array_init(&array,a->size);
   bool exact = itv_lincons_array_set_ap_lincons0_array(intern,&array,a);
-  exact = exact && ap_ppl_of_itv_lincons_array(r,den,&array);
+  exact = ap_ppl_of_itv_lincons_array(r,den,&array) && exact;
   itv_lincons_array_clear(&array);
   return exact;
 }

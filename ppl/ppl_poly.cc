@@ -452,7 +452,7 @@ bool ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a,
       case AP_CONS_SUPEQ:
       case AP_CONS_SUP:
 	itv_lincons_init(&lincons);
-	exact = exact && itv_lincons_set_ap_lincons0(intern->itv,&lincons,lincons0);
+	exact = itv_lincons_set_ap_lincons0(intern->itv,&lincons,lincons0) && exact;
 	if (itv_sat_lincons_is_false(intern->itv,&lincons)){
 	  itv_lincons_clear(&lincons);
 	  if (!exact)
@@ -461,7 +461,7 @@ bool ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a,
 	}
 	if (!itv_lincons_is_quasilinear(&lincons)){
 	  itv_t* env = ap_ppl_poly_to_itv_array(a);
-	  exact = exact && itv_quasilinearize_lincons(intern->itv,&lincons,env,false);
+	  exact = itv_quasilinearize_lincons(intern->itv,&lincons,env,false) && exact;
 	  itv_array_free(env,a->p->space_dimension());
 	}
 	if (itv_sat_lincons_is_false(intern->itv,&lincons)){
@@ -470,7 +470,7 @@ bool ap_ppl_poly_sat_lincons(ap_manager_t* man, PPL_Poly* a,
 	  return false;
 	}
 	assert (!bound_infty(lincons.linexpr.cst->inf));
-	exact = exact && ap_ppl_of_itv_linexpr(l,den,&lincons.linexpr,-1);
+	exact = ap_ppl_of_itv_linexpr(l,den,&lincons.linexpr,-1) && exact;
 	itv_lincons_clear(&lincons);
 	switch (lincons.constyp){
 	case AP_CONS_SUPEQ:
@@ -567,10 +567,10 @@ ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
       bool exact = true;
 
       itv_linexpr_init(&linexpr,0);
-      exact = exact && itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,expr);
+      exact = itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,expr) && exact;
       if (!itv_linexpr_is_quasilinear(&linexpr)){
 	itv_t* env = ap_ppl_poly_to_itv_array(a);
-	exact = exact && itv_quasilinearize_linexpr(intern->itv,&linexpr,env,false);
+	exact = itv_quasilinearize_linexpr(intern->itv,&linexpr,env,false) && exact;
 	itv_array_free(env,a->p->space_dimension());
       }
       if (linexpr.size==0){
@@ -582,7 +582,7 @@ ap_interval_t* ap_ppl_poly_bound_linexpr(ap_manager_t* man,
 	  ap_scalar_set_infty(r->sup,1);
 	}
 	else {
-	  exact = exact && ap_ppl_of_itv_linexpr(l,den,&linexpr,+1);
+	  exact = ap_ppl_of_itv_linexpr(l,den,&linexpr,+1) && exact;
 	  if (a->p->maximize(l,sup_n,sup_d,ok)) {
 	    sup_d *= den;
 	    ap_ppl_mpz2_to_scalar(r->sup,sup_n,sup_d);
@@ -777,15 +777,15 @@ PPL_Poly* ap_ppl_poly_meet_lincons_array(ap_manager_t* man,
       return r;
     }
     itv_lincons_array_init(&array2,array->size);
-    exact = exact && itv_lincons_array_set_ap_lincons0_array(intern->itv, &array2, array);
+    exact = itv_lincons_array_set_ap_lincons0_array(intern->itv, &array2, array) && exact;
     if (!itv_lincons_array_is_quasilinear(&array2)){
       itv_t* env = ap_ppl_poly_to_itv_array(a);
-      exact = exact && itv_quasilinearize_lincons_array(intern->itv,&array2,env,true);
+      exact = itv_quasilinearize_lincons_array(intern->itv,&array2,env,true) && exact;
       itv_array_free(env,a->p->space_dimension());
     }
     itv_linearize_lincons_array(intern->itv,&array2,true);
     Constraint_System c;
-    exact = exact && ap_ppl_of_itv_lincons_array(c,den,&array2,intern->strict);
+    exact = ap_ppl_of_itv_lincons_array(c,den,&array2,intern->strict) && exact;
     if (!exact)
       man->result.flag_exact = man->result.flag_best = false;
     itv_lincons_array_clear(&array2);

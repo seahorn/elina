@@ -544,7 +544,7 @@ ap_interval_t* ap_ppl_grid_bound_linexpr(ap_manager_t* man,
       bool exact = true;
 
       itv_linexpr_init(&linexpr,0);
-      exact = exact && itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,expr);
+      exact = itv_linexpr_set_ap_linexpr0(intern->itv,&linexpr,expr) && exact;
       if (!itv_linexpr_is_quasilinear(&linexpr)){
 	itv_t* env = ap_ppl_grid_to_itv_array(a);
 	exact = itv_quasilinearize_linexpr(intern->itv,&linexpr,env,false);
