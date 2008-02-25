@@ -568,6 +568,7 @@ common interface to their default value (see documentation).
 
   funptr[fun_minimize] = &poly_minimize;
   funptr[fun_canonicalize] = &poly_canonicalize;
+  funptr[fun_hash] = &poly_hash;
   funptr[fun_approximate] = &poly_approximate;
   funptr[fun_fprint] = &poly_fprint;
   funptr[fun_fprintdiff] = &poly_fprintdiff;
@@ -668,6 +669,7 @@ typedef enum ap_funid_t @{
   AP_FUNID_ASIZE, /* For avoiding name conflict with AP_FUNID_SIZE */
   AP_FUNID_MINIMIZE,
   AP_FUNID_CANONICALIZE,
+  AP_FUNID_HASH,
   AP_FUNID_APPROXIMATE,
   AP_FUNID_FPRINT,
   AP_FUNID_FPRINTDIFF,
@@ -1461,9 +1463,9 @@ A variable is not necessarily a name, it can be a more complex
 structured datatype, depending on the application. That is the
 motivation to make it a parameter of the interface.
 
-The abstract type @code{ap_var_t} is equipped with a total
-ordering function, a copy function, and a free function.  The
-parametrization of the interface is performed via a global
+The abstract type @code{ap_var_t} is equipped with a total ordering
+function, a hashing function, a copy function, and a free function.
+The parametrization of the interface is performed via a global
 variable pointing to a @code{ap_var_operations_t} structure,
 containing the above-mentione doperations on @code{ap_var_t} objects.
 This means that this type should be fixed once, and that in a
@@ -1485,6 +1487,7 @@ Datatype for ``variables''. It is assumed to be of size
 @example
 typedef struct ap_var_operations_t @{
   int (*compare)(ap_var_t v1, ap_var_t v2); /* Total ordering function */
+  int (*hash)(ap_var_t v);                  /* Hash function */
   ap_var_t (*copy)(ap_var_t var);           /* Duplication function */
   void (*free)(ap_var_t var);               /* Deallocation function */
   char* (*to_string)(ap_var_t var); /* Conversion to a dynamically allocated string,
@@ -1607,6 +1610,9 @@ if @var{env1} is a superset of @var{env2};
 otherwise: the least common environment exists and is a strict
 superset of both environments.
 @end table
+@end deftypefun
+@deftypefun int ap_environment_hash (ap_environment_t* @var{env})
+Return an hash code for an environment.
 @end deftypefun
 
 @deftypefun ap_dimchange_t* ap_environment_dimchange (ap_environment_t* @var{env1}, ap_environment_t* @var{env})
@@ -2743,6 +2749,13 @@ a later recomputation of internal information.
 
 @deftypefun void ap_abstract1_canonicalize (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
 Put @var{a} in canonical form. (not yet clear definition).
+@end deftypefun
+
+@deftypefun int ap_abstract1_hash (ap_manager_t* @var{man}, ap_abstract1_t* @var{a})
+Return an hash value for @var{a}.  Two abstract values in canonical
+from (according to @code{ap_abstract1_canonicalize}) and considered as
+equal by the function @code{ap_abstract1_is_eq} are given the
+same hash value.
 @end deftypefun
 
 @deftypefun void ap_abstract1_approximate (ap_manager_t* @var{man}, ap_abstract1_t* @var{a}, int @var{algorithm})
@@ -3969,8 +3982,14 @@ a later recomputation of internal information.
 Put @var{a} in canonical form. (not yet clear definition)
 @end deftypefun
 
+@deftypefun int ap_abstract0_hash (ap_manager_t* @var{man}, ap_abstract0_t* @var{a})
+Return an hash value for @var{a}.  Two abstract values in canonical
+from (according to @code{ap_abstract0_canonicalize}) and considered as
+equal by the function @code{ap_abstract0_is_eq} should be given the
+same hash value (this implies more or less a canonical form).
+@end deftypefun
 
-@deftypefun void ap_abstract0_approximate (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, int @var{algorithm})
+@@deftypefun void ap_abstract0_approximate (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, int @var{algorithm})
 Perform some transformation on @var{a}, guided by the field
 algorithm.
 

@@ -121,6 +121,37 @@ struct custom_operations camlidl_apron_custom_texpr0_ptr = {
 };
 
 /* ********************************************************************** */
+/* manager */
+/* ********************************************************************** */
+
+static
+void camlidl_apron_manager_ptr_finalize(value v)
+{
+  ap_manager_ptr p = *(ap_manager_ptr *) Data_custom_val(v);
+  ap_manager_free(p);
+}
+
+static
+int camlidl_apron_manager_ptr_compare(value v1, value v2)
+{
+  CAMLparam2(v1,v2);
+  int res;
+  ap_manager_ptr p1 = *(ap_manager_ptr *) Data_custom_val(v1);
+  ap_manager_ptr p2 = *(ap_manager_ptr *) Data_custom_val(v2);
+  res = (p1==p2 || p1->library==p2->library) ? 0 : ((p1<p2) ? (-1) : 1);
+  CAMLreturn(res);
+}
+
+struct custom_operations camlidl_apron_custom_manager_ptr = {
+  "apman",
+  camlidl_apron_manager_ptr_finalize,
+  camlidl_apron_manager_ptr_compare,
+  custom_hash_default,
+  custom_serialize_default,
+  custom_deserialize_default
+};
+
+/* ********************************************************************** */
 /* abstract0 */
 /* ********************************************************************** */
 
@@ -133,7 +164,40 @@ void camlidl_apron_abstract0_ptr_finalize(value v)
   ap_abstract0_t* a = *p;
   ap_abstract0_free(a->man,a);
 }
-
+static
+long camlidl_apron_abstract0_ptr_hash(value v)
+{
+  ap_abstract0_ptr* p = (ap_abstract0_ptr *) Data_custom_val(v);
+  ap_abstract0_t* a = *p;
+  return ap_abstract0_hash(a->man,a);
+}
+static
+int camlidl_apron_abstract0_ptr_compare(value v1, value v2)
+{
+  ap_abstract0_ptr* p1 = (ap_abstract0_ptr *) Data_custom_val(v1);
+  ap_abstract0_ptr* p2 = (ap_abstract0_ptr *) Data_custom_val(v2);
+  ap_abstract0_t* a1 = *p1;
+  ap_abstract0_t* a2 = *p2;
+  ap_dimension_t dim1,dim2;
+  int res;
+  if (v1==v2 || p1==p2 || a1==a2) 
+    res=0;
+  else {
+    dim1 = ap_abstract0_dimension(a1->man,a1);
+    dim2 = ap_abstract0_dimension(a2->man,a2);
+    res = dim1.intdim-dim2.intdim;
+    if (!res){
+      res = dim1.realdim-dim2.realdim;
+      if (!res){
+	if (ap_abstract0_is_eq(a1->man,a1,a2))
+	  res=0;
+	else
+	  res = a1 > a2 ? 1 : (-1);
+      }
+    }
+  }
+  return res;
+}
 
 /* global manager used for deserialization */
 static ap_manager_ptr deserialize_man = NULL;
@@ -180,8 +244,8 @@ unsigned long camlidl_apron_abstract0_deserialize(void * dst)
 struct custom_operations camlidl_apron_custom_abstract0_ptr = {
   "apa0",
   camlidl_apron_abstract0_ptr_finalize,
-  custom_compare_default,
-  custom_hash_default,
+  camlidl_apron_abstract0_ptr_compare,
+  camlidl_apron_abstract0_ptr_hash,
   camlidl_apron_abstract0_serialize,
   camlidl_apron_abstract0_deserialize
 };
@@ -193,6 +257,7 @@ static
 struct ap_var_operations_t
 camlidl_apron_var_ptr_operations = {
   ap_var_compare,
+  ap_var_hash,
   ap_var_copy,
   ap_var_free,
   ap_var_to_string
@@ -256,17 +321,8 @@ static
 long camlidl_apron_environment_ptr_hash(value v)
 {
   CAMLparam1(v);
-  ap_environment_t* env = *(ap_environment_ptr *) Data_custom_val(v);
-  int res;
-  size_t size,i,dec;
-
-  res = 1024*(2*env->intdim+3*env->realdim);
-  size = env->intdim+env->realdim;
-  dec = 0;
-  for (i=0; i<size; i += (size+2)/3){
-    res += ap_var_hash(env->var_of_dim[i]) << dec;
-    dec++;
-  }
+  ap_environment_t* e = *(ap_environment_ptr *) Data_custom_val(v);
+  int res = ap_environment_hash(e);
   CAMLreturn(res);
 }
 static

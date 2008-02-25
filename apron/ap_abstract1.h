@@ -63,7 +63,13 @@ void ap_abstract1_minimize(ap_manager_t* man, ap_abstract1_t* a);
 
 void ap_abstract1_canonicalize(ap_manager_t* man, ap_abstract1_t* a);
   /* Put the abstract value in canonical form. (not yet clear definition) */
-
+  int ap_abstract1_hash(ap_manager_t* man, ap_abstract1_t* a);
+  /* Return an hash value for the abstract value.  Two abstract values in
+     canonical from (according to ap_abstract1_canonicalize) and
+     considered as equal by the function ap_abstract0_is_eq are given the
+     same hash value.
+  */
+  /* Return an hash code (assume canonical form) */ 
 void ap_abstract1_approximate(ap_manager_t* man, ap_abstract1_t* a, int algorithm);
   /* Perform some transformation on the abstract value, guided by the
      field algorithm.

@@ -239,6 +239,15 @@ void ap_ppl_grid_canonicalize(ap_manager_t* man, PPL_Grid* a)
   }
   CATCH_WITH_VOID(AP_FUNID_CANONICALIZE);
 }
+extern "C" 
+int ap_ppl_grid_hash(ap_manager_t* man, PPL_Grid* a)
+{ 
+  man->result.flag_exact = man->result.flag_best = true;
+  try {
+    return a->p->total_memory_in_bytes(); 
+  }
+  CATCH_WITH_VAL(AP_FUNID_HASH,0);
+}
 
 extern "C" 
 void ap_ppl_grid_approximate(ap_manager_t* man, PPL_Grid* a, int algorithm)
@@ -1197,6 +1206,7 @@ extern "C" ap_manager_t* ap_ppl_grid_manager_alloc(void)
   man->funptr[AP_FUNID_ASIZE] = (void*)ap_ppl_grid_size;
   man->funptr[AP_FUNID_MINIMIZE] = (void*)ap_ppl_grid_minimize;
   man->funptr[AP_FUNID_CANONICALIZE] = (void*)ap_ppl_grid_canonicalize;
+  man->funptr[AP_FUNID_HASH] = (void*)ap_ppl_grid_hash;
   man->funptr[AP_FUNID_APPROXIMATE] = (void*)ap_ppl_grid_approximate;
   man->funptr[AP_FUNID_FPRINT] = (void*)ap_ppl_grid_fprint;
   man->funptr[AP_FUNID_FPRINTDIFF] = (void*)ap_ppl_grid_fprintdiff;

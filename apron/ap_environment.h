@@ -151,6 +151,8 @@ int ap_environment_compare(ap_environment_t* env1,
     - +1 if env1 is a superset of env2
     - +2 otherwise (the lce exists and is a strict superset of both)
   */
+int ap_environment_hash(ap_environment_t* env);
+  /* Return an hash code */
 
 /* ========================================================================= */
 /* Least common environments and conversion permutations */

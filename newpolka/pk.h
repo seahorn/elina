@@ -138,6 +138,13 @@ void pk_canonicalize(ap_manager_t* man, pk_t* a);
      the integer man->option->canonicalize.algorithm is strictly positive,
      normalize equalities and lines, and also strict constraints */
 
+int pk_hash(ap_manager_t* man, pk_t* a);
+  /* Return an hash value for the abstract value.  Two abstract values in
+     canonical from (according to @code{ap_abstract1_canonicalize}) and
+     considered as equal by the function ap_abstract0_is_eq are given the
+     same hash value (this implies more or less a canonical form).
+  */
+
 void pk_approximate(ap_manager_t* man, pk_t* a, int algorithm);
   /* Perform some transformation on the abstract value, guided by the
      field algorithm.

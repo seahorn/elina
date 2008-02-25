@@ -688,6 +688,15 @@ void ap_abstract0_canonicalize(ap_manager_t* man, ap_abstract0_t* a)
     ptr(man,a->value);
   }
 }
+int ap_abstract0_hash(ap_manager_t* man, ap_abstract0_t* a)
+{
+  if (ap_abstract0_checkman1(AP_FUNID_CANONICALIZE,man,a)){
+    int (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_HASH];
+    return ptr(man,a->value);
+  }
+  else
+    return 0;
+}
 void ap_abstract0_approximate(ap_manager_t* man, ap_abstract0_t* a, int n)
 {
   if (ap_abstract0_checkman1(AP_FUNID_APPROXIMATE,man,a)){
@@ -815,8 +824,12 @@ bool ap_abstract0_is_top(ap_manager_t* man, ap_abstract0_t* a)
 }
 bool ap_abstract0_is_leq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2)
 {
-  if (ap_abstract0_checkman2(AP_FUNID_IS_LEQ,man,a1,a2) &&
-      ap_abstract0_check_abstract2(AP_FUNID_IS_EQ,man,a1,a2)){
+  if (a1==a2){
+    return true;
+  }
+  else if (ap_abstract0_checkman2(AP_FUNID_IS_LEQ,man,a1,a2) &&
+	   ap_abstract0_check_abstract2(AP_FUNID_IS_EQ,man,a1,a2)){
+    if (a1->value==a2->value) return true;
     bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_LEQ];
     return ptr(man,a1->value,a2->value);
   }
@@ -827,8 +840,12 @@ bool ap_abstract0_is_leq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* 
 }
 bool ap_abstract0_is_eq(ap_manager_t* man, ap_abstract0_t* a1, ap_abstract0_t* a2)
 {
+  if (a1==a2){
+    return true;
+  }
   if (ap_abstract0_checkman2(AP_FUNID_IS_EQ,man,a1,a2) &&
       ap_abstract0_check_abstract2(AP_FUNID_IS_EQ,man,a1,a2)){
+    if (a1->value==a2->value) return true;
     bool (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_IS_EQ];
     return ptr(man,a1->value,a2->value);
   }

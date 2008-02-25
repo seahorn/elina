@@ -47,15 +47,31 @@ type 'a t\n\
 
 quote(MLI,"\n\n(** Create a NewPolka manager for loose convex polyhedra. *)")
 ap_manager_ptr pk_manager_alloc_loose()
-quote(call,"_res = pk_manager_alloc(false);");
+quote(call,"
+_res = pk_manager_alloc(false);
+{ ap_exc_t i;
+for (i=1; i<AP_EXC_SIZE; i++){
+ap_manager_set_abort_if_exception(_res,i,false);
+}}
+");
 
 quote(MLI,"\n\n(** Create a NewPolka manager for strict convex polyhedra. *)")
 ap_manager_ptr pk_manager_alloc_strict()
-quote(call,"_res = pk_manager_alloc(true);");
+quote(call,"_res = pk_manager_alloc(true);
+{ ap_exc_t i;
+for (i=1; i<AP_EXC_SIZE; i++){
+ap_manager_set_abort_if_exception(_res,i,false);
+}}
+");
 
 quote(MLI,"\n\n(** Create a NewPolka manager for conjunctions of linear equalities. *)")
 ap_manager_ptr pk_manager_alloc_equalities()
-quote(call,"_res = pkeq_manager_alloc();");
+quote(call,"_res = pkeq_manager_alloc();
+{ ap_exc_t i;
+for (i=1; i<AP_EXC_SIZE; i++){
+ap_manager_set_abort_if_exception(_res,i,false);
+}}
+");
 
 quote(MLI,"\n\n(** Get the internal submanager of a NewPolka manager. *)")
 internal_ptr manager_get_internal(ap_manager_ptr man)

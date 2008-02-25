@@ -346,6 +346,28 @@ void pk_canonicalize(ap_manager_t* man, pk_t* po)
     po->intdim>0 && (po->C || po->F) ? false : true;
 }
 
+int pk_hash(ap_manager_t* man, pk_t* po)
+{
+  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_HASH);
+  int res,t;
+  size_t i;
+  ap_funopt_t opt = ap_manager_get_funopt(man,AP_FUNID_CANONICALIZE);
+  poly_chernikova3(man,po,NULL);
+  
+  res = 5*po->intdim + 7*po->realdim;
+  if (po->C!=NULL){
+    res += po->C->nbrows*11 +  po->F->nbrows*13;
+    for (i=0; i<po->C->nbrows; i += (po->C->nbrows+2)/3){
+      res = res*3 + vector_hash(pk,po->C->p[i],po->C->nbcolumns);
+    }
+    for (i=0; i<po->F->nbrows; i += (po->F->nbrows+2)/3){
+      res = res*3 + vector_hash(pk,po->F->p[i],po->F->nbcolumns);
+    }
+  }
+  return res;
+}
+
+
 /* Minimize the size of the representation of the polyhedron */
 void pk_minimize(ap_manager_t* man, pk_t* po)
 {

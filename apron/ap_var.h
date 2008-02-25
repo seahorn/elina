@@ -29,6 +29,7 @@ typedef void* ap_var_t;
 
 typedef struct ap_var_operations_t {
   int (*compare)(ap_var_t v1, ap_var_t v2); /* Total ordering function */
+  int (*hash)(ap_var_t v);                  /* Hash function */
   ap_var_t (*copy)(ap_var_t var);           /* Duplication function */
   void (*free)(ap_var_t var);               /* Deallocation function */
   char* (*to_string)(ap_var_t var);         /* Conversion to a dynamically allocated string */

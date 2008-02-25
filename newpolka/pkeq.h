@@ -80,6 +80,9 @@ void pkeq_minimize(ap_manager_t* man, pkeq_t* a);
 void pkeq_canonicalize(ap_manager_t* man, pkeq_t* a);
   /* Put the abstract value in canonical form. (not yet clear definition) */
 
+void pkeq_hash(ap_manager_t* man, pkeq_t* a);
+  /* Return an hash code */
+
 void pkeq_approximate(ap_manager_t* man, pkeq_t* a, int algorithm);
   /* Perform some transformation on the abstract value, guided by the
      field algorithm.

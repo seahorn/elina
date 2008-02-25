@@ -18,6 +18,7 @@ const char* ap_name_of_funid[AP_FUNID_SIZE2] = {
   "size",
   "minimize",
   "canonicalize",
+  "hash",
   "approximate",
   "print",
   "printdiff",

@@ -13,6 +13,14 @@
 static int var_compare_default(void* v1, void* v2){
   return (v1==v2) ? 0 : strcmp((char*)v1,(char*)v2);
 }
+static int var_hash_default(void* v){
+  unsigned char* c;
+  int res = 0;
+  for (c=(unsigned char*)v; (*c)!=0; c++){
+    res = res * 11 + (*c);
+  }
+  return res;
+}
 static void* var_copy_default(void* v){
   return strdup((char*)v);
 }
@@ -25,6 +33,7 @@ static char* var_to_string_default(void* v){
 
 struct ap_var_operations_t ap_var_operations_default = {
   var_compare_default,
+  var_hash_default,
   var_copy_default,
   var_free_default,
   var_to_string_default

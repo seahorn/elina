@@ -1022,7 +1022,7 @@ void test_assign_texpr(void)
 {
   printf("\nassign_texpr\n");
   LOOP {
-    size_t dim = 7, depth=3;
+    size_t dim = 3, depth=3;
     size_t p = rand() % dim;
     ap_abstract0_t* rougha,*roughr, *preca,*precr;
     ap_texpr0_t* l = random_texpr(dim, depth);
@@ -1352,6 +1352,7 @@ void test(ap_manager_t* man1, /* the most precise */
     printf("\n\ncomparing libraries:\n- %s (%s)\n- %s (%s)\nwith int=%i\n\n",
 	   manprec->library,manprec->version,manrough->library,manrough->version,intdim);
     /* run tests */
+    /*
     test_conv();
     test_bound_dimension();
     test_bound_linexpr();
@@ -1373,8 +1374,10 @@ void test(ap_manager_t* man1, /* the most precise */
     test_assign_linexpr_array();
     test_substitute_linexpr();
     test_substitute_linexpr_array();
+    */
     test_assign_texpr();
     test_assign_texpr_array();
+    /*
     test_substitute_texpr();
     test_substitute_texpr_array();
     test_forget_array();
@@ -1384,6 +1387,7 @@ void test(ap_manager_t* man1, /* the most precise */
     test_permute_dimensions();
     test_expand();
     test_fold();
+    */
   }
   if (error_) printf("\n%i error(s)!\n",error_);
   else printf("\nall tests passed\n");
@@ -1421,56 +1425,58 @@ int main(int argc, char** argv)
   funopt.algorithm = -1;
   ap_manager_set_funopt(manpkl,AP_FUNID_REMOVE_DIMENSIONS,&funopt);
 
-  /*
   ap_manager_t* manppll = ap_ppl_poly_manager_alloc(false);
   ap_manager_t* manppls = ap_ppl_poly_manager_alloc(true);
   ap_manager_t* manpplgrid = ap_ppl_grid_manager_alloc();
   ap_manager_t* manpkgrid = ap_pkgrid_manager_alloc(false);
-  */
+
   /* First serie */
   intdim = 0;
   random_linexpr = &random_linexpr_linear;
   random_abstract = &random_abstract_std;
   for (i=0; i<1; i++){
     random_abstract2 = i==0 ? &random_abstract2_std : &random_abstract2_inv;
-
+    /*
     // box/polyhedra
     test(manpkl,manbox);
     test(manpks,manbox);
-    //test(manppll,manbox);
-    //test(manppls,manbox);
+    test(manppll,manbox);
+    test(manppls,manbox);
 
     // polyhedra/polyhedra (same library)
     test(manpks,manpkl);
     test(manpkl,manpks);
-    //    test(manppls,manppll);
-    // test(manppll,manppls);
+    test(manppls,manppll);
+    test(manppll,manppls);
     // Polka polyhedra/PPL polyhedra
-    /*
     test(manppll,manpkl);
     test(manpkl,manppll);
     test(manppls,manpks);
     test(manpks,manppls);
     */
     // Grid/Equalities
-    /*
     test(manpplgrid,manpkeq);
     random_abstract = &random_abstract_eq;
+    /*
     test(manpplgrid,manpkeq);
     random_abstract = &random_abstract_eqmod;
     test(manpplgrid,manpkeq);
+    */
     // manpkgrid
+    /*
     random_abstract = &random_abstract_eqmod;
     test(manpkgrid,manpplgrid);
     test(manpkgrid,manpkl);
     */
     // Oct/Box and Oct/Poly
+    /*
     random_abstract = &random_abstract_std;
     test(manoct,manbox);
     test(manpkl,manoct);
     test(manpks,manoct);
     //    test(manppll,manoct);
     //test(manppls,manoct);
+    */
   }
 
 
@@ -1480,11 +1486,9 @@ int main(int argc, char** argv)
   ap_manager_free(manpkl);
   ap_manager_free(manpks);
   ap_manager_free(manpkeq);
-  /*
   ap_manager_free(manppll);
   ap_manager_free(manppls);
   ap_manager_free(manpplgrid);
   ap_manager_free(manpkgrid);
-  */
   return 0;
 }

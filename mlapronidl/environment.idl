@@ -61,7 +61,7 @@ if (_res==NULL){\n\
 assert(_res->count >= 1);")
 ;
 
-quote(MLI,"\n(** Remove from an environment a set variables. Raise [Failure] in case of non-existing variables. *)")
+quote(MLI,"\n(** Remove from an environment a set of variables. Raise [Failure] in case of non-existing variables. *)")
 ap_environment_ptr ap_environment_remove(ap_environment_ptr e,
 					 [size_is(size)]ap_var_t* tvar,
 					 int size)
@@ -70,6 +70,28 @@ _res = ap_environment_remove(e,tvar,size);\n\
 if (_res==NULL){\n\
   camlidl_free(_ctx);\n\
   caml_failwith(\"Environment.remove: unknown variable names\");\n\
+}\n\
+assert(_res->count >= 1);")
+;
+
+quote(MLI,"\n(** Renaming in an environment a set of variables. Raise [Failure] in case of interferences with the variables that are not renamed. *)")
+ap_environment_ptr ap_environment_rename(ap_environment_ptr e,
+					 [size_is(size1)]ap_var_t* tvar1,
+					 [size_is(size2)]ap_var_t* tvar2,
+					 int size1,int size2)
+     quote(call,"\n\
+if (size1!=size2){\n\
+  camlidl_free(_ctx);\n\
+  caml_failwith(\"Environment.rename: arrays of different sizes\");\n\
+}\n\
+else {\n\
+  struct ap_dimperm_t perm;\n\
+  _res = ap_environment_rename(e,tvar1,tvar2,size1,&perm);\n\
+  ap_dimperm_clear(&perm);\n\
+  if (_res==NULL){\n\
+    camlidl_free(_ctx);\n\
+    caml_failwith(\"Environment.rename: unknown variables or interference of new variables with unrenamed variables\");\n\
+  }\n\
 }\n\
 assert(_res->count >= 1);")
 ;
@@ -108,6 +130,9 @@ _res = ap_environment_is_eq(env1,env2);\n\
 quote(MLI,"\n(** Compare two environment. [compare env1 env2] return [-2] if the environements are not compatible (a variable has different types in the 2 environements), [-1] if [env1] is a subset of env2, [0] if equality,  [+1] if env1 is a superset of env2, and [+2] otherwise (the lce exists and is a strict superset of both) *)")
 int ap_environment_compare(ap_environment_ptr env1,
 			   ap_environment_ptr env2);
+
+quote(MLI,"\n(** Hashing function for environments *)")
+int ap_environment_hash(ap_environment_ptr env);
 
 quote(MLI,"\n(** Return the dimension of the environment *)")
 struct ap_dimension_t ap_environment_dimension(ap_environment_ptr e)

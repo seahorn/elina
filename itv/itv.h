@@ -123,7 +123,8 @@ static inline bool itv_is_leq(itv_t a, itv_t b);
   /* Inclusion test */
 static inline bool itv_is_eq(itv_t a, itv_t b);
   /* Equality test */
-
+static inline int itv_hash(itv_t a);
+  /* Hash code */
 static inline bool itv_is_pos(itv_t a);
 static inline bool itv_is_neg(itv_t a);
   /* Included in [0;+oo], [-oo;0], or any of those */
@@ -420,7 +421,10 @@ static inline bool itv_is_eq(itv_t a, itv_t b)
 {
   return bound_equal(a->sup,b->sup) && bound_equal(a->inf,b->inf);
 }
-
+static inline int itv_hash(itv_t a)
+{
+  return (5*bound_hash(a->inf) + 7*bound_hash(a->sup));
+}
 static inline bool itv_meet(itv_internal_t* intern, itv_t a, itv_t b, itv_t c)
 {
   bound_min(a->sup,b->sup,c->sup);

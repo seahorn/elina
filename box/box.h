@@ -46,6 +46,8 @@ void box_minimize(ap_manager_t* man, box_t* a);
 
 void box_canonicalize(ap_manager_t* man, box_t* a);
   /* Put the box value in canonical form. (not yet clear definition) */
+int box_hash(ap_manager_t* man, box_t* a);
+  /* Return an hash code */
 
 void box_approximate(ap_manager_t* man, box_t* a, int algorithm);
   /* Perform some transformation on the box value, guided by the 

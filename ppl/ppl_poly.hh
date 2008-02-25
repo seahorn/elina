@@ -82,6 +82,8 @@ void ap_ppl_poly_canonicalize(ap_manager_t* man, PPL_Poly* a);
      the integer man->option->canonicalize.algorithm is strictly positive,
      normalize equalities and lines, and also strict constraints */
 
+int ap_ppl_poly_hash(ap_manager_t* man, PPL_Poly* a);
+
 void ap_ppl_poly_approximate(ap_manager_t* man, PPL_Poly* a, int algorithm);
   /* Do nothing */
 

@@ -232,6 +232,15 @@ void ap_ppl_poly_canonicalize(ap_manager_t* man, PPL_Poly* a)
   }
   CATCH_WITH_VOID(AP_FUNID_CANONICALIZE);
 }
+extern "C"
+int ap_ppl_poly_hash(ap_manager_t* man, PPL_Poly* a)
+{
+  man->result.flag_exact = man->result.flag_best = true;
+  try {
+    return a->p->total_memory_in_bytes();
+  }
+  CATCH_WITH_VAL(AP_FUNID_HASH,0);
+}
 
 extern "C"
 void ap_ppl_poly_approximate(ap_manager_t* man, PPL_Poly* a, int algorithm)
@@ -1214,6 +1223,7 @@ extern "C" ap_manager_t* ap_ppl_poly_manager_alloc(bool strict)
   man->funptr[AP_FUNID_ASIZE] = (void*)ap_ppl_poly_size;
   man->funptr[AP_FUNID_MINIMIZE] = (void*)ap_ppl_poly_minimize;
   man->funptr[AP_FUNID_CANONICALIZE] = (void*)ap_ppl_poly_canonicalize;
+  man->funptr[AP_FUNID_HASH] = (void*)ap_ppl_poly_hash;
   man->funptr[AP_FUNID_APPROXIMATE] = (void*)ap_ppl_poly_approximate;
   man->funptr[AP_FUNID_FPRINT] = (void*)ap_ppl_poly_fprint;
   man->funptr[AP_FUNID_FPRINTDIFF] = (void*)ap_ppl_poly_fprintdiff;

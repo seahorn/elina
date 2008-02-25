@@ -19,7 +19,13 @@ type t\n\
 ")
 
 quote(MLI,"\n(** Create a Box manager. *)")
-ap_manager_ptr box_manager_alloc();
+ap_manager_ptr box_manager_alloc()
+quote(call,"_res = box_manager_alloc();
+{ ap_exc_t i;
+for (i=1; i<AP_EXC_SIZE; i++){
+ap_manager_set_abort_if_exception(_res,i,false);
+}}
+");
 
 quote(MLI,"\n\n(**
 {2 Compilation information}

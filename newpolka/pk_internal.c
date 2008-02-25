@@ -214,6 +214,7 @@ ap_manager_t* pk_manager_alloc(bool strict)
   funptr[AP_FUNID_ASIZE] = &pk_size;
   funptr[AP_FUNID_MINIMIZE] = &pk_minimize;
   funptr[AP_FUNID_CANONICALIZE] = &pk_canonicalize;
+  funptr[AP_FUNID_HASH] = &pk_hash;
   funptr[AP_FUNID_APPROXIMATE] = &pk_approximate;
   funptr[AP_FUNID_FPRINT] = &pk_fprint;
   funptr[AP_FUNID_FPRINTDIFF] = &pk_fprintdiff;

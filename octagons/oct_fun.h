@@ -78,6 +78,8 @@ void oct_minimize(ap_manager_t* man, oct_t* a);
 
 void oct_canonicalize(ap_manager_t* man, oct_t* a);
 
+int oct_hash(ap_manager_t* man, oct_t* a);
+
 void oct_approximate(ap_manager_t* man, oct_t* a, int algorithm);
 
 bool oct_is_minimal(ap_manager_t* man, oct_t* a);

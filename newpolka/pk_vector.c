@@ -584,3 +584,17 @@ bool vector_is_integer(pk_internal_t* pk,
   }
   return true;
 }
+
+long vector_hash(pk_internal_t* pk,numint_t* vec, size_t size)
+{
+  long res,t;
+  size_t i;
+
+  int_set_numint(&t,vec[polka_cst]);
+  res = t;
+  for (i=pk->dec; i<size; i += ((size-pk->dec)+2)/3){
+    int_set_numint(&t,vec[i]);
+    res = res*3 + t;
+  }
+  return res;
+}

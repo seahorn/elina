@@ -144,7 +144,8 @@ struct ap_exclog_t {
 };
 
 typedef [abstract,
-	 finalize(camlidl_apron_manager_ptr_finalize)]
+	 ml2c(camlidl_apron_manager_ptr_ml2c),
+	 c2ml(camlidl_apron_manager_ptr_c2ml)]
 struct ap_manager_ptr ap_manager_ptr;
 
 quote(MLMLI,"(** APRON Managers *)")

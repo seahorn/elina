@@ -612,6 +612,7 @@ ap_manager_t* pkeq_manager_alloc(void)
   funptr[AP_FUNID_ASIZE] = &pkeq_size;
   // funptr[AP_FUNID_MINIMIZE] = &poly_minimize;
   // funptr[AP_FUNID_CANONICALIZE] = &poly_canonicalize;
+  // funptr[AP_FUNID_HASH] = &poly_hash;
   funptr[AP_FUNID_APPROXIMATE] = &pkeq_approximate;
   // funptr[AP_FUNID_FPRINT] = &poly_fprint;
   // funptr[AP_FUNID_FPRINTDIFF] = &poly_fprintdiff;

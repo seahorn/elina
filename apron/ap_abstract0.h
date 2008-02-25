@@ -52,9 +52,15 @@ void ap_abstract0_minimize(ap_manager_t* man, ap_abstract0_t* a);
      This may result in a later recomputation of internal information.
   */
 
-
 void ap_abstract0_canonicalize(ap_manager_t* man, ap_abstract0_t* a);
   /* Put the abstract value in canonical form. (not yet clear definition) */
+
+int ap_abstract0_hash(ap_manager_t* man, ap_abstract0_t* a);
+  /* Return an hash value for the abstract value.  Two abstract values in
+     canonical from (according to @code{ap_abstract1_canonicalize}) and
+     considered as equal by the function ap_abstract0_is_eq should be given the
+     same hash value (this implies more or less a canonical form).
+  */
 
 
 void ap_abstract0_approximate(ap_manager_t* man, ap_abstract0_t* a, int algorithm);

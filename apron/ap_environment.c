@@ -691,6 +691,22 @@ int ap_environment_compare(ap_environment_t* env1,
   return res;
 }
 
+int ap_environment_hash(ap_environment_t* env)
+{
+  int res;
+  size_t size,i,dec;
+
+  res = 997*(7*env->intdim+11*env->realdim);
+  size = env->intdim+env->realdim;
+  dec = 0;
+  for (i=0; i<size; i += (size+3)/4){
+    res += ap_var_operations->hash(env->var_of_dim[i]) << dec;
+    dec++;
+  }
+  return res;
+}
+
+
 /* ========================================================================= */
 /* Compute least common environment of 2 environments */
 /* ========================================================================= */

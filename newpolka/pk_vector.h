@@ -68,7 +68,8 @@ bool vector_is_dummy_or_strict_generator(pk_internal_t* pk,
 bool vector_is_integer(pk_internal_t* pk,
 		       numint_t* vec,
 		       size_t intdim, size_t realdim);
-
+long vector_hash(pk_internal_t* pk,
+		 numint_t* vec,size_t size);
 /* Functions meant to be internal */
 numint_t* _vector_alloc_int(size_t size);
 void vector_gcd(pk_internal_t* pk,

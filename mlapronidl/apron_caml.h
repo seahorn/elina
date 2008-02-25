@@ -28,6 +28,8 @@
 #include <caml/bigarray.h>
 #include <caml/intext.h>
 
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -65,7 +67,6 @@ typedef struct apron_var_t {
 typedef struct apron_var_t* apron_var_ptr;
 
 typedef struct ap_environment_t* ap_environment_ptr;
-
 
 typedef ap_abstract0_t* ap_abstract0_ptr;
 
@@ -176,10 +177,22 @@ value camlidl_apron_texpr_rdir_t_c2ml(ap_texpr_rdir_t* op)
 /* manager */
 /* ********************************************************************** */
 
+  extern struct custom_operations camlidl_apron_custom_manager_ptr;
+
 static inline
-value camlidl_apron_manager_ptr_finalize(ap_manager_ptr* p){
-  ap_manager_free(*p);
-  return 0;
+void camlidl_apron_manager_ptr_ml2c(value v, ap_manager_ptr* p)
+{
+  *p = *((ap_manager_ptr *) Data_custom_val(v));
+}
+
+static inline
+value camlidl_apron_manager_ptr_c2ml(ap_manager_ptr* p)
+{
+  value v;
+  v = alloc_custom(&camlidl_apron_custom_manager_ptr, sizeof(ap_manager_ptr), 
+		   0,1);
+  *((ap_manager_ptr *) Data_custom_val(v)) = *p;
+  return v;
 }
 
 void ap_manager_set_deserialize(ap_manager_ptr man);
@@ -231,6 +244,17 @@ int ap_var_compare(ap_var_t pp1, ap_var_t pp2)
   return (p1==p2) ? 0 : strcmp(p1->name,p2->name);
 }
 static inline
+int ap_var_hash(ap_var_t pp)
+{
+  apron_var_ptr p = (apron_var_ptr)pp;
+  unsigned char* c;
+  int res = 0;
+  for (c=(unsigned char*)p->name; (*c)!=0; c++){
+    res = res * 11 + (*c);
+  }
+  return res;
+}
+static inline
 ap_var_t ap_var_copy(ap_var_t pp){
   apron_var_ptr p = (apron_var_ptr)pp;
   p->count++; 
@@ -258,20 +282,6 @@ char* ap_var_to_string(ap_var_t pp)
   strcpy(res,p->name);
   return res;
 }
-static 
-inline
-long ap_var_hash(ap_var_t pp)
-{
-  apron_var_ptr p = (apron_var_ptr)pp;
-  unsigned char* str;
-  unsigned long res = 0;
-
-  for (str=(unsigned char*)p->name; (*str)!=0; str++){
-    res = res * 19 + (*str);
-  }
-  return res;
-}
-
 static inline
 void camlidl_apron_var_ptr_ml2c(value v, ap_var_t* p){
   *p = *((ap_var_t *) Data_custom_val(v));

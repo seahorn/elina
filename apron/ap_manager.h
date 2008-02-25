@@ -56,6 +56,7 @@ typedef enum ap_funid_t {
   AP_FUNID_ASIZE, /* For avoiding name conflict with AP_FUNID_SIZE */
   AP_FUNID_MINIMIZE,
   AP_FUNID_CANONICALIZE,
+  AP_FUNID_HASH,
   AP_FUNID_APPROXIMATE,
   AP_FUNID_FPRINT,
   AP_FUNID_FPRINTDIFF,

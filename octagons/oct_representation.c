@@ -276,6 +276,15 @@ void oct_canonicalize(ap_manager_t* man, oct_t* a)
 }
 
 /* NOT IMPLEMENTED: do nothing */
+int oct_hash(ap_manager_t* man, oct_t* a)
+{
+  oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_HASH,0);
+  ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,pr->funid,
+			     "not implemented");
+  return 0;
+}
+
+/* NOT IMPLEMENTED: do nothing */
 void oct_approximate(ap_manager_t* man, oct_t* a, int algorithm)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_APPROXIMATE,0);
@@ -340,6 +349,7 @@ ap_manager_t* oct_manager_alloc(void)
   man->funptr[AP_FUNID_ASIZE] = &oct_size;
   man->funptr[AP_FUNID_MINIMIZE] = &oct_minimize;
   man->funptr[AP_FUNID_CANONICALIZE] = &oct_canonicalize;
+  man->funptr[AP_FUNID_HASH] = &oct_hash;
   man->funptr[AP_FUNID_APPROXIMATE] = &oct_approximate;
   man->funptr[AP_FUNID_FPRINT] = &oct_fprint;
   man->funptr[AP_FUNID_FPRINTDIFF] = &oct_fprintdiff;

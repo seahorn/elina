@@ -423,6 +423,8 @@ static inline int bound_cmp_num(bound_t a, num_t b)
       { return num_cmp(a,b); }
 static inline bool bound_equal(bound_t a, bound_t b)
       { return num_equal(a,b); }
+static inline int bound_hash(bound_t a)
+{ long int hash; int_set_num(&hash,bound_numref(a)); return hash; }
 
 #else
 
@@ -465,7 +467,15 @@ static inline bool bound_equal(bound_t a, bound_t b)
     return false;
 }
 #endif
-
+static inline int bound_hash(bound_t a)
+{ if (bound_infty(a))
+    return bound_sgn(a)>0 ? INT_MAX : INT_MIN;
+  else {
+    long int hash;
+    int_set_num(&hash,bound_numref(a));
+    return hash;
+  }
+}
 #endif
 
 /* ====================================================================== */

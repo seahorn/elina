@@ -78,6 +78,8 @@ void ap_ppl_grid_canonicalize(ap_manager_t* man, PPL_Grid* a);
      the integer man->option->canonicalize.algorithm is strictly positive,
      normalize equalities and lines, and also strict constraints */
 
+int ap_ppl_grid_hash(ap_manager_t* man, PPL_Grid* a);
+
 void ap_ppl_grid_approximate(ap_manager_t* man, PPL_Grid* a, int algorithm);
   /* Do nothing */
 

@@ -230,6 +230,12 @@ void ap_abstract1_minimize(ap_manager_t* man, ap_abstract1_t* a){
 void ap_abstract1_canonicalize(ap_manager_t* man, ap_abstract1_t* a){
   ap_abstract0_canonicalize(man,a->abstract0);
 }
+/* Return an hash code */
+int ap_abstract1_hash(ap_manager_t* man, ap_abstract1_t* a)
+{
+  return (ap_environment_hash(a->env)*251 + 
+	  ap_abstract0_hash(man,a->abstract0)*19);
+}
 
 /* Perform some transformation on the abstract value, guided by the
    field algorithm.

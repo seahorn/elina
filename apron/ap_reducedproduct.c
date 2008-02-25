@@ -211,6 +211,20 @@ size_t ap_reducedproduct_size(ap_manager_t* manager, ap_reducedproduct_t* a)
 
 VOID_MAN_VAL(minimize,AP_FUNID_MINIMIZE)
 VOID_MAN_VAL(canonicalize,AP_FUNID_CANONICALIZE)
+int ap_reducedproduct_hash(ap_manager_t* manager, ap_reducedproduct_t* a)
+{
+  ap_reducedproduct_internal_t* intern = get_internal_init1(manager,AP_FUNID_HASH,a);
+  size_t i;
+  int res = 0;
+
+  for (i=0;i<intern->size;i++){
+    ap_manager_t* man = intern->tmanagers[i];
+    size_t (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_HASH];
+    res += ptr(man,a->p[i]);
+  }
+  collect_results0(manager);
+  return res;
+}
 
 void ap_reducedproduct_approximate(ap_manager_t* manager, ap_reducedproduct_t* a, int n)
 {
@@ -1237,6 +1251,7 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   funptr[AP_FUNID_ASIZE] = &ap_reducedproduct_size;
   funptr[AP_FUNID_MINIMIZE] = &ap_reducedproduct_minimize;
   funptr[AP_FUNID_CANONICALIZE] = &ap_reducedproduct_canonicalize;
+  funptr[AP_FUNID_HASH] = &ap_reducedproduct_hash;
   funptr[AP_FUNID_APPROXIMATE] = &ap_reducedproduct_approximate;
   funptr[AP_FUNID_FPRINT] = &ap_reducedproduct_fprint;
   funptr[AP_FUNID_FPRINTDIFF] = &ap_reducedproduct_fprintdiff;

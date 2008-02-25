@@ -77,6 +77,7 @@ ap_manager_t* box_manager_alloc(void)
   funptr[AP_FUNID_ASIZE] = &box_size;
   funptr[AP_FUNID_MINIMIZE] = &box_minimize;
   funptr[AP_FUNID_CANONICALIZE] = &box_canonicalize;
+  funptr[AP_FUNID_HASH] = &box_hash;
   funptr[AP_FUNID_APPROXIMATE] = &box_approximate;
   funptr[AP_FUNID_FPRINT] = &box_fprint;
   funptr[AP_FUNID_FPRINTDIFF] = &box_fprintdiff;
