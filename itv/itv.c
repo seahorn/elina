@@ -661,13 +661,7 @@ bool ITVFUN(ap_coeff_set_itv)(itv_internal_t* intern,
     }
   }
   else {
-    ap_coeff_reinit(a,AP_COEFF_INTERVAL, 
-#if defined(NUM_NUMFLT)
-		    AP_SCALAR_DOUBLE
-#else
-		    AP_SCALAR_MPQ
-#endif
-		    );
+    ap_coeff_reinit(a,AP_COEFF_INTERVAL,NUM_AP_SCALAR);
     return ap_interval_set_itv(intern,a->val.interval,b);
   }
 }

@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
-#include "gmp.h"
 
 #include "ap_config.h"
 #include "ap_scalar.h"

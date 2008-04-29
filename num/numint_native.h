@@ -11,8 +11,9 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
-
+#include <stdint.h>
 #include "gmp.h"
+#include "mpfr.h"
 #include "ap_scalar.h"
 
 #include "num_config.h"
@@ -301,8 +302,20 @@ static inline bool numint_set_mpq(numint_t a, mpq_t b)
 static inline bool numint_set_double(numint_t a, double b)
 {
   double c = ceil(b);
+  if (!isfinite(c)) { DEBUG_SPECIAL; *a = 0; return false; }
   *a = c;
   return (b==c);
+}
+/* mpfr -> numint */
+static inline bool numint_set_mpfr(numint_t a, mpfr_t b)
+{
+  if (!mpfr_number_p(b)) { DEBUG_SPECIAL; numint_set_int(a,0); return false; }
+#if defined(NUMINT_LONGINT)
+  *a = mpfr_get_si(b,GMP_RNDU);
+#else
+  *a = mpfr_get_sj(b,GMP_RNDU);
+#endif
+  return mpfr_integer_p(b);
 }
 /* numint -> int */
 static inline bool int_set_numint(long int* a, numint_t b)
@@ -350,6 +363,15 @@ static inline bool double_set_numint(double* a, numint_t b)
   return (*a==aa);
 }
 
+/* numint -> mpfr */
+static inline bool mpfr_set_numint(mpfr_t a, numint_t b)
+{ 
+#if defined(NUMINT_LONGINT)
+  return !mpfr_set_si(a,*b,GMP_RNDU);
+#else
+  return !mpfr_set_sj(a,*b,GMP_RNDU);
+#endif
+}
 
 static inline bool mpz_fits_numint(mpz_t a)
 {
@@ -378,7 +400,15 @@ static inline bool mpq_fits_numint(mpq_t a)
 }
 static inline bool double_fits_numint(double a)
 {
-  return a>=(double)(-NUMINT_MAX) && a<=(double)NUMINT_MAX;
+  return isfinite(a) && a>=(double)(-NUMINT_MAX) && a<=(double)NUMINT_MAX;
+}
+static inline bool mpfr_fits_numint(mpfr_t a)
+{
+#if defined(NUMINT_LONGINT)
+  return mpfr_number_p(a) && mpfr_fits_slong_p(a,GMP_RNDU);
+#else
+  return mpfr_number_p(a) && mpfr_fits_intmax_p(a,GMP_RNDU);
+#endif
 }
 static inline bool numint_fits_int(numint_t a)
 #if defined(NUMINT_LONGINT)
@@ -390,6 +420,9 @@ static inline bool numint_fits_float(numint_t a)
 { return true; }
 static inline bool numint_fits_double(numint_t a)
 { return true; }
+static inline bool numint_fits_mpfr(numint_t a)
+{ return true; }
+
 
 /* ====================================================================== */
 /* Serialization */

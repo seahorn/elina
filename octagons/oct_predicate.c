@@ -317,14 +317,7 @@ bool oct_sat_lincons(ap_manager_t* man, oct_t* a,
 bool oct_sat_tcons(ap_manager_t* man, oct_t* a, 
 		   ap_tcons0_t* cons)
 {
-  return ap_generic_sat_tcons(man,a,cons,
-#if defined(NUM_NUMFLT)
-			      AP_SCALAR_DOUBLE
-#else
-			      AP_SCALAR_MPQ
-#endif
-			      ,
-			      false);
+  return ap_generic_sat_tcons(man,a,cons,NUM_AP_SCALAR,false);
 }
 
 /* ============================================================ */
@@ -410,14 +403,7 @@ ap_interval_t* oct_bound_linexpr(ap_manager_t* man,
 ap_interval_t* oct_bound_texpr(ap_manager_t* man,
 			       oct_t* a, ap_texpr0_t* expr)
 {
-  return ap_generic_bound_texpr(man,a,expr,
-#if defined(NUM_NUMFLT)
-				AP_SCALAR_DOUBLE
-#else
-				AP_SCALAR_MPQ
-#endif
-				,
-				false);
+  return ap_generic_bound_texpr(man,a,expr,NUM_AP_SCALAR,false);
 }
 
 ap_interval_t* oct_bound_dimension(ap_manager_t* man,

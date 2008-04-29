@@ -324,12 +324,10 @@ ap_manager_t* oct_manager_alloc(void)
   ap_manager_t* man;
   oct_internal_t* pr;
 
-#if num_fpu
   if (!ap_fpu_init()) {
     fprintf(stderr,"oct_manager_alloc cannot change the FPU rounding mode\n");
-    return NULL;
   }
-#endif
+
   pr = (oct_internal_t*)malloc(sizeof(oct_internal_t));
   assert(pr);
   pr->tmp_size = 10;
@@ -339,7 +337,7 @@ ap_manager_t* oct_manager_alloc(void)
   pr->tmp2 = malloc(sizeof(long)*pr->tmp_size);
   assert(pr->tmp2);
 
-  man = ap_manager_alloc("oct","1.0 with " num_name,pr,
+  man = ap_manager_alloc("oct","1.0 with " NUM_NAME, pr,
 			 (void (*)(void*))oct_internal_free);
 
   pr->man = man;

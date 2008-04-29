@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <math.h>
 #include <float.h>
+#include <stdint.h>
 #include "gmp.h"
 #include "mpfr.h"
 #include "ap_scalar.h"
@@ -73,6 +74,10 @@ static inline void numflt_clear(numflt_t a)
 {}
 static inline void numflt_clear_array(numflt_t* a, size_t size)
 {}
+
+static inline void numflt_swap(numflt_t a, numflt_t b)
+{ numflt_t t; *t=*a;*a=*b;*b=*t; }
+
 
 /* ====================================================================== */
 /* Arithmetic Operations */
@@ -201,7 +206,7 @@ static inline int numflt_snprint(char* s, size_t size, numflt_t a)
 static inline bool numflt_set_int2(numflt_t a, long int i, long int j)
 { 
   assert(j>0);
-  *a = (numflt_native)i/(numflt_native)j; 
+  *a = (numflt_native)i/(numflt_native)j;
   return (-*a==(numflt_native)(-i)/(numflt_native)j);
 }
 
@@ -220,7 +225,6 @@ static inline bool numflt_set_mpz_tmp(numflt_t a, mpz_t b, mpfr_t mpfr)
 static inline bool numflt_set_mpz(numflt_t a, mpz_t b)
 {
   mpfr_t mpfr;
-  
   mpfr_init2(mpfr,NUMFLT_MANT_DIG);
   bool res = numflt_set_mpz_tmp(a,b,mpfr);
   mpfr_clear(mpfr);
@@ -241,7 +245,6 @@ static inline bool numflt_set_mpq_tmp(numflt_t a, mpq_t b, mpfr_t mpfr)
 static inline bool numflt_set_mpq(numflt_t a, mpq_t b)
 {
   mpfr_t mpfr;
-  
   mpfr_init2(mpfr,NUMFLT_MANT_DIG);
   bool res = numflt_set_mpq_tmp(a,b,mpfr);
   mpfr_clear(mpfr);
@@ -250,12 +253,25 @@ static inline bool numflt_set_mpq(numflt_t a, mpq_t b)
 /* double -> numflt */
 static inline bool numflt_set_double(numflt_t a, double k)
 { *a = (numflt_native)k; return true; }
+/* mpfr -> numflt */
+static inline bool numflt_set_mpfr(numflt_t a, mpfr_t b)
+{ 
+#if defined(NUMFLT_DOUBLE)
+  *a = mpfr_get_d(b,GMP_RNDU); 
+  return !mpfr_cmp_d(b,*a);
+#else
+  *a = mpfr_get_ld(b,GMP_RNDU); 
+  return !mpfr_cmp_ld(b,*a);
+#endif
+}
+
 
 /* numflt -> int */
 static inline bool int_set_numflt(long int* a, numflt_t b)
 {
   numflt_native c;
   numflt_ceil(&c,b);
+  if (!isfinite(c)) { DEBUG_SPECIAL; *a = 0; return false; }
   *a = (long int)c;
   return (*b==c);
 }
@@ -263,16 +279,22 @@ static inline bool int_set_numflt(long int* a, numflt_t b)
 static inline bool mpz_set_numflt(mpz_t a, numflt_t b)
 { 
   double c = ceil(*b);
+  if (!isfinite(c)) { DEBUG_SPECIAL; mpz_set_ui(a,0); return false; }
   mpz_set_d(a,c);
   return (*b==(numflt_native)c);
 }
 /* numflt -> mpq */
 static inline bool mpq_set_numflt(mpq_t a, numflt_t b)
 #if defined(NUMFLT_DOUBLE)
-{ mpq_set_d(a,*b); return true; }
+{ 
+  if (!isfinite(*b)) { DEBUG_SPECIAL; mpq_set_ui(a,0,1); return false; }
+  mpq_set_d(a,*b); 
+  return true; 
+}
 #else
 {
   double c = (double)(*b);
+  if (!isfinite(c)) { DEBUG_SPECIAL; mpq_set_ui(a,0,1); return false; }
   mpq_set_d(a,c);
   return (*b==(numflt_native)c);
 }
@@ -283,6 +305,13 @@ static inline bool double_set_numflt(double* a, numflt_t b)
 { *a = *b; return true; }
 #else
 { *a = *b; return ((numflt_native)(*a)==*b); }
+#endif
+/* numflt -> mpfr */
+static inline bool mpfr_set_numflt(mpfr_t a, numflt_t b)
+#if defined(NUMFLT_DOUBLE)
+{ return !mpfr_set_d(a,*b,GMP_RNDU); }
+#else
+{ return !mpfr_set_ld(a,*b,GMP_RNDU); }
 #endif
 
 
@@ -298,11 +327,13 @@ static inline bool mpq_fits_numflt(mpq_t a)
 }
 static inline bool double_fits_numflt(double a)
 { return true; }
+static inline bool mpfr_fits_numflt(mpfr_t a)
+{ return mpfr_get_exp(a)<1022; /* XXX >1022 for long double */ }
 static inline bool numflt_fits_int(numflt_t a)
 { 
   numflt_native d;
   numflt_ceil(&d,a);
-  return d >= (numflt_native)(-LONG_MAX) && d<= (numflt_native)LONG_MAX;
+  return isfinite(d) && d >= (numflt_native)(-LONG_MAX) && d<= (numflt_native)LONG_MAX;
 }
 static inline bool numflt_fits_float(numflt_t a)
 {
@@ -324,19 +355,25 @@ static inline bool numflt_fits_double(numflt_t a)
   return (e<1023);
 #endif
 }
+static inline bool numflt_fits_mpfr(numflt_t a)
+{  
+  int e;
+#if defined(NUMFLT_DOUBLE)
+  frexp(*a,&e);
+#else
+  frexpl(*a,&e);
+#endif
+  return (e<mpfr_get_emax());
+}
 
 /* ====================================================================== */
 /* Only for floating point */
 /* ====================================================================== */
 
 static inline bool numflt_infty(numflt_t a)
-#if defined(NUMFLT_DOUBLE)
-{ return fabs(*a) == NUMFLT_MAX; }
-#else
-{ return fabsl(*a) == NUMFLT_MAX; }
-#endif
-static inline void numflt_set_infty(numflt_t a)
-{ *a = NUMFLT_MAX; }
+{ return !isfinite(*a); }
+static inline void numflt_set_infty(numflt_t a, int sgn)
+{ *a = sgn>0 ? NUMFLT_MAX : -NUMFLT_MAX; }
 
 /* ====================================================================== */
 /* Serialization */

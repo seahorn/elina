@@ -49,11 +49,11 @@ void arith(itv_internal_t* intern,
   printf("itv_sub_bound(b,bound)="); itv_print(a); printf("\n");
 
   itv_set(b,bb); itv_set(c,cc);
-  itv_mul_bound(intern,a,b,bound);
+  itv_mul_bound(a,b,bound);
   printf("itv_mul_bound(b,bound)="); itv_print(a); printf("\n");
 
   itv_set(b,bb); itv_set(c,cc);
-  itv_div_bound(intern,a,b,bound);
+  itv_div_bound(a,b,bound);
   printf("itv_div_bound(b,bound)="); itv_print(a); printf("\n");
 
   itv_set(b,bb); itv_set(c,cc);

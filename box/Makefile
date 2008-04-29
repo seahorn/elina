@@ -34,7 +34,7 @@ CCSRC = box_config.h box.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = box.h
 CCBIN_TO_INSTALL =
-CCLIB_TO_INSTALL = libbox.a libbox_debug.a libboxMPQ.a libboxMPQ_debug.a libboxD.a libboxD_debug.a
+CCLIB_TO_INSTALL = libbox.a libbox_debug.a libboxMPQ.a libboxMPQ_debug.a libboxD.a libboxD_debug.a libboxMPFR.a
 CAML_TO_INSTALL = box.idl box.ml box.mli box.cmi box.cmx box.cma box.cmxa box.a libbox_caml.a libbox_caml_debug.a
 
 #---------------------------------------
@@ -45,10 +45,11 @@ CAML_TO_INSTALL = box.idl box.ml box.mli box.cmi box.cmx box.cma box.cmxa box.a 
 # depend doc install
 # and the following one
 
-all: libbox.a libbox_debug.a allMPQ allD
+all: libbox.a libbox_debug.a allMPQ allD allMPFR
 
 allMPQ: libboxMPQ.a libboxMPQ_debug.a
 allD: libboxD.a libboxD_debug.a
+allMPFR: libboxMPFR.a libboxMPFR_debug.a
 
 ml: box.mli box.ml box.cmi box.cmx box.cma box.cmxa libbox_caml.a libbox_caml_debug.a
 
@@ -135,6 +136,18 @@ libboxD_debug.a: $(CCMODULES:%=%D_debug.o)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -c -o $@ $<
 %D_debug.o: %.c
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_DOUBLE -c -o $@ $<
+
+libboxMPFR.a: $(CCMODULES:%=%MPFR.o)
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
+libboxMPFR_debug.a: $(CCMODULES:%=%MPFR_debug.o)
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
+
+%MPFR.o: %.c
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPFR -c -o $@ $<
+%MPFR_debug.o: %.c
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPFR -c -o $@ $<
 
 #---------------------------------------
 # C rules

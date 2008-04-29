@@ -586,7 +586,7 @@ bool ITVFUN(itv_quasilinearize_linexpr)(itv_internal_t* intern, itv_linexpr_t* l
 #if LOGDEBUG
   itv_linexpr_print(linexpr,0); printf("\n");
 #endif
-#if defined(NUM_FLOAT) || defined(NUM_DOUBLE) || defined(NUM_LONGDOUBLE) || defined (NUM_NUMINT)
+#if defined(NUM_FLOAT) || defined(NUM_DOUBLE) || defined(NUM_LONGDOUBLE) || defined(NUM_MPFR) || defined (NUM_NUMINT)
   return false;
 #else
   return true;

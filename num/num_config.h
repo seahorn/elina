@@ -19,6 +19,10 @@ static const bool true  = 1;
 
 #include <string.h>
 
+/* prints attempts to convert NaN and infinities to non floating-point types */
+#define DEBUG_SPECIAL printf("invalid floating-point in %s\n",__func__)
+
+
 static inline void num_store_words8(void* dst, const void* src, size_t t)
 { 
 #ifdef WORDS_BIGENDIAN

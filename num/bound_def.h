@@ -15,11 +15,12 @@
 extern "C" {
 #endif
 
-#if defined(NUM_MAX) || defined(NUM_NUMRAT)
+#if defined(NUM_MAX) || defined(NUM_NUMRAT) || defined(NUM_NUMFLT)
 
 typedef num_t bound_t;
 #define bound_numref(a) a
 #define _bound_inf(a)
+#define BOUND_NUM  
 
 #else
 
@@ -30,45 +31,39 @@ typedef struct _bound_t {
 } bound_t[1];
 #define bound_numref(a) a->num
 #define _bound_inf(a) a->inf = 0
+#define BOUND_NUM_INF
 
 #endif
 
 
 /* ---------------------------------------------------------------------- */
-
 static inline bool bound_infty(bound_t a)
-
-#if defined(NUM_MAX) && defined(NUM_NUMFLT)
+#if defined(NUM_NUMFLT)
 { return numflt_infty(a); }
-
 #elif defined(NUM_MAX)
 { return (*a>=NUM_MAX || *a<=-NUM_MAX); }
-
-#elif defined(NUM_NUMRAT) && defined(NUMINT_MACHINE)
-{ return a->den==0; }
-
 #elif defined(NUM_NUMRAT)
 { return numint_sgn(numrat_denref(a))==0; } 
-
 #else
 { return (bool)a->inf; } 
-
 #endif
 
 /* ---------------------------------------------------------------------- */
 static inline void bound_set_infty(bound_t a, int sgn)
-#if defined(NUM_MAX)
+#if defined(NUM_NUMFLT)
+{ assert(sgn); numflt_set_infty(a,sgn); }
+#elif defined(NUM_MAX)
 { assert(sgn); *a = sgn>0 ? NUM_MAX : -NUM_MAX; }
 #elif defined(NUM_NUMRAT)
 { 
   assert(sgn);
-  numint_set_int(numrat_numref(a),sgn>0 ? 1 : -1); /* for bound_sgn and memory efficiency */
+  numint_set_int(numrat_numref(a),sgn>0 ? 1 : -1);
   numint_set_int(numrat_denref(a),0); 
 }
 #else
 {
   assert(sgn);
-  num_set_int(a->num,sgn>0 ? 1 : -1); /* for bound_sgn and memory efficiency */
+  num_set_int(a->num,sgn>0 ? 1 : -1);
   a->inf = 1;
 }
 #endif
@@ -76,60 +71,52 @@ static inline void bound_set_infty(bound_t a, int sgn)
 /* ---------------------------------------------------------------------- */
 static inline void bound_init_set_infty(bound_t a, int sgn)
 {
-#if !defined(NUM_NATIVE)
   num_init(bound_numref(a));
-#endif
   bound_set_infty(a,sgn);
 }
 static inline void bound_swap(bound_t a, bound_t b)
-{ bound_t t; *t = *a; *a=*b; *b=*t; }
+{ 
+#if defined(BOUND_NUM_INF)
+  int t = a->inf; a->inf = b->inf; b->inf = t;
+#endif
+  num_swap(bound_numref(a),bound_numref(b));
+}
 
-#if defined(NUM_MAX)
-static inline int bound_sgn(bound_t a)
-         { return num_sgn(a); }
-#else
 static inline int bound_sgn(bound_t a)
 { return num_sgn(bound_numref(a)); }
-#endif
 
 /* ====================================================================== */
 /* Assignement */
 /* ====================================================================== */
 
-#if defined(NUM_MAX) || defined(NUM_NUMRAT)
+#if defined(BOUND_NUM)
+
 static inline void bound_set(bound_t a, bound_t b)
 { num_set(a,b); }
 static inline void bound_set_array(bound_t* a, bound_t* b, size_t size)
 { num_set_array(a,b,size); }
 
-#else
+#elif defined(NUM_NATIVE)
+
 static inline void bound_set(bound_t a, bound_t b)
-{ 
-#if defined(NUM_NATIVE)
-  *a = *b;
-#else
-  num_set(a->num,b->num);
-  a->inf = b->inf;
-#endif
-}
+{ *a = *b; }
 static inline void bound_set_array(bound_t* a, bound_t* b, size_t size)
-{ 
-#if defined(NUM_NATIVE)
-  memcpy(a,b,size*sizeof(bound_t));
+{ memcpy(a,b,size*sizeof(bound_t)); }
+
 #else
+
+static inline void bound_set(bound_t a, bound_t b)
+{ num_set(a->num,b->num); a->inf = b->inf; }
+static inline void bound_set_array(bound_t* a, bound_t* b, size_t size)
+{   
   size_t i;
   for (i=0; i<size; i++) bound_set(a[i],b[i]);
-#endif
 }
 
 #endif
-
 
 static inline void bound_set_int(bound_t a, long int i)
-{ 
-  num_set_int(bound_numref(a),i);
-  _bound_inf(a);
-}
+{  num_set_int(bound_numref(a),i); _bound_inf(a); }
 
 static inline void bound_set_num(bound_t a, num_t b)
 { num_set(bound_numref(a),b); _bound_inf(a); }
@@ -139,19 +126,13 @@ static inline void bound_set_num(bound_t a, num_t b)
 /* ====================================================================== */
 
 static inline void bound_init(bound_t a)
-{ 
-  num_init(bound_numref(a)); 
-  _bound_inf(a); 
-}
+{ num_init(bound_numref(a)); _bound_inf(a); }
 static inline void bound_init_set_int(bound_t a, long int i)
-{ 
-  num_init_set_int(bound_numref(a),i);
-  _bound_inf(a);
-}
+{ num_init_set_int(bound_numref(a),i); _bound_inf(a); }
 static inline void bound_clear(bound_t a)
 { num_clear(bound_numref(a)); }
 
-#if defined(NUM_MAX) || defined(NUM_NUMRAT)
+#if defined(BOUND_NUM)
 
 static inline void bound_init_array(bound_t* a, size_t size)
 { num_init_array(a,size); }
@@ -328,7 +309,7 @@ static inline void bound_div_2(bound_t a, bound_t b)
 #endif
 
 
-#if defined (NUM_MAX)
+#if defined(NUM_MAX) || defined(NUM_NUMFLT)
 
 static inline void bound_min(bound_t a, bound_t b, bound_t c)
 { num_min(a,b,c); }
@@ -414,15 +395,16 @@ static inline void bound_mul_2exp(bound_t a, bound_t b, int c)
 /* Arithmetic Tests */
 /* ====================================================================== */
 
-#if defined(NUM_MAX)
+#if defined(NUM_MAX) || defined(NUM_NUMFLT)
+
 static inline int bound_cmp(bound_t a, bound_t b)
-      { return num_cmp(a,b); }
+{ return num_cmp(a,b); }
 static inline int bound_cmp_int(bound_t a, long int b)
-      { return num_cmp_int(a,b); }
+{ return num_cmp_int(a,b); }
 static inline int bound_cmp_num(bound_t a, num_t b)
-      { return num_cmp(a,b); }
+{ return num_cmp(a,b); }
 static inline bool bound_equal(bound_t a, bound_t b)
-      { return num_equal(a,b); }
+{ return num_equal(a,b); }
 static inline int bound_hash(bound_t a)
 { long int hash; int_set_num(&hash,bound_numref(a)); return hash; }
 
@@ -448,7 +430,6 @@ static inline int bound_cmp_num(bound_t a, num_t b)
   if (bound_infty(a)) return bound_sgn(a);
   else return num_cmp(bound_numref(a),b);
 }
-#if defined(NUM_NUMRAT)
 static inline bool bound_equal(bound_t a, bound_t b)
 {
   if (bound_infty(a)){
@@ -458,15 +439,6 @@ static inline bool bound_equal(bound_t a, bound_t b)
     else return num_equal(bound_numref(a),bound_numref(b));
   }
 }
-#else
-static inline bool bound_equal(bound_t a, bound_t b)
-{
-  if (a->inf==b->inf)
-    return (a->inf && bound_sgn(a)==bound_sgn(b) ) || num_equal(a->num,b->num);
-  else
-    return false;
-}
-#endif
 static inline int bound_hash(bound_t a)
 { if (bound_infty(a))
     return bound_sgn(a)>0 ? INT_MAX : INT_MIN;
@@ -476,6 +448,7 @@ static inline int bound_hash(bound_t a)
     return hash;
   }
 }
+
 #endif
 
 /* ====================================================================== */
@@ -518,12 +491,9 @@ bool bound_set_ap_scalar(bound_t a, ap_scalar_t* b)
     }
     break;
   case AP_SCALAR_DOUBLE:
-    if (b->val.dbl==(double)1.0/(double)0.0){
-      bound_set_infty(a,1);
-      return true;
-    }
-    if (b->val.dbl==-(double)1.0/(double)0.0){
-      bound_set_infty(a,-1);
+    if (isinf(b->val.dbl)) {
+      if (b->val.dbl>0) bound_set_infty(a,1);
+      else bound_set_infty(a,-1);
       return true;
     }
     else {
@@ -538,27 +508,15 @@ bool bound_set_ap_scalar(bound_t a, ap_scalar_t* b)
 /* Convert a bound_t into an ap_scalar_t */
 static inline bool ap_scalar_set_bound(ap_scalar_t* a, bound_t b)
 {
-#if defined(NUM_NUMFLT)
-  ap_scalar_reinit(a,AP_SCALAR_DOUBLE);
-  if (bound_infty(b)){
-    if (bound_sgn(b)>0) a->val.dbl = (double)1.0/(double)0.0;
-    else a->val.dbl = -(double)1.0/(double)0.0;
-    return true;
-  }
+  ap_scalar_reinit(a,NUM_AP_SCALAR);
+  if (bound_infty(b)) { ap_scalar_set_infty(a,bound_sgn(b)); return true; }
   else {
-    return double_set_num(&a->val.dbl,bound_numref(b));
+    switch (NUM_AP_SCALAR) {
+    case AP_SCALAR_DOUBLE: return double_set_num(&a->val.dbl,bound_numref(b));
+    case AP_SCALAR_MPQ:    return mpq_set_num(a->val.mpq,bound_numref(b));
+    default:               abort();
+    }
   }
-#else
-  ap_scalar_reinit(a,AP_SCALAR_MPQ);
-  if (bound_infty(b)){
-    mpz_set_si(mpq_numref(a->val.mpq),bound_sgn(b));
-    mpz_set_ui(mpq_denref(a->val.mpq),0);
-    return true;
-  }
-  else {
-    return mpq_set_num(a->val.mpq,bound_numref(b));
-  }
-#endif
 }
 
 /* ====================================================================== */
@@ -567,7 +525,7 @@ static inline bool ap_scalar_set_bound(ap_scalar_t* a, bound_t b)
 
 static inline size_t bound_serialize(void* dst, bound_t src)
 {
-#if defined(NUM_MAX) || defined(NUM_NUMRAT)
+#if defined(BOUND_NUM)
   return num_serialize(dst,src);
 #else
   *(char*)dst = src->inf;
@@ -577,7 +535,7 @@ static inline size_t bound_serialize(void* dst, bound_t src)
 
 static inline size_t bound_deserialize(bound_t dst, const void* src)
 {
-#if defined(NUM_MAX) || defined(NUM_NUMRAT)
+#if defined(BOUND_NUM)
   return num_deserialize(dst,src);
 #else
   dst->inf = *(const char*)src;
@@ -587,7 +545,7 @@ static inline size_t bound_deserialize(bound_t dst, const void* src)
 
 static inline size_t bound_serialized_size(bound_t a)
 {
-#if defined(NUM_MAX) || defined(NUM_NUMRAT)
+#if defined(BOUND_NUM)
   return num_serialized_size(a);
 #else
   return num_serialized_size(bound_numref(a))+1;

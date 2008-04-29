@@ -5,7 +5,9 @@
 #ifndef _NUMINT_H_
 #define _NUMINT_H_
 
+#include <stdint.h>
 #include "gmp.h"
+#include "mpfr.h"
 #include "ap_scalar.h"
 
 #include "num_config.h"
@@ -120,6 +122,8 @@ static inline bool numint_set_mpq(numint_t a, mpq_t b);
   /* mpq -> numint */
 static inline bool numint_set_double(numint_t a, double b);
   /* double -> numint */
+static inline bool numint_set_mpfr(numint_t a, mpfr_t b);
+  /* mpfr -> numint */
 static inline bool numint_set_ap_scalar(numint_t a, ap_scalar_t* b);
   /* (finite) ap_scalar -> numint */
 
@@ -131,15 +135,19 @@ static inline bool mpq_set_numint(mpq_t a, numint_t b);
   /* numint -> mpq */
 static inline bool double_set_numint(double* a, numint_t b);
   /* numint -> double */
+static inline bool mpfr_set_numint(mpfr_t a, numint_t b);
+  /* numint -> mpfr */
 static inline bool ap_scalar_set_numint(ap_scalar_t* a, numint_t b);
   /* numint -> ap_scalar */
 
 static inline bool mpz_fits_numint(mpz_t a);
 static inline bool mpq_fits_numint(mpq_t a);
 static inline bool double_fits_numint(double a);
+static inline bool mpfr_fits_numint(mpfr_t a);
 static inline bool numint_fits_int(numint_t a);
 static inline bool numint_fits_float(numint_t a);
 static inline bool numint_fits_double(numint_t a);
+static inline bool numint_fits_mpfr(numint_t a);
 
 /* Optimized versions */
 static inline bool mpq_fits_numint_tmp(mpq_t a, mpz_t mpz);

@@ -59,16 +59,7 @@ ap_manager_t* box_manager_alloc(void)
   void** funptr;
 
   itv = box_internal_alloc();
-  man = ap_manager_alloc("box",
-#if defined(NUM_MPQ)
-			 "1.0 with NUM_MPQ",
-#elif defined(NUM_LONGLONGRAT)
-			 "1.0 with NUM_LONGLONGRAT",
-#elif defined(NUM_DOUBLE)
-			 "1.0 with NUM_DOUBLE",
-#else
-#error "here"
-#endif
+  man = ap_manager_alloc("box", "1.0 with " NUM_NAME,
 			 itv, (void (*)(void*))box_internal_free);
   funptr = man->funptr;
 

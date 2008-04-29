@@ -389,7 +389,7 @@ void info(void)
 {
   printf("octagons:  %s (%s)\n",mo->library,mo->version);
   printf("polyhedra: %s (%s)\n",mp->library,mp->version);
-  printf("nums:      %s (%s wto overflow,%s)\n",num_name,
+  printf("nums:      %s (%s wto overflow,%s)\n",NUM_NAME,
 	 num_safe ? "sound" : "unsound",
 	 num_incomplete ? "incomplete" : "complete");
 }

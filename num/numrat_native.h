@@ -11,7 +11,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-
+#include <stdint.h>
 #include "gmp.h"
 #include "mpfr.h"
 #include "ap_scalar.h"
@@ -166,11 +166,15 @@ static inline void numrat_mul_2(numrat_t a, numrat_t b)
 }
 static inline void numrat_div(numrat_t a, numrat_t b, numrat_t c)
 {
-  *a->n = *b->n * *c->d;
-  *a->d = *b->d * *c->n;
-  if (*a->d<0){
-    *a->n = - *a->n;
-    *a->d = - *a->d;
+  numint_t d;
+  *d = *b->d * *c->n;
+  if (*d<0) {
+    *a->n = - *b->n * *c->d;
+    *a->d = - *d;
+  }
+  else {
+    *a->n = *b->n * *c->d;
+    *a->d = *d;
   }
   numrat_canonicalize(a);   
 }
@@ -325,6 +329,7 @@ static inline bool numrat_set_mpq(numrat_t a, mpq_t b)
 /* double -> numrat */
 static inline bool numrat_set_double_tmp(numrat_t a, double k, mpq_t mpq)
 {
+  if (!isfinite(k)) { DEBUG_SPECIAL; numrat_set_int(a,0); return false; }
   mpq_set_d(mpq,k);
   numrat_set_mpq(a,mpq);
   return true;
@@ -335,6 +340,22 @@ static inline bool numrat_set_double(numrat_t a, double k)
   mpq_init(mpq);
   numrat_set_double_tmp(a,k,mpq);
   mpq_clear(mpq);
+  return true;
+}
+/* mpfr -> numrat */
+static inline bool numrat_set_mpfr(numrat_t a, mpfr_t b)
+{
+  mpq_t q;
+  mp_exp_t e;
+  if (!mpfr_number_p(b)) { DEBUG_SPECIAL; numrat_set_int(a,0); return false; }
+  mpq_init(q);
+  /* XXX might fail if scaled exponent not representable in mp_exp_t */
+  e = mpfr_get_z_exp(mpq_numref(q),b);
+  mpz_set_si(mpq_denref(q),1);
+  if (e>0) mpq_mul_2exp(q,q,e);
+  if (e<0) mpq_div_2exp(q,q,-e);
+  numrat_set_mpq(a,q);
+  mpq_clear(q);
   return true;
 }
 /* numrat -> int */
@@ -388,6 +409,12 @@ static inline bool double_set_numrat(double* a, numrat_t b)
   mpfr_clear(mpfr);
   return res;
 }
+/* numrat -> mpfr */
+static inline bool mpfr_set_numrat(mpfr_t a, numrat_t b)
+{ 
+  int r = mpfr_set_si(a,*numrat_numref(b),GMP_RNDU);
+  return !mpfr_div_si(a,a,*numrat_denref(b),GMP_RNDU) && !r;
+}
 
 static inline bool mpz_fits_numrat(mpz_t a)
 { return mpz_fits_numint(a); }
@@ -395,6 +422,7 @@ static inline bool mpq_fits_numrat(mpq_t a)
 { return mpz_fits_numint(mpq_numref(a)) && mpz_fits_numint(mpq_denref(a)); }
 static inline bool double_fits_numrat_tmp(double k, mpq_t mpq)
 {
+  if (!isfinite(k)) return false;
   mpq_set_d(mpq,k);
   bool res = mpq_fits_numrat(mpq);
   return res;
@@ -407,6 +435,20 @@ static inline bool double_fits_numrat(double k)
   mpq_clear(mpq);
   return res;
 }
+static inline bool mpfr_fits_numrat(mpfr_t a)
+{
+  mpz_t z;
+  mp_exp_t e;
+  if (!mpfr_number_p(a)) return false;
+  mpz_init(z);
+  e = mpfr_get_z_exp(z,a);
+  if (!mpz_fits_numrat(z)) {
+    mpz_clear(z);
+    return false;
+  }
+  mpz_clear(z);
+  return e<(mp_exp_t)sizeof(numint_t)*8-1;
+}
 static inline bool numrat_fits_int(numrat_t a)
 {
   numint_t b;
@@ -416,6 +458,8 @@ static inline bool numrat_fits_int(numrat_t a)
 static inline bool numrat_fits_float(numrat_t a)
 { return true; }
 static inline bool numrat_fits_double(numrat_t a)
+{ return true; }
+static inline bool numrat_fits_mpfr(numrat_t a)
 { return true; }
 
 

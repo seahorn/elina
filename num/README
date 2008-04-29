@@ -34,6 +34,7 @@ macros has been defined:
 
 - NUM_DOUBLE		double
 - NUM_LONGDOUBLE	long double
+- NUM_MPFR              floating-point of arbitrary precision (MPFR library)
 	Defines num num_t, numflt_t
 	Possibles operations are num_XXX and numflt_XXX
 	(signatures in num.h and numflt.h)

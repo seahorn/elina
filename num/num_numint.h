@@ -22,6 +22,8 @@
 #error "HERE"
 #endif
 
+#define NUM_AP_SCALAR AP_SCALAR_MPQ
+
 #include "numint.h"
 
 #ifdef __cplusplus
@@ -156,6 +158,9 @@ static inline bool num_set_mpq(num_t a, mpq_t b)
 static inline bool num_set_double(num_t a, double k)
           { return numint_set_double(a,k); }
   /* double -> num */
+static inline bool num_set_mpfr(num_t a, mpfr_t k)
+          { return numint_set_mpfr(a,k); }
+  /* mpfr -> num */
 static inline bool num_set_ap_scalar(num_t a, ap_scalar_t* b)
           { return numint_set_ap_scalar(a,b); }
   /* ap_scalar -> num */
@@ -172,6 +177,9 @@ static inline bool mpq_set_num(mpq_t a, num_t b)
 static inline bool double_set_num(double* a, num_t b)
           { return double_set_numint(a,b); }
   /* num -> double */
+static inline bool mpfr_set_num(mpfr_t a, num_t b)
+          { return mpfr_set_numint(a,b); }
+  /* num -> mpfr */
 static inline bool ap_scalar_set_num(ap_scalar_t* a, num_t b)
           { return ap_scalar_set_numint(a,b); }
   /* num -> ap_scalar */
@@ -182,12 +190,16 @@ static inline bool mpq_fits_num(mpq_t a)
           { return mpq_fits_numint(a); }
 static inline bool double_fits_num(double a)
           { return double_fits_numint(a); }
+static inline bool mpfr_fits_num(mpfr_t a)
+          { return mpfr_fits_numint(a); }
 static inline bool num_fits_int(num_t a)
           { return numint_fits_int(a); }
 static inline bool num_fits_float(num_t a)
           { return numint_fits_float(a); }
 static inline bool num_fits_double(num_t a)
           { return numint_fits_double(a); }
+static inline bool num_fits_mpfr(num_t a)
+          { return numint_fits_mpfr(a); }
 
 /* Optimized versions */
 static inline bool num_set_mpq_tmp(numint_t a, mpq_t b, 

@@ -497,14 +497,9 @@ oct_t* oct_meet_tcons_array(ap_manager_t* man,
 			    ap_tcons0_array_t* array)
 {
   return ap_generic_meet_intlinearize_tcons_array(man,destructive,a,array,
-#if defined(NUM_NUMFLT)
-				     AP_SCALAR_DOUBLE
-#else
-				     AP_SCALAR_MPQ
-#endif
-				     ,
-				     AP_LINEXPR_INTLINEAR,
-				     &oct_meet_lincons_array);
+						  NUM_AP_SCALAR,
+						  AP_LINEXPR_INTLINEAR,
+						  &oct_meet_lincons_array);
 }
 
 oct_t* oct_add_ray_array(ap_manager_t* man,

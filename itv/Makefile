@@ -32,16 +32,16 @@ libitvRl.a libitvRl_debug.a \
 libitvRll.a libitvRll_debug.a \
 libitvMPZ.a libitvMPZ_debug.a \
 libitvMPQ.a libitvMPQ_debug.a \
-libitvMPQ.a libitvMPQ_debug.a \
 libitvD.a libitvD_debug.a \
 libitvDl.a libitvDl_debug.a \
+libitvMPFR.a libitvMPFR_debug.a \
 libitv.a libitv_debug.a
 
 ifneq ($(HAS_LONG_DOUBLE),)
 CCLIB_TO_INSTALL := $(CCLIB_TO_INSTALL) libitvDl.a libitvDl_debug.a
 endif
 
-OFILES = $(CCMODULES:%=%Il.o) $(CCMODULES:%=%Ill.o) $(CCMODULES:%=%Rl.o) $(CCMODULES:%=%Rll.o) $(CCMODULES:%=%MPZ.o) $(CCMODULES:%=%MPQ.o) $(CCMODULES:%=%D.o)
+OFILES = $(CCMODULES:%=%Il.o) $(CCMODULES:%=%Ill.o) $(CCMODULES:%=%Rl.o) $(CCMODULES:%=%Rll.o) $(CCMODULES:%=%MPZ.o) $(CCMODULES:%=%MPQ.o) $(CCMODULES:%=%D.o) $(CCMODULES:%=%MPFR.o)
 
 ifneq ($(HAS_LONG_DOUBLE),)
 OFILES := $(OFILES) $(CCMODULES:%=%Dl.o) 
@@ -56,7 +56,7 @@ endif
 # depend doc install
 # and the following one
 
-all: allMPQ allRll allD libitv.a libitv_debug.a
+all: allMPQ allRll allD allMPFR libitv.a libitv_debug.a
 
 allMPQ: libitvMPQ.a libitvMPQ_debug.a
 
@@ -64,8 +64,12 @@ allRll: libitvRll.a libitvRll_debug.a
 
 allD: libitvD.a libitvD_debug.a
 
+allMPFR: libitvMPFR.a libitvMPFR_debug.a
+
+tests: testMPQ testRll testD testMPFR
+
 clean:
-	/bin/rm -f *.[ao] 
+	/bin/rm -f *.[ao] testMPQ testRll testD testMPFR
 	/bin/rm -f *.?.tex *.log *.aux *.bbl *.blg *.toc *.dvi *.ps *.pstex*
 
 mostlyclean: clean
@@ -155,11 +159,23 @@ libitv%_debug.a: $(subst .c,%_debug.o,$(CCMODULES:%=%.c))
 %Dl_debug.o: %.c
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGDOUBLE -c -o $@ $<
 
+%MPFR.o: %.c
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPFR -c -o $@ $<
+%MPFR_debug.o: %.c
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPFR -c -o $@ $<
+
+
 testMPQ: testMPQ_debug.o libitvMPQ_debug.a
 	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPQ_debug -lapron_debug -lgmp -lmpfr -lm
 
 testRll: testRll_debug.o libitvRll_debug.a
 	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvRll_debug -lapron_debug -lgmp -lmpfr -lm
+
+testD: testD_debug.o libitvD_debug.a
+	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvD_debug -lapron_debug -lgmp -lmpfr -lm
+
+testMPFR: testMPFR_debug.o libitvMPFR_debug.a
+	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPFR_debug -lapron_debug -lgmp -lmpfr -lm
 
 #-----------------------------------
 # DEPENDENCIES

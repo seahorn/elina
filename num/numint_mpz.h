@@ -11,7 +11,7 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
-
+#include <stdint.h>
 #include "gmp.h"
 #include "mpfr.h"
 #include "ap_scalar.h"
@@ -209,8 +209,17 @@ static inline bool numint_set_mpq(numint_t a, mpq_t b)
 static inline bool numint_set_double(numint_t a, double b)
 {
   double c = ceil(b);
+  if (!isfinite(c)) { DEBUG_SPECIAL; mpz_set_si(a,0); return false; }
   mpz_set_d(a,c); 
   return (b==c);
+}
+
+/* mpfr -> numint */
+static inline bool numint_set_mpfr(numint_t a, mpfr_t b)
+{
+  if (!mpfr_number_p(b)) { DEBUG_SPECIAL; numint_set_int(a,0); return false; }
+  mpfr_get_z(a,b,GMP_RNDU);
+  return mpfr_integer_p(b);
 }
 
 /* numint -> int */
@@ -233,7 +242,7 @@ static inline bool double_set_numint_tmp(double* a, numint_t b,
 					 mpfr_t mpfr)
 {
   int res = mpfr_set_z(mpfr,b,GMP_RNDU);
-  *a = mpfr_get_d(mpfr,GMP_RNDU);/* Normally, exact conversion here (unless overfloww) */
+  *a = mpfr_get_d(mpfr,GMP_RNDU);/* Normally, exact conversion here (unless overflow) */
   return (res==0);
 }
 static inline bool double_set_numint(double* a, numint_t b)
@@ -245,6 +254,9 @@ static inline bool double_set_numint(double* a, numint_t b)
   mpfr_clear(mpfr);
   return res;
 }
+/* numint -> mpfr */
+static inline bool mpfr_set_numint(mpfr_t a, numint_t b)
+{ return !mpfr_set_z(a,b,GMP_RNDU); }
 
 static inline bool mpz_fits_numint(mpz_t a)
 { return true; }
@@ -253,13 +265,17 @@ static inline bool mpq_fits_numint_tmp(mpq_t a, mpz_t mpz)
 static inline bool mpq_fits_numint(mpq_t a)
 { return true; }
 static inline bool double_fits_numint(double a)
-{ return true; }
+{ return isfinite(a); }
+static inline bool mpfr_fits_numint(mpfr_t a)
+{ return mpfr_number_p(a); }
 static inline bool numint_fits_int(numint_t a)
 { return mpz_fits_slong_p(a); }
 static inline bool numint_fits_float(numint_t a)
 { return (mpz_sizeinbase(a,2)<127); }
 static inline bool numint_fits_double(numint_t a)
 { return (mpz_sizeinbase(a,2)<1023); }
+static inline bool numint_fits_mpfr(numint_t a)
+{ return (mpz_sizeinbase(a,2)+1<(size_t)mpfr_get_emax()); }
 
 /* ====================================================================== */
 /* Serialization */

@@ -11,7 +11,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-
+#include <stdint.h>
 #include "gmp.h"
 #include "mpfr.h"
 
@@ -25,11 +25,13 @@
 #include "num_numint.h"
 #elif defined(NUM_LONGRAT) || defined(NUM_LONGLONGRAT) || defined(NUM_MPQ)
 #include "num_numrat.h"
-#elif defined(NUM_DOUBLE) || defined(NUM_LONGDOUBLE)
+#elif defined(NUM_DOUBLE) || defined(NUM_LONGDOUBLE) || defined(NUM_MPFR)
 #include "num_numflt.h"
 #else
 #error "HERE"
 #endif
+
+#include "num_name.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,7 +47,8 @@ extern "C" {
    NUM_MPQ,
 
    NUM_DOUBLE,
-   NUM_LONGDOUBLE
+   NUM_LONGDOUBLE,
+   NUM_MPFR
 
    Each parameter induces the definition of the following macros:
    NUM_LONGINT:     NUM_NUMINT, NUMINT_LONGINT,     NUM_MAX, NUMINT_MAX, NUM_NATIVE, NUMINT_NATIVE
@@ -58,6 +61,12 @@ extern "C" {
 
    NUM_DOUBLE:      NUM_NUMFLT, NUMFLT_DOUBLE,      NUM_MAX, NUMFLT_MAX, NUM_NATIVE, NUMFLT_NATIVE
    NUM_LONGDOUBLE:  NUM_NUMFLT, NUMFLT_LONGDOUBLE,  NUM_MAX, NUMFLT_MAX, NUM_NATIVE, NUMFLT_NATIVE
+
+   Additionally, the following macros are defined:
+   NUM_NAME       litteral string with human-readable name of number type
+   NUM_SUFFIX     tag uniquely defining the number type (can be used as a function suffix)
+   NUM_AP_SCALAR  preferred AP_SCALAR_ type
+   NUMFUN(x)      name-mangling: append NUM_SUFFIX to x
 */
 
 /* ====================================================================== */
@@ -139,6 +148,8 @@ static inline bool num_set_mpq(num_t a, mpq_t b);
   /* mpq -> num */
 static inline bool num_set_double(num_t a, double b);
   /* double -> num */
+static inline bool num_set_mpfr(num_t a, mpfr_t b);
+  /* mpfr -> num */
 static inline bool num_set_ap_scalar(num_t a, ap_scalar_t* b);
   /* (finite) ap_scalar -> num */
 
@@ -152,15 +163,19 @@ static inline bool double_set_num(double* a, num_t b);
   /* num -> double */
 static inline bool float_set_num(float* a, num_t b);
   /* num -> float */
+static inline bool mpfr_set_num(mpfr_t a, num_t b);
+  /* num -> mpfr */
 static inline bool ap_scalar_set_num(ap_scalar_t* a, num_t b);
   /* num -> ap_scalar */
 
 static inline bool mpz_fits_num(mpz_t a);
 static inline bool mpq_fits_num(mpq_t a);
 static inline bool double_fits_num(double a);
+static inline bool mpfr_fits_num(mpfr_t a);
 static inline bool num_fits_int(num_t a);
 static inline bool num_fits_float(num_t a);
 static inline bool num_fits_double(num_t a);
+static inline bool num_fits_mpfr(num_t a);
 
 /* Optimized versions */
 /* mpfr should have exactly the precision NUMFLT_MANT_DIG */

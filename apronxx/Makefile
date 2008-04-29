@@ -91,7 +91,7 @@ CCINC = \
 # Rules
 #---------------------------------------
 
-all: libapronxx.a libapronxx_debug.a
+all: libapronxx.a libapronxx_debug.a test
 
 test: apronxx_test
 
@@ -109,8 +109,7 @@ install:
 	$(INSTALL) libapronxx.a libapronxx_debug.a $(LIBDIR)
 
 uninstall:
-	/bin/rm -f $(INCDIR)/apronxx/*
-	/bin/rmdir $(INCDIR)/apronxx
+	/bin/rm -rf $(INCDIR)/apronxx
 	/bin/rm -f $(LIBDIR)/linapronxx*.a
 
 

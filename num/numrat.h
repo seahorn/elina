@@ -5,7 +5,9 @@
 #ifndef _NUMRAT_H_
 #define _NUMRAT_H_
 
+#include <stdint.h>
 #include "gmp.h"
+#include "mpfr.h"
 #include "ap_scalar.h"
 #include "num_config.h"
 
@@ -101,6 +103,8 @@ static inline bool numrat_set_mpq(numrat_t a, mpq_t b);
   /* mpq -> numrat */
 static inline bool numrat_set_double(numrat_t a, double b);
   /* double -> numrat */
+static inline bool numrat_set_mpfr(numrat_t a, mpfr_t b);
+  /* mpfr -> numrat */
 static inline bool numrat_set_ap_scalar(numrat_t a, ap_scalar_t* b);
   /* (finite) ap_scalar -> numrat */
 static inline bool int_set_numrat(long int* a, numrat_t b);
@@ -111,15 +115,19 @@ static inline bool mpq_set_numrat(mpq_t a, numrat_t b);
   /* numrat -> mpq */
 static inline bool double_set_numrat(double* a, numrat_t b);
   /* numrat -> double */
+static inline bool mpfr_set_numrat(mpfr_t a, numrat_t b);
+  /* numrat -> mpfr */
 static inline bool ap_scalar_set_numrat(ap_scalar_t* a, numrat_t b);
   /* numrat -> ap_scalar */
 
 static inline bool mpz_fits_numrat(mpz_t a);
 static inline bool mpq_fits_numrat(mpq_t a);
 static inline bool double_fits_numrat(double a);
+static inline bool mpfr_fits_numrat(mpfr_t a);
 static inline bool numrat_fits_int(numrat_t a);
 static inline bool numrat_fits_float(numrat_t a);
 static inline bool numrat_fits_double(numrat_t a);
+static inline bool numrat_fits_mpfr(numrat_t a);
 
 /* Optimized versions */
 static inline bool int_set_numrat_tmp(long int* a, numrat_t b,

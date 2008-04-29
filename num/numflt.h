@@ -5,6 +5,7 @@
 #ifndef _NUMFLT_H_
 #define _NUMFLT_H_
 
+#include <stdint.h>
 #include "gmp.h"
 #include "mpfr.h"
 #include "ap_scalar.h"
@@ -12,6 +13,8 @@
 
 #if defined(NUMFLT_DOUBLE) || defined(NUMFLT_LONGDOUBLE)
 #include "numflt_native.h"
+#elif defined(NUMFLT_MPFR)
+#include "numflt_mpfr.h"
 #else
 #error "HERE"
 #endif
@@ -49,8 +52,7 @@ static inline void numflt_init_set_int(numflt_t a, long int i);
 static inline void numflt_clear(numflt_t a);
 static inline void numflt_clear_array(numflt_t* a, size_t size);
 
-static inline void numflt_swap(numflt_t a, numflt_t b)
-{ numflt_t t; *t=*a;*a=*b;*b=*t; }
+  static inline void numflt_swap(numflt_t a, numflt_t b);
 
 /* ====================================================================== */
 /* Arithmetic Operations */
@@ -104,6 +106,8 @@ static inline bool numflt_set_mpq(numflt_t a, mpq_t b);
   /* mpq -> numflt */
 static inline bool numflt_set_double(numflt_t a, double b);
   /* double -> numflt */
+static inline bool numflt_set_mpfr(numflt_t a, mpfr_t b);
+  /* mpfr -> numflt */
 static inline bool numflt_set_ap_scalar(numflt_t a, ap_scalar_t* b);
   /* (finite) ap_scalar -> numflt */
 
@@ -115,15 +119,19 @@ static inline bool mpq_set_numflt(mpq_t a, numflt_t b);
   /* numflt -> mpq */
 static inline bool double_set_numflt(double* a, numflt_t b);
   /* numflt -> double */
+static inline bool mpfr_set_numflt(mpfr_t a, numflt_t b);
+  /* numflt -> mpfr */
 static inline bool ap_scalar_set_numflt(ap_scalar_t* a, numflt_t b);
   /* numflt -> ap_scalar */
 
 static inline bool mpz_fits_numflt(mpz_t a);
 static inline bool mpq_fits_numflt(mpq_t a);
 static inline bool double_fits_numflt(double a);
+static inline bool mpfr_fits_numflt(mpfr_t a);
 static inline bool numflt_fits_int(numflt_t a);
 static inline bool numflt_fits_float(numflt_t a);
 static inline bool numflt_fits_double(numflt_t a);
+static inline bool numflt_fits_mpfr(numflt_t a);
 
 /* Optimized versions */
 /* mpfr should have exactly the precision NUMFLT_MANT_DIG */
@@ -135,7 +143,7 @@ static inline bool numflt_set_mpq_tmp(numflt_t a, mpq_t b, mpfr_t mpfr);
 /* ====================================================================== */
 
 static inline bool numflt_infty(numflt_t a);
-static inline void numflt_set_infty(numflt_t a);
+static inline void numflt_set_infty(numflt_t a, int sgn);
 
 /* ====================================================================== */
 /* Serialization */

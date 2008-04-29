@@ -9,8 +9,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "gmp.h"
-
 #include "num.h"
 #include "numint.h"
 #include "numrat.h"

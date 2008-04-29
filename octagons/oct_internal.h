@@ -228,71 +228,35 @@ static inline void bound_badd(bound_t dst, bound_t arg)
 /* ============================================================ */
 
 /*
-  num_name              unique type description
-  num_incomplete        does the type make algorithms incomplete
-  num_safe              is the type safe in case of overflow
-  num_fpu               num requires init_fpu to be called
-  num_export_double     constraints are output using double instead of mpq
+  num_incomplete  does the type make algorithms incomplete
+  num_safe        is the type safe in case of overflow
 */
 
 
-#if   defined ( NUM_LONGINT )
+#if defined(NUM_LONGINT) || defined(NUM_LONGLONGINT)
 /* overflows produce unsound results, type not closed by / 2 */
-#define num_name          "NUM_LONGINT"
-#define num_incomplete    1    
-#define num_safe          0
-#define num_fpu              0
-#define num_export_double    0
-#elif defined ( NUM_LONGLONGINT )
-#define num_name             "NUM_LONGLONGINT"
-#define num_incomplete       1
-#define num_safe             0
-#define num_fpu              0
-#define num_export_double    0
+#define num_incomplete     1    
+#define num_safe           0
 
 #elif defined ( NUM_MPZ )
 /* no overflow, type not closed by / 2 */
-#define num_name             "NUM_MPZ"
-#define num_incomplete       1
-#define num_safe             1
-#define num_fpu              0
-#define num_export_double    0
+#define num_incomplete     1
+#define num_safe           1
 
-#elif defined ( NUM_LONGRAT )
+#elif defined(NUM_LONGRAT) || defined(NUM_LONGLONGRAT)
 /* complete algorithms, but overflows produce unsound results */
-#define num_name             "NUM_LONGRAT"
-#define num_incomplete       0
-#define num_safe             0
-#define num_fpu              0
-#define num_export_double    0
-#elif defined ( NUM_LONGLONGRAT )
-#define num_name             "NUM_LONGLONGRAT"
-#define num_incomplete       0
-#define num_safe             0
-#define num_fpu              0
-#define num_export_double    0
+#define num_incomplete     0
+#define num_safe           0
 
-#elif defined ( NUM_MPQ )
+#elif defined(NUM_MPQ)
 /* the "perfect" type */
-#define num_name             "NUM_MPQ"
-#define num_incomplete       0
-#define num_safe             1
-#define num_fpu              0
-#define num_export_double    0
+#define num_incomplete     0
+#define num_safe           1
 
-#elif defined ( NUM_DOUBLE )
+#elif defined(NUM_DOUBLE) || defined(NUM_LONGDOUBLE) || defined(NUM_MPFR)
 /* overflow are ok (stick to +oo), type not closed by + and / 2 */
-#define num_name            "NUM_DOUBLE"
-#define num_incomplete       1
-#define num_safe             1
-#define num_fpu              1
-#define num_export_double    1
-#elif defined ( NUM_LONGDOUBLE )
-#define num_name             "NUM_LONGDOUBLE"
-#define num_incomplete       1
-#define num_safe             1
-#define num_fpu              1
-#define num_export_double    1
+#define num_incomplete     1
+#define num_safe           1
 
 /* duh */
 #else
@@ -313,35 +277,13 @@ static inline void bound_of_scalar(oct_internal_t* pr,
 				   bound_t r, ap_scalar_t* t,
 				   bool neg, bool mul2)
 {
-  switch (t->discr) {
-  case AP_SCALAR_DOUBLE:
-    {
-      double d = t->val.dbl;
-      if (neg) d = -d;
-      if (mul2) d *= 2;
-      if (d==1/0.) bound_set_infty(r,1);
-      else if (double_fits_num(d)) { 
-	if (!num_set_double(bound_numref(r),d) ||  mul2) pr->conv = true;
-	bound_set_num(r,bound_numref(r));
-      }
-      else { pr->conv = true; bound_set_infty(r,1); }
-    }
-    break;
-  case AP_SCALAR_MPQ:
-    /* negate _before_ converting */
-    if (neg) mpq_neg(t->val.mpq,t->val.mpq);
-    if (ap_scalar_infty(t)==1) bound_set_infty(r,1);
-    else if (mpq_fits_num(t->val.mpq)) {
-      if (!num_set_mpq(bound_numref(r),t->val.mpq))  pr->conv = true;
-      bound_set_num(r,bound_numref(r));
-      if (mul2) bound_mul_2(r,r);
-    }
-    else { pr->conv = true; bound_set_infty(r,1); }
-    /* undo change in argument */
-    if (neg) mpq_neg(t->val.mpq,t->val.mpq);
-    break;
-  default: arg_assert(0,return;);
+  if (neg) ap_scalar_neg(t,t);
+  if (!bound_set_ap_scalar(r,t)) pr->conv = true;
+  if (mul2) {
+    bound_mul_2(r,r);
+    pr->conv = true;
   }
+  if (neg) ap_scalar_neg(t,t);
 }
 
 
@@ -420,19 +362,21 @@ static inline void scalar_of_upper_bound(oct_internal_t* pr,
 					 bound_t b,
 					 bool div2)
 {
+  ap_scalar_reinit(r,NUM_AP_SCALAR);
   if (bound_infty(b)) ap_scalar_set_infty(r,1);
   else {
-#if num_export_double
-    /* use double */
-    ap_scalar_reinit(r,AP_SCALAR_DOUBLE);
-    if (!double_set_num(&r->val.dbl,bound_numref(b)) || div2) pr->conv = 1;
-    if (div2) r->val.dbl /= 2;
-#else
-    /* use mpq */
-    ap_scalar_reinit(r,AP_SCALAR_MPQ);
-    if (!mpq_set_num(r->val.mpq,bound_numref(b)) || div2) pr->conv = 1;
-    if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
-#endif
+    switch (NUM_AP_SCALAR) {
+    case AP_SCALAR_DOUBLE:
+      if (!double_set_num(&r->val.dbl,bound_numref(b)) || div2) pr->conv = 1;
+      if (div2) r->val.dbl /= 2;
+      break;
+    case AP_SCALAR_MPQ:
+      if (!mpq_set_num(r->val.mpq,bound_numref(b)) || div2) pr->conv = 1;
+      if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
+      break;
+    default:
+      abort();
+    }
   }
 }
 
@@ -444,21 +388,21 @@ static inline void scalar_of_lower_bound(oct_internal_t* pr,
 					 bound_t b,
 					 bool div2)
 {
+  ap_scalar_reinit(r,NUM_AP_SCALAR);
   if (bound_infty(b)) ap_scalar_set_infty(r,-1);
   else {
-#if num_export_double
-    /* use double */
-    ap_scalar_reinit(r,AP_SCALAR_DOUBLE);
-    if (!double_set_num(&r->val.dbl,bound_numref(b)) || div2) pr->conv = 1;
-    if (div2) r->val.dbl /= 2;
-    r->val.dbl = -r->val.dbl;
-#else
-    /* use mpq */
-    ap_scalar_reinit(r,AP_SCALAR_MPQ);
-    if (!mpq_set_num(r->val.mpq,bound_numref(b)) || div2)  pr->conv = 1;
-    if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
-    mpq_neg(r->val.mpq,r->val.mpq);
-#endif
+    switch (NUM_AP_SCALAR) {
+    case AP_SCALAR_DOUBLE:
+      if (!double_set_num(&r->val.dbl,bound_numref(b)) || div2) pr->conv = 1;
+      if (div2) r->val.dbl /= 2;
+      r->val.dbl = -r->val.dbl;
+      break;
+    case AP_SCALAR_MPQ:
+      if (!mpq_set_num(r->val.mpq,bound_numref(b)) || div2)  pr->conv = 1;
+      if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
+      mpq_neg(r->val.mpq,r->val.mpq);
+      break;
+    }
   }
 }
 

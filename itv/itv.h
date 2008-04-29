@@ -155,6 +155,8 @@ static inline void itv_add_num(itv_t a, itv_t b, num_t c);
 static inline void itv_sub_num(itv_t a, itv_t b, num_t c);
 static inline void itv_mul_num(itv_t a, itv_t b, num_t c);
 static inline void itv_div_num(itv_t a, itv_t b, num_t c);
+static inline void itv_add_bound(itv_t a, itv_t b, bound_t c);
+static inline void itv_sub_bound(itv_t a, itv_t b, bound_t c);
 static inline void itv_mul_bound(itv_t a, itv_t b, bound_t c);
 static inline void itv_div_bound(itv_t a, itv_t b, bound_t c);
 static inline bool itv_sqrt(itv_internal_t* intern, itv_t a, itv_t b);
@@ -464,6 +466,16 @@ static inline void itv_sub_num(itv_t a, itv_t b, num_t c)
 {
   bound_sub_num(a->sup,b->sup,c);
   bound_add_num(a->inf,b->inf,c);
+}
+static inline void itv_add_bound(itv_t a, itv_t b, bound_t c)
+{
+  bound_add(a->sup,b->sup,c);
+  bound_sub(a->inf,b->inf,c);
+}
+static inline void itv_sub_bound(itv_t a, itv_t b, bound_t c)
+{
+  bound_sub(a->sup,b->sup,c);
+  bound_add(a->inf,b->inf,c);
 }
 static inline bool itv_sqrt(itv_internal_t* intern, itv_t a, itv_t b)
 { return ITVFUN(itv_sqrt)(intern,a,b); }

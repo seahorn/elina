@@ -6,7 +6,7 @@ mv log log.old
 
 echo "Test started `date`"| tee log
 
-for i in  Il Ill MPZ Ri Rll MPQ D Dl
+for i in  Il Ill MPZ Ri Rll MPQ D Dl MPFR
 do
     echo "Test for $i `date`" | tee -a log
     ./octtest$i +120 2>&1 | tee -a  log
