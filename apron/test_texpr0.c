@@ -171,6 +171,8 @@ void testlinearize(ap_texpr0_t* a, ap_interval_t**inter, int intdim)
   testlinearize_discr(a,inter,intdim,AP_SCALAR_MPQ);
   printf("double:\n");
   testlinearize_discr(a,inter,intdim,AP_SCALAR_DOUBLE);
+  printf("mpfr:\n");
+  testlinearize_discr(a,inter,intdim,AP_SCALAR_MPFR);
   printf("\n");
   ap_texpr0_free(a);
 }
@@ -272,6 +274,7 @@ void test_lin()
 int main()
 {
   ap_fpu_init();
+  mpfr_set_default_prec(4046);
   test_op();
   test_lin();
   return 0;

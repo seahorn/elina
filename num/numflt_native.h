@@ -184,18 +184,18 @@ static inline bool numflt_integer(numflt_t a)
 
 #if defined(NUMFLT_DOUBLE)
 static inline void numflt_print(numflt_t a)
-{ printf("%.20g",*a+NUMFLT_ZERO); }
+{ printf("%.*g",NUMFLT_PRINT_PREC,*a+NUMFLT_ZERO); }
 static inline void numflt_fprint(FILE* stream, numflt_t a)
-{ fprintf(stream,"%.20g",*a+NUMFLT_ZERO); }
+{ fprintf(stream,"%.*g",NUMFLT_PRINT_PREC,*a+NUMFLT_ZERO); }
 static inline int numflt_snprint(char* s, size_t size, numflt_t a)
-{ return snprintf(s,size,"%.20g",*a+NUMFLT_ZERO); }
+{ return snprintf(s,size,"%.*g",NUMFLT_PRINT_PREC,*a+NUMFLT_ZERO); }
 #else
 static inline void numflt_print(numflt_t a)
-{ printf("%.20Lg",*a+NUMFLT_ZERO); }
+{ printf("%.*Lg",NUMFLT_PRINT_PREC,*a+NUMFLT_ZERO); }
 static inline void numflt_fprint(FILE* stream, numflt_t a)
-{ fprintf(stream,"%.20Lg",*a+NUMFLT_ZERO); }
+{ fprintf(stream,"%.*Lg",NUMFLT_PRINT_PREC,*a+NUMFLT_ZERO); }
 static inline int numflt_snprint(char* s, size_t size, numflt_t a)
-{ return snprintf(s,size,"%.20Lg",*a+NUMFLT_ZERO); }
+{ return snprintf(s,size,"%.*Lg",NUMFLT_PRINT_PREC,*a+NUMFLT_ZERO); }
 #endif
 
 /* ====================================================================== */
@@ -393,6 +393,14 @@ static inline size_t numflt_deserialize(numflt_t dst, const void* src)
 
 static inline size_t numflt_serialized_size(numflt_t a)
 { return sizeof(numflt_t); }
+
+
+/* */
+static inline bool ap_scalar_set_numflt(ap_scalar_t* a, numflt_t b)
+{
+  ap_scalar_reinit(a,AP_SCALAR_DOUBLE);
+  return double_set_numflt(&a->val.dbl,b);
+}
 
 #ifdef __cplusplus
 }

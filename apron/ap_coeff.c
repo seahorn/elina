@@ -194,6 +194,11 @@ void ap_coeff_set_scalar_mpq(ap_coeff_t* coeff, mpq_t mpq)
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPQ); 
   ap_scalar_set_mpq(coeff->val.scalar,mpq); 
 }
+void ap_coeff_set_scalar_mpfr(ap_coeff_t* coeff, mpfr_t mpfr)
+{
+  ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPFR); 
+  ap_scalar_set_mpfr(coeff->val.scalar,mpfr); 
+}
 void ap_coeff_set_scalar_int(ap_coeff_t* coeff, long int num)
 {
   ap_coeff_reinit(coeff,AP_COEFF_SCALAR,AP_SCALAR_MPQ); 
@@ -216,11 +221,18 @@ void ap_coeff_set_interval(ap_coeff_t* coeff, ap_interval_t* itv)
 }
 void ap_coeff_set_interval_scalar(ap_coeff_t* coeff, ap_scalar_t* inf, ap_scalar_t* sup)
 {
+  ap_coeff_reinit(coeff,AP_COEFF_INTERVAL,AP_SCALAR_DOUBLE);
   ap_interval_set_scalar(coeff->val.interval,inf,sup);
 }
 void ap_coeff_set_interval_mpq(ap_coeff_t* coeff, mpq_t inf, mpq_t sup)
 {
+  ap_coeff_reinit(coeff,AP_COEFF_INTERVAL,AP_SCALAR_MPQ); 
   ap_interval_set_mpq(coeff->val.interval,inf,sup);
+}
+void ap_coeff_set_interval_mpfr(ap_coeff_t* coeff, mpfr_t inf, mpfr_t sup)
+{
+  ap_coeff_reinit(coeff,AP_COEFF_INTERVAL,AP_SCALAR_MPFR); 
+  ap_interval_set_mpfr(coeff->val.interval,inf,sup);
 }
 void ap_coeff_set_interval_int(ap_coeff_t* coeff, long int inf, long int sup)
 {

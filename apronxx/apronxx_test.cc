@@ -30,6 +30,7 @@
 using namespace std;
 using namespace apron;
 
+mpfr_t mpfr1,mpfr2,mpfr3;
 
 void test_scalar()
 {
@@ -43,6 +44,7 @@ void test_scalar()
   cout << "construct frac(1,5):      " << scalar(frac(1,5)) << endl;
   cout << "construct infty(-1):      " << scalar(infty(-1)) << endl;
   cout << "construct mpq_class(1,5): " << scalar(mpq_class(1,5)) << endl;
+  cout << "construct mpfr(1.25):     " << scalar(mpfr1) << endl;
 
   // assignments 
   scalar s = 12;
@@ -66,17 +68,29 @@ void test_scalar()
   cp = 2;
   assert(cp.get_discr()==AP_SCALAR_MPQ);
   assert(cp.get_mpq()==2);
+  assert(cp!=scalar(mpfr1));
   try { cp.get_double(); assert(0); } catch (bad_discriminant& b) {};
   assert(cp.to_mpq(GMP_RNDN,o)==2);
   assert(cp.to_double(GMP_RNDN,o)==2);
   //assert((mpq_class)cp==mpq_class(2));
   assert(double(cp)==2);
+  assert(cp!=scalar(mpfr1));
+  cp = mpfr1;
+  assert(cp.get_discr()==AP_SCALAR_MPFR);
+  assert(cp==mpfr1);
+  assert(cp!=mpfr2);
+  assert(cp==scalar(1.25));
+  assert(cp!=scalar(1.26));
+  assert(cp==scalar(mpq_class(125,100)));
+  assert(cp!=scalar(mpq_class(126,100)));
   cp = 2.;
   assert(cp.get_discr()==AP_SCALAR_DOUBLE);
   assert(cp.get_double()==2);
   try { cp.get_mpq(); assert(0); } catch (bad_discriminant& b) {};
   assert(cp.to_mpq(GMP_RNDN,o)==2);
   assert(cp.to_double(GMP_RNDN,o)==2);
+  cp.to_mpfr(mpfr3,GMP_RNDN,o);
+  assert(cp==scalar(mpfr3));
   //assert(mpq_class(cp)==mpq_class(2));
   assert(double(cp)==2);
   cp.get_double() = 15;
@@ -115,6 +129,7 @@ void test_interval()
   cout << "construct [5.,18.]:              " << interval(5.,18.) << endl;
   cout << "construct [frac(1,2),frac(5,4)]: " << interval(frac(1,2),frac(5,4)) << endl;
   cout << "construct [mpq(15,3),15]:        " << interval(mpq_class(15,3),15) << endl;
+  cout << "construct [mpfr(1.25),mpfr(99)]: " << interval(mpfr1,mpfr2) << endl;
   cout << "construct top:                   " << interval(top()) << endl;
   cout << "construct bottom:                " << interval(bottom()) << endl;
   
@@ -128,7 +143,8 @@ void test_interval()
   c.set(12,18);                      cout << "set [12,18]:                " << c << endl;
   c.set(12.,18.);                    cout << "set [12.,18.]:              " << c << endl;
   c.set(frac(1,2),frac(3,4));        cout << "set [frac(1,2),frac(3,4)]:  " << c << endl;
-  c.set(mpq_class(8),mpq_class(10)); cout <<"set [mpq(8),mpq(10)]:        " <<  c << endl;
+  c.set(mpq_class(8),mpq_class(10)); cout << "set [mpq(8),mpq(10)]:       " <<  c << endl;
+c.set(mpfr1,mpfr2);                  cout << "set [mpfr(1.25),mpfr(99)]:  " <<  c << endl;
   c.set(top());                      cout << "set top:                    " << c << endl;
   c.set(bottom());                   cout << "set bottom:                 " << c << endl;
   c.set(i);                          cout << "set interval(-5,5):         " << c << endl;
@@ -222,6 +238,7 @@ void test_coeff()
   cout << "construct 2.5:                   " << coeff(2.5) << endl;
   cout << "construct frac(2,3):             " << coeff(frac(2,3)) << endl;
   cout << "construct mpq(2,3):              " << coeff(mpq_class(2,3)) << endl;
+  cout << "construct mpfr(1.25):            " << coeff(mpfr1) << endl;
   cout << "construct interval(1,2):         " << coeff(interval(1,2)) << endl;
   cout << "construct [scalar(1),scalar(2)]: " << coeff(scalar(1),scalar(2)) << endl;
   cout << "construct [1,2]:                 " << coeff(1,2) << endl;
@@ -229,6 +246,7 @@ void test_coeff()
   cout << "construct [1.1,2.2]:             " << coeff(1.1,2.2) << endl;
   cout << "construct [frac(1,2),frac(3,4)]: " << coeff(frac(1,2),frac(3,4)) << endl;
   cout << "construct [mpq(1,2),mpq(3,4)]:   " << coeff(mpq_class(1,2),mpq_class(3,4)) << endl;
+  cout << "construct [mpfr(1.25),mpfr(99)]: " << coeff(mpfr1,mpfr2) << endl;
   cout << "construct top:                   " << coeff(top()) << endl;
   cout << "construct bottom:                " << coeff(bottom()) << endl;
 
@@ -241,6 +259,7 @@ void test_coeff()
   a = 2.5;                              cout << "assign 2.5:                " << a << endl;
   a = frac(1,2);                        cout << "assign frac(1,2):          " << a << endl;
   a = mpq_class(1,2);                   cout << "assign mpq(1,2):           " << a << endl;
+  a = mpfr1;                            cout << "assign mpfr(1.25):         " << a << endl;
   a = interval(1,2);                    cout << "assign interval(1,2):      " << a << endl;
   a = top();                            cout << "assign top:                " << a << endl;
   a = bottom();                         cout << "assign bottom:             " << a << endl;
@@ -251,6 +270,7 @@ void test_coeff()
   a.set(2.);                            cout << "set 2.:                    " << a << endl;
   a.set(frac(1,2));                     cout << "set frac(1,2):             " << a << endl;
   a.set(mpq_class(1,2));                cout << "set mpq(1,2):              " << a << endl;
+  a.set(mpfr1);                         cout << "set mpfr(1.25):            " << a << endl;
   a.set(interval(1,2));                 cout << "set interval(1,2):         " << a << endl;
   a.set(scalar(1),scalar(2));           cout << "set [scalar(1),scalar(2)]: " << a << endl;
   a.set(1,2);                           cout << "set [1,2]:                 " << a << endl;
@@ -258,6 +278,7 @@ void test_coeff()
   a.set(1.1,2.2);                       cout << "set [1.1,2.2]:             " << a << endl;
   a.set(frac(1,2),frac(3,4));           cout << "set [frac(1,2),frac(3,4)]: " << a << endl;
   a.set(mpq_class(1,2),mpq_class(3,4)); cout << "set [mpq(1,2),mpq(3,4)]:   " << a << endl;
+  a.set(mpfr1,mpfr2);                   cout << "set [mpfr(1.25),mpfr(99)]: " << a << endl;
   a.set(top());                         cout << "set top:                   " << a << endl;
   a.set(bottom());                      cout << "set bottom:                " << a << endl;
   a = 2;
@@ -766,6 +787,7 @@ void test_texpr0()
   cout << "construct 2L:             " << texpr0(2L) << endl;
   cout << "construct 2.2:            " << texpr0(2.2) << endl;
   cout << "construct mpq(1,2):       " << texpr0(mpq_class(1,2)) << endl;
+  cout << "construct mpfr(1.25):     " << texpr0(mpfr1) << endl;
   cout << "construct coeff(2):       " << texpr0(coeff(2)) << endl;
   cout << "construct scalar(2):      " << texpr0(scalar(2)) << endl;
   cout << "construct 1/2:            " << texpr0(frac(1,2)) << endl;
@@ -803,6 +825,7 @@ void test_texpr0()
   cout << "construct x0 + 2L:             " << dim(0)+2L << endl;
   cout << "construct x0 + 2.2:            " << dim(0)+2.2 << endl;
   cout << "construct x0 + mpq(1,2):       " << dim(0)+mpq_class(1,2) << endl;
+  cout << "construct x0 + mpfr(1.25):     " << dim(0)+mpfr1 << endl;
   cout << "construct x0 + coeff(2):       " << dim(0)+coeff(2) << endl;
   cout << "construct x0 + scalar(2):      " << dim(0)+scalar(2) << endl;
   cout << "construct x0 + 1/2:            " << dim(0)+frac(1,2) << endl;
@@ -823,6 +846,7 @@ void test_texpr0()
   y = 2L; cout << "assign 2L:             " << y << endl;
   y = 2.2; cout << "assign 2.2:            " << y << endl;
   y = mpq_class(1,2); cout << "assign mpq(1,2):       " << y << endl;
+  y = mpfr1; cout << "assign mpfr(1.25):     " << y << endl;
   y = coeff(2); cout << "assign coeff(2):       " << y << endl;
   y = scalar(2); cout << "assign scalar(2):      " << y << endl;
   y = interval(1,2); cout << "assign interval(1,2):  " << y << endl;
@@ -2814,6 +2838,9 @@ void test_ppl()
 
 int main()
 {
+  mpfr_init_set_d(mpfr1,1.25,GMP_RNDU);
+  mpfr_init_set_d(mpfr2,99,GMP_RNDU);
+  mpfr_init(mpfr3);
   test_scalar();
   test_interval();
   test_interval_array();
@@ -2844,5 +2871,8 @@ int main()
 #if HAS_PPL
   test_ppl();
 #endif
+  mpfr_clear(mpfr1);
+  mpfr_clear(mpfr2);
+  mpfr_clear(mpfr3);
   return 0;
 }

@@ -96,12 +96,14 @@ typedef struct ap_texpr0_t {
 ap_texpr0_t* ap_texpr0_cst                 (ap_coeff_t* coeff);
 ap_texpr0_t* ap_texpr0_cst_scalar          (ap_scalar_t* scalar);
 ap_texpr0_t* ap_texpr0_cst_scalar_mpq      (mpq_t mpq);
+ap_texpr0_t* ap_texpr0_cst_scalar_mpfr     (mpfr_t mpfr);
 ap_texpr0_t* ap_texpr0_cst_scalar_int      (long int num);
 ap_texpr0_t* ap_texpr0_cst_scalar_frac     (long int num, unsigned long int den);
 ap_texpr0_t* ap_texpr0_cst_scalar_double   (double num);
 ap_texpr0_t* ap_texpr0_cst_interval        (ap_interval_t* itv);
 ap_texpr0_t* ap_texpr0_cst_interval_scalar (ap_scalar_t* inf, ap_scalar_t* sup);
 ap_texpr0_t* ap_texpr0_cst_interval_mpq    (mpq_t inf, mpq_t sup);
+ap_texpr0_t* ap_texpr0_cst_interval_mpfr   (mpfr_t inf, mpfr_t sup);
 ap_texpr0_t* ap_texpr0_cst_interval_int    (long int inf, long int sup);
 ap_texpr0_t* ap_texpr0_cst_interval_frac   (long int numinf, unsigned long int deninf, 
 					    long int numsup, unsigned long int densup);

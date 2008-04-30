@@ -173,6 +173,8 @@ static inline bool numint_set_ap_scalar(numint_t a, ap_scalar_t* b)
     return numint_set_mpq(a,b->val.mpq);
   case AP_SCALAR_DOUBLE:
     return numint_set_double(a,b->val.dbl);
+  case AP_SCALAR_MPFR:
+    return numint_set_mpfr(a,b->val.mpfr);
   default: abort();
   }
 }

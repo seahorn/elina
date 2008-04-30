@@ -4,6 +4,7 @@
    Please read the COPYING file packaged in the distribution  */
 
 quote(C, "\n\
+#define HAS_MPFR 1\n\
 #include <limits.h>\n\
 #include \"ap_coeff.h\"\n\
 #include \"gmp_caml.h\"\n\
@@ -31,6 +32,11 @@ void camlidl_apron_scalar_ml2c(value v, struct ap_scalar_t* scalar)\n\
   case 1: /* MPQ */\n\
     scalar->val.mpq = (mpq_ptr)(Data_custom_val(v2));\n\
     break;\n\
+  case 2: /* MPFR */\n\
+    scalar->val.mpfr = (mpfr_ptr)(Data_custom_val(v2));\n\
+    break;\n\
+  default:\n\
+    caml_failwith(\"unknown scalar discriminant in camlidl_apron_scalar_ml2c\");\n\
   }\n\
   return;\n\
 }\n\
@@ -52,6 +58,17 @@ value camlidl_apron_scalar_c2ml(struct ap_scalar_t* scalar)\n\
       v2 = camlidl_mpq_ptr_c2ml(&mpq_ptr);\n\
     }\n\
     break;\n\
+  case AP_SCALAR_MPFR:\n\
+    {\n\
+      mpfr_t mpfr;\n\
+      mpfr_ptr mpfr_ptr = mpfr;\n\
+      mpfr_init2(mpfr,mpfr_get_prec(scalar->val.mpfr));\n\
+      mpfr_set(mpfr,scalar->val.mpfr,GMP_RNDU /* exact */);\n\
+      v2 = camlidl_mpfr_ptr_c2ml(&mpfr_ptr);\n\
+    }\n\
+    break;\n\
+  default:\n\
+    caml_failwith(\"unknown scalar discriminant in camlidl_apron_scalar_c2ml\");\n\
   }\n\
   v = alloc_small(1,scalar->discr);\n\
   Field(v,0) = v2;\n\
@@ -60,7 +77,7 @@ value camlidl_apron_scalar_c2ml(struct ap_scalar_t* scalar)\n\
 }\n\
 ")
 
-typedef [mltype("Float of float | Mpqf of Mpqf.t"),
+typedef [mltype("Float of float | Mpqf of Mpqf.t | Mpfr of Mpfr.t"),
 	 abstract,
 	 ml2c(camlidl_apron_scalar_ml2c),
 	 c2ml(camlidl_apron_scalar_c2ml)]
@@ -84,6 +101,8 @@ val of_frac : int -> int -> t\n\
     - a fraction [x/y]\n\
   *)\n\
 \n\
+val of_mpfr : Mpfr.t -> t\n\
+  (** Create a scalar of type [Mpfr] with the given value *)\n\
 val of_float : float -> t\n\
   (** Create a scalar of type [Float] with the given value *)\n\
 val of_infty : int -> t \n\
@@ -100,7 +119,7 @@ val sgn : t -> int\n\
     or a positive value. *)\n\
 \n\
 val cmp : t -> t -> int\n\
-  (** Compare two coefficients, possibly converting one from [float] to [Mpqf.t].\n\
+  (** Compare two coefficients, possibly converting to [Mpqf.t].\n\
     [compare x y] returns a negative number if [x] is less than [y], \n\
     [0] if they ar equal, and a positive number if [x] is greater than [y].\n\
   *)\n\
@@ -109,7 +128,7 @@ val cmp_int : t -> int -> int\n\
   (** Compare a coefficient with an integer *)\n\
 \n\
 val equal : t -> t -> bool\n\
-  (** Equality test, possibly using a conversion from [float] to [Mpqf.t].\n\
+  (** Equality test, possibly using a conversion to [Mpqf.t].\n\
     Return [true] if the 2 values are equal. Two infinite values of the same\n\
     signs are considered as equal. *)\n\
 \n\
@@ -119,7 +138,7 @@ val equal_int : t -> int -> bool\n\
 val neg : t -> t\n\
   (** Negation *)\n\
 val to_string : t -> string\n\
-  (** Conversion to string, using either [string_of_double] or [Mpqf.to_string]\n\
+  (** Conversion to string, using [string_of_double], [Mpqf.to_string] or [Mpfr.to_string]\n\
     *)\n\
 \n\
 val print : Format.formatter -> t -> unit\n\
@@ -128,6 +147,7 @@ val print : Format.formatter -> t -> unit\n\
 quote(ML,"\
 let of_mpq x = Mpqf (Mpqf.of_mpq x)\n\
 let of_mpqf x = Mpqf x\n\
+let of_mpfr x = Mpfr x\n\
 let of_int x = Mpqf(Mpqf.of_int x)\n\
 let of_frac x y = Mpqf(Mpqf.of_frac x y)\n\
 let of_float x = Float(x)\n\
@@ -145,6 +165,10 @@ let is_infty scalar =\n\
 	let sgn = Mpzf.sgn z in\n\
 	if sgn > 0 then 1 else if sgn < 0 then -1 else 0\n\
       end\n\
+  | Mpfr x ->\n\
+      if Mpfr.inf_p x then\n\
+        if Mpfr.sgn x > 0 then 1 else -1\n\
+      else 0\n\
   | Float x ->\n\
       if x = Pervasives.infinity then 1\n\
       else if x = Pervasives.neg_infinity then -1\n\
@@ -152,7 +176,12 @@ let is_infty scalar =\n\
 let sgn scalar =\n\
   match scalar with\n\
   | Mpqf x -> Mpqf.sgn x\n\
+  | Mpfr x -> Mpfr.sgn x\n\
   | Float x -> if x > 0.0+.0.0 then 1 else if x < -.0.0 then -1 else 0\n\
+let to_mpq = function\n\
+  | Mpqf x -> x\n\
+  | Mpfr x -> Mpfr.to_mpq x\n\
+  | Float x -> Mpqf.of_float x\n\
 let cmp c1 c2 =\n\
   let s1 = is_infty c1 in\n\
   let s2 = is_infty c2 in\n\
@@ -162,14 +191,9 @@ let cmp c1 c2 =\n\
   else begin\n\
     match (c1,c2) with\n\
     | (Mpqf x1, Mpqf x2) -> Mpqf.cmp x1 x2\n\
-    | (Float x1, Float x2) ->\n\
-	if x1>x2 then 1 else if x1<x2 then -1 else 0\n\
-    | (Float f, Mpqf x2) ->\n\
-	let x1 = Mpqf.of_float f in\n\
-	Mpqf.cmp x1 x2\n\
-    | (Mpqf x1, Float f) ->\n\
-	let x2 = Mpqf.of_float f in\n\
-	Mpqf.cmp x1 x2\n\
+    | (Mpfr x1, Mpfr x2) -> Mpfr.cmp x1 x2\n\
+    | (Float x1, Float x2) -> if x1>x2 then 1 else if x1<x2 then -1 else 0\n\
+    | x1, x2 -> Mpqf.cmp (to_mpq x1) (to_mpq x2)\n\
   end\n\
 let equal c1 c2 =\n\
   let s1 = is_infty c1 in\n\
@@ -179,29 +203,32 @@ let equal c1 c2 =\n\
   else begin\n\
     match (c1,c2) with\n\
     | (Mpqf x1, Mpqf x2) -> Mpqf.equal x1 x2\n\
+    | (Mpfr x1, Mpfr x2) -> Mpfr.cmp x1 x2 = 0\n\
     | (Float x1, Float x2) -> x1 = x2\n\
-    | (Float f, Mpqf x2) ->\n\
-	let x1 = Mpqf.of_float f in\n\
-	Mpqf.equal x1 x2\n\
-    | (Mpqf x1, Float f) ->\n\
-	let x2 = Mpqf.of_float f in\n\
-	Mpqf.equal x1 x2\n\
+    | x1, x2 -> Mpqf.equal (to_mpq x1) (to_mpq x2)\n\
   end\n\
 let cmp_int scalar n =\n\
   match scalar with\n\
   | Mpqf x -> Mpqf.cmp_int x n\n\
+  | Mpfr x -> Mpfr.cmp_si x n\n\
   | Float x -> Pervasives.compare x (float_of_int n)\n\
 let equal_int scalar n =\n\
   match scalar with\n\
   | Mpqf x -> (Mpqf.cmp_int x n)=0\n\
+  | Mpfr x -> (Mpfr.cmp_si x n)=0\n\
   | Float x -> x==(float_of_int n)\n\
 let neg scalar =\n\
   match scalar with\n\
   | Mpqf x -> Mpqf(Mpqf.neg x)\n\
+  | Mpfr x ->\n\
+     let y = Mpfr.init2 (Mpfr.get_prec x) in\n\
+     ignore (Mpfr.neg y x Mpfr.Up);\n\
+     Mpfr y\n\
   | Float x -> Float(-. x)\n\
 let to_string scalar =\n\
   match scalar with\n\
   | Mpqf x -> Mpqf.to_string x\n\
+  | Mpfr x -> Mpfr.to_string x\n\
   | Float x -> string_of_float x\n\
 let print fmt scalar =\n\
   Format.pp_print_string fmt (to_string scalar)\n\

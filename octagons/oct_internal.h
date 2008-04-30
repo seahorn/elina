@@ -17,8 +17,6 @@
 #ifndef __OCT_INTERNAL_H
 #define __OCT_INTERNAL_H
 
-#include "num.h"
-#include "bound.h"
 #include "oct_fun.h"
 
 #ifdef __cplusplus
@@ -374,6 +372,10 @@ static inline void scalar_of_upper_bound(oct_internal_t* pr,
       if (!mpq_set_num(r->val.mpq,bound_numref(b)) || div2) pr->conv = 1;
       if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
       break;
+    case AP_SCALAR_MPFR:
+      if (!mpfr_set_num(r->val.mpfr,bound_numref(b)) || div2) pr->conv = 1;
+      if (div2) mpfr_div_2ui(r->val.mpfr,r->val.mpfr,1,GMP_RNDU);
+      break;
     default:
       abort();
     }
@@ -402,6 +404,13 @@ static inline void scalar_of_lower_bound(oct_internal_t* pr,
       if (div2) mpq_div_2exp(r->val.mpq,r->val.mpq,1);
       mpq_neg(r->val.mpq,r->val.mpq);
       break;
+    case AP_SCALAR_MPFR:
+      if (!mpfr_set_num(r->val.mpfr,bound_numref(b)) || div2) pr->conv = 1;
+      if (div2) mpfr_div_2ui(r->val.mpfr,r->val.mpfr,1,GMP_RNDU);
+      mpfr_neg(r->val.mpfr,r->val.mpfr,GMP_RNDD);
+      break;
+    default:
+      abort();
     }
   }
 }

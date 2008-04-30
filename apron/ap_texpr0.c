@@ -37,6 +37,14 @@ ap_texpr0_t* ap_texpr0_cst_scalar_mpq(mpq_t mpq)
   ap_coeff_set_scalar_mpq(&res->val.cst, mpq);
   return res;
 }
+ap_texpr0_t* ap_texpr0_cst_scalar_mpfr(mpfr_t mpfr)
+{
+  ap_texpr0_t* res = (ap_texpr0_t*) malloc(sizeof(ap_texpr0_t));
+  res->discr = AP_TEXPR_CST;
+  ap_coeff_init(&res->val.cst, AP_COEFF_SCALAR);
+  ap_coeff_set_scalar_mpfr(&res->val.cst, mpfr);
+  return res;
+}
 ap_texpr0_t* ap_texpr0_cst_scalar_int(long int num)
 {
   ap_texpr0_t* res = (ap_texpr0_t*) malloc(sizeof(ap_texpr0_t));
@@ -83,6 +91,14 @@ ap_texpr0_t* ap_texpr0_cst_interval_mpq(mpq_t inf, mpq_t sup)
   res->discr = AP_TEXPR_CST;
   ap_coeff_init(&res->val.cst, AP_COEFF_INTERVAL);
   ap_coeff_set_interval_mpq(&res->val.cst, inf, sup);
+  return res;
+}
+ap_texpr0_t* ap_texpr0_cst_interval_mpfr(mpfr_t inf, mpfr_t sup)
+{
+  ap_texpr0_t* res = (ap_texpr0_t*) malloc(sizeof(ap_texpr0_t));
+  res->discr = AP_TEXPR_CST;
+  ap_coeff_init(&res->val.cst, AP_COEFF_INTERVAL);
+  ap_coeff_set_interval_mpfr(&res->val.cst, inf, sup);
   return res;
 }
 ap_texpr0_t* ap_texpr0_cst_interval_int(long int inf, long int sup)

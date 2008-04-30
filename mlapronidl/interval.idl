@@ -42,12 +42,14 @@ val of_mpqf : Mpqf.t -> Mpqf.t -> t\n\
 val of_int : int -> int -> t\n\
 val of_frac : int -> int -> int -> int -> t\n\
 val of_float : float -> float -> t\n\
+val of_mpfr : Mpfr.t -> Mpfr.t -> t\n\
   (** Create an interval from resp. two\n\
     - multi-precision rationals [Mpq.t] \n\
     - multi-precision rationals [Mpqf.t] \n\
     - integers \n\
     - fractions [x/y] and [z/w]\n\
-    - floats\n\
+    - machine floats\n\
+    - Mpfr floats\n\
   *)\n\
 \n\
 val is_top : t -> bool\n\
@@ -110,6 +112,10 @@ let of_frac x y z w = {\n\
 let of_float x y = {\n\
   inf = Scalar.of_float x;\n\
   sup = Scalar.of_float y\n\
+}\n\
+let of_mpfr x y = {\n\
+  inf = Scalar.of_mpfr x;\n\
+  sup = Scalar.of_mpfr y\n\
 }\n\
 let is_top itv =\n\
   Scalar.is_infty itv.inf < 0 && Scalar.is_infty itv.sup > 0\n\

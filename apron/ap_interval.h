@@ -54,12 +54,14 @@ void ap_interval_set_mpq(ap_interval_t* interval, mpq_t inf, mpq_t sup);
 void ap_interval_set_int(ap_interval_t* interval, long int inf, long int sup);
 void ap_interval_set_frac(ap_interval_t* interval, long int numinf, unsigned long int deninf, long int numsup, unsigned long int densup);
 void ap_interval_set_double(ap_interval_t* interval, double inf, double sup);
+void ap_interval_set_mpfr(ap_interval_t* interval, mpfr_t inf, mpfr_t sup);
   /* Assignment from resp.
      - two scalars
      - two rationals of type MPQ
      - two integers, giving [inf,dup]
      - two rationals, giving [numinf/deninf,numsup/densup]
      - two double values
+     - two MPFR floating-point numbers
   */
 void ap_interval_set_top(ap_interval_t* interval);
   /* Assignment to universe interval [-oo,oo],

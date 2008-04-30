@@ -91,6 +91,12 @@ inline scalar::scalar(const mpq_class& x)
   ap_scalar_set_mpq(&c, const_cast<mpq_class&>(x).get_mpq_t());
 }
   
+inline scalar::scalar(mpfr_t x) 
+{ 
+  ap_scalar_init(&c, AP_SCALAR_MPFR); 
+  ap_scalar_set_mpfr(&c,x);
+}
+  
 inline scalar::scalar(const scalar& x) 
 { 
   ap_scalar_init(&c, x.c.discr); 
@@ -145,6 +151,12 @@ inline scalar& scalar::operator= (infty x)
 inline scalar& scalar::operator= (const mpq_class& x)
 { 
   ap_scalar_set_mpq(&c, const_cast<mpq_class&>(x).get_mpq_t()); 
+  return *this; 
+}
+
+inline scalar& scalar::operator= (mpfr_t x)
+{ 
+  ap_scalar_set_mpfr(&c, x);
   return *this; 
 }
 
@@ -215,6 +227,12 @@ inline double scalar::to_double(mp_rnd_t round, order& conv) const
   return r;
 }
 
+inline void scalar::to_mpfr(mpfr_t r, mp_rnd_t round, order& conv) const
+{
+  int o = ap_mpfr_set_scalar(r, const_cast<ap_scalar_t*>(&c), round);
+  conv = (o>0) ? GREATER : (o<0) ? LESS : EQUAL;
+}
+
 inline scalar::operator mpq_class() const
 {
   order c;
@@ -239,6 +257,25 @@ inline std::ostream& operator<< (std::ostream& os, const scalar& s)
   switch (s.c.discr) {
   case AP_SCALAR_DOUBLE: return os << s.c.val.dbl;
   case AP_SCALAR_MPQ:    return os << s.c.val.mpq;
+  case AP_SCALAR_MPFR:   
+    {
+      double d = mpfr_get_d(s.c.val.mpfr,GMP_RNDU);
+      if (!mpfr_cmp_d(s.c.val.mpfr,d)) return os << d;
+      mp_exp_t e;
+      char* tmp = mpfr_get_str(NULL,&e,10,os.precision(),s.c.val.mpfr,GMP_RNDU);
+      if (tmp[0]=='-' || tmp[0]=='+') {
+	os << tmp[0] << "." << tmp+1;
+	if (e>0) os << "e+" << e;
+	if (e<0) os << "e" << e;
+      }
+      else {
+	os << "." << tmp;
+	if (e>0) os << "e+" << e;
+	if (e<0) os << "e" << e;
+      }
+      mpfr_free_str(tmp);
+      return os;
+    }
   default: return os;
   }
 }

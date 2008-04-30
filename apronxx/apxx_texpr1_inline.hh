@@ -703,6 +703,12 @@ inline texpr1::builder::builder(const environment& e, const mpq_class& x)
   l.texpr0 = ap_texpr0_cst_scalar_mpq(const_cast<mpq_class&>(x).get_mpq_t()); 
 }
 
+inline texpr1::builder::builder(const environment& e, mpfr_t x)
+{ 
+  l.env = const_cast<ap_environment_t*>(e.get_ap_environment_t());
+  l.texpr0 = ap_texpr0_cst_scalar_mpfr(x);
+}
+
 inline texpr1::builder::builder(const environment& e, int x)
 {
   l.env = const_cast<ap_environment_t*>(e.get_ap_environment_t());
@@ -745,6 +751,12 @@ inline texpr1::builder::builder(const environment& e, const mpq_class& inf, cons
   l.env = const_cast<ap_environment_t*>(e.get_ap_environment_t());
   l.texpr0 = ap_texpr0_cst_interval_mpq(const_cast<mpq_class&>(inf).get_mpq_t(),
 				       const_cast<mpq_class&>(sup).get_mpq_t()); 
+}
+
+inline texpr1::builder::builder(const environment& e, mpfr_t inf, mpfr_t sup)
+{
+  l.env = const_cast<ap_environment_t*>(e.get_ap_environment_t());
+  l.texpr0 = ap_texpr0_cst_interval_mpfr(inf,sup);
 }
 
 inline texpr1::builder::builder(const environment& e, int inf, int sup)

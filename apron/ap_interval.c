@@ -77,6 +77,11 @@ void ap_interval_set_double(ap_interval_t* interval, double inf, double sup)
   ap_scalar_set_double(interval->inf,inf);
   ap_scalar_set_double(interval->sup,sup);
 }
+void ap_interval_set_mpfr(ap_interval_t* interval, mpfr_t inf, mpfr_t sup)
+{
+  ap_scalar_set_mpfr(interval->inf,inf);
+  ap_scalar_set_mpfr(interval->sup,sup);
+}
 void ap_interval_set_top(ap_interval_t* interval)
 {
   ap_scalar_set_infty(interval->inf,-1);
@@ -84,14 +89,18 @@ void ap_interval_set_top(ap_interval_t* interval)
 }
 void ap_interval_set_bottom(ap_interval_t* interval)
 {
-  if (interval->inf->discr==AP_SCALAR_DOUBLE)
-    ap_scalar_set_double(interval->inf,+1.0);
-  else
-    ap_scalar_set_int(interval->inf,1);
-  if (interval->sup->discr==AP_SCALAR_DOUBLE)
-    ap_scalar_set_double(interval->sup,-1.0);
-  else
-    ap_scalar_set_int(interval->sup,-1);
+  switch (interval->inf->discr) {
+  case AP_SCALAR_DOUBLE: interval->inf->val.dbl = 1.; break;
+  case AP_SCALAR_MPQ:    mpq_set_si(interval->inf->val.mpq,1,1); break;
+  case AP_SCALAR_MPFR:   mpfr_set_si(interval->inf->val.mpfr,1,GMP_RNDU); break;
+  default:               abort();
+  }
+  switch (interval->sup->discr) {
+  case AP_SCALAR_DOUBLE: interval->sup->val.dbl = -1.; break;
+  case AP_SCALAR_MPQ:    mpq_set_si(interval->sup->val.mpq,-1,1); break;
+  case AP_SCALAR_MPFR:   mpfr_set_si(interval->sup->val.mpfr,-1,GMP_RNDD); break;
+  default:               abort();
+  }
 }
 
 /* ====================================================================== */

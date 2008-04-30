@@ -183,7 +183,7 @@ typedef enum  {
   expr_interv,
 } exprmode;
 
-const char* exprname[] = { "unary ", "octgonal ", "", "quasi", "interval " };
+const char* exprname[] = { "unary ", "octagonal ", "", "quasi", "interval " };
 
 ap_linexpr0_t* random_linexpr(exprmode mode, int dim)
 {

@@ -37,6 +37,11 @@ ap_texpr1_t* ap_texpr1_cst_scalar_mpq      (ap_environment_t* env, mpq_t mpq)
   return ap_texpr1_of_texpr0(env, ap_texpr0_cst_scalar_mpq(mpq));
 }
 
+ap_texpr1_t* ap_texpr1_cst_scalar_mpfr     (ap_environment_t* env, mpfr_t mpfr)
+{
+  return ap_texpr1_of_texpr0(env, ap_texpr0_cst_scalar_mpfr(mpfr));
+}
+
 ap_texpr1_t* ap_texpr1_cst_scalar_int      (ap_environment_t* env, long int num)
 {
   return ap_texpr1_of_texpr0(env, ap_texpr0_cst_scalar_int(num));
@@ -65,6 +70,11 @@ ap_texpr1_t* ap_texpr1_cst_interval_scalar (ap_environment_t* env, ap_scalar_t* 
 ap_texpr1_t* ap_texpr1_cst_interval_mpq    (ap_environment_t* env, mpq_t inf, mpq_t sup)
 {
   return ap_texpr1_of_texpr0(env, ap_texpr0_cst_interval_mpq(inf,sup));
+}
+
+ap_texpr1_t* ap_texpr1_cst_interval_mpfr   (ap_environment_t* env, mpfr_t inf, mpfr_t sup)
+{
+  return ap_texpr1_of_texpr0(env, ap_texpr0_cst_interval_mpfr(inf,sup));
 }
 
 ap_texpr1_t* ap_texpr1_cst_interval_int    (ap_environment_t* env, long int inf, long int sup)

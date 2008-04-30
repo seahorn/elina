@@ -28,12 +28,14 @@ typedef long int numint_native;
 #define NUMINT_ZERO 0L
 #define NUMINT_ONE 1L
 #define NUMINT_MAX LONG_MAX
+#define NUMINT_MIN LONG_MIN
 
 #elif defined(NUMINT_LONGLONGINT)
 typedef long long int numint_native;
 #define NUMINT_ZERO 0LL
 #define NUMINT_ONE 1LL
 #define NUMINT_MAX LLONG_MAX
+#define NUMINT_MIN LLONG_MIN
 
 #else
 #error "HERE"

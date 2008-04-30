@@ -49,6 +49,8 @@ val s_of_frac : int -> int -> t\n\
 \n\
 val s_of_float : float -> t\n\
   (** Create an interval coefficient of type [Float] with the given value *)\n\
+val s_of_mpfr : Mpfr.t -> t\n\
+  (** Create an interval coefficient of type [Mpfr] with the given value *)\n\
 val i_of_scalar : Scalar.t -> Scalar.t -> t\n\
   (** Build an interval from a lower and an upper bound *)\n\
 val i_of_mpq : Mpq.t -> Mpq.t -> t\n\
@@ -56,12 +58,14 @@ val i_of_mpqf : Mpqf.t -> Mpqf.t -> t\n\
 val i_of_int : int -> int -> t\n\
 val i_of_frac : int -> int -> int -> int -> t\n\
 val i_of_float : float -> float -> t\n\
+val i_of_mpfr : Mpfr.t -> Mpfr.t -> t\n\
   (** Create an interval coefficient from resp. two\n\
     - multi-precision rationals [Mpq.t] \n\
     - multi-precision rationals [Mpqf.t] \n\
     - integers \n\
     - fractions [x/y] and [z/w]\n\
-    - floats\n\
+    - machine floats\n\
+    - Mpfr floats\n\
   *)\n\
 \n\
 val is_scalar : t -> bool\n\
@@ -90,6 +94,7 @@ let s_of_mpqf x = Scalar (Scalar.of_mpqf x)\n\
 let s_of_int x = Scalar (Scalar.of_int x)\n\
 let s_of_frac x y = Scalar (Scalar.of_frac x y)\n\
 let s_of_float x = Scalar (Scalar.of_float x)\n\
+let s_of_mpfr x = Scalar (Scalar.of_mpfr x)\n\
 \n\
 let i_of_scalar inf sup = Interval (Interval.of_scalar inf sup)\n\
 let i_of_mpq x y = Interval (Interval.of_mpq x y)\n\
@@ -97,6 +102,7 @@ let i_of_mpqf x y = Interval (Interval.of_mpqf x y)\n\
 let i_of_int x y = Interval (Interval.of_int x y)\n\
 let i_of_frac x y z w = Interval (Interval.of_frac x y z w)\n\
 let i_of_float x y = Interval (Interval.of_float x y)\n\
+let i_of_mpfr x y = Interval (Interval.of_mpfr x y)\n\
 \n\
 let is_scalar c = match c with Scalar _ -> true | _ -> false\n\
 let is_interval c = match c with Interval _ -> true | _ -> false\n\

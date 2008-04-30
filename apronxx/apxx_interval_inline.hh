@@ -85,6 +85,12 @@ inline interval::interval(const mpq_class& inf, const mpq_class& sup)
 		      const_cast<mpq_class&>(sup).get_mpq_t());
 }
 
+inline interval::interval(mpfr_t inf, mpfr_t sup) 
+{
+  init(); 
+  ap_interval_set_mpfr(&c,inf,sup);
+}
+
 inline interval::interval(top t)
 { 
   init(); 
@@ -177,6 +183,12 @@ inline interval& interval::set(const mpq_class& inf, const mpq_class& sup)
   ap_interval_set_mpq(&c,
 		      const_cast<mpq_class&>(inf).get_mpq_t(),
 		      const_cast<mpq_class&>(sup).get_mpq_t());
+  return *this;
+}
+
+inline interval& interval::set(mpfr_t inf, mpfr_t sup) 
+{
+  ap_interval_set_mpfr(&c,inf,sup);
   return *this;
 }
 

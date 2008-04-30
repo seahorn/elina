@@ -501,8 +501,20 @@ bool bound_set_ap_scalar(bound_t a, ap_scalar_t* b)
       return num_set_double(bound_numref(a),b->val.dbl);
     }
     break;
+  case AP_SCALAR_MPFR:
+    if (mpfr_inf_p(b->val.mpfr)) {
+      if (mpfr_sgn(b->val.mpfr)>0) bound_set_infty(a,1);
+      else bound_set_infty(a,-1);
+      return true;
+    }
+    else {
+      _bound_inf(a);
+      return num_set_mpfr(bound_numref(a),b->val.mpfr);
+    }
+    break;
   default:
     abort();
+    return false;
   }
 }
 /* Convert a bound_t into an ap_scalar_t */
@@ -514,7 +526,8 @@ static inline bool ap_scalar_set_bound(ap_scalar_t* a, bound_t b)
     switch (NUM_AP_SCALAR) {
     case AP_SCALAR_DOUBLE: return double_set_num(&a->val.dbl,bound_numref(b));
     case AP_SCALAR_MPQ:    return mpq_set_num(a->val.mpq,bound_numref(b));
-    default:               abort();
+    case AP_SCALAR_MPFR:   return mpfr_set_num(a->val.mpfr,bound_numref(b));
+    default:               abort(); return false;
     }
   }
 }

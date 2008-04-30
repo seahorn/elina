@@ -611,6 +611,9 @@ public:
     //! Makes a constant scalar leaf from a MPQ (copied).
     builder(const environment& e, const mpq_class& x);
 
+    //! Makes a constant scalar leaf from a MPFR (copied).
+    builder(const environment& e, mpfr_t x);
+
     //! Makes a constant scalar MPQ leaf from an integer.
     builder(const environment& e, int x);
 
@@ -631,6 +634,9 @@ public:
 
     //! Makes a constant interval leaf from two MPQ bounds (copied).
     builder(const environment& e, const mpq_class& inf, const mpq_class& sup);
+
+    //! Makes a constant interval leaf from two MPFR bounds (copied).
+    builder(const environment& e, mpfr_t inf, mpfr_t sup);
 
     //! Makes a constant interval leaf from two integer bounds (converted to MPQ).
     builder(const environment& e, int inf, int sup);

@@ -11,6 +11,14 @@
 #include "ap_scalar.h"
 #include "num_config.h"
 
+#ifndef NUMFLT_PRINT_PREC
+#define NUMFLT_PRINT_PREC 20
+#endif
+/* Number of significant digits used for printing.
+   Defaults to 20, but you can override NUMFLT_PRINT_PREC to be any other
+   expression (including variable and function call).
+*/
+
 #if defined(NUMFLT_DOUBLE) || defined(NUMFLT_LONGDOUBLE)
 #include "numflt_native.h"
 #elif defined(NUMFLT_MPFR)
@@ -166,14 +174,12 @@ static inline bool numflt_set_ap_scalar(numflt_t a, ap_scalar_t* b)
     return numflt_set_mpq(a,b->val.mpq);
   case AP_SCALAR_DOUBLE:
     return numflt_set_double(a,b->val.dbl);
+  case AP_SCALAR_MPFR:
+    return numflt_set_mpfr(a,b->val.mpfr);
   default: abort();
   }
 }
-static inline bool ap_scalar_set_numflt(ap_scalar_t* a, numflt_t b)
-{
-  ap_scalar_reinit(a,AP_SCALAR_DOUBLE);
-  return double_set_numflt(&a->val.dbl,b);
-}
+static inline bool ap_scalar_set_numflt(ap_scalar_t* a, numflt_t b);
 
 #ifdef __cplusplus
 }

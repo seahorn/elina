@@ -666,6 +666,10 @@ inline texpr0::builder::builder(const mpq_class& x)
   : l(ap_texpr0_cst_scalar_mpq(const_cast<mpq_class&>(x).get_mpq_t()))
 {}
 
+inline texpr0::builder::builder(mpfr_t x)
+  : l(ap_texpr0_cst_scalar_mpfr(x))
+{}
+
 inline texpr0::builder::builder(int x)
   : l(ap_texpr0_cst_scalar_int(x))
 {}
@@ -694,6 +698,10 @@ inline texpr0::builder::builder(const scalar& inf, const scalar& sup)
 inline texpr0::builder::builder(const mpq_class& inf, const mpq_class& sup)
   : l(ap_texpr0_cst_interval_mpq(const_cast<mpq_class&>(inf).get_mpq_t(),
 				 const_cast<mpq_class&>(sup).get_mpq_t()))
+{}
+
+inline texpr0::builder::builder(mpfr_t inf, mpfr_t sup)
+  : l(ap_texpr0_cst_interval_mpfr(inf,sup))
 {}
 
 inline texpr0::builder::builder(int inf, int sup)

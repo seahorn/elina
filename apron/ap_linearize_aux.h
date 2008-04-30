@@ -10,7 +10,7 @@
 
 /* may be included several times, with different NUM_ defined */
 
-#if !defined(NUM_MPQ) && !defined(NUM_DOUBLE) && !defined(NUM_LONGDOUBLE)
+#if !defined(NUM_MPQ) && !defined(NUM_DOUBLE) && !defined(NUM_LONGDOUBLE) && !defined(NUM_MPFR)
 #error "Wrong NUM type"
 #endif
 

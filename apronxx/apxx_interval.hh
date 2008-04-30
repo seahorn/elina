@@ -99,6 +99,9 @@ public:
   //! Makes a new interval with the specified MPQ bounds (copied), using MPQ scalars.
   interval(const mpq_class& inf, const mpq_class& sup);
 
+  //! Makes a new interval with the specified MPFR bounds (copied), using MPFR scalars.
+  interval(mpfr_t inf, mpfr_t sup);
+
   //! Makes a new interval representing ]-oo,+oo[.
   interval(top t);
 
@@ -159,6 +162,9 @@ public:
 
   //! Sets *this to [inf;sup], using MPQ scalar bounds (copied). \return *this.
   interval& set(const mpq_class& inf, const mpq_class& sup);
+
+  //! Sets *this to [inf;sup], using MPFR scalar bounds (copied). \return *this.
+  interval& set(mpfr_t inf, mpfr_t sup);
 
   //! Sets *this to top (]-oo;+oo[). \return *this.
   interval& set(top t);

@@ -44,12 +44,14 @@ typedef struct ap_texpr1_t {
 ap_texpr1_t* ap_texpr1_cst                 (ap_environment_t* env, ap_coeff_t* coeff);
 ap_texpr1_t* ap_texpr1_cst_scalar          (ap_environment_t* env, ap_scalar_t* scalar);
 ap_texpr1_t* ap_texpr1_cst_scalar_mpq      (ap_environment_t* env, mpq_t mpq);
+ap_texpr1_t* ap_texpr1_cst_scalar_mpfr     (ap_environment_t* env, mpfr_t mpfr);
 ap_texpr1_t* ap_texpr1_cst_scalar_int      (ap_environment_t* env, long int num);
 ap_texpr1_t* ap_texpr1_cst_scalar_frac     (ap_environment_t* env, long int num, unsigned long int den);
 ap_texpr1_t* ap_texpr1_cst_scalar_double   (ap_environment_t* env, double num);
 ap_texpr1_t* ap_texpr1_cst_interval        (ap_environment_t* env, ap_interval_t* itv);
 ap_texpr1_t* ap_texpr1_cst_interval_scalar (ap_environment_t* env, ap_scalar_t* inf, ap_scalar_t* sup);
 ap_texpr1_t* ap_texpr1_cst_interval_mpq    (ap_environment_t* env, mpq_t inf, mpq_t sup);
+ap_texpr1_t* ap_texpr1_cst_interval_mpfr   (ap_environment_t* env, mpfr_t inf, mpfr_t sup);
 ap_texpr1_t* ap_texpr1_cst_interval_int    (ap_environment_t* env, long int inf, long int sup);
 ap_texpr1_t* ap_texpr1_cst_interval_frac   (ap_environment_t* env, long int numinf, unsigned long int deninf, 
 					    long int numsup, unsigned long int densup);

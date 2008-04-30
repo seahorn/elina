@@ -172,6 +172,8 @@ static inline bool numrat_set_ap_scalar(numrat_t a, ap_scalar_t* b)
     return numrat_set_mpq(a,b->val.mpq);
   case AP_SCALAR_DOUBLE:
     return numrat_set_double(a,b->val.dbl);
+  case AP_SCALAR_MPFR:
+    return numrat_set_mpfr(a,b->val.mpfr);
   default: abort();
   }
 }

@@ -119,13 +119,13 @@ html: apron.texi rationale.texi ap_pkgrid.texi ap_ppl.texi newpolka.texi box.tex
 # C rules
 #---------------------------------------
 
-libapron.a: $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%MPQ.o) $(C_FILES_AUX:%.c=%D.o) ../itv/libitv.a
+libapron.a: $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%MPQ.o) $(C_FILES_AUX:%.c=%D.o)  $(C_FILES_AUX:%.c=%MPFR.o) ../itv/libitv.a
 	cp ../itv/libitv.a $@
-	$(AR) rs $@ $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%MPQ.o) $(C_FILES_AUX:%.c=%D.o)
+	$(AR) rs $@ $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%MPQ.o) $(C_FILES_AUX:%.c=%D.o) $(C_FILES_AUX:%.c=%MPFR.o)
 	$(RANLIB) $@
-libapron_debug.a: $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%MPQ_debug.o) $(C_FILES_AUX:%.c=%D_debug.o) ../itv/libitv_debug.a
+libapron_debug.a: $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%MPQ_debug.o) $(C_FILES_AUX:%.c=%D_debug.o) $(C_FILES_AUX:%.c=%MPFR_debug.o) ../itv/libitv_debug.a
 	cp ../itv/libitv_debug.a $@
-	$(AR) rs $@ $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%MPQ_debug.o) $(C_FILES_AUX:%.c=%D_debug.o)
+	$(AR) rs $@ $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%MPQ_debug.o) $(C_FILES_AUX:%.c=%D_debug.o) $(C_FILES_AUX:%.c=%MPFR_debug.o)
 	$(RANLIB) $@
 
 .PHONY : dep
@@ -154,6 +154,8 @@ dep: $(H_FILES)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_DOUBLE -I../num -I../itv -I. -c $< -o $@
 %Dl.o: %.c %.h
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGDOUBLE -I../num -I../itv -I. -c $< -o $@
+%MPFR.o: %.c %.h
+	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPFR -I../num -I../itv -I. -c $< -o $@
 
 %_debug.o: %.c %.h
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS)  -I../itv -c -o $@ $<
@@ -164,6 +166,8 @@ dep: $(H_FILES)
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_DOUBLE -I../num -I../itv -I. -c -o $@ $< -o $@
 %Dl_debug.o: %.c %.h
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGDOUBLE -I../num -I../itv -I. -c -o $@ $< -o $@
+%MPFR_debug.o: %.c %.h
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPFR -I../num -I../itv -I. -c -o $@ $< -o $@
 
 #---------------------------------------
 # dependencies (generated with make dep)

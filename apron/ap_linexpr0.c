@@ -469,6 +469,7 @@ bool ap_linexpr0_set_list_generic(ap_coeff_t* (*get_pcoeff)(void* expr, bool cst
   int num,num1,num2,den,den1,den2;
   double k,k1,k2;
   MP_RAT *mpq,*mpq1,*mpq2;
+  __mpfr_struct *mpfr,*mpfr1,*mpfr2;
   ap_coefftag_t tag;
 
   while (true){
@@ -498,6 +499,12 @@ bool ap_linexpr0_set_list_generic(ap_coeff_t* (*get_pcoeff)(void* expr, bool cst
       pcoeff = get_pcoeff(expr,cst,va);
       if (pcoeff==NULL) return true;
       ap_coeff_set_scalar_mpq(pcoeff,mpq);
+      break;
+    case AP_COEFF_S_MPFR:
+      mpfr = va_arg(*va,__mpfr_struct*);
+      pcoeff = get_pcoeff(expr,cst,va);
+      if (pcoeff==NULL) return true;
+      ap_coeff_set_scalar_mpfr(pcoeff,mpfr);
       break;
     case AP_COEFF_S_INT:
       num = va_arg(*va,int);
@@ -537,6 +544,14 @@ bool ap_linexpr0_set_list_generic(ap_coeff_t* (*get_pcoeff)(void* expr, bool cst
       pcoeff = get_pcoeff(expr,cst,va);
       if (pcoeff==NULL) return true;
       ap_coeff_set_interval_mpq(pcoeff,mpq1,mpq2);
+      break;
+    case AP_COEFF_I_MPFR:
+      mpfr1 = va_arg(*va,__mpfr_struct*);
+      mpfr2 = va_arg(*va,__mpfr_struct*);
+      pcoeff = get_pcoeff(expr,cst,va);
+      if (pcoeff==NULL) return true;
+      ap_coeff_set_interval_mpfr(pcoeff,mpfr1,mpfr2);
+      break;
     case AP_COEFF_I_INT:
       num1 = va_arg(*va,int);
       num2 = va_arg(*va,int);

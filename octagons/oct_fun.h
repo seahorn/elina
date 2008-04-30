@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define NUMFLT_PRINT_PREC ap_scalar_print_prec
+
 #include "num.h"
 #include "bound.h"
 

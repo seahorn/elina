@@ -68,12 +68,14 @@ void ap_coeff_set_scalar_mpq(ap_coeff_t* coeff, mpq_t mpq);
 void ap_coeff_set_scalar_int(ap_coeff_t* coeff, long int num);
 void ap_coeff_set_scalar_frac(ap_coeff_t* coeff, long int num, unsigned long int den);
 void ap_coeff_set_scalar_double(ap_coeff_t* coeff, double num);
+void ap_coeff_set_scalar_mpfr(ap_coeff_t* coeff, mpfr_t mpfr);
   /* Assign a coefficient of type SCALAR, with resp.
      - a coeff
      - a rational of type mpq_t, converted to type MPQ
      - an integer, converted to type MPQ
      - a rational, converted to type MPQ
      - a double, converted to type DOUBLE
+     - a MPFR, converted to type MPFR
   */
 void ap_coeff_set_interval(ap_coeff_t* coeff, ap_interval_t* itv);
 void ap_coeff_set_interval_scalar(ap_coeff_t* coeff, ap_scalar_t* inf, ap_scalar_t* sup);
@@ -84,12 +86,14 @@ void ap_coeff_set_interval_frac(ap_coeff_t* coeff,
                                   long int numsup, unsigned long int densup);
 void ap_coeff_set_interval_double(ap_coeff_t* coeff, double inf, double sup);
 void ap_coeff_set_interval_top(ap_coeff_t* coeff);
+void ap_coeff_set_interval_mpfr(ap_coeff_t* coeff, mpfr_t inf, mpfr_t sup);
   /* Assign a coefficient of type INTERVAL, with resp.
      - an interval of coeff
      - an interval of rationals of type MPQ
      - an interval of integers, converted to type MPQ
      - an interval of rationals, converted to type MPQ
      - an interval of double, converted to type DOUBLE
+     - an interval of MPFR, converted to type MPFR
      - a top interval (type not precised).
   */
 

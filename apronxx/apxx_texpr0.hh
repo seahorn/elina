@@ -619,6 +619,9 @@ public:
     //! Makes a constant scalar leaf from a MPQ (copied).
     builder(const mpq_class& x);
 
+    //! Makes a constant scalar leaf from a MPFR (copied).
+    builder(mpfr_t x);
+
     //! Makes a constant scalar MPQ leaf from an integer.
     builder(int x);
 
@@ -639,6 +642,9 @@ public:
 
     //! Makes a constant interval leaf from two MPQ bounds (copied).
     builder(const mpq_class& inf, const mpq_class& sup);
+
+    //! Makes a constant interval leaf from two MPFR bounds (copied).
+    builder(mpfr_t inf, mpfr_t sup);
 
     //! Makes a constant interval leaf from two integer bounds (converted to MPQ).
     builder(int inf, int sup);
@@ -884,7 +890,7 @@ public:
 #if 0
   /*! \brief Evaluates the expression given an abstract environment.
    *
-   * \arg \c discr whether to evaluate using double (\c AP_SCALAR_DOUBLE) or MPQ (\c AP_SCALAR_MPQ).
+   * \arg \c discr whether to evaluate using double (\c AP_SCALAR_DOUBLE), MPQ (\c AP_SCALAR_MPQ) or MPFR (\c AP_SCALAR_MPFR).
    * \arg \c pexact if not NULL, sets to true whenever the evaluation was exact 
    * (i.e., not over-approximated).
    */

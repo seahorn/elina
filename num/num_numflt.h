@@ -11,18 +11,19 @@
 
 #if defined(NUM_DOUBLE)
 #define NUMFLT_DOUBLE
+#define NUM_AP_SCALAR AP_SCALAR_DOUBLE
 
 #elif defined(NUM_LONGDOUBLE)
 #define NUMFLT_LONGDOUBLE
+#define NUM_AP_SCALAR AP_SCALAR_DOUBLE
 
 #elif defined(NUM_MPFR)
 #define NUMFLT_MPFR
+#define NUM_AP_SCALAR AP_SCALAR_MPFR
 
 #else
 #error "HERE"
 #endif
-
-#define NUM_AP_SCALAR AP_SCALAR_DOUBLE
 
 #include "numflt.h"
 

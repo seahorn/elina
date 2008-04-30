@@ -125,6 +125,9 @@ public:
   //! Makes a MPQ scalar from a MPQ (copied).
   scalar(const mpq_class& x);
 
+  //! Makes a MPFR scalar from a MPFR number (copied).
+  scalar(mpfr_t x);
+
   //! Makes a copy of a scalar.
   scalar(const scalar& x);
 
@@ -166,6 +169,9 @@ public:
   //! Assigns a MPQ to *this (copied), setting its type to MPQ.
   scalar& operator= (const mpq_class& x);
 
+  //! Assigns a MPFR to *this (copied), setting its type to MPFR.
+  scalar& operator= (mpfr_t x);
+
   //! Sets the type and value of *this to that of x.
   scalar& operator= (const scalar& x);
 
@@ -183,7 +189,7 @@ public:
 
   /*! \brief  Whether the object wraps a double or a MPQ.
    *
-   * \return Either \c AP_SCALAR_DOUBLE or \c AP_SCALAR_MPQ.
+   * \return Either \c AP_SCALAR_DOUBLE, \c AP_SCALAR_MPQ, or \c AP_SCALAR_MPFR.
    */
   ap_scalar_discr_t get_discr() const;
     
@@ -236,6 +242,14 @@ public:
    * less than, equal to or greater than the value of *this.
    */
   double to_double(mp_rnd_t round, order& conv) const;
+
+ /*! \brief Copies the (possibly converted) value of the scalar into the MPFR.
+   *
+   * \arg \c round: rounding direction, may be GMP_RNDN, GMP_RNDZ, GMP_RNDU, GMP_RNDD, or GMP_RND_MAX.
+   * \arg \c conv is set to either LESS, EQUAL, or GREATER, depending on whether the result is
+   * less than, equal to or greater than the value of *this.
+   */
+  void to_mpfr(mpfr_t x, mp_rnd_t round, order& conv) const;
 
   //! Returns a new MPQ containing the (possibly converted) value of the scalar. No rounding.
   operator mpq_class() const;

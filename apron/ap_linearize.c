@@ -19,6 +19,10 @@
 #include "ap_linearize_aux.h"
 #undef  NUM_LONGDOUBLE
 
+#define NUM_MPFR
+#include "ap_linearize_aux.h"
+#undef  NUM_MPFR
+
 /* ********************************************************************** */
 /* Interval linear expressions and derived types */
 /* ********************************************************************** */
@@ -39,9 +43,10 @@ ap_eval_linexpr0(ap_manager_t* man,
     return ap_eval_linexpr0_MPQ(man,abs,expr,pexact);
   case AP_SCALAR_DOUBLE:
     return ap_eval_linexpr0_D(man,abs,expr,pexact);
+  case AP_SCALAR_MPFR:
+    return ap_eval_linexpr0_MPFR(man,abs,expr,pexact);
   default:
-    assert(false);
-    return NULL;
+    abort();
   }
 }
 
@@ -76,6 +81,8 @@ ap_linexpr0_t* ap_quasilinearize_linexpr0(ap_manager_t* man,
       return ap_quasilinearize_linexpr0_MPQ(man,abs,linexpr0,pexact);
     case AP_SCALAR_DOUBLE:
       return ap_quasilinearize_linexpr0_D(man,abs,linexpr0,pexact);
+    case AP_SCALAR_MPFR:
+      return ap_quasilinearize_linexpr0_MPFR(man,abs,linexpr0,pexact);
     default:
       abort();
     }
@@ -99,6 +106,8 @@ ap_lincons0_t ap_quasilinearize_lincons0(ap_manager_t* man,
       return ap_quasilinearize_lincons0_MPQ(man,abs,lincons0,pexact,meet);
     case AP_SCALAR_DOUBLE:
       return ap_quasilinearize_lincons0_D(man,abs,lincons0,pexact,meet);
+    case AP_SCALAR_MPFR:
+      return ap_quasilinearize_lincons0_MPFR(man,abs,lincons0,pexact,meet);
     default:
       abort();
     }
@@ -123,6 +132,8 @@ ap_quasilinearize_linexpr0_array(ap_manager_t* man,
       return ap_quasilinearize_linexpr0_array_MPQ(man,abs,texpr,size,pexact);
     case AP_SCALAR_DOUBLE:
       return ap_quasilinearize_linexpr0_array_D(man,abs,texpr,size,pexact);
+    case AP_SCALAR_MPFR:
+      return ap_quasilinearize_linexpr0_array_MPFR(man,abs,texpr,size,pexact);
     default:
       abort();
     }
@@ -150,6 +161,8 @@ ap_quasilinearize_lincons0_array(ap_manager_t* man,
       return ap_quasilinearize_lincons0_array_MPQ(man,abs,array,pexact,linearize,meet);
     case AP_SCALAR_DOUBLE:
       return ap_quasilinearize_lincons0_array_D(man,abs,array,pexact,linearize,meet);
+    case AP_SCALAR_MPFR:
+      return ap_quasilinearize_lincons0_array_MPFR(man,abs,array,pexact,linearize,meet);
     default:
       abort();
     }
@@ -173,6 +186,8 @@ ap_intlinearize_texpr0(ap_manager_t* man,
     return ap_intlinearize_texpr0_MPQ(man,abs,expr,pexact,quasilinearize);
   case AP_SCALAR_DOUBLE:
     return ap_intlinearize_texpr0_D(man,abs,expr,pexact,quasilinearize);
+  case AP_SCALAR_MPFR:
+    return ap_intlinearize_texpr0_MPFR(man,abs,expr,pexact,quasilinearize);
   default:
     assert(false);
     return NULL;
@@ -191,6 +206,8 @@ ap_eval_texpr0(ap_manager_t* man,
     return ap_eval_texpr0_MPQ(man,abs,expr,pexact);
   case AP_SCALAR_DOUBLE:
     return ap_eval_texpr0_D(man,abs,expr,pexact);
+  case AP_SCALAR_MPFR:
+    return ap_eval_texpr0_MPFR(man,abs,expr,pexact);
   default:
     assert(false);
     return NULL; 
@@ -209,6 +226,8 @@ ap_lincons0_t ap_intlinearize_tcons0(ap_manager_t* man,
     return ap_intlinearize_tcons0_MPQ(man,abs,cons,pexact,quasilinearize,meet);
   case AP_SCALAR_DOUBLE:
     return ap_intlinearize_tcons0_D(man,abs,cons,pexact,quasilinearize,meet);
+  case AP_SCALAR_MPFR:
+    return ap_intlinearize_tcons0_MPFR(man,abs,cons,pexact,quasilinearize,meet);
   default:
     assert(false);
     return ap_lincons0_make(AP_CONS_EQ,NULL,NULL);
@@ -228,6 +247,8 @@ ap_lincons0_array_t ap_intlinearize_tcons0_array(ap_manager_t* man,
     return ap_intlinearize_tcons0_array_MPQ(man,abs,array,pexact,linearize,meet,boxize,kmax,intervalonly);
   case AP_SCALAR_DOUBLE:
     return ap_intlinearize_tcons0_array_D(man,abs,array,pexact,linearize,meet,boxize,kmax,intervalonly);
+  case AP_SCALAR_MPFR:
+    return ap_intlinearize_tcons0_array_MPFR(man,abs,array,pexact,linearize,meet,boxize,kmax,intervalonly);
   default:
     assert(false);
     return ap_lincons0_array_make(0);

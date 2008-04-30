@@ -30,6 +30,7 @@ extern "C" {
 typedef enum ap_scalar_discr_t {
   AP_SCALAR_DOUBLE, /* double-precision floating-point number */
   AP_SCALAR_MPQ,    /* GMP arbitrary precision rational */
+  AP_SCALAR_MPFR,   /* MPFR floating-point number */
 } ap_scalar_discr_t;
 
 typedef struct ap_scalar_t {
@@ -37,6 +38,7 @@ typedef struct ap_scalar_t {
   union {
     double dbl;
     mpq_ptr mpq; /* +infty coded by 1/0, -infty coded by -1/0 */
+    mpfr_ptr mpfr;
   } val;
 } ap_scalar_t;
 
@@ -60,6 +62,11 @@ void ap_scalar_print(ap_scalar_t* a);
 void ap_scalar_fprint(FILE* stream, ap_scalar_t* a);
   /* Printing */
 
+extern int ap_scalar_print_prec;
+  /* Number of significant digits to print for floating-point numbers.
+     Defaults to 20.
+   */
+
 static inline
 void ap_scalar_swap(ap_scalar_t* a, ap_scalar_t* b);
   /* Exchange */
@@ -80,6 +87,9 @@ void ap_scalar_set_frac(ap_scalar_t* scalar, long int i, unsigned long int j);
   */
 void ap_scalar_set_double(ap_scalar_t* scalar, double k);
   /* Change the type of scalar to DOUBLE and initialize it with k. */
+void ap_scalar_set_mpfr(ap_scalar_t* scalar, mpfr_t mpfr);
+  /* Change the type of scalar to MPFR and initialize it with mpfr. 
+     The precision of the scalar is changed to match that of mpfr. */
 void ap_scalar_set_infty(ap_scalar_t* scalar, int sgn);
   /* Assignment to sgn*infty. Keep the type of the scalar.
      If sgn == 0, set to zero. */
@@ -90,9 +100,12 @@ void ap_scalar_set_infty(ap_scalar_t* scalar, int sgn);
 
 ap_scalar_t* ap_scalar_alloc_set(ap_scalar_t* scalar2);
 ap_scalar_t* ap_scalar_alloc_set_mpq(mpq_t mpq);
-  /* Change the type of scalar to MPQ and initialize it with mpq */
+  /* Allocate an MPQ scalar and initialize it with mpq */
 ap_scalar_t* ap_scalar_alloc_set_double(double k);
-  /* Change the type of scalar to DOUBLE and initialize it with k. */
+  /* Allocate an DOUBLE scalar and initialize it with k. */
+ap_scalar_t* ap_scalar_alloc_set_mpfr(mpfr_t mpfr);
+  /* Allocate an MPFR scalar and initialize it with mpfr. 
+     The precisio of the scalar matches that of mpfr. */
 
 /* ====================================================================== */
 /* Conversions */
@@ -103,11 +116,16 @@ ap_scalar_t* ap_scalar_alloc_set_double(double k);
 
 int ap_mpq_set_scalar(mpq_t mpq, ap_scalar_t* scalar, mp_rnd_t round);
   /* Assign mpq with the value of scalar,
-     possibly converting from DOUBLE type.
+     possibly converting from another type.
      Currently, round is not needed, as the conversion is exact */
 int ap_double_set_scalar(double* k, ap_scalar_t* scalar, mp_rnd_t round);
   /* Return the value of scalar in DOUBLE type,
-     possibly converting from MPQ type. */
+     possibly converting from another type. */
+int ap_mpfr_set_scalar(mpfr_t mpfr, ap_scalar_t* scalar, mp_rnd_t round);
+  /* Return the value of scalar in MPFR type,
+     possibly converting from another type. 
+     The precision of mpfr is NOT changed to match that of scalar, so, 
+     rounding may occur. */
 
 /* ====================================================================== */
 /* Tests */
@@ -153,6 +171,10 @@ void ap_scalar_init(ap_scalar_t* scalar, ap_scalar_discr_t d)
     scalar->val.mpq = (mpq_ptr)malloc(sizeof(mpq_t));
     mpq_init(scalar->val.mpq);
     break;
+  case AP_SCALAR_MPFR:
+    scalar->val.mpfr = (mpfr_ptr)malloc(sizeof(mpfr_t));
+    mpfr_init(scalar->val.mpfr);
+    break;
   case AP_SCALAR_DOUBLE:
     scalar->val.dbl = 0.0;
     break;
@@ -165,6 +187,10 @@ void ap_scalar_clear(ap_scalar_t* scalar)
   case AP_SCALAR_MPQ:
     mpq_clear(scalar->val.mpq);
     free(scalar->val.mpq);
+    break;
+  case AP_SCALAR_MPFR:
+    mpfr_clear(scalar->val.mpfr);
+    free(scalar->val.mpfr);
     break;
   case AP_SCALAR_DOUBLE:
     break;

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-
+#include "ap_manager.h"
 #include "num.h"
 #include "bound.h"
 #include "itv.h"
@@ -70,6 +70,9 @@ int main(int argc, char**argv)
   bound_t bound;
   itv_internal_t* intern;
 
+  ap_fpu_init();
+  mpfr_set_default_prec(4046);
+
   intern = itv_internal_alloc();
   itv_init(a); itv_init(b); itv_init(c); bound_init(bound);
 
@@ -104,4 +107,5 @@ int main(int argc, char**argv)
   itv_clear(b);
   itv_clear(c);
   bound_clear(bound);
+  itv_internal_free(intern);
 }

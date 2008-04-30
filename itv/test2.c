@@ -96,7 +96,10 @@ void set_frac(itv_t a, int ninf, int dinf, int nsup, int dsup)
 int main()
 {
   itv_t a,b;
+
   ap_fpu_init();
+  mpfr_set_default_prec(4046);
+
   intern = itv_internal_alloc();
   itv_init(a); itv_init(b);
 

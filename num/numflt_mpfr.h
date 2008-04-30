@@ -143,13 +143,13 @@ static inline int numflt_snprint(char* s, size_t size, numflt_t a)
   if (mpfr_inf_p(a)) return snprintf(s,size,"%coo",mpfr_sgn(a)>0?'+':'-');
   if (mpfr_zero_p(a)) return snprintf(s,size,"0");
   d = mpfr_get_d(a,GMP_RNDU);
-  if (!mpfr_cmp_d(a,d)) return snprintf(s,size,"%.20g",d);
+  if (!mpfr_cmp_d(a,d)) return snprintf(s,size,"%.*g",NUMFLT_PRINT_PREC,d);
   else {
     /* general case */
     char* tmp;
     mp_exp_t e;
     int x,i;
-    tmp = mpfr_get_str(NULL,&e,10,20,a,GMP_RNDU);
+    tmp = mpfr_get_str(NULL,&e,10,NUMFLT_PRINT_PREC,a,GMP_RNDU);
     if (!tmp) { *s = 0; return 0; }
     if (tmp[0]=='-' || tmp[0]=='+')
       x=snprintf(s,size,"%c.%se+%ld",tmp[0],tmp+1,(long int)e);
@@ -328,6 +328,14 @@ static inline size_t numflt_deserialize(numflt_t dst, const void* src)
 /* not the exact size of serialized data, but a sound overapproximation */
 static inline size_t numflt_serialized_size(numflt_t a) 
 { return mpfr_get_prec(a)/8+9+sizeof(mp_limb_t); }
+
+
+/* */
+static inline bool ap_scalar_set_numflt(ap_scalar_t* a, numflt_t b)
+{
+  ap_scalar_reinit(a,AP_SCALAR_MPFR);
+  return mpfr_set_numflt(a->val.mpfr,b);
+}
 
 #ifdef __cplusplus
 }

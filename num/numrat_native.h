@@ -44,6 +44,10 @@ static inline void numrat_canonicalize(numrat_t r)
   if (r->d){
     numint_t pgcd;
     numint_gcd(pgcd,r->n,r->d);
+    if (*pgcd==0 || (*pgcd==-1 && (*r->d==NUMINT_MIN || *r->n==NUMINT_MIN))) {
+      fprintf(stderr,"overflow in numrat_canonicalize\n");
+      return; 
+    }
     *r->n /= *pgcd;
     *r->d /= *pgcd;
   }
@@ -122,9 +126,15 @@ static inline void numrat_abs(numrat_t a, numrat_t b)
 static inline void numrat_add(numrat_t a, numrat_t b, numrat_t c)
 { 
   numint_t d;
+#if 0
   *d = *b->d * *c->d;
   *a->n = *b->n * *c->d + *b->d * *c->n; 
   *a->d = *d; 
+#else /* more cost but less overflows */
+  numint_lcm(d,b->d,c->d);
+  *a->n = *b->n * (*d / *b->d) + (*d / *c->d) * *c->n; 
+  *a->d = *d; 
+#endif
   numrat_canonicalize(a); 
 }
 static inline void numrat_add_uint(numrat_t a, numrat_t b, unsigned long int c)
@@ -136,9 +146,15 @@ static inline void numrat_add_uint(numrat_t a, numrat_t b, unsigned long int c)
 static inline void numrat_sub(numrat_t a, numrat_t b, numrat_t c)
 { 
   numint_t d;
-  *d = *b->d * *c->d; 
+#if 0
+  *d = *b->d * *c->d;
   *a->n = *b->n * *c->d - *b->d * *c->n; 
   *a->d = *d; 
+#else /* more cost but less overflows */
+  numint_lcm(d,b->d,c->d);
+  *a->n = *b->n * (*d / *b->d) - (*d / *c->d) * *c->n; 
+  *a->d = *d; 
+#endif
   numrat_canonicalize(a); 
 }
 static inline void numrat_sub_uint(numrat_t a, numrat_t b, unsigned long int c)
@@ -239,8 +255,15 @@ static inline int numrat_sgn(numrat_t a)
 static inline int numrat_cmp(numrat_t a, numrat_t b)
 { 
   numint_t aa,bb;
+#if 0
   *aa = *a->n * *b->d;
   *bb = *a->d * *b->n;
+#else /* more cost but less overflows */
+  numint_t d;
+  numint_lcm(d,a->d,b->d);
+  *aa = *a->n * (*d / *a->d);
+  *bb = (*d / *b->d) * *b->n;  
+#endif
   return numint_cmp(aa,bb);
 }
 static inline int numrat_cmp_int(numrat_t a, long int b)

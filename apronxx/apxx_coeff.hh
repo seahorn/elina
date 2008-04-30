@@ -69,6 +69,9 @@ public:
   //! Makes a MPQ scalar coeff from a MPQ (copied).
   coeff(const mpq_class& x);
   
+  //! Makes a MPFR scalar coeff from a MPFR (copied).
+  coeff(mpfr_t x);
+  
   //! Makes an interval coeff from an interval (copied).
   coeff(const interval& x);
 
@@ -89,6 +92,9 @@ public:
 
   //! Makes an interval coeff with MPQ bounds from MPQ bounds (copied).
   coeff(const mpq_class& inf, const mpq_class& sup);
+
+  //! Makes an interval coeff with MPFR bounds from MPFR bounds (copied).
+  coeff(mpfr_t inf, mpfr_t sup);
 
   //! Makes an interval coeff representing ]-oo,+oo[.
   coeff(top t);
@@ -137,6 +143,9 @@ public:
   //! Assigns a MPQ to *this, setting its type to MPQ scalar coeff and copying the MPQ.
   coeff& operator= (const mpq_class& x);
 
+  //! Assigns a MPFR to *this, setting its type to MPFR scalar coeff and copying the MPFR.
+  coeff& operator= (mpfr_t x);
+
   //! Copies the interval into *this, setting its type to interval coeff.
   coeff& operator= (const interval& x);
 
@@ -167,6 +176,9 @@ public:
   //! Assigns a MPQ to *this, setting its type to MPQ scalar coeff and copying the MPQ. \return *this.
   coeff& set(const mpq_class& x);
   
+  //! Assigns a MPFR to *this, setting its type to MPFR scalar coeff and copying the MPFR. \return *this.
+  coeff& set(mpfr_t x);
+  
   //! Copies the interval into *this, setting its type to interval coeff. \return *this.
   coeff& set(const interval& x);
 
@@ -187,6 +199,9 @@ public:
   
    //! Sets *this to an interval coeff with MPQ scalar bounds (copied). \return *this.
   coeff& set(const mpq_class& inf, const mpq_class& sup);
+
+   //! Sets *this to an interval coeff with MPFR scalar bounds (copied). \return *this.
+  coeff& set(mpfr_t inf, mpfr_t sup);
 
   //! Sets *this to the top interval (]-oo;+oo[), setting its type to interval coeff. \return *this.
   coeff& set(top t);

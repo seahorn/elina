@@ -66,10 +66,10 @@ allD: libitvD.a libitvD_debug.a
 
 allMPFR: libitvMPFR.a libitvMPFR_debug.a
 
-tests: testMPQ testRll testD testMPFR
+tests: testMPQ testRll testD testMPFR test2MPQ test2Rll test2D test2MPFR
 
 clean:
-	/bin/rm -f *.[ao] testMPQ testRll testD testMPFR
+	/bin/rm -f *.[ao] testMPQ testRll testD testMPFR test2MPQ test2Rll test2D test2MPFR
 	/bin/rm -f *.?.tex *.log *.aux *.bbl *.blg *.toc *.dvi *.ps *.pstex*
 
 mostlyclean: clean
@@ -176,6 +176,28 @@ testD: testD_debug.o libitvD_debug.a
 
 testMPFR: testMPFR_debug.o libitvMPFR_debug.a
 	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPFR_debug -lapron_debug -lgmp -lmpfr -lm
+
+test2MPQ: testMPQ_debug.o libitvMPQ_debug.a
+	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPQ_debug -lapron_debug -lgmp -lmpfr -lm
+
+test2Rll: testRll_debug.o libitvRll_debug.a
+	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvRll_debug -lapron_debug -lgmp -lmpfr -lm
+
+test2D: testD_debug.o libitvD_debug.a
+	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvD_debug -lapron_debug -lgmp -lmpfr -lm
+
+test2MPFR: testMPFR_debug.o libitvMPFR_debug.a
+	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPFR_debug -lapron_debug -lgmp -lmpfr -lm
+
+out: tests
+	./testMPQ > out.MPQ
+	./test2MPQ > out2.MPQ
+	./testMPFR > out.MPFR
+	./test2MPFR > out2.MPFR
+	./testRll > out.Rll
+	./test2Rll > out2.Rll
+	./testD > out.D
+	./test2D > out2.D
 
 #-----------------------------------
 # DEPENDENCIES

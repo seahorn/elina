@@ -213,7 +213,7 @@ public:
 
   /*! \brief Returns a (modifiable) reference to the user's preferred scalar type.
    *
-   * \return the scalar type can be either \c AP_SCALAR_DOUBLE or \c AP_SCALAR_MPQ.
+   * \return the scalar type can be either \c AP_SCALAR_DOUBLE, \c AP_SCALAR_MPQ, or \c AP_SCALAR_MPFR.
    */
   ap_scalar_discr_t& get_scalar_discr();
 

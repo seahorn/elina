@@ -71,6 +71,12 @@ inline coeff::coeff(const mpq_class& x)
   ap_coeff_set_scalar_mpq(&c, const_cast<mpq_class&>(x).get_mpq_t());
 }
   
+inline coeff::coeff(mpfr_t x) 
+{ 
+  ap_coeff_init(&c, AP_COEFF_SCALAR); 
+  ap_coeff_set_scalar_mpfr(&c,x);
+}
+  
 
 /* intervals */
 
@@ -119,6 +125,12 @@ inline coeff::coeff(const mpq_class& inf, const mpq_class& sup)
   ap_coeff_set_interval_mpq(&c,
 			    const_cast<mpq_class&>(inf).get_mpq_t(),
 			    const_cast<mpq_class&>(sup).get_mpq_t());
+}
+
+inline coeff::coeff(mpfr_t inf, mpfr_t sup)
+{
+  ap_coeff_init(&c, AP_COEFF_INTERVAL);
+  ap_coeff_set_interval_mpfr(&c,inf,sup);
 }
 
 inline coeff::coeff(top t)
@@ -185,6 +197,12 @@ inline coeff& coeff::operator= (const frac& x)
 inline coeff& coeff::operator= (const mpq_class& x) 
 { 
   ap_coeff_set_scalar_mpq(&c, const_cast<mpq_class&>(x).get_mpq_t()); 
+  return *this; 
+}
+  
+inline coeff& coeff::operator= (mpfr_t x) 
+{ 
+  ap_coeff_set_scalar_mpfr(&c, x);
   return *this; 
 }
   
@@ -283,6 +301,12 @@ inline coeff&coeff::set(const mpq_class& x)
   return *this;
 }
   
+inline coeff&coeff::set(mpfr_t x) 
+{ 
+  ap_coeff_set_scalar_mpfr(&c, x);
+  return *this;
+}
+  
 
 inline coeff&coeff::set(const interval& x)
 { 
@@ -327,6 +351,12 @@ inline coeff&coeff::set(const mpq_class& inf, const mpq_class& sup)
   ap_coeff_set_interval_mpq(&c,
 			    const_cast<mpq_class&>(inf).get_mpq_t(),
 			    const_cast<mpq_class&>(sup).get_mpq_t());
+  return *this;
+}
+
+inline coeff&coeff::set(mpfr_t inf, mpfr_t sup)
+{
+  ap_coeff_set_interval_mpfr(&c, inf, sup);
   return *this;
 }
 
