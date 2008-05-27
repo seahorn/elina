@@ -258,9 +258,9 @@ rebuild: oct.idl
 	cp ../mlapronidl/*.idl tmp
 	cp oct.idl tmp/
 	cd tmp && $(CAMLIDL) -no-include -nocpp -I . oct.idl
-	sed -f sedscript_c tmp/oct_stubs.c >oct_caml.c
-	sed -f sedscript_caml tmp/oct.ml >oct.ml
-	sed -f sedscript_caml tmp/oct.mli >oct.mli
+	$(SED) -f sedscript_c tmp/oct_stubs.c >oct_caml.c
+	$(SED) -f sedscript_caml tmp/oct.ml >oct.ml
+	$(SED) -f sedscript_caml tmp/oct.mli >oct.mli
 
 .PRECIOUS: %_caml.c %.ml %.mli %.cmi liboct%_caml.a liboct%_caml.so oct.cmx oct.cmo
 

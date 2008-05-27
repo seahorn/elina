@@ -3989,7 +3989,7 @@ equal by the function @code{ap_abstract0_is_eq} should be given the
 same hash value (this implies more or less a canonical form).
 @end deftypefun
 
-@@deftypefun void ap_abstract0_approximate (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, int @var{algorithm})
+@deftypefun void ap_abstract0_approximate (ap_manager_t* @var{man}, ap_abstract0_t* @var{a}, int @var{algorithm})
 Perform some transformation on @var{a}, guided by the field
 algorithm.
 

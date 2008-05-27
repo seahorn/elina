@@ -102,7 +102,7 @@ CXXFLAGS_DEBUG = \
 
 AR = ar
 RANLIB = ranlib
-SED = sed
+SED = sed # version >=4.1.x required
 M4 = m4
 INSTALL = install
 INSTALLd = install -d

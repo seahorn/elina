@@ -69,4 +69,4 @@ Minimal Requirements:
 	ml: OCaml, CamlIDL
 	c++: GCC 4.1.2
 	doc: latex, dvipdf, makeinfo, texi2html, texi2dvi
-	rebuild: GNU sed, GNU m4
+	rebuild: GNU sed (>=4.1.x), GNU m4

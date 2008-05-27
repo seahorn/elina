@@ -187,7 +187,7 @@ index.html: index.tex
 online: doc index.html
 	rm -fr online
 	mkdir -p online
-	mv index.html online
+	mv index.html poster.gif flyer.pdf online
 	mv apron/html online/apron
 	mv mlapronidl/html online/mlapronidl
 	mv mlgmpidl/html online/mlgmpidl
