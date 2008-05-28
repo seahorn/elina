@@ -1140,9 +1140,27 @@ ap_abstract0_t* ap_abstract0_asssub_linexpr_array(ap_funid_t funid,
       (dest!=NULL ? (ap_abstract0_checkman1(funid,man,dest) && ap_abstract0_check_abstract2(funid,man,a,dest)) : true) &&
       ap_abstract0_check_dim_array(funid,man,dimension,tdim,size) &&
       ap_abstract0_check_linexpr_array(funid,man,dimension,texpr,size) ){
-    void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
-    void* value = ptr(man,destructive,a->value,tdim,texpr,size,dest ? dest->value : NULL);
-    return ap_abstract0_cons2(man,destructive,a,value);
+    if (size==0){
+      if (dest){
+	void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET];
+	void* value = ptr(man,destructive,a->value,dest->value);
+	return ap_abstract0_cons2(man,destructive,a,value);
+      }
+      else {
+	if (destructive){
+	  return a;
+	}
+	else {
+	  void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
+	  return ap_abstract0_cons(man,ptr(man,a->value));
+	}
+      }
+    }
+    else {
+      void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
+      void* value = ptr(man,destructive,a->value,tdim,texpr,size,dest ? dest->value : NULL);
+      return ap_abstract0_cons2(man,destructive,a,value);
+    }
   }
   else {
     if (destructive) _ap_abstract0_free(a);
@@ -1187,9 +1205,27 @@ ap_abstract0_t* ap_abstract0_asssub_texpr_array(ap_funid_t funid,
       (dest!=NULL ? (ap_abstract0_checkman1(funid,man,dest) && ap_abstract0_check_abstract2(funid,man,a,dest)) : true) &&
       ap_abstract0_check_dim_array(funid,man,dimension,tdim,size) &&
       ap_abstract0_check_texpr_array(funid,man,dimension,texpr,size) ){
-    void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
-    void* value = ptr(man,destructive,a->value,tdim,texpr,size,dest ? dest->value : NULL);
-    return ap_abstract0_cons2(man,destructive,a,value);
+    if (size==0){
+      if (dest){
+	void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_MEET];
+	void* value = ptr(man,destructive,a->value,dest->value);
+	return ap_abstract0_cons2(man,destructive,a,value);
+      }
+      else {
+	if (destructive){
+	  return a;
+	}
+	else {
+	  void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
+	  return ap_abstract0_cons(man,ptr(man,a->value));
+	}
+      }
+    }
+    else {
+      void* (*ptr)(ap_manager_t*,...) = man->funptr[funid];
+      void* value = ptr(man,destructive,a->value,tdim,texpr,size,dest ? dest->value : NULL);
+      return ap_abstract0_cons2(man,destructive,a,value);
+    }
   }
   else {
     if (destructive) _ap_abstract0_free(a);
@@ -1259,9 +1295,20 @@ ap_abstract0_t* ap_abstract0_add_dimensions(ap_manager_t* man,
   ap_dimension_t dimension = _ap_abstract0_dimension(a);
   if (ap_abstract0_checkman1(AP_FUNID_ADD_DIMENSIONS,man,a) &&
       ap_abstract0_check_ap_dimchange_add(AP_FUNID_ADD_DIMENSIONS,man,dimension,dimchange)){
-    void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_ADD_DIMENSIONS];
-    void* value = ptr(man,destructive,a->value,dimchange,project);
-    return ap_abstract0_cons2(man,destructive,a,value);
+    if (dimchange->intdim+dimchange->realdim==0){
+      if (destructive){
+	return a;
+      }
+      else {
+	void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
+	return ap_abstract0_cons(man,ptr(man,a->value));
+      }
+    }
+    else {
+      void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_ADD_DIMENSIONS];
+      void* value = ptr(man,destructive,a->value,dimchange,project);
+      return ap_abstract0_cons2(man,destructive,a,value);
+    }
   }
   else {
     if (destructive) _ap_abstract0_free(a);
@@ -1278,9 +1325,20 @@ ap_abstract0_t* ap_abstract0_remove_dimensions(ap_manager_t* man,
   ap_dimension_t dimension = _ap_abstract0_dimension(a);
   if (ap_abstract0_checkman1(AP_FUNID_REMOVE_DIMENSIONS,man,a) &&
       ap_abstract0_check_ap_dimchange_remove(AP_FUNID_REMOVE_DIMENSIONS,man,dimension,dimchange)){
-    void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_REMOVE_DIMENSIONS];
-    void* value = ptr(man,destructive,a->value,dimchange);
-    return ap_abstract0_cons2(man,destructive,a,value);
+    if (dimchange->intdim+dimchange->realdim==0){
+      if (destructive){
+	return a;
+      }
+      else {
+	void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
+	return ap_abstract0_cons(man,ptr(man,a->value));
+      }
+    }
+    else {
+      void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_REMOVE_DIMENSIONS];
+      void* value = ptr(man,destructive,a->value,dimchange);
+      return ap_abstract0_cons2(man,destructive,a,value);
+    }
   }
   else {
     if (destructive) _ap_abstract0_free(a);
