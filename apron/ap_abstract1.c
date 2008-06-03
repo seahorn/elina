@@ -788,66 +788,78 @@ ap_abstract1_t ap_abstract1_add_ray_array(ap_manager_t* man,
 /* ============================================================ */
 
 ap_abstract1_t ap_abstract1_asssub_linexpr_array(ap_funid_t funid,
-					       ap_manager_t* man,
-					       bool destructive, ap_abstract1_t* a,
-					       ap_var_t* tvar, ap_linexpr1_t* linexpr, size_t size,
-					       ap_abstract1_t* dest)
+						 ap_manager_t* man,
+						 bool destructive, ap_abstract1_t* a,
+						 ap_var_t* tvar, ap_linexpr1_t* linexpr, size_t size,
+						 ap_abstract1_t* dest)
 {
-  ap_dim_t* tdim;
-  ap_linexpr0_t** tlinexpr0;
-  ap_abstract1_t res;
-  ap_dimchange_t* dimchange;
-  size_t i;
-
-  i = 0;
-  tdim = NULL;
-  tlinexpr0 = NULL;
-  if ( dest==NULL || ap_abstract1_check_env2(funid,man,a,dest)){
-    tdim = malloc(size*sizeof(ap_dim_t));
-    tlinexpr0 = malloc(size*sizeof(ap_linexpr0_t*));
-    for (i=0; i<size; i++){
-      tdim[i] = ap_environment_dim_of_var(a->env,tvar[i]);
-      if (tdim[i]==AP_DIM_MAX){
-	ap_abstract1_raise_invalid_var(man,funid,tvar[i]);
-	goto ap_abstract1_asssub_linexpr_array_exit;
-      }
-      if (ap_environment_is_eq(a->env,linexpr[i].env)){
-	dimchange = NULL;
-	tlinexpr0[i] = linexpr[i].linexpr0;
-      }
-      else {
-	dimchange = ap_environment_dimchange(linexpr[i].env,a->env);
-	if (dimchange==NULL){
-	  ap_abstract1_raise_invalid_expr(man,funid);
-	  goto ap_abstract1_asssub_linexpr_array_exit;
-	}
-	tlinexpr0[i] = ap_linexpr0_add_dimensions(linexpr[i].linexpr0,dimchange);
-	ap_dimchange_free(dimchange);
-      }
+  if (size==0){
+    if (dest){
+      return ap_abstract1_meet(man,destructive,a,dest);
     }
-    ap_abstract0_t* value = ap_abstract0_asssub_linexpr_array(funid,man,
-							      destructive,a->abstract0,
-							      tdim, tlinexpr0, size,
-							      (dest!=NULL) ? dest->abstract0 : NULL);
-    res = ap_abstract1_consres(destructive, a, value);
+    else if (destructive){
+      return *a;
+    }
+    else {
+      return ap_abstract1_copy(man,a);
+    }
   }
   else {
-  ap_abstract1_asssub_linexpr_array_exit:
-    res = ap_abstract1_top(man,a->env);
-    if (destructive) ap_abstract1_clear(man,a);
-  }
-  if (tlinexpr0!=NULL){
-    size_t j;
-    for (j=0; j<i; j++){
-      if (tlinexpr0[j]!=linexpr[j].linexpr0)
-	ap_linexpr0_free(tlinexpr0[j]);
-    }
-    free(tlinexpr0);
-    free(tdim);
-  }
-  return res;
-}
+    ap_dim_t* tdim;
+    ap_linexpr0_t** tlinexpr0;
+    ap_abstract1_t res;
+    ap_dimchange_t* dimchange;
+    size_t i;
 
+    i = 0;
+    tdim = NULL;
+    tlinexpr0 = NULL;
+    if ( dest==NULL || ap_abstract1_check_env2(funid,man,a,dest)){
+      tdim = malloc(size*sizeof(ap_dim_t));
+      tlinexpr0 = malloc(size*sizeof(ap_linexpr0_t*));
+      for (i=0; i<size; i++){
+	tdim[i] = ap_environment_dim_of_var(a->env,tvar[i]);
+	if (tdim[i]==AP_DIM_MAX){
+	  ap_abstract1_raise_invalid_var(man,funid,tvar[i]);
+	  goto ap_abstract1_asssub_linexpr_array_exit;
+	}
+	if (ap_environment_is_eq(a->env,linexpr[i].env)){
+	  dimchange = NULL;
+	  tlinexpr0[i] = linexpr[i].linexpr0;
+	}
+	else {
+	  dimchange = ap_environment_dimchange(linexpr[i].env,a->env);
+	  if (dimchange==NULL){
+	    ap_abstract1_raise_invalid_expr(man,funid);
+	    goto ap_abstract1_asssub_linexpr_array_exit;
+	  }
+	  tlinexpr0[i] = ap_linexpr0_add_dimensions(linexpr[i].linexpr0,dimchange);
+	  ap_dimchange_free(dimchange);
+	}
+      }
+      ap_abstract0_t* value = ap_abstract0_asssub_linexpr_array(funid,man,
+								destructive,a->abstract0,
+								tdim, tlinexpr0, size,
+								(dest!=NULL) ? dest->abstract0 : NULL);
+      res = ap_abstract1_consres(destructive, a, value);
+    }
+    else {
+    ap_abstract1_asssub_linexpr_array_exit:
+      res = ap_abstract1_top(man,a->env);
+      if (destructive) ap_abstract1_clear(man,a);
+    }
+    if (tlinexpr0!=NULL){
+      size_t j;
+      for (j=0; j<i; j++){
+	if (tlinexpr0[j]!=linexpr[j].linexpr0)
+	  ap_linexpr0_free(tlinexpr0[j]);
+      }
+      free(tlinexpr0);
+      free(tdim);
+    }
+    return res;
+  }
+}
 ap_abstract1_t ap_abstract1_assign_linexpr_array(ap_manager_t* man,
 					       bool destructive, ap_abstract1_t* a,
 					       ap_var_t* tvar, ap_linexpr1_t* linexpr, size_t size,
@@ -867,61 +879,73 @@ ap_abstract1_t ap_abstract1_asssub_texpr_array(ap_funid_t funid,
 					       ap_var_t* tvar, ap_texpr1_t* texpr, size_t size,
 					       ap_abstract1_t* dest)
 {
-  ap_dim_t* tdim;
-  ap_texpr0_t** ttexpr0;
-  ap_abstract1_t res;
-  ap_dimchange_t* dimchange;
-  size_t i;
+  if (size==0){
+    if (dest){
+      return ap_abstract1_meet(man,destructive,a,dest);
+    }
+    else if (destructive){
+      return *a;
+    }
+    else {
+      return ap_abstract1_copy(man,a);
+    }
+  }
+  else {
+    ap_dim_t* tdim;
+    ap_texpr0_t** ttexpr0;
+    ap_abstract1_t res;
+    ap_dimchange_t* dimchange;
+    size_t i;
 
-  i = 0;
-  tdim = NULL;
-  ttexpr0 = NULL;
-  if ( dest==NULL || ap_abstract1_check_env2(funid,man,a,dest)){
-    tdim = malloc(size*sizeof(ap_dim_t));
-    ttexpr0 = malloc(size*sizeof(ap_texpr0_t*));
-    for (i=0; i<size; i++){
-      tdim[i] = ap_environment_dim_of_var(a->env,tvar[i]);
-      if (tdim[i]==AP_DIM_MAX){
-	ap_abstract1_raise_invalid_var(man,funid,tvar[i]);
-	goto ap_abstract1_asssub_texpr_array_exit;
-      }
-      if (ap_environment_is_eq(a->env,texpr[i].env)){
-	dimchange = NULL;
-	ttexpr0[i] = texpr[i].texpr0;
-      }
-      else {
-	dimchange = ap_environment_dimchange(texpr[i].env,a->env);
-	if (dimchange==NULL){
-	  ap_abstract1_raise_invalid_expr(man,funid);
+    i = 0;
+    tdim = NULL;
+    ttexpr0 = NULL;
+    if ( dest==NULL || ap_abstract1_check_env2(funid,man,a,dest)){
+      tdim = malloc(size*sizeof(ap_dim_t));
+      ttexpr0 = malloc(size*sizeof(ap_texpr0_t*));
+      for (i=0; i<size; i++){
+	tdim[i] = ap_environment_dim_of_var(a->env,tvar[i]);
+	if (tdim[i]==AP_DIM_MAX){
+	  ap_abstract1_raise_invalid_var(man,funid,tvar[i]);
 	  goto ap_abstract1_asssub_texpr_array_exit;
 	}
-	ttexpr0[i] = ap_texpr0_add_dimensions(texpr[i].texpr0,dimchange);
-	ap_dimchange_free(dimchange);
+	if (ap_environment_is_eq(a->env,texpr[i].env)){
+	  dimchange = NULL;
+	  ttexpr0[i] = texpr[i].texpr0;
+	}
+	else {
+	  dimchange = ap_environment_dimchange(texpr[i].env,a->env);
+	  if (dimchange==NULL){
+	    ap_abstract1_raise_invalid_expr(man,funid);
+	    goto ap_abstract1_asssub_texpr_array_exit;
+	  }
+	  ttexpr0[i] = ap_texpr0_add_dimensions(texpr[i].texpr0,dimchange);
+	  ap_dimchange_free(dimchange);
+	}
       }
-    }
-    ap_abstract0_t* value = ap_abstract0_asssub_texpr_array(funid,man,
+      ap_abstract0_t* value = ap_abstract0_asssub_texpr_array(funid,man,
 							      destructive,a->abstract0,
 							      tdim, ttexpr0, size,
 							      (dest!=NULL) ? dest->abstract0 : NULL);
-    res = ap_abstract1_consres(destructive, a, value);
-  }
-  else {
-  ap_abstract1_asssub_texpr_array_exit:
-    res = ap_abstract1_top(man,a->env);
-    if (destructive) ap_abstract1_clear(man,a);
-  }
-  if (ttexpr0!=NULL){
-    size_t j;
-    for (j=0; j<i; j++){
-      if (ttexpr0[j]!=texpr[j].texpr0)
-	ap_texpr0_free(ttexpr0[j]);
+      res = ap_abstract1_consres(destructive, a, value);
     }
-    free(ttexpr0);
-    free(tdim);
+    else {
+    ap_abstract1_asssub_texpr_array_exit:
+      res = ap_abstract1_top(man,a->env);
+      if (destructive) ap_abstract1_clear(man,a);
+    }
+    if (ttexpr0!=NULL){
+      size_t j;
+      for (j=0; j<i; j++){
+	if (ttexpr0[j]!=texpr[j].texpr0)
+	  ap_texpr0_free(ttexpr0[j]);
+      }
+      free(ttexpr0);
+      free(tdim);
+    }
+    return res;
   }
-  return res;
 }
-
 ap_abstract1_t ap_abstract1_assign_texpr_array(ap_manager_t* man,
 					       bool destructive, ap_abstract1_t* a,
 					       ap_var_t* tvar, ap_texpr1_t* texpr, size_t size,
