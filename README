@@ -30,6 +30,9 @@ ppl:
 	not compiled unless HAS_PPL is defined in Makefile.config
 	under GPL (instead of LGPL) license
 
+	In the latter case, you need to apply a patch, look at ppl/README.
+
+
 products:
 	- reduced product of NewPolka convex polyhedra and PPL
 	  linear congruences.

@@ -1,4 +1,4 @@
-# -*- mode: makefile -*- 
+# -*- mode: makefile -*-
 
 ######################################################################
 # HAS Flags
@@ -13,7 +13,7 @@ HAS_OCAML = 1
 # HAS_CPP = 1
 
 # If defined to non-empty value, compiles the PPL domain
-# (require included patch to PPL)
+# (require included patch to PPL, see ppl/README and ppl/ppl.patch)
 
 # HAS_PPL = 1
 
@@ -26,7 +26,7 @@ HAS_OCAML = 1
 # Directories
 ######################################################################
 
-# Where to install and to find APRON 
+# Where to install and to find APRON
 # ($(APRON_PREFIX)/include, $(APRON_PREFIX)/lib)
 #
 APRON_PREFIX = /usr
@@ -63,7 +63,7 @@ CAMLIDL_PREFIX = /usr
 # C compiler
 CC = gcc
 
-# C compilation flags 
+# C compilation flags
 CFLAGS = \
 -Wcast-qual -Wswitch -Werror-implicit-function-declaration \
 -Wall -Wextra -Wundef -Wbad-function-cast -Wcast-align -Wstrict-prototypes \
@@ -129,4 +129,3 @@ DVIPDF=dvipdf
 MAKEINDEX=makeindex
 TEXI2DVI=texi2dvi
 TEXI2HTML=texi2html
-
