@@ -321,12 +321,12 @@ ap_lincons0_array_t box_to_lincons_array(ap_manager_t* man, box_t* a)
 
   man->result.flag_best = true;
   man->result.flag_exact = true;
-  if (nbdims==0){
-    array = ap_lincons0_array_make(0);
-  }
-  else if (a->p==NULL){
+  if (a->p==NULL){
     array = ap_lincons0_array_make(1);
     array.p[0] = ap_lincons0_make_unsat();
+  } 
+  else if (nbdims==0){
+    array = ap_lincons0_array_make(0);
   }
   else {
     size_t size;
@@ -391,7 +391,7 @@ ap_generator0_array_t box_to_generator_array(ap_manager_t* man, box_t* a)
   man->result.flag_exact = true;
   
   size = a->intdim+a->realdim;
-  if (size==0 || a->p==NULL){
+  if (a->p==NULL){
     array = ap_generator0_array_make(0);
     return array;
   }
