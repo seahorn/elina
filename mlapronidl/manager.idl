@@ -51,6 +51,7 @@ typedef [abstract,
   | Funid_asize\n\
   | Funid_minimize\n\
   | Funid_canonicalize\n\
+  | Funid_hash\n\
   | Funid_approximate\n\
   | Funid_fprint\n\
   | Funid_fprintdiff\n\
