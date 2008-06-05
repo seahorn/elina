@@ -154,9 +154,9 @@ let ex1 (man:'a Manager.t) : 'a Abstract1.t =
   printf "abs2=%a@." Abstract1.print abs2;
   (* 4. Tests top and bottom *)
   let abs3 = Abstract1.bottom man env in
-  printf "abs3=%a@.is_bottom(abs3)=%a@."
+  printf "abs3=%a@.is_bottom(abs3)=%b@."
     Abstract1.print abs3 
-    Manager.print_tbool (Abstract1.is_bottom man abs3);
+    (Abstract1.is_bottom man abs3);
 
   printf "abs=%a@." Abstract1.print abs;
   let p2 = Abstract1.expand man abs 
