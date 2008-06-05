@@ -109,7 +109,7 @@ ap_texpr0_t* ap_texpr0_cst_interval_int(long int inf, long int sup)
   ap_coeff_set_interval_int(&res->val.cst, inf, sup);
   return res;
 }
-ap_texpr0_t* ap_texpr0_cst_interval_frac(long int numinf, unsigned long int deninf, 
+ap_texpr0_t* ap_texpr0_cst_interval_frac(long int numinf, unsigned long int deninf,
 					 long int numsup, unsigned long int densup)
 {
   ap_texpr0_t* res = (ap_texpr0_t*) malloc(sizeof(ap_texpr0_t));
@@ -196,7 +196,7 @@ ap_texpr0_t* ap_texpr0_copy(ap_texpr0_t* expr)
   default:
     assert(false);
     return NULL;
-  } 
+  }
 }
 void ap_texpr0_node_free(ap_texpr0_node_t* node)
 {
@@ -235,8 +235,8 @@ ap_texpr0_t* ap_texpr0_from_linexpr0(ap_linexpr0_t* e)
     res = ap_texpr0_binop(AP_TEXPR_ADD,
 			  res,
 			  ap_texpr0_binop(AP_TEXPR_MUL,
-					  ap_texpr0_cst(c), ap_texpr0_dim(d), 
-					  AP_RTYPE_REAL, AP_RDIR_RND), 
+					  ap_texpr0_cst(c), ap_texpr0_dim(d),
+					  AP_RTYPE_REAL, AP_RDIR_RND),
 			  AP_RTYPE_REAL, AP_RDIR_RND);
   }
   return res;
@@ -254,7 +254,7 @@ static const char* ap_texpr_op_name[] =
 static const int ap_texpr_op_precedence[] =
   { 1, 1, 2, 2, 2,  /* binary */
     3, 4, 4         /* unary */
-  };    
+  };
 
 static const char* ap_texpr_rtype_name[] =
   { "", "i", "f", "d", "l", "q", };
@@ -276,7 +276,7 @@ static inline int ap_texpr0_precedence(ap_texpr0_t* a)
   return ap_texpr_op_precedence[a->val.node->op];
 }
 
-static void ap_texpr0_node_fprint(FILE* stream, ap_texpr0_node_t* a, 
+static void ap_texpr0_node_fprint(FILE* stream, ap_texpr0_node_t* a,
 				  char** name_of_dim)
 {
   int prec = ap_texpr_op_precedence[a->op];
@@ -293,7 +293,7 @@ static void ap_texpr0_node_fprint(FILE* stream, ap_texpr0_node_t* a,
   if (a->exprB) fprintf(stream, " ");
   fprintf(stream, "%s", ap_texpr_op_name[a->op]);
   if (!ap_texpr0_node_exact(a))
-    fprintf(stream, "_%s,%s", 
+    fprintf(stream, "_%s,%s",
 	    ap_texpr_rtype_name[a->type], ap_texpr_rdir_name[a->dir]);
 
   /* right argument */
@@ -359,7 +359,7 @@ size_t ap_texpr0_size(ap_texpr0_t* a)
   case AP_TEXPR_CST:
   case AP_TEXPR_DIM:
     return 0;
-  case AP_TEXPR_NODE: 
+  case AP_TEXPR_NODE:
     return 1 + ap_texpr0_size(a->val.node->exprA) + ap_texpr0_size(a->val.node->exprB);
   default:
     assert(0);
@@ -375,7 +375,7 @@ static ap_dim_t ap_texpr0_max_dim_internal(ap_texpr0_t* a, ap_dim_t max)
   case AP_TEXPR_CST:
     return max;
   case AP_TEXPR_DIM:
-    return a->val.dim > max ? a->val.dim : max;
+    return (a->val.dim+1) > max ? (a->val.dim+1) : max;
   case AP_TEXPR_NODE:
     return ap_texpr0_max_dim_internal(a->val.node->exprB,
 				      ap_texpr0_max_dim_internal(a->val.node->exprA,max));
@@ -399,7 +399,7 @@ bool ap_texpr0_has_dim(ap_texpr0_t* a, ap_dim_t d)
   case AP_TEXPR_DIM:
     return a->val.dim == d;
   case AP_TEXPR_NODE:
-    return 
+    return
       ap_texpr0_has_dim(a->val.node->exprA, d) ||
       ap_texpr0_has_dim(a->val.node->exprB, d);
   default:
@@ -429,27 +429,34 @@ static void ap_texpr0_dimlist_internal(ap_texpr0_t* a, char* v)
 
 ap_dim_t* ap_texpr0_dimlist(ap_texpr0_t* a)
 {
-  ap_dim_t max = ap_texpr0_max_dim(a), i, nb;
+  ap_dim_t max,i,nb;
   ap_dim_t* d;
-  char* v = malloc(max+1);
+  char* v;
 
   /* compute occurence vector */
-  memset(v, 0, max+1);
-  ap_texpr0_dimlist_internal(a, v);
+  max = ap_texpr0_max_dim(a);
+  if (max==0){
+    /* constant expression */
+    d = malloc(sizeof(ap_dim_t));
+    d[0] = AP_DIM_MAX;
+  }
+  else {
+    /* get number of distinct variables */
+    v = malloc(max);
+    memset(v, 0, max);
+    ap_texpr0_dimlist_internal(a, v);
+    for (i=0, nb=0; i<max; i++)
+      if (v[i]) nb++;
 
-  /* get number of distinct variables */
-  for (i=0, nb=0; i<=max; i++)
-    if (v[i]) nb++;
-  
-  /* create & fill list */
-  d = malloc(sizeof(ap_dim_t) * (nb+1));
-  for (i=0, nb=0; i<=max; i++)
-    if (v[i]) { d[nb] = i; nb++; }
-  d[nb] = AP_DIM_MAX; /* terminator */
+    /* create & fill list */
+    d = malloc(sizeof(ap_dim_t) * (nb+1));
+    for (i=0, nb=0; i<max; i++)
+      if (v[i]) { d[nb] = i; nb++; }
+    d[nb] = AP_DIM_MAX; /* terminator */
 
-  /* clean-up */
-  free (v);
-
+    /* clean-up */
+    free (v);
+  }
   return d;
 }
 
@@ -476,15 +483,15 @@ bool ap_texpr0_is_scalar(ap_texpr0_t* a)
   if (!a) return true;
   switch(a->discr) {
   case AP_TEXPR_CST:
-    return 
+    return
       (a->val.cst.discr==AP_COEFF_SCALAR) ||
-      (ap_scalar_equal(a->val.cst.val.interval->inf, 
+      (ap_scalar_equal(a->val.cst.val.interval->inf,
 		       a->val.cst.val.interval->sup));
   case AP_TEXPR_DIM:
     return true;
-  case AP_TEXPR_NODE: 
-    return 
-      ap_texpr0_is_scalar(a->val.node->exprA) && 
+  case AP_TEXPR_NODE:
+    return
+      ap_texpr0_is_scalar(a->val.node->exprA) &&
       ap_texpr0_is_scalar(a->val.node->exprB);
   default:
     assert(0);
@@ -504,25 +511,25 @@ bool ap_texpr0_is_interval_linear(ap_texpr0_t* a)
     case AP_TEXPR_NEG:
       return ap_texpr0_is_interval_linear(a->val.node->exprA);
     case AP_TEXPR_CAST:
-      return 
-	ap_texpr0_node_exact(a->val.node) && 
-	ap_texpr0_is_interval_linear(a->val.node->exprA); 
+      return
+	ap_texpr0_node_exact(a->val.node) &&
+	ap_texpr0_is_interval_linear(a->val.node->exprA);
     case AP_TEXPR_ADD:
     case AP_TEXPR_SUB:
       return
- 	ap_texpr0_node_exact(a->val.node) &&
+	ap_texpr0_node_exact(a->val.node) &&
 	ap_texpr0_is_interval_linear(a->val.node->exprA) &&
- 	ap_texpr0_is_interval_linear(a->val.node->exprB);
+	ap_texpr0_is_interval_linear(a->val.node->exprB);
     case AP_TEXPR_MUL:
       return
- 	ap_texpr0_node_exact(a->val.node) &&
+	ap_texpr0_node_exact(a->val.node) &&
 	( (ap_texpr0_is_interval_linear(a->val.node->exprA) &&
 	   ap_texpr0_is_interval_cst(a->val.node->exprB)) ||
 	  (ap_texpr0_is_interval_linear(a->val.node->exprB) &&
 	   ap_texpr0_is_interval_cst(a->val.node->exprA)) );
     case AP_TEXPR_DIV:
       return
- 	ap_texpr0_node_exact(a->val.node) &&
+	ap_texpr0_node_exact(a->val.node) &&
 	ap_texpr0_is_interval_linear(a->val.node->exprA) &&
 	ap_texpr0_is_interval_cst(a->val.node->exprB);
     default:
@@ -546,19 +553,19 @@ bool ap_texpr0_is_interval_polynomial(ap_texpr0_t* a)
     case AP_TEXPR_NEG:
       return ap_texpr0_is_interval_polynomial(a->val.node->exprA);
     case AP_TEXPR_CAST:
-      return 
-	ap_texpr0_node_exact(a->val.node) && 
-	ap_texpr0_is_interval_polynomial(a->val.node->exprA); 
+      return
+	ap_texpr0_node_exact(a->val.node) &&
+	ap_texpr0_is_interval_polynomial(a->val.node->exprA);
     case AP_TEXPR_ADD:
     case AP_TEXPR_SUB:
     case AP_TEXPR_MUL:
      return
- 	ap_texpr0_node_exact(a->val.node) &&
+	ap_texpr0_node_exact(a->val.node) &&
 	ap_texpr0_is_interval_polynomial(a->val.node->exprA) &&
- 	ap_texpr0_is_interval_polynomial(a->val.node->exprB);
+	ap_texpr0_is_interval_polynomial(a->val.node->exprB);
     case AP_TEXPR_DIV:
       return
- 	ap_texpr0_node_exact(a->val.node) &&
+	ap_texpr0_node_exact(a->val.node) &&
 	ap_texpr0_is_interval_polynomial(a->val.node->exprA) &&
 	ap_texpr0_is_interval_cst(a->val.node->exprB);
     default:
@@ -582,17 +589,17 @@ bool ap_texpr0_is_interval_polyfrac(ap_texpr0_t* a)
     case AP_TEXPR_NEG:
       return ap_texpr0_is_interval_polyfrac(a->val.node->exprA);
     case AP_TEXPR_CAST:
-      return 
-	ap_texpr0_node_exact(a->val.node) && 
-	ap_texpr0_is_interval_polyfrac(a->val.node->exprA); 
+      return
+	ap_texpr0_node_exact(a->val.node) &&
+	ap_texpr0_is_interval_polyfrac(a->val.node->exprA);
     case AP_TEXPR_ADD:
     case AP_TEXPR_SUB:
     case AP_TEXPR_MUL:
     case AP_TEXPR_DIV:
       return
- 	ap_texpr0_node_exact(a->val.node) &&
+	ap_texpr0_node_exact(a->val.node) &&
 	ap_texpr0_is_interval_polyfrac(a->val.node->exprA) &&
- 	ap_texpr0_is_interval_polyfrac(a->val.node->exprB);
+	ap_texpr0_is_interval_polyfrac(a->val.node->exprB);
     default:
       return false;
     }
@@ -626,7 +633,7 @@ void ap_texpr0_substitute_with(ap_texpr0_t* a, ap_dim_t dim, ap_texpr0_t *dst)
     dst = ap_texpr0_copy(dst);
     *a = *dst;
     free(dst);
-    return;    
+    return;
   case AP_TEXPR_NODE:
     ap_texpr0_substitute_with(a->val.node->exprA, dim, dst);
     ap_texpr0_substitute_with(a->val.node->exprB, dim, dst);
@@ -781,4 +788,3 @@ bool ap_texpr0_equal(ap_texpr0_t* a1, ap_texpr0_t* a2)
     return false;
   }
 }
-

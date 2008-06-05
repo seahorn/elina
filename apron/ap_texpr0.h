@@ -26,8 +26,8 @@ extern "C" {
 /*
   IMPORTANT NOTE
   --------------
-  correct use of floating-point AP_RTYPE_xxx currently supposes that the 
-  FPU rounds towards +oo 
+  correct use of floating-point AP_RTYPE_xxx currently supposes that the
+  FPU rounds towards +oo
 */
 
 
@@ -40,7 +40,7 @@ typedef enum ap_texpr_op_t {
   AP_TEXPR_MOD,  /* either integer or real, no rounding */
 
   /* Unary operators */
-  AP_TEXPR_NEG   /* no rounding */, 
+  AP_TEXPR_NEG   /* no rounding */,
   AP_TEXPR_CAST, AP_TEXPR_SQRT,
 
 } ap_texpr_op_t;
@@ -105,7 +105,7 @@ ap_texpr0_t* ap_texpr0_cst_interval_scalar (ap_scalar_t* inf, ap_scalar_t* sup);
 ap_texpr0_t* ap_texpr0_cst_interval_mpq    (mpq_t inf, mpq_t sup);
 ap_texpr0_t* ap_texpr0_cst_interval_mpfr   (mpfr_t inf, mpfr_t sup);
 ap_texpr0_t* ap_texpr0_cst_interval_int    (long int inf, long int sup);
-ap_texpr0_t* ap_texpr0_cst_interval_frac   (long int numinf, unsigned long int deninf, 
+ap_texpr0_t* ap_texpr0_cst_interval_frac   (long int numinf, unsigned long int deninf,
 					    long int numsup, unsigned long int densup);
 ap_texpr0_t* ap_texpr0_cst_interval_double (double inf, double sup);
 ap_texpr0_t* ap_texpr0_cst_interval_top    (void);
@@ -115,7 +115,7 @@ ap_texpr0_t* ap_texpr0_dim(ap_dim_t dim);
   /* Create a dimension (variable) leaf expression */
 
 ap_texpr0_t* ap_texpr0_unop(ap_texpr_op_t op,
-			    ap_texpr0_t* opA, 
+			    ap_texpr0_t* opA,
 			    ap_texpr_rtype_t type, ap_texpr_rdir_t dir);
   /* Create unary operator node */
 
@@ -162,7 +162,10 @@ size_t ap_texpr0_size(ap_texpr0_t* a);
   /* Returns the number of operator nodes */
 
 ap_dim_t ap_texpr0_max_dim(ap_texpr0_t* a);
-  /* Returns the maximum ap_dim_t of all dimensions in expression */
+  /* Returns the maximum ap_dim_t PLUS ONE of all dimensions in expression, and
+     0 if no dimension at all. 
+
+     For instance, it returns 3 on the expression x2. */
 
 bool ap_texpr0_has_dim(ap_texpr0_t* a, ap_dim_t d);
    /* Returns true if dimension d appears in the expression */

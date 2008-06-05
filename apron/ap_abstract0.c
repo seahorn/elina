@@ -366,7 +366,7 @@ ap_dim_t ap_abstract0_check_texpr_check(ap_dimension_t dimension,
   ap_dim_t dim;
 
   dim = ap_texpr0_max_dim(expr);
-  if (dim < dimension.intdim+dimension.realdim)
+  if (dim <= dimension.intdim+dimension.realdim)
     return AP_DIM_MAX;
   else
     return dim;
