@@ -15,7 +15,13 @@ type 'a t\n\
 
 quote(MLI,"\n(** Create a PolkaGrid manager with loose convex polyhedra. *)")
 ap_manager_ptr ap_pkgrid_manager_alloc_loose()
-quote(call,"_res = ap_pkgrid_manager_alloc(false);");
+quote(call,"
+_res = ap_pkgrid_manager_alloc(false);
+{ ap_exc_t i;
+for (i=1; i<AP_EXC_SIZE; i++){
+ap_manager_set_abort_if_exception(_res,i,false);
+}}
+");
 
 quote(MLI,"\n(** Create a PolkaGrid manager with strict convex polyhedra. *)")
 ap_manager_ptr ap_pkgrid_manager_alloc_strict()
