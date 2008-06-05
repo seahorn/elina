@@ -48,10 +48,10 @@ assert(_res->count >= 1);\n\
 
 quote(MLI,"\n(** Adding to an environment a set of integer and real variables. Raise [Failure] in case of name conflict. *)")
 ap_environment_ptr ap_environment_add(ap_environment_ptr e,
-				[size_is(intdim)]ap_var_t* name_of_intdim,
-				int intdim,
-				[size_is(realdim)]ap_var_t* name_of_realdim,
-				int realdim)
+				      [size_is(intdim)]ap_var_t* name_of_intdim,
+				      int intdim,
+				      [size_is(realdim)]ap_var_t* name_of_realdim,
+				      int realdim)
      quote(call,"\n\
 _res = ap_environment_add(e,name_of_intdim,intdim,name_of_realdim,realdim);\n\
 if (_res==NULL){\n\
@@ -96,6 +96,29 @@ else {\n\
 assert(_res->count >= 1);")
 ;
 
+quote(MLI,"\n(** Similar to previous function, but returns also \n\
+the permutation on dimensions induced by the renaming. *)")
+ap_environment_ptr
+ap_environment_rename_perm(ap_environment_ptr e,
+			   [size_is(size1)]ap_var_t* tvar1,
+			   [size_is(size2)]ap_var_t* tvar2,
+			   int size1,int size2,
+			   [out] struct ap_dimperm_t perm)
+     quote(call,"\n\
+if (size1!=size2){\n\
+  camlidl_free(_ctx);\n\
+  caml_failwith(\"Environment.rename: arrays of different sizes\");\n\
+}\n\
+else {\n\
+  _res = ap_environment_rename(e,tvar1,tvar2,size1,&perm);\n\
+  if (_res==NULL){\n\
+    camlidl_free(_ctx);\n\
+    caml_failwith(\"Environment.rename_dimperm: unknown variables or interference of new variables with unrenamed variables\");\n\
+  }\n\
+}\n\
+assert(_res->count >= 1);")
+;
+
 quote(MLI,"\n
 (** Compute the least common environment of 2 environment, \n\
 that is, the environment composed of all the variables \n\
@@ -119,6 +142,41 @@ if (_res==NULL){\n\
 }\n\
 assert(_res->count >= 1);")
 ;
+
+quote(MLI,"\n
+(** Similar to the previous function, but returns also the transformations \n\
+required to convert from [e1] (resp. [e2]) \n\
+to the lce. If [None] is returned, this means \n\
+that [e1] (resp. [e2]) is identic to the lce.*)")
+ap_environment_ptr
+ap_environment_lce_change([in] ap_environment_ptr e1,
+			  [in] ap_environment_ptr e2,
+			  [out,unique] ap_dimchange_t *c1,
+			  [out,unique] ap_dimchange_t *c2)
+     quote(call,"\n\
+{\n\
+  _res = ap_environment_lce(e1,e2,&c1,&c2);\n\
+}\n\
+if (_res==NULL){\n\
+  camlidl_free(_ctx);\n\
+  caml_failwith(\"Environment.lce: variable with two different types\");\n\
+}\n\
+assert(_res->count >= 1);")
+;
+quote(MLI,"\n
+(** [dimchange e1 e2] computes the transformation for \n\
+converting from an environment [e1] to a superenvironment \n\
+[e2]. Raises [Failure] if [e2] is not a superenvironment.\
+*)")
+[ref]ap_dimchange_t *ap_environment_dimchange(ap_environment_ptr e1,
+					      ap_environment_ptr e2)
+     quote(call,"\n\
+_res = ap_environment_dimchange(e1,e2);\n\
+if (_res==NULL){\n\
+  camlidl_free(_ctx);\n\
+  caml_failwith(\"Environment.dimchange: the second environment is not a superenvironment of the first one\");\n\
+}\n\
+");
 
 quote(MLI,"\n(** Test equality if two environments *)")
 boolean ap_environment_equal(ap_environment_ptr env1,
