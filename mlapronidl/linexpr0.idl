@@ -32,6 +32,13 @@ ap_linexpr0_ptr ap_linexpr0_make([unique]int* size)
   }\n\
   ");
 
+quote(MLI,"\n\
+val of_list : int option -> (Coeff.t * Dim.t) list -> Coeff.t option -> t\n\
+(** Combines {!make] and {!set_list} (see below) *)\n\
+val of_array : int option -> (Coeff.t * Dim.t) array -> Coeff.t option -> t\n\
+(** Combines {!make] and {!set_array} (see below) *)\n\
+")
+
 quote(MLI,"(** In case of sparse representation, remove zero coefficients *)")
 void ap_linexpr0_minimize(ap_linexpr0_ptr a);
 
@@ -148,6 +155,15 @@ let set_array expr tab ocst = \n\
   end;\n\
   ()\n\
 \n\
+let of_list osize list ocst =\n\
+  let expr = make osize in\n\
+  set_list expr list ocst;\n\
+  expr\n\
+let of_array osize tab ocst =\n\
+  let expr = make osize in\n\
+  set_array expr tab ocst;\n\
+  expr\n\
+\n\
 let print assoc fmt expr = \n\
   Format.fprintf fmt \"@[<hov>\";\n\
   let first = ref true in\n\
@@ -162,8 +178,8 @@ let print assoc fmt expr = \n\
       if sgn <> 0 then begin\n\
 	if not !first then Format.fprintf fmt \"@,\";\n\
 	if sgn>0 then begin\n\
-          if not !first then Format.pp_print_string fmt \"+\";\n\
-        end;\n\
+	  if not !first then Format.pp_print_string fmt \"+\";\n\
+	end;\n\
 	begin match coeff with\n\
 	| Coeff.Scalar scalar ->\n\
 	    if Scalar.equal_int scalar (-1) then\n\
