@@ -988,7 +988,7 @@ class ap_ppl_map {
   }
   ~ap_ppl_map() { delete[] tab; delete[] def; }
   void set(dimension_type i,dimension_type j) { tab[i] = j; def[i] = 1; }
-  bool has_empty_codomain() const { return false; }
+  bool has_empty_codomain() const { return codom==0; }
   dimension_type max_in_codomain() const { return codom-1; }
   bool maps(dimension_type i,dimension_type& j) const { j = tab[i]; return def[i]; }
   void do_map(PPL_Poly* r) const { r->p->map_space_dimensions(*this); }
