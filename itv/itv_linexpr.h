@@ -261,7 +261,7 @@ bool ITVFUN(itv_lincons_is_integer)(itv_lincons_t* cons, size_t intdim);
 
 tbool_t ITVFUN(itv_eval_cstlincons)(itv_internal_t* intern, itv_lincons_t* lincons);
 bool ITVFUN(itv_sat_lincons_is_false)(itv_internal_t* intern, itv_lincons_t* lincons);
-  void ITVFUN(itv_lincons_reduce_integer)(itv_internal_t* intern, itv_lincons_t* cons, size_t intdim);
+void ITVFUN(itv_lincons_reduce_integer)(itv_internal_t* intern, itv_lincons_t* cons, size_t intdim);
 tbool_t ITVFUN(itv_lincons_array_reduce)(itv_internal_t* intern, itv_lincons_array_t* array, bool meet);
 tbool_t ITVFUN(itv_lincons_array_reduce_integer)(itv_internal_t* intern, itv_lincons_array_t* array, size_t intdim);
 

@@ -703,7 +703,7 @@ void ITVFUN(itv_lincons_reduce_integer)(itv_internal_t* intern,
 		 numrat_denref(intern->quasi_num));
       numint_divexact(numrat_numref(bound_numref(pitv->sup)),
 		      numrat_numref(bound_numref(pitv->sup)),
-		      numrat_denref(intern->quasi_num));
+		      numrat_denref(bound_numref(pitv->sup)));
       numint_set_int(numrat_denref(bound_numref(pitv->sup)),
 		     1);
       bound_neg(pitv->inf,pitv->sup);
