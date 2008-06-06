@@ -216,7 +216,7 @@ let equal_int scalar n =\n\
   match scalar with\n\
   | Mpqf x -> (Mpqf.cmp_int x n)=0\n\
   | Mpfr x -> (Mpfr.cmp_si x n)=0\n\
-  | Float x -> x==(float_of_int n)\n\
+  | Float x -> x=(float_of_int n)\n\
 let neg scalar =\n\
   match scalar with\n\
   | Mpqf x -> Mpqf(Mpqf.neg x)\n\
