@@ -94,6 +94,9 @@ let f man name =
   printf "to_lincons_array = %a@ "
     (print_array (Lincons0.print string_of_dim))
     (Abstract0.to_lincons_array man a);
+  printf "to_tcons_array = %a@ "
+    (print_array (Tcons0.print string_of_dim))
+    (Abstract0.to_tcons_array man a);
 
   if man!=(Obj.magic man6) then
     printf "to_generator_array = %a@ "

@@ -1,14 +1,51 @@
+
 Version 0.9.9:
 
-- *Change in API*: tbool_t replaced by bool in abstract tests
-  and for the manager flags exact and best. 
-  In source code, 
-  * tbool_top should be replaced by false,
-  * f(...)==tbool_true by f(...)
-  * f(...)!=tbool_true by !f(...)
+- API: 
+
+  * Important change: tbool_t replaced by bool in tests in flags
+    exact and best (C modules ap_abstractX and ap_manager, OCaml
+    modules AbstractX and Manager)
+
+    In source code, 
+    * tbool_top,tbool_false should be replaced by false,
+    * f(...)==tbool_true by f(...)
+    * f(...)!=tbool_true by !f(...)
+
+  * MPFR numbers added as possible numerical types (besides GMP
+    MPQ and C double)
+
+  * hash functions added in most places:
+     * bound_hash, itv_hash, linexpr0_hash, texpr0_hash,
+       ap_abstract0_hash, ap_abstract1_hash, ap_environment_hash,
+       ap_var_hash
+     * in libraries, hash implemented for itv and newpolka 
+       (for others, raises not implemented).
+     * in OCaml API, used as a custom hash function for
+       corresponding abstract types.
+
+  * Functions added
+     * OCaml: Linexpr0.of_list, Linexpr0.of_array,
+       Environment.lce_change, Environment.rename_perm
+          
+  * Internal functions added/modified
+    * num: num_integer, numrat_inv added
+    * apron: spec of ap_texpr0_max_dim modified
+
+- Distribution/Packaging
+  * Instruction files REAME.windows and README.mac files, some
+    problems corrected.
+  * Makefile.config.model simplified
+
+- Bugs corrected: several, in particular:
+  * Special cases with abstract values in dimension 0, and null
+    arrays in nassign/substitution functions and
+    add_dimensions/remove_dimensions
+  * ap_fpu_init for Mac
+  * itv_lincons_reduce_integer (normalisation of integer constraints)
 
 Version 0.9.8
-
+  * ap_linexpr0_compare
 - New C++ interface, still experimental 
 
 - Instructions for compilation under Windows

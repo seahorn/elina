@@ -233,7 +233,7 @@ void ap_abstract1_canonicalize(ap_manager_t* man, ap_abstract1_t* a){
 /* Return an hash code */
 int ap_abstract1_hash(ap_manager_t* man, ap_abstract1_t* a)
 {
-  return (ap_environment_hash(a->env)*251 + 
+  return (ap_environment_hash(a->env)*251 +
 	  ap_abstract0_hash(man,a->abstract0)*19);
 }
 
@@ -1400,7 +1400,7 @@ ap_abstract1_t ap_abstract1_unify(ap_manager_t* man,
   ap_abstract0_t* value2;
   ap_abstract0_t* value;
   ap_abstract1_t res;
-  
+
   if (ap_environment_is_eq(a1->env,a2->env)){
     return ap_abstract1_meet(man,destructive,a1,a2);
   }
@@ -1416,11 +1416,12 @@ in the two abstract values");
      return ap_abstract1_copy(man,a1);
   }
   assert(dimchange1 || dimchange2);
+
   value1 =
     dimchange1 ?
     ap_abstract0_add_dimensions(man,destructive,a1->abstract0,dimchange1,false) :
-    (destructive ? 
-     a1->abstract0 : 
+    (destructive ?
+     a1->abstract0 :
      ap_abstract0_copy(man,a1->abstract0));
   ;
   value2 =
@@ -1431,7 +1432,10 @@ in the two abstract values");
   value = ap_abstract0_meet(man,true,value1,value2);
   res = ap_abstract1_consres2(destructive, a1, value, env);
   if (dimchange1) ap_dimchange_free(dimchange1);
-  if (dimchange2) ap_dimchange_free(dimchange2);
+  if (dimchange2){
+    ap_dimchange_free(dimchange2);
+    ap_abstract0_free(man,value2);
+  }
   return res;
 }
 

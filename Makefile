@@ -35,8 +35,10 @@ else
 all: c
 endif
 
+ifneq ($(HAS_OCAML),)
 mlgmpidl/Makefile.config: Makefile.config Makefile
 	$(SED) -e '1 aHAS_MPFR=1\n' Makefile.config >$@
+endif
 
 c:
 	(cd num; make all)

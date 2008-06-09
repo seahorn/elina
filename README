@@ -3,73 +3,84 @@
 
 # Please read the COPYING file packaged in the distribution
 
-This main directory contain the following subpackages of the APRON project:
+The developpers are using INTEL/linux machines. Look at README.windows and
+README.mac for additional specific informations.
 
-num:
-	manipulating "generic" numbers (used by intervals,
-        newpolka and possibly octagons).
+PREREQUISITES
+-------------
 
-itv:
-	extension of num, manipulating also linear expressions.
+- C API (required)
+  * GCC
+  * GMP 4.2 and MPFR 2.2 or up
+  * Optionally, 
+    * PPL library (PARMA Polyhedra library, http://www.cs.unipr.it/ppl/)
+      - patch to apply before compiling it (see ./ppl/README)
+      - GMPXX (GMP compiled with configuration option --enable-cxx)
 
-apron:
-	apron interface, C version
+- OCaml API (optional)
+  * OCaml 3.09 or up (http://www.caml.org)
+  * CamlIDL 1.05 (http://caml.inria.fr/camlidl)
+  * GNU sed 4.1 or up, GNU m4 (not necessary if you download an archive, but
+    strongly recommended)
+- C++ API (optional)
+  * GCC 4.1.2 or up
+- Documentation (optional)
+  * latex, dvipdf, makeinfo, texi2html, texi2dvi
 
-box:
-	interval library
+CONFIGURATION and COMPILATION
+-----------------------------
 
-octagons:
-	octagon library
+1. Copy Makefile.config.model into Makefile.config and edit the
+   _PREFIX paths to suit your installation (you might want to set
+   APRON_PREFIX, CAMLIDL_PREFIX and CAML_PREFIX to /usr/local
+   instead of the default /usr).
 
-newpolka:
-	convex polyhedra and linear equalities library
+2. If you download via subversion repository, and you want the
+   OCaml API: 'make rebuild'
 
-ppl:
-	wrapper to call the Parma Polyhedra Library from APRON (C & OCaml)
-	requires PPL 0.9 and GMPXX
-	not compiled unless HAS_PPL is defined in Makefile.config
-	under GPL (instead of LGPL) license
+3. 'make'
+   'make install'
 
-	In the latter case, you need to apply a patch, look at ppl/README.
+4. Other targets:
 
+   make c (C and possibly C++ version)
+   make ml (OCaml stuff)
+   make doc (not useful for a normal user)
+   make clean (clean things, with the exception of generated files)
+   make mostlyclean (clean all it can clean, implies clean)
+   make rebuild (rebuild generated files, mainly for OCaml interface)
+   make distclean (clean the distribution directories)
+   make install (installs in directories specified in Makefile.config)
 
-products:
-	- reduced product of NewPolka convex polyhedra and PPL
-	  linear congruences.
+ORGANISATION IN DIRECTORIES 
+--------------------------- 
 
-mlgmpidl:
-	OCaml interface for the GMP and MPFR libraries, used by mlapronidl.
-	Requires GMP version 4.2 or up, MPFR 2.2 or up.
-	not compiled unless HAS_OCAML is defined in Makefile.config
+The main directory contain the following subpackages of the APRON
+project:
 
-mlapronidl:
-	apron interface, OCaml version (require apron)
-	not compiled unless HAS_OCAML is defined in Makefile.config
+apron:      apron interface, C version
+apronxx:    apron interface, C++ version (compiled if HAS_CPP defined)
+mlapronidl: apron interface, OCaml version (compiled if HAS_OCAML defined)
 
-apronxx:
-	apron interface, C++ version
-	not compiled unless HAS_CPP is defined in Makefile.config
+box:      interval library
+octagons: octagon library
+newpolka: convex polyhedra and linear equalities library
+ppl:      wrapper to call the Parma Polyhedra Library from APRON under
+	  GPL (instead of LGPL) license.  (compiled if HAS_PPL
+	  defined)
 
-Makefile.config.model:
-	common configuration file model (to be copied to Makefile.config)
-	(installation directories mainly)
+products: - reduced product of NewPolka convex polyhedra and PPL
+	    linear congruences (compiled if HAS_PPL defined)
 
-Makefile:
-	compiles as many things as it can
+examples: some examples (C and OCaml)
+tests:    some (manual) tests
 
-	make all (C + OCaml version if HAS_OCAML)
-	make c (C version)
-	make ml (OCaml stuff)
-	make doc (not useful for a normal user)
-	make clean (clean things, with the exception of generated files)
-	make mostlyclean (clean all it can clean, implies clean)
-	make rebuild (build generated files, mainly for OCaml interface)
-	make distclean (clean the distribution directories)
-	make install (installs in directories specified in Makefile.config)
+mlgmpidl: OCaml interface for the GMP and MPFR libraries, used by mlapronidl.
+	  (compiled if HAS_OCAML defined)
 
-Minimal Requirements:
-	c: GMP, MPFR
-	ml: OCaml, CamlIDL
-	c++: GCC 4.1.2
-	doc: latex, dvipdf, makeinfo, texi2html, texi2dvi
-	rebuild: GNU sed (>=4.1.x), GNU m4
+num: manipulating "generic" numbers (used by intervals, newpolka,
+     octagons, linearisation, etc...).
+
+itv: built on top of num: intervals, interval linear expressions
+     and constraints, linearisation
+

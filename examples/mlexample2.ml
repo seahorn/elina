@@ -5,7 +5,7 @@
 (*
 with default setting:
 
-apronppltop -I $APRON_INSTALL/lib
+apronppltop -I $MLGMPIDL_INSTALL/lib -I $APRON_INSTALL/lib
 
 #load "gmp.cma";;
 #load "apron.cma";;
@@ -23,6 +23,7 @@ let environment_print fmt x = Apron.Environment.print fmt x;;
 let lincons1_array_print fmt x = Apron.Lincons1.array_print fmt x;;
 let generator1_array_print fmt x = Apron.Generator1.array_print fmt x;;
 
+#install_printer Apron.Var.print;;
 #install_printer environment_print;;
 #install_printer lincons1_array_print;;
 #install_printer generator1_array_print;;

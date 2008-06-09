@@ -1,15 +1,20 @@
 
-This document tries to explain how to compile Apron under Windows.
-For the moment, only 32-bit compilation using the Cygwin environment is
-supported.
+This document tries to explain some specific points in compiling Apron under
+Macintosh. It brings additional information compared to the README.
 
 Note that this is work-in-progress.
-
 
 PREREQUISITES
 -------------
 
-Get Cygwin at http://www.cygwin.com/
+- GNU sed is required, instead of standard sed.
+
+- gcc 4.0.1 is reported to cause this problem at the end of the compilation
+  process:
+
+  ld: duplicate symbol ___gmpz_abs in ...
+
+  more recent versions should work properly.
 
 The following Cygwin package are required:
 - gcc (Devel)
