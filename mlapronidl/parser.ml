@@ -63,7 +63,7 @@
 
   [let (generator:Generator1.t) = Parser.generator1_of_string env "R:x+2y"]
 
-  [let (texpr:Texpr1.t) = Parser.texpr1_of_string "a %_i,? b +_f,0 c"]
+  [let (texpr:Texpr1.t) = Parser.texpr1_of_string env "a %_i,? b +_f,0 c"]
 
   {3 Remarks}
 
