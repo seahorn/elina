@@ -6,24 +6,71 @@
 (** {2 Introduction}
 
   This small module implements the parsing of expressions, constraints and
-  generators. The allowed syntax is simple (no parenthesis) but supports
-  interval expressions.
+  generators. The allowed syntax is simple for linear expressions (no
+  parenthesis) but supports interval expressions. The syntax is more flexible
+  for tree expressions.
 
-  [cons ::= expr ('>' | '>=' | '=' | '!=' | '=' | '<=' | '<') expr | expr = expr 'mod' scalar]
+  {3 Syntax}
 
-  [gen ::= ('V:' | 'R:' | 'L:' | 'RM:' | 'LM:') expr]
+  [lincons ::= linexpr ('>' | '>=' | '=' | '!=' | '=' | '<=' | '<') linexpr |
+  linexpr = linexpr 'mod' scalar]
 
-  [expr ::= expr '+' term | expr '-' term | term] 
-  
-  [term ::= coeff ['*'] identifier | coeff | ['-'] identifier]
+  [gen ::= ('V:' | 'R:' | 'L:' | 'RM:' | 'LM:') linexpr]
+
+  [linexpr ::= linexpr '+' linterm | linexpr '-' linterm | linterm]
+
+  [linterm ::= coeff ['*'] identifier | coeff | ['-'] identifier]
+
+  [tcons ::= texpr ('>' | '>=' | '=' | '!=' | '=' | '<=' | '<') texpr | texpr =
+  texpr 'mod' scalar]
+
+  [texpr ::= coeff | identifier | unop texpr | texpr binop texpr | '(' texpr
+  ')']
+
+  [binop ::=
+  ('+'|'-'|'*'|'/'|'%')['_'('i'|'f'|'d'|'l'|'q')][','('n'|'0'|'+oo'|'-oo')]]
+
+  [unop ::= ('cast' |
+  'sqrt')['_'('i'|'f'|'d'|'l'|'q')][','('n'|'0'|'+oo'|'-oo')]]
 
   [coeff ::= scalar | ['-'] '['scalar ';' scalar ']']
 
   [scalar ::= ['-'] (integer | rational | floating_point_number)]
 
-  There is the possibility to parse directly from a lexing buffer, 
-  or from a string (from which one can generate a buffer with the
-  function [Lexing.from_string].
+  For tree expressions [texpr], by default the operations have an exact
+  arithmetic semantics in the real numbers (even if involved variables are of
+  integer). The type qualifiers modify this default semantics. Their meaning is
+  as follows: 
+  - [i] integer semantics 
+  - [f] IEEE754 32 bits floating-point semantics 
+  - [d] IEEE754 64 bits floating-point semantics 
+  - [l] IEEE754 80 bits floating-point semantics 
+  - [q] IEEE754 129 bits floating-point semantics
+
+  By default, the rounding mode is "any" (this applies only in non-real
+  semantics), which allows to emulate all the following rounding modes: 
+  - [n] nearest 
+  - [0] towards zero 
+  - [+oo] towards infinity 
+  - [-oo] towards minus infinity
+  - [?] any
+
+  {3 Examples}
+
+  [let (linexpr:Linexpr1.t) = Parser.linexpr1_of_string env "z+0.4x+2y"]
+
+  [let (tab:Lincons1.earray) = Parser.lincons1_of_lstring env
+  ["1/2x+2/3y=1";"[1;2]<=z+2w";"z+2w<=4";"0<=u";"u<=5"]]
+
+  [let (generator:Generator1.t) = Parser.generator1_of_string env "R:x+2y"]
+
+  [let (texpr:Texpr1.t) = Parser.texpr1_of_string "a %_i,? b +_f,0 c"]
+
+  {3 Remarks}
+
+  There is the possibility to parse directly from a lexing buffer, or from a
+  string (from which one can generate a buffer with the function
+  [Lexing.from_string].
 
   This module uses the underlying modules [Apron_lexer] and [Apron_parser].
 *)

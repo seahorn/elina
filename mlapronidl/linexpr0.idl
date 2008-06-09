@@ -34,9 +34,9 @@ ap_linexpr0_ptr ap_linexpr0_make([unique]int* size)
 
 quote(MLI,"\n\
 val of_list : int option -> (Coeff.t * Dim.t) list -> Coeff.t option -> t\n\
-(** Combines {!make] and {!set_list} (see below) *)\n\
+(** Combines {!make} and {!set_list} (see below) *)\n\
 val of_array : int option -> (Coeff.t * Dim.t) array -> Coeff.t option -> t\n\
-(** Combines {!make] and {!set_array} (see below) *)\n\
+(** Combines {!make} and {!set_array} (see below) *)\n\
 ")
 
 quote(MLI,"(** In case of sparse representation, remove zero coefficients *)")

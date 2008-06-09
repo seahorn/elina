@@ -38,7 +38,7 @@ IDLMODULEStex = ocamldoc.tex \
 Scalar.tex Interval.tex Coeff.tex \
 Dim.tex Linexpr0.tex Lincons0.tex Generator0.tex  Texpr0.tex Tcons0.tex Texpr1.tex Tcons1.tex Manager.tex Abstract0.tex \
 Var.tex Environment.tex Linexpr1.tex Lincons1.tex Generator1.tex Texpr1.tex Tcons1.tex Abstract1.tex \
-Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Mpf.tex Gmp_random.tex Mpfr.tex Box.tex Oct.tex Polka.tex Ppl.tex PolkaGrid.tex 
+Mpz.tex Mpq.tex Mpzf.tex Mpqf.tex Mpf.tex Gmp_random.tex Mpfr.tex Box.tex Oct.tex Polka.tex Ppl.tex PolkaGrid.tex
 
 MLMODULES = $(IDLMODULES) apron_parser apron_lexer parser
 
@@ -119,7 +119,7 @@ apron.cma: apron.cmo libapron_caml.a
 apron.cmxa: apron.cmx libapron_caml.a
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -for-pack Apron -a -o $@ apron.cmx \
 	-ccopt "-L$(APRON_PREFIX)/lib -L$(APRON_PREFIX)/lib" \
-	-cclib "-lapron_caml" -cclib "-lapron" 
+	-cclib "-lapron_caml" -cclib "-lapron"
 	$(RANLIB) apron.a
 
 apron.cmo apron.cmi: $(MLOBJ) $(MLINT)
@@ -142,18 +142,18 @@ apron_parser.ml apron_parser.mli: apron_parser.mly
 mlapronidl.pdf: mlapronidl.dvi
 	$(DVIPDF) mlapronidl.dvi
 
-mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli  ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
+mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli  ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
 	$(OCAMLDOC) $(OCAMLINC) -I ../newpolka \
-	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
+	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
 	$(LATEX) mlapronidl
 	$(MAKEINDEX) mlapronidl
 	$(LATEX) mlapronidl
 	$(LATEX) mlapronidl
 
-html: $(IDLMODULES:%=%.mli) parser.mli $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
+html: $(IDLMODULES:%=%.mli) parser.mli $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
 	mkdir -p html
 	$(OCAMLDOC) $(OCAMLINC)  -I ../newpolka \
--html -d html -colorize-code $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli 
+-html -d html -colorize-code $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
 	cp -f index.html html
 
 #--------------------------------------------------------------
@@ -180,7 +180,7 @@ mpz.idl: ../mlgmpidl/mpz.idl
 mpq.idl: ../mlgmpidl/mpq.idl
 	ln -s $^ $@
 
-# Generate for each %.idl: %i.ml, %i.mli, %_caml.c 
+# Generate for each %.idl: %i.ml, %i.mli, %_caml.c
 rebuild: mpz.idl mpq.idl
 	mkdir -p tmp
 	for i in $(IDLMODULES); do \

@@ -87,7 +87,7 @@ struct ap_scalar_array_t {
   [size_is(size)]ap_scalar_ptr* p;
   int size;
 };
-quote(MLMLI,"(** APRON Scalar numbers. See {!Mpqf} for operations on GMP multiprecision rational numbers and {!Mpfr. *)\n\n")
+quote(MLMLI,"(** APRON Scalar numbers. See {!Mpqf} for operations on GMP multiprecision rational numbers and {!Mpfr} for operations on MPFR multi-precision floating-point numbers. *)\n\n")
 
 quote(MLI,"\n\
 val of_mpq : Mpq.t -> t\n\
