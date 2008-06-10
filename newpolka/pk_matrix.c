@@ -224,8 +224,16 @@ bool matrix_normalize_constraint(pk_internal_t* pk,
       change1 = vector_normalize_constraint(pk,mat->p[i],intdim,realdim);
       change2 = change2 || change1;
     }
-    if (change2)
+    if (change2){
       mat->_sorted = false;
+      /* Add again \xi-\epsilon<=1 */
+      size_t nbrows= mat->nbrows;
+      matrix_resize_rows_lazy(mat,nbrows+1);
+      vector_clear(mat->p[nbrows],mat->nbcolumns);
+      numint_set_int(mat->p[nbrows][0],1);
+      numint_set_int(mat->p[nbrows][polka_cst],1);
+      numint_set_int(mat->p[nbrows][polka_eps],-1);
+    }
     return change2;
   }
   else 
