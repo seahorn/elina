@@ -220,14 +220,9 @@ void poly_chernikova2(ap_manager_t* man,
 		      char* msg)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
-  if ((po->C && po->F) || (!po->C && !po->F)){
+  poly_chernikova(man,po,msg);
+  if (pk->exn)
     return;
-  }
-  else {
-    poly_chernikova(man,po,msg);
-    if (pk->exn)
-      return;
-  }
   if (!po->C && !po->F)
     return;
   if (!poly_is_conseps(pk,po)){
