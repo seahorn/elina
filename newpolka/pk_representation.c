@@ -348,7 +348,7 @@ int pk_hash(ap_manager_t* man, pk_t* po)
   size_t i;
   ap_funopt_t opt = ap_manager_get_funopt(man,AP_FUNID_CANONICALIZE);
   poly_chernikova3(man,po,NULL);
-  
+
   res = 5*po->intdim + 7*po->realdim;
   if (po->C!=NULL){
     res += po->C->nbrows*11 +  po->F->nbrows*13;
@@ -408,7 +408,7 @@ bool pk_is_minimal(ap_manager_t* man, pk_t* po)
   if ( (!po->C && !po->F) ||
        (po->status & pk_status_minimal) )
     return true;
-  else 
+  else
     return false;
 }
 
@@ -526,7 +526,9 @@ pk_t* pk_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size)
 /* V. Checking */
 /* ********************************************************************** */
 
-static bool matrix_check1(pk_internal_t* pk, matrix_t* mat)
+/* Should be true
+   If false, implies that there is no positivity constraint  */
+static bool matrix_check1cons(pk_internal_t* pk, matrix_t* mat)
 {
   size_t i;
   bool res;
@@ -539,7 +541,22 @@ static bool matrix_check1(pk_internal_t* pk, matrix_t* mat)
   }
   return res;
 }
+/* true <=> \xi or \epsilon always positive */
+static bool matrix_check1ray(pk_internal_t* pk, matrix_t* mat)
+{
+  size_t i;
+  bool res;
+  res = true;
+  for (i = 0; i<mat->nbrows; i++){
+    if (numint_sgn(mat->p[i][pk->dec-1])>0){
+      res = false;
+      break;
+    }
+  }
+  return res;
+}
 
+/* Return false if not normalized constraint */
 static bool matrix_check2(pk_internal_t* pk, matrix_t* mat)
 {
   size_t i;
@@ -559,12 +576,13 @@ static bool matrix_check2(pk_internal_t* pk, matrix_t* mat)
   return res;
 }
 
+/* If false, _sorted is true without sorted rows */
 static bool matrix_check3(pk_internal_t* pk, matrix_t* mat)
 {
   size_t i;
   bool res;
 
-  if (mat->_sorted==false) 
+  if (mat->_sorted==false)
     return true;
 
   res = true;
@@ -596,7 +614,7 @@ bool poly_check(pk_internal_t* pk, pk_t* po)
     return false;
   }
   if (po->C){
-    res = matrix_check1(pk,po->C);
+    res = matrix_check1cons(pk,po->C);
     if (!res){ /* should not arise */
       fprintf(stderr,"poly_check: unvalid constraint system, does not imply the positivity constraint\n");
       return false;
@@ -613,7 +631,7 @@ bool poly_check(pk_internal_t* pk, pk_t* po)
     }
   }
   if (po->F){
-    res = matrix_check1(pk,po->F);
+    res = matrix_check1ray(pk,po->F);
     if (!res){ /* should not arise */
       fprintf(stderr,"poly_check: unvalid generator system, does not imply the positivity constraint\n");
       return false;
@@ -626,6 +644,38 @@ bool poly_check(pk_internal_t* pk, pk_t* po)
     res = matrix_check3(pk,po->F);
     if (!res){
       fprintf(stderr,"poly_check: F not sorted although _sorted=true\n");
+      return false;
+    }
+    /* In strict mode, check that it satisfies \xi-\epsilon>=0 */
+    if (pk->strict){
+      numint_t* tab = pk->vector_numintp;
+      matrix_t* F = po->F;
+      vector_clear(tab,F->nbcolumns);
+      numint_set_int(tab[0],1);
+      numint_set_int(tab[1],1);
+      numint_set_int(tab[2],-1);
+      bool res = true;
+      int sign;      /* sign of the scalar product */
+      size_t i;
+
+      for (i=0; i<F->nbrows; i++){
+	vector_product(pk,pk->poly_prod,
+		       F->p[i],
+		       tab,F->nbcolumns);
+	sign = numint_sgn(pk->poly_prod);
+	if (sign<0){
+	  res = false; break;
+	}
+	else {
+	  if (numint_sgn(F->p[i][0])==0){
+	    /* line */
+	    if (sign!=0){ res = false; break; }
+	  }
+	}
+      }
+    }
+    if (!res){
+      fprintf(stderr,"poly_check: F does not satisfy epsilon<=1");
       return false;
     }
   }
