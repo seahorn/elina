@@ -137,5 +137,6 @@ pk_t* pk_forget_array(ap_manager_t* man,
   poly_projectforget_array(project,
 			   pk->funopt->algorithm<=0,
 			   man,po,pa,tdim,size);
+  assert(poly_check(pk,po));
   return po;
 }

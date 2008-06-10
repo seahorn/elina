@@ -202,6 +202,7 @@ pk_t* pk_widening(ap_manager_t* man, pk_t* pa, pk_t* pb)
     bitstring_free(bitstringp);
     po->C->nbrows = nbrows;
     man->result.flag_best = man->result.flag_exact = false;
+    assert(poly_check(pk,po));
     return po;
   }
 }
@@ -257,5 +258,6 @@ pk_t* pk_widening_threshold(ap_manager_t* man,
   }
   po->C->nbrows = nbrows;
   matrix_minimize(po->C);
+  assert(poly_check(pk,po));
   return po;
 }

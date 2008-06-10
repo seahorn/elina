@@ -88,5 +88,6 @@ pk_t* pk_closure(ap_manager_t* man, bool destructive, pk_t* pa)
       po->nbline = 0;
     }
   }
+  assert(poly_check(pk,po));
   return po;
 }

@@ -129,6 +129,7 @@ void poly_set_top(pk_internal_t* pk, pk_t* po)
     /* saturation matrix */
     po->satC->p[dim][0] = bitstring_msb;
   }
+  assert(poly_check(pk,po));
 }
 
 pk_t* pk_top(ap_manager_t* man, size_t intdim, size_t realdim)
@@ -140,7 +141,6 @@ pk_t* pk_top(ap_manager_t* man, size_t intdim, size_t realdim)
   po = poly_alloc(intdim,realdim);
   poly_set_top(pk,po);
   man->result.flag_exact = man->result.flag_best = true;
-  assert(poly_check(pk,po));
   return po;
 }
 
@@ -233,7 +233,6 @@ pk_t* pk_of_box(ap_manager_t* man,
   }
   po->C->nbrows = (size_t)k;
   
-
   assert(poly_check(pk,po));
   man->result.flag_exact = man->result.flag_best = true;
   return po;

@@ -396,5 +396,6 @@ void pk_approximate(ap_manager_t* man, pk_t* po, int algorithm)
        poly_approximate_10(man,po);
      break;
   }
+  assert(poly_check(pk,po));
 }
 

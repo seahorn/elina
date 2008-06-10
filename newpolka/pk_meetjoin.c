@@ -500,15 +500,18 @@ pk_t* pk_meet(ap_manager_t* man,
   pk_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
   poly_meet(true, pk->funopt->algorithm < 0,
 	    man,po,pa,pb);
+  assert(poly_check(pk,po));
   return po;
 }
 
 pk_t* pk_meet_array(ap_manager_t* man,
-		      pk_t** po, size_t size)
+		    pk_t** po, size_t size)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MEET_ARRAY);
-  return poly_meet_array(true, pk->funopt->algorithm < 0,
-			  man,po,size);
+  pk_t* res = poly_meet_array(true, pk->funopt->algorithm < 0,
+			      man,po,size);
+  assert(poly_check(pk,res));
+  return res;
 }
 
 /* ====================================================================== */
@@ -583,6 +586,7 @@ pk_t* pk_meet_lincons_array(ap_manager_t* man, bool destructive, pk_t* pa, ap_li
   poly_meet_itv_lincons_array(pk->funopt->algorithm<0,
 			      man,po,pa,&tcons);
   itv_lincons_array_clear(&tcons);  
+  assert(poly_check(pk,po));
   return po;
 }
 
@@ -638,6 +642,11 @@ pk_t* pk_join_array(ap_manager_t* man, pk_t** po, size_t size)
     poly = pk_top(man,0,1);
     return poly;
   }
+  else if (size==1){
+    man->result.flag_best = man->result.flag_exact = true;
+    poly = pk_copy(man,po[0]);
+    return poly;
+  }
   /* We have to take care of possible aliases in the array of polyhedra */
   tpoly = malloc(size*sizeof(pk_t*));
   memcpy(tpoly, po, size*sizeof(pk_t*));
@@ -663,6 +672,7 @@ pk_t* pk_join_array(ap_manager_t* man, pk_t** po, size_t size)
   }
   free(tpoly);
   poly_dual(poly);
+  assert(poly_check(pk,poly));
   return poly;
 }
 
@@ -722,6 +732,7 @@ pk_t* pk_add_ray_array(ap_manager_t* man, bool destructive, pk_t* pa, ap_generat
   pk_t* po = destructive ? pa : poly_alloc(pa->intdim,pa->realdim);
   poly_add_ray_array(pk->funopt->algorithm<0,
 		     man,po,pa,array);
+  assert(poly_check(pk,po));
   return po;
 }
 

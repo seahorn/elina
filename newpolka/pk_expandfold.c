@@ -315,5 +315,6 @@ pk_t* pk_fold(ap_manager_t* man,
 
   man->result.flag_best = (intdimsup==0);
   man->result.flag_exact = (intdimsup==0);
+  assert(poly_check(pk,po));
   return po;
 }

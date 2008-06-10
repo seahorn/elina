@@ -271,7 +271,6 @@ void poly_chernikova3(ap_manager_t* man,
       pk_status_conseps |
       pk_status_consgauss |
       pk_status_gengauss;
-    assert(poly_check(pk,po));
   }
 }
 
@@ -327,6 +326,7 @@ void pk_canonicalize(ap_manager_t* man, pk_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_CANONICALIZE);
 
+  assert(poly_check(pk,po));
   if (pk->funopt->algorithm >= 0)
     poly_chernikova3(man,po,NULL);
   else
@@ -337,6 +337,7 @@ void pk_canonicalize(ap_manager_t* man, pk_t* po)
     man->result.flag_exact = man->result.flag_best = false;
     return;
   }
+  assert(poly_check(pk,po));
   man->result.flag_exact = man->result.flag_best =
     po->intdim>0 && (po->C || po->F) ? false : true;
 }
@@ -359,6 +360,7 @@ int pk_hash(ap_manager_t* man, pk_t* po)
       res = res*3 + vector_hash(pk,po->F->p[i],po->F->nbcolumns);
     }
   }
+  assert(poly_check(pk,po));
   return res;
 }
 
@@ -394,6 +396,7 @@ void pk_minimize(ap_manager_t* man, pk_t* po)
       po->status |= pk_status_minimal;
     }
   }
+  assert(poly_check(pk,po));
   man->result.flag_exact = man->result.flag_best =
     po->intdim>0 && (po->C || po->F) ? false : true;
 }
@@ -548,7 +551,7 @@ static bool matrix_check1ray(pk_internal_t* pk, matrix_t* mat)
   bool res;
   res = true;
   for (i = 0; i<mat->nbrows; i++){
-    if (numint_sgn(mat->p[i][pk->dec-1])>0){
+    if (numint_sgn(mat->p[i][pk->dec-1])<0){
       res = false;
       break;
     }
@@ -652,8 +655,8 @@ bool poly_check(pk_internal_t* pk, pk_t* po)
       matrix_t* F = po->F;
       vector_clear(tab,F->nbcolumns);
       numint_set_int(tab[0],1);
-      numint_set_int(tab[1],1);
-      numint_set_int(tab[2],-1);
+      numint_set_int(tab[polka_cst],1);
+      numint_set_int(tab[polka_eps],-1);
       bool res = true;
       int sign;      /* sign of the scalar product */
       size_t i;
@@ -673,10 +676,10 @@ bool poly_check(pk_internal_t* pk, pk_t* po)
 	  }
 	}
       }
-    }
-    if (!res){
-      fprintf(stderr,"poly_check: F does not satisfy epsilon<=1");
-      return false;
+      if (!res){
+	fprintf(stderr,"poly_check: F does not satisfy epsilon<=1");
+	return false;
+      }
     }
   }
   if (po->C && po->F){

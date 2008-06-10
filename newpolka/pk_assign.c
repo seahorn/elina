@@ -767,6 +767,7 @@ pk_t* pk_assign_linexpr_array(ap_manager_t* man,
     poly_asssub_linexpr_array(true,
 			      pk->funopt->algorithm<=0,
 			      man,destructive,pa,tdim,texpr,size,pb);
+  assert(poly_check(pk,po));
   return po;
 }
 
@@ -787,6 +788,7 @@ pk_t* pk_substitute_linexpr_array(ap_manager_t* man,
     poly_asssub_linexpr_array(false,
 			      pk->funopt->algorithm<=0,
 			      man,destructive,pa,tdim,texpr,size,pb);
+  assert(poly_check(pk,po));
   return po;
 }
 
