@@ -262,7 +262,7 @@ bool matrix_approximate_constraint_10(pk_internal_t* pk, matrix_t* C, matrix_t* 
   while (i<C->nbrows){
     removed = false;
     if (numint_sgn(C->p[i][0]) && 
-	(pk->strict ? numint_sgn(C->p[i][polka_eps])<0 : true)){
+	(pk->strict ? numint_sgn(C->p[i][polka_eps])<=0 : true)){
       /* Look for a too big coefficient in the row */
       size=0; /* for next test */
       for (j=pk->dec; j<C->nbcolumns; j++){
