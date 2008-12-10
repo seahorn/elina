@@ -123,7 +123,7 @@ apron.cmxa: apron.cmx libapron_caml.a
 	$(RANLIB) apron.a
 
 apron.cmo apron.cmi: $(MLOBJ) $(MLINT)
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -i -pack -o $@ $(MLOBJ)
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -pack -o $@ $(MLOBJ)
 
 apron.cmx apron.o: $(MLOBJx)
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) -pack -o $@ $(MLOBJx)
