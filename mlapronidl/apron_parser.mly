@@ -9,7 +9,13 @@
 let rec neg acc = function
   | [] -> acc
   | (var,coeff)::l ->
-      neg ((var,(Coeff.neg coeff))::acc) l
+      let nacc = 
+      if Coeff.is_zero coeff then
+	acc
+      else
+	(var,(Coeff.neg coeff))::acc
+      in
+      neg nacc l
 
 %}
 
