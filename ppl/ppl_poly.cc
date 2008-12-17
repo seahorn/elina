@@ -237,6 +237,8 @@ int ap_ppl_poly_hash(ap_manager_t* man, PPL_Poly* a)
 {
   man->result.flag_exact = man->result.flag_best = true;
   try {
+    (void)a->p->minimized_constraints();
+    (void)a->p->minimized_generators();    
     return a->p->total_memory_in_bytes();
   }
   CATCH_WITH_VAL(AP_FUNID_HASH,0);

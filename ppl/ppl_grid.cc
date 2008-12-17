@@ -244,6 +244,10 @@ int ap_ppl_grid_hash(ap_manager_t* man, PPL_Grid* a)
 { 
   man->result.flag_exact = man->result.flag_best = true;
   try {
+    ((PPL_Grid*)a)->reduce();
+    /* the calls force in-place minimisation */
+    (void)a->p->minimized_congruences();
+    (void)a->p->minimized_generators();
     return a->p->total_memory_in_bytes(); 
   }
   CATCH_WITH_VAL(AP_FUNID_HASH,0);
