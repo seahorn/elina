@@ -609,7 +609,32 @@ bool ap_texpr0_is_interval_polyfrac(ap_texpr0_t* a)
   }
 }
 
-
+static bool ap_texpr0_array_is_template(ap_texpr0_t** texpr, size_t size, bool (*is_template)(ap_texpr0_t* texpr))
+{
+  size_t i;
+  bool res = true;
+  for (i=0; i<size; i++){
+    res = is_template(texpr[i]);
+    if (!res) break;
+  }
+  return res;
+}
+bool ap_texpr0_array_is_interval_linear(ap_texpr0_t** texpr, size_t size)
+{
+  return ap_texpr0_array_is_template(texpr,size,ap_texpr0_is_interval_linear);
+}
+bool ap_texpr0_array_is_interval_polynomial(ap_texpr0_t** texpr, size_t size)
+{
+return ap_texpr0_array_is_template(texpr,size,ap_texpr0_is_interval_polynomial);
+}
+bool ap_texpr0_array_is_interval_polyfrac(ap_texpr0_t** texpr, size_t size)
+{
+  return ap_texpr0_array_is_template(texpr,size,ap_texpr0_is_interval_polyfrac);
+}
+bool ap_texpr0_array_is_scalar(ap_texpr0_t** texpr, size_t size)
+{
+  return ap_texpr0_array_is_template(texpr,size,ap_texpr0_is_scalar);
+}
 
 /* ====================================================================== */
 /* IV. Operations */

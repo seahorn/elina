@@ -183,16 +183,18 @@ bool ap_texpr0_is_interval_cst(ap_texpr0_t* a);
 
 bool ap_texpr0_is_interval_linear(ap_texpr0_t* a);
   /* linear with possibly interval coefficients, no rounding */
-
 bool ap_texpr0_is_interval_polynomial(ap_texpr0_t* a);
   /* polynomial with possibly interval coefficients, no rounding  */
-
 bool ap_texpr0_is_interval_polyfrac(ap_texpr0_t* a);
   /* polynomial fraction with possibly interval coefficients, no rounding */
-
 bool ap_texpr0_is_scalar(ap_texpr0_t* a);
   /* all coefficients are scalar (non-interval) */
 
+bool ap_texpr0_array_is_interval_linear(ap_texpr0_t** texpr, size_t size);
+bool ap_texpr0_array_is_interval_polynomial(ap_texpr0_t** texpr, size_t size);
+bool ap_texpr0_array_is_interval_polyfrac(ap_texpr0_t** texpr, size_t size);
+bool ap_texpr0_array_is_scalar(ap_texpr0_t** texpr, size_t size);
+  /* idem for arrays */
 
 /* ====================================================================== */
 /* IV. Operations */
