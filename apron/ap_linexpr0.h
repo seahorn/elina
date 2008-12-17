@@ -115,6 +115,8 @@ bool ap_linexpr0_is_real(ap_linexpr0_t* a, size_t intdim);
   /* Does the expression depends only on real variables ? assuming
      that the first intdim dimensions are integer */
 
+  /* Expression classification */
+
 ap_linexpr_type_t ap_linexpr0_type(ap_linexpr0_t* a);
   /* Return the type of the linear expression */
 bool ap_linexpr0_is_linear(ap_linexpr0_t* a);
@@ -122,9 +124,9 @@ bool ap_linexpr0_is_linear(ap_linexpr0_t* a);
 bool ap_linexpr0_is_quasilinear(ap_linexpr0_t* a);
   /* Return true iff all involved coefficients but the constant are scalars */
 
-  ap_linexpr_type_t ap_linexpr0_array_type(ap_linexpr0_t** texpr, size_t size);
-  bool ap_linexpr0_array_is_linear(ap_linexpr0_t** texpr, size_t size);
-  bool ap_linexpr0_array_is_quasilinear(ap_linexpr0_t** texpr, size_t size);
+ap_linexpr_type_t ap_linexpr0_array_type(ap_linexpr0_t** texpr, size_t size);
+bool ap_linexpr0_array_is_linear(ap_linexpr0_t** texpr, size_t size);
+bool ap_linexpr0_array_is_quasilinear(ap_linexpr0_t** texpr, size_t size);
   /* Idem for arrays */
 
 /* ====================================================================== */

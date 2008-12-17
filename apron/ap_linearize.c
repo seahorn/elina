@@ -24,12 +24,8 @@
 #undef  NUM_MPFR
 
 /* ********************************************************************** */
-/* Interval linear expressions and derived types */
+/* I. Evaluation of interval linear expressions */
 /* ********************************************************************** */
-
-/* ============================================================ */
-/* Evaluation */
-/* ============================================================ */
 
 ap_interval_t*
 ap_eval_linexpr0(ap_manager_t* man,
@@ -50,16 +46,16 @@ ap_eval_linexpr0(ap_manager_t* man,
   }
 }
 
-/* ============================================================ */
-/* Quasilinearization */
-/* ============================================================ */
+/* ********************************************************************** */
+/* II. Quasilinearization of interval linear expressions */
+/* ********************************************************************** */
 
 /* If the interval linear expression is already quasilinear, then return it.
    Otherwise, evaluate an interval linear expression on the abstract
    value such as to transform it into a new quasilinear expression.
 
    discr allows to choose the type of scalars used for computations and for the
-   result.  
+   result.
 
    pexact is a pointer to a Boolean, which is set to true if all
    the conversions and computations were exact.
@@ -170,14 +166,69 @@ ap_quasilinearize_lincons0_array(ap_manager_t* man,
 }
 
 /* ********************************************************************** */
-/* Tree expressions and derived types */
+/* III. Evaluation of tree expressions */
 /* ********************************************************************** */
 
-ap_linexpr0_t* 
+ap_interval_t*
+ap_eval_texpr0(ap_manager_t* man,
+	       struct ap_abstract0_t* abs,
+	       ap_texpr0_t* expr,
+	       ap_scalar_discr_t discr,
+	       bool* pexact)
+{
+  switch (discr){
+  case AP_SCALAR_MPQ:
+    return ap_eval_texpr0_MPQ(man,abs,expr,pexact);
+  case AP_SCALAR_DOUBLE:
+    return ap_eval_texpr0_D(man,abs,expr,pexact);
+  case AP_SCALAR_MPFR:
+    return ap_eval_texpr0_MPFR(man,abs,expr,pexact);
+  default:
+    assert(false);
+    return NULL;
+  }
+ }
+
+/* ********************************************************************** */
+/* IV. Interval linearization of linear tree expressions */
+/* ********************************************************************** */
+
+/* Linearize a tree expression that is (syntaxically) interval linear with
+   exact arithmetic.
+
+   Compared to ap_intlinearize_texpr0() function below, this functions does
+   not require a bounding box for dimensions.
+
+   If the precondition is violated, returns NULL.
+*/
+
+ap_linexpr0_t*
+ap_intlinearize_texpr0_intlinear(ap_manager_t* man,
+				 ap_texpr0_t* expr,
+				 ap_scalar_discr_t discr)
+{
+  switch (discr){
+  case AP_SCALAR_MPQ:
+    return ap_intlinearize_texpr0_intlinear_MPQ(man,expr);
+  case AP_SCALAR_DOUBLE:
+    return ap_intlinearize_texpr0_intlinear_D(man,expr);
+  case AP_SCALAR_MPFR:
+    return ap_intlinearize_texpr0_intlinear_MPFR(man,expr);
+  default:
+    assert(false);
+    return NULL;
+  }
+}
+
+/* ********************************************************************** */
+/* V. Interval linearization of tree expressions */
+/* ********************************************************************** */
+
+ap_linexpr0_t*
 ap_intlinearize_texpr0(ap_manager_t* man,
 		       ap_abstract0_t* abs,
 		       ap_texpr0_t* expr,
-		       bool* pexact, 
+		       bool* pexact,
 		       ap_scalar_discr_t discr,
 		       bool quasilinearize)
 {
@@ -193,26 +244,26 @@ ap_intlinearize_texpr0(ap_manager_t* man,
     return NULL;
   }
 }
- 
-ap_interval_t* 
-ap_eval_texpr0(ap_manager_t* man,
-	       struct ap_abstract0_t* abs,
-	       ap_texpr0_t* expr, 
-	       ap_scalar_discr_t discr,
-	       bool* pexact)
+
+ap_linexpr0_t** ap_intlinearize_texpr0_array(ap_manager_t* man,
+					     ap_abstract0_t* abs,
+					     ap_texpr0_t** texpr, size_t size,
+					     bool* pexact,
+					     ap_scalar_discr_t discr,
+					     bool quasilinearize)
 {
   switch (discr){
   case AP_SCALAR_MPQ:
-    return ap_eval_texpr0_MPQ(man,abs,expr,pexact);
+    return ap_intlinearize_texpr0_array_MPQ(man,abs,texpr,size,pexact,quasilinearize);
   case AP_SCALAR_DOUBLE:
-    return ap_eval_texpr0_D(man,abs,expr,pexact);
+    return ap_intlinearize_texpr0_array_D(man,abs,texpr,size,pexact,quasilinearize);
   case AP_SCALAR_MPFR:
-    return ap_eval_texpr0_MPFR(man,abs,expr,pexact);
+    return ap_intlinearize_texpr0_array_MPFR(man,abs,texpr,size,pexact,quasilinearize);
   default:
     assert(false);
-    return NULL; 
+    return NULL;
   }
- }
+}
 
 ap_lincons0_t ap_intlinearize_tcons0(ap_manager_t* man,
 				     ap_abstract0_t* abs,

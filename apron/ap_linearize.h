@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 /* ********************************************************************** */
-/* Interval linear expressions and derived types */
+/* I. Evaluation of interval linear expressions */
 /* ********************************************************************** */
 
   /* evaluate to interval */
@@ -58,6 +58,10 @@ ap_interval_t* ap_eval_linexpr0(ap_manager_t* man,
    boxes is done only once, as well as other internal allocations.
 */
 
+/* ********************************************************************** */
+/* II. Quasilinearization of interval linear expressions */
+/* ********************************************************************** */
+
 ap_linexpr0_t*
 ap_quasilinearize_linexpr0(ap_manager_t* man,
 			   void* abs,
@@ -90,7 +94,7 @@ ap_quasilinearize_lincons0_array(ap_manager_t* man,
 				 bool meet);
 
 /* ********************************************************************** */
-/* Tree expressions and derived types */
+/* III. Evaluation of tree expressions */
 /* ********************************************************************** */
 
 ap_interval_t* ap_eval_texpr0(ap_manager_t* man,
@@ -99,6 +103,28 @@ ap_interval_t* ap_eval_texpr0(ap_manager_t* man,
 			      ap_scalar_discr_t discr,
 			      bool* pexact);
 
+/* ********************************************************************** */
+/* IV. Interval linearization of linear tree expressions */
+/* ********************************************************************** */
+
+/* Linearize a tree expression that is (syntaxically) interval linear with
+   exact arithmetic.
+
+   Compared to ap_intlinearize_texpr0() function below, this functions does
+   not require a bounding box for dimensions.
+
+   If the precondition is violated, returns NULL.
+*/
+
+
+ap_linexpr0_t* ap_intlinearize_texpr0_intlinear(ap_manager_t* man,
+						ap_texpr0_t* expr,
+						ap_scalar_discr_t discr);
+
+/* ********************************************************************** */
+/* V. Interval linearization of tree expressions */
+/* ********************************************************************** */
+
 ap_linexpr0_t* ap_intlinearize_texpr0(ap_manager_t* man,
 				      ap_abstract0_t* abs,
 				      ap_texpr0_t* expr,
@@ -106,19 +132,19 @@ ap_linexpr0_t* ap_intlinearize_texpr0(ap_manager_t* man,
 				      ap_scalar_discr_t discr,
 				      bool quasilinearize);
 
-ap_lincons0_t ap_intlinearize_tcons0(ap_manager_t* man,
-				     ap_abstract0_t* abs,
-				     ap_tcons0_t* cons,
-				     bool* pexact,
-				     ap_scalar_discr_t discr,
-				     bool quasilinearize, bool meet);
-
 ap_linexpr0_t** ap_intlinearize_texpr0_array(ap_manager_t* man,
 					     ap_abstract0_t* abs,
 					     ap_texpr0_t** texpr, size_t size,
 					     bool* pexact,
 					     ap_scalar_discr_t discr,
 					     bool quasilinearize);
+
+ap_lincons0_t ap_intlinearize_tcons0(ap_manager_t* man,
+				     ap_abstract0_t* abs,
+				     ap_tcons0_t* cons,
+				     bool* pexact,
+				     ap_scalar_discr_t discr,
+				     bool quasilinearize, bool meet);
 
 ap_lincons0_array_t ap_intlinearize_tcons0_array(ap_manager_t* man,
 						 ap_abstract0_t* abs,

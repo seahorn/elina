@@ -64,7 +64,24 @@ ITVFUN(ap_eval_texpr0)(ap_manager_t* man,
 		       bool* pexact);
 
 /* ********************************************************************** */
-/* IV. Interval linearization of tree expressions */
+/* IV. Interval linearization of linear tree expressions */
+/* ********************************************************************** */
+
+/* Linearize a tree expression that is (syntaxically) interval linear with
+   exact arithmetic.
+
+   Compared to ap_intlinearize_texpr0() function below, this functions does
+   not require a bounding box for dimensions.
+
+   If the precondition is violated, returns NULL.
+*/
+
+ap_linexpr0_t*
+ITVFUN(ap_intlinearize_texpr0_intlinear)(ap_manager_t* man,
+					 ap_texpr0_t* expr);
+
+/* ********************************************************************** */
+/* V. Interval linearization of tree expressions */
 /* ********************************************************************** */
 
 ap_linexpr0_t*
@@ -72,15 +89,15 @@ ITVFUN(ap_intlinearize_texpr0)(ap_manager_t* man,
 			       ap_abstract0_t* abs, ap_texpr0_t* expr,
 			       bool* pexact, bool quasilinearize);
 
-ap_lincons0_t
-ITVFUN(ap_intlinearize_tcons0)(ap_manager_t* man,
-			       ap_abstract0_t* abs, ap_tcons0_t* cons,
-			       bool* pexact, bool quasilinearize, bool meet);
-
 ap_linexpr0_t**
 ITVFUN(ap_intlinearize_texpr0_array)(ap_manager_t* man,
 				     ap_abstract0_t* abs, ap_texpr0_t** texpr0, size_t size,
 				     bool* pexact, bool quasilinearize);
+
+ap_lincons0_t
+ITVFUN(ap_intlinearize_tcons0)(ap_manager_t* man,
+			       ap_abstract0_t* abs, ap_tcons0_t* cons,
+			       bool* pexact, bool quasilinearize, bool meet);
 
 ap_lincons0_array_t
 ITVFUN(ap_intlinearize_tcons0_array)(ap_manager_t* man,
