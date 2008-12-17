@@ -271,6 +271,10 @@ void poly_chernikova3(ap_manager_t* man,
       pk_status_conseps |
       pk_status_consgauss |
       pk_status_gengauss;
+    assert(po->C->_sorted && po->F->_sorted && 
+	   poly_is_conseps(pk,po) &&
+	   po->status==
+	   pk_status_consgauss|pk_status_gengauss);
   }
 }
 
@@ -348,15 +352,15 @@ int pk_hash(ap_manager_t* man, pk_t* po)
   int res,t;
   size_t i;
   ap_funopt_t opt = ap_manager_get_funopt(man,AP_FUNID_CANONICALIZE);
-  poly_chernikova3(man,po,NULL);
 
+  poly_chernikova3(man,po,NULL);
   res = 5*po->intdim + 7*po->realdim;
   if (po->C!=NULL){
     res += po->C->nbrows*11 +  po->F->nbrows*13;
-    for (i=0; i<po->C->nbrows; i += (po->C->nbrows+2)/3){
+    for (i=0; i<po->C->nbrows; i += (po->C->nbrows+3)/4){
       res = res*3 + vector_hash(pk,po->C->p[i],po->C->nbcolumns);
     }
-    for (i=0; i<po->F->nbrows; i += (po->F->nbrows+2)/3){
+    for (i=0; i<po->F->nbrows; i += (po->F->nbrows+3)/4){
       res = res*3 + vector_hash(pk,po->F->p[i],po->F->nbcolumns);
     }
   }

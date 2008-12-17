@@ -54,6 +54,9 @@ void poly_canonicalize(ap_manager_t* man, pk_t* poly);
 /* Has the polyhedron normalized strict constraints ? */
 static inline bool poly_is_conseps(pk_internal_t* pk, pk_t* po);
 
+/* Is the polyhedron under (strong) normal form ? */
+bool pk_is_canonical(ap_manager_t* man, pk_t* po);
+
 /* Make available the matrix of constraints (resp. frames). The matrix will
    remain unavailable iff the polyhedron appears to be empty */
 static inline void poly_obtain_C(ap_manager_t* man, pk_t* po, char* msg);
