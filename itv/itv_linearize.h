@@ -87,7 +87,25 @@ static inline void itv_linearize_lincons_array(itv_internal_t* intern, itv_linco
 static inline void itv_eval_ap_texpr0(itv_internal_t* intern, itv_t res, ap_texpr0_t* expr, itv_t* env);
 
 /* ********************************************************************** */
-/* V. Linearisation of tree expressions. */
+/* V. Linearisation of linear tree expressions. */
+/* ********************************************************************** */
+
+/* Linearize a tree expression that is (syntaxically) linear with exact
+   arithmetic. 
+
+   Compared to itv_intlinearize_ap_XX() functions below, these functions does
+   not require a bounding box for dimensions.
+
+   If the precondition is violated, the result may be unsound.
+   Return true in case of problem (non linear tree expression). 
+*/
+
+static inline bool itv_intlinearize_ap_texpr0_intlinear(itv_internal_t* intern, itv_linexpr_t* res, ap_texpr0_t* expr);
+static inline bool itv_intlinearize_ap_tcons0_intlinear(itv_internal_t* intern, itv_lincons_t* res, ap_tcons0_t* cons);
+static inline bool itv_intlinearize_ap_tcons0_array_intlinear(itv_internal_t* intern, itv_lincons_array_t* res, ap_tcons0_array_t* cons);
+
+/* ********************************************************************** */
+/* VI. Linearisation of tree expressions. */
 /* ********************************************************************** */
 
 /* These functions returns true if the linearization return in an empty
@@ -123,7 +141,12 @@ void ITVFUN(itv_linearize_lincons_array)(itv_internal_t* intern, itv_lincons_arr
 /* IV. Evaluation of tree expressions  */
 void ITVFUN(itv_eval_ap_texpr0)(itv_internal_t* intern, itv_t itv, ap_texpr0_t* expr, itv_t* env);
 
-/* V. Linearisation of tree expressions. */
+/* V. Linearisation of linear tree expressions. */
+bool ITVFUN(itv_intlinearize_ap_texpr0_intlinear)(itv_internal_t* intern, itv_linexpr_t* res, ap_texpr0_t* expr);
+bool ITVFUN(itv_intlinearize_ap_tcons0_intlinear)(itv_internal_t* intern,itv_lincons_t* res, ap_tcons0_t* cons);
+bool ITVFUN(itv_intlinearize_ap_tcons0_array_intlinear)(itv_internal_t* intern,itv_lincons_array_t* res, ap_tcons0_array_t* cons);
+
+/* VI. Linearisation of tree expressions. */
 bool ITVFUN(itv_intlinearize_ap_texpr0)(itv_internal_t* intern,itv_linexpr_t* res,ap_texpr0_t* expr,itv_t* env, size_t intdim);
 bool ITVFUN(itv_intlinearize_ap_tcons0)(itv_internal_t* intern,itv_lincons_t* res, ap_tcons0_t* cons, itv_t* env, size_t intdim);
 bool ITVFUN(itv_intlinearize_ap_tcons0_array)(itv_internal_t* intern,itv_lincons_array_t* res, ap_tcons0_array_t* cons, itv_t* env, size_t intdim);
@@ -155,7 +178,15 @@ static inline void itv_linearize_lincons_array(itv_internal_t* intern, itv_linco
 static inline void itv_eval_ap_texpr0(itv_internal_t* intern, itv_t itv, ap_texpr0_t* expr, itv_t* env)
 { ITVFUN(itv_eval_ap_texpr0)(intern,itv,expr,env); }
 
-/* V. Linearisation of tree expressions. */
+/* V. Linearisation of linear tree expressions. */
+static inline bool itv_intlinearize_ap_texpr0_intlinear(itv_internal_t* intern, itv_linexpr_t* linexpr, ap_texpr0_t* expr)
+{ return ITVFUN(itv_intlinearize_ap_texpr0_intlinear)(intern,linexpr,expr); }
+static inline bool itv_intlinearize_ap_tcons0_intlinear(itv_internal_t* intern, itv_lincons_t* lincons, ap_tcons0_t* cons)
+  { return ITVFUN(itv_intlinearize_ap_tcons0_intlinear)(intern,lincons,cons); }
+static inline bool itv_intlinearize_ap_tcons0_array_intlinear(itv_internal_t* intern, itv_lincons_array_t* tlincons, ap_tcons0_array_t* tcons)
+  { return ITVFUN(itv_intlinearize_ap_tcons0_array_intlinear)(intern,tlincons,tcons); }
+
+/* VI. Linearisation of tree expressions. */
 static inline bool itv_intlinearize_ap_texpr0(itv_internal_t* intern, itv_linexpr_t* linexpr, ap_texpr0_t* expr, itv_t* env, size_t intdim)
 { return ITVFUN(itv_intlinearize_ap_texpr0)(intern,linexpr,expr,env,intdim); }
 static inline bool itv_intlinearize_ap_tcons0(itv_internal_t* intern, itv_lincons_t* lincons, ap_tcons0_t* cons, itv_t* env, size_t intdim)
