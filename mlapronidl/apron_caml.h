@@ -28,8 +28,6 @@
 #include <caml/bigarray.h>
 #include <caml/intext.h>
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -177,7 +175,7 @@ value camlidl_apron_texpr_rdir_t_c2ml(ap_texpr_rdir_t* op)
 /* manager */
 /* ********************************************************************** */
 
-  extern struct custom_operations camlidl_apron_custom_manager_ptr;
+extern struct custom_operations camlidl_apron_custom_manager_ptr;
 
 static inline
 void camlidl_apron_manager_ptr_ml2c(value v, ap_manager_ptr* p)
@@ -197,6 +195,10 @@ value camlidl_apron_manager_ptr_c2ml(ap_manager_ptr* p)
 
 void ap_manager_set_deserialize(ap_manager_ptr man);
 ap_manager_ptr ap_manager_get_deserialize(void);
+
+
+extern value camlidl_c2ml_manager_struct_ap_exclog_t(struct ap_exclog_t*, struct camlidl_ctx_struct*);
+extern void camlidl_apron_manager_check_exception(struct ap_manager_t* man, void* _ctx);
 
 /* ********************************************************************** */
 /* abstract0 */

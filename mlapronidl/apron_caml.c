@@ -108,7 +108,7 @@ int camlidl_apron_texpr0_ptr_compare(value v1, value v2)
 {
   ap_texpr0_t* p1 = *(ap_texpr0_ptr *) Data_custom_val(v1);
   ap_texpr0_t* p2 = *(ap_texpr0_ptr *) Data_custom_val(v2);
-  return ap_texpr0_equal(p1,p2) ? 0 : (p1<p2 ? (-1) : 1); 
+  return ap_texpr0_equal(p1,p2) ? 0 : (p1<p2 ? (-1) : 1);
 }
 
 struct custom_operations camlidl_apron_custom_texpr0_ptr = {
@@ -151,6 +151,17 @@ struct custom_operations camlidl_apron_custom_manager_ptr = {
   custom_deserialize_default
 };
 
+void camlidl_apron_manager_check_exception(struct ap_manager_t* man, void* _ctx)
+{
+  value* p = caml_named_value("apron exception");
+  if(p==NULL){
+    fprintf(stderr,"mlapronidl: error: line <let _ = Callback.register ...> of manager.ml has not been executed: this is not normal\n");
+    abort();
+  }
+  value v = camlidl_c2ml_manager_struct_ap_exclog_t(man->result.exclog,NULL);
+  caml_raise_with_arg(*p,v);
+}
+
 /* ********************************************************************** */
 /* abstract0 */
 /* ********************************************************************** */
@@ -169,7 +180,9 @@ long camlidl_apron_abstract0_ptr_hash(value v)
 {
   ap_abstract0_ptr* p = (ap_abstract0_ptr *) Data_custom_val(v);
   ap_abstract0_t* a = *p;
-  return ap_abstract0_hash(a->man,a);
+  long res = ap_abstract0_hash(a->man,a);
+  if (a->man->result.exn!=AP_EXC_NONE) camlidl_apron_manager_check_exception(a->man,NULL);
+  return res;
 }
 static
 int camlidl_apron_abstract0_ptr_compare(value v1, value v2)
@@ -180,7 +193,7 @@ int camlidl_apron_abstract0_ptr_compare(value v1, value v2)
   ap_abstract0_t* a2 = *p2;
   ap_dimension_t dim1,dim2;
   int res;
-  if (v1==v2 || p1==p2 || a1==a2) 
+  if (v1==v2 || p1==p2 || a1==a2)
     res=0;
   else {
     dim1 = ap_abstract0_dimension(a1->man,a1);
@@ -193,6 +206,7 @@ int camlidl_apron_abstract0_ptr_compare(value v1, value v2)
 	  res=0;
 	else
 	  res = a1 > a2 ? 1 : (-1);
+	if (a1->man->result.exn!=AP_EXC_NONE) camlidl_apron_manager_check_exception(a1->man,NULL);
       }
     }
   }
