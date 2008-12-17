@@ -201,19 +201,37 @@ bool pk_is_leq(ap_manager_t* man, pk_t* pa, pk_t* pb)
 
 bool pk_is_eq(ap_manager_t* man, pk_t* pa, pk_t* pb)
 {
-  pk_init_from_manager(man,AP_FUNID_IS_EQ);
+  pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_IS_EQ);
 
   man->result.flag_exact = man->result.flag_best =
     (pa->intdim==0);
   if (pa->C && pa->F && pb->C && pb->F &&
       (pa->nbeq != pb->nbeq || pa->nbline != pb->nbline) ){
     return false;
+  }  
+  if (pk->funopt->algorithm>0){
+    poly_chernikova3(man,pa,"of the first argument");
+    if (pk->exn){
+      pk->exn = AP_EXC_NONE;
+      return false;
+    }
+    poly_chernikova3(man,pb,"of the first argument");
+    if (pk->exn){
+      pk->exn = AP_EXC_NONE;
+      return false;
+    }
+  }
+  man->result.flag_exact = man->result.flag_best = true;
+  if (pk_is_canonical(man,pa) && pk_is_canonical(man,pb)){
+    bool res =
+      (!pa->C && !pb->C) ||
+      (pa->C && pb->C && 
+       pa->C->nbrows == pb->C->nbrows && pa->F->nbrows == pb->F->nbrows &&
+       (pa->C->nbrows <= pa->F->nbrows ? matrix_equal(pa->C,pb->C) : matrix_equal(pa->F,pb->F)));
+    return res;
   }
   else {
     bool res = pk_is_leq(man,pa,pb) && pk_is_leq(man,pb,pa);
-    if (res){
-      man->result.flag_exact = man->result.flag_best = true;
-    }
     return res;
   }
 }
