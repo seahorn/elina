@@ -58,6 +58,7 @@ void      matrix_clear(matrix_t* mat);
 void      matrix_print(matrix_t* mat);
 void      matrix_fprint(FILE* stream, matrix_t* mat);
 matrix_t* matrix_copy(matrix_t* mat);
+bool      matrix_equal(matrix_t* mata, matrix_t* matb);
 
 /* Operations on rows */
 void matrix_normalize_row(pk_internal_t* pk,

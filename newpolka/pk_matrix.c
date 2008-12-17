@@ -131,6 +131,24 @@ matrix_t* matrix_copy(matrix_t* mat)
   return nmat;
 }
 
+/* Return true iff the matrices are equal, coeff by coeff */
+bool matrix_equal(matrix_t* mata, matrix_t* matb)
+{
+  int i;
+  size_t j;
+  bool res;
+
+  res = mata->nbrows==matb->nbrows && mata->nbcolumns==matb->nbcolumns;
+  if (!res) return res;
+  for (i=(int)mata->nbrows-1;i>=0;i--){
+    for (j=0; j<mata->nbcolumns; j++){
+      res = numint_equal(mata->p[i][j],matb->p[i][j]);
+      if (!res) return res;
+    }
+  }
+  return res;
+}
+
 /* Raw printing function. */
 void matrix_fprint(FILE* stream, matrix_t* mat)
 {
