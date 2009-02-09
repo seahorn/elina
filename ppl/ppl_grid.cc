@@ -17,8 +17,8 @@
 #include <assert.h>
 #include "ap_generic.h"
 #include "ap_ppl.h"
-#include "ppl_grid.hh"
 #include "ppl_user.hh"
+#include "ppl_grid.hh"
 
 #include <ppl.hh>
 using namespace std;
@@ -60,13 +60,18 @@ PPL_Grid::PPL_Grid(size_t intdim,size_t realdim,Degenerate_Element kind)
 void PPL_Grid::reduce() 
 {
   for (size_t i=0;i<intdim;i++)
-    p->add_congruence_and_minimize((Variable(i) %=0) / 1);
+    p->add_congruence((Variable(i) %=0) / 1);
 }
 
 void PPL_Grid::forget_dim(size_t dim)
 {
-  if (intdim>dim) p->add_generator_and_minimize(Grid_Generator::parameter(Variable(dim)));
-  else p->add_generator_and_minimize(Grid_Generator::line(Variable(dim)));
+#ifndef PPL_0_9
+  if (intdim>dim) p->add_grid_generator(Grid_Generator::parameter(Variable(dim)));
+  else p->add_grid_generator(Grid_Generator::grid_line(Variable(dim)));
+#else
+  if (intdim>dim) p->add_generator(Grid_Generator::parameter(Variable(dim)));
+  else p->add_generator(Grid_Generator::line(Variable(dim)));
+#endif
 }
 
 PPL_Grid::~PPL_Grid() { delete p; }
@@ -221,7 +226,11 @@ void ap_ppl_grid_minimize(ap_manager_t* man, PPL_Grid* a)
     ((PPL_Grid*)a)->reduce();
     /* the calls force in-place minimisation */
     (void)a->p->minimized_congruences();
+#ifndef PPL_0_9
+    (void)a->p->minimized_grid_generators();
+#else
     (void)a->p->minimized_generators();
+#endif
   }
   CATCH_WITH_VOID(AP_FUNID_MINIMIZE);
 }
@@ -235,7 +244,11 @@ void ap_ppl_grid_canonicalize(ap_manager_t* man, PPL_Grid* a)
     ((PPL_Grid*)a)->reduce();
     /* the calls force in-place minimisation */
     (void)a->p->minimized_congruences();
+#ifndef PPL_0_9
+    (void)a->p->minimized_grid_generators();
+#else
     (void)a->p->minimized_generators();
+#endif
   }
   CATCH_WITH_VOID(AP_FUNID_CANONICALIZE);
 }
@@ -247,7 +260,11 @@ int ap_ppl_grid_hash(ap_manager_t* man, PPL_Grid* a)
     ((PPL_Grid*)a)->reduce();
     /* the calls force in-place minimisation */
     (void)a->p->minimized_congruences();
+#ifndef PPL_0_9
+    (void)a->p->minimized_grid_generators();
+#else
     (void)a->p->minimized_generators();
+#endif
     return a->p->total_memory_in_bytes(); 
   }
   CATCH_WITH_VAL(AP_FUNID_HASH,0);
@@ -309,7 +326,11 @@ void ap_ppl_grid_fdump(FILE* stream, ap_manager_t* man, PPL_Grid* a)
     ap_lincons0_array_clear(&ar);
     /* dump generators */
     fprintf(stream,"generators: ");
+#ifndef PPL_0_9
+    ap_generator0_array_t ar2 = ap_ppl_to_generator_array(a->p->grid_generators());
+#else
     ap_generator0_array_t ar2 = ap_ppl_to_generator_array(a->p->generators());
+#endif
     ap_generator0_array_fprint(stream,&ar2,NULL);
     ap_generator0_array_clear(&ar2);
   }
@@ -375,7 +396,7 @@ PPL_Grid* ap_ppl_grid_of_box(ap_manager_t* man,
     Congruence_System c;
     if (!ap_ppl_of_box(c,tinterval,intdim,realdim))
       man->result.flag_exact = man->result.flag_best = false;
-    r->p->add_recycled_congruences_and_minimize(c);
+    r->p->add_recycled_congruences(c);
     return r;
   }
   CATCH_WITH_DIM(AP_FUNID_OF_BOX,intdim,realdim);
@@ -524,7 +545,11 @@ bool ap_ppl_grid_is_dimension_unconstrained(ap_manager_t* man,
 {
   man->result.flag_exact = man->result.flag_best = true;
   try {
+#ifndef PPL_0_9
+    Grid_Generator g = Grid_Generator::grid_line(Variable(dim));
+#else
     Grid_Generator g = Grid_Generator::line(Variable(dim));
+#endif
     return a->p->relation_with(g) == Poly_Gen_Relation::subsumes();
   }
   CATCH_WITH_VAL(AP_FUNID_IS_DIMENSION_UNCONSTRAINED,false);
@@ -675,7 +700,11 @@ ap_generator0_array_t ap_ppl_grid_to_generator_array(ap_manager_t* man,
 {
   man->result.flag_exact = man->result.flag_best = true;
   try {
+#ifndef PPL_0_9
+    return ap_ppl_to_generator_array(a->p->grid_generators());
+#else
     return ap_ppl_to_generator_array(a->p->generators());
+#endif
   }
   CATCH_WITH_VAL(AP_FUNID_TO_GENERATOR_ARRAY,ap_ppl_generator_universe(a->p->space_dimension()));
 }
@@ -710,7 +739,11 @@ PPL_Grid* ap_ppl_grid_join(ap_manager_t* man, bool destructive,
   try {
     PPL_Grid* r = destructive ? a1 : new PPL_Grid(*a1);
     /* TODO: should we use join_assign_if_exact? */
+#ifndef PPL_0_9
+    r->p->upper_bound_assign(*a2->p);
+#else
     r->p->join_assign(*a2->p);
+#endif
     return r; 
   }
   CATCH_WITH_GRID(AP_FUNID_JOIN,a1);
@@ -742,7 +775,11 @@ PPL_Grid* ap_ppl_grid_join_array(ap_manager_t* man,
     PPL_Grid* r = new PPL_Grid(*tab[0]);
     for (size_t i=1;i<size;i++)
       /* TODO: should we use join_assign_if_exact? */
+#ifndef PPL_0_9
+      r->p->upper_bound_assign(*tab[i]->p);
+#else
       r->p->join_assign(*tab[i]->p);
+#endif
   return r;
   }
   CATCH_WITH_GRID(AP_FUNID_JOIN_ARRAY,tab[0]);
@@ -761,7 +798,7 @@ PPL_Grid* ap_ppl_grid_meet_lincons_array(ap_manager_t* man,
     Congruence_System c;
     if (!ap_ppl_of_lincons_array(intern->itv,c,array))
       man->result.flag_exact = man->result.flag_best = false;
-    r->p->add_recycled_congruences_and_minimize(c);
+    r->p->add_recycled_congruences(c);
     return r;
   }
   CATCH_WITH_GRID(AP_FUNID_MEET_LINCONS_ARRAY,a);
@@ -794,7 +831,11 @@ PPL_Grid* ap_ppl_grid_add_ray_array(ap_manager_t* man,
       Grid_Generator_System c;
       if (!ap_ppl_of_generator_array(intern->itv,c,array))
 	man->result.flag_exact = man->result.flag_best = false;
-      r->p->add_recycled_generators_and_minimize(c);
+#ifndef PPL_0_9
+      r->p->add_recycled_grid_generators(c);
+#else
+      r->p->add_recycled_generators(c);
+#endif
       r->reduce();
     }
     return r;
@@ -953,7 +994,7 @@ PPL_Grid* ap_ppl_grid_forget_array(ap_manager_t* man,
 	r->forget_dim(tdim[i]);
       if (project) {
 	for (size_t i=0;i<size;i++)
-	  r->p->add_constraint_and_minimize(Variable(tdim[i])==0);
+	  r->p->add_constraint(Variable(tdim[i])==0);
       }
       else {
 	r->reduce();

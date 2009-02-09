@@ -83,7 +83,11 @@ ap_lincons0_t ap_ppl_to_lincons(const Congruence& c)
   ap_linexpr0_t* e;
   int i, n = c.space_dimension();
   /* special, inconsistent case */
+#ifndef PPL_0_9
+  if (c.is_inconsistent())
+#else
   if (c.is_trivial_false())
+#endif
     return ap_lincons0_make_unsat();
   /* other cases */
   e = ap_linexpr0_alloc(AP_LINEXPR_DENSE,n);
@@ -629,9 +633,15 @@ bool ap_ppl_of_generator(itv_internal_t* intern,
   }
   ap_ppl_of_linexpr(intern,l,den,c->linexpr0,1);
   switch (c->gentyp) {
+#ifndef PPL_0_9
+  case AP_GEN_VERTEX:  r = Grid_Generator::grid_point(l,den);     return true;
+  case AP_GEN_RAY:     r = Grid_Generator::grid_line(l);          return false;
+  case AP_GEN_LINE:    r = Grid_Generator::grid_line(l);          return true;
+#else
   case AP_GEN_VERTEX:  r = Grid_Generator::point(l,den);     return true;
   case AP_GEN_RAY:     r = Grid_Generator::line(l);          return false;
   case AP_GEN_LINE:    r = Grid_Generator::line(l);          return true;
+#endif
   case AP_GEN_RAYMOD:  r = Grid_Generator::parameter(l,den); return false;
   case AP_GEN_LINEMOD: r = Grid_Generator::parameter(l,den); return true;
   default:
@@ -647,7 +657,11 @@ bool ap_ppl_of_generator_array(itv_internal_t* intern,
 {
   bool exact = true;
   size_t i;
+#ifndef PPL_0_9
+  Grid_Generator c = Grid_Generator::grid_point();
+#else
   Grid_Generator c = Grid_Generator::point();
+#endif
   r.clear();
   for (i=0;i<a->size;i++) {
     if (ap_ppl_ap_generator0_select(&a->p[i])){

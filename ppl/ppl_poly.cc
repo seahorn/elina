@@ -17,10 +17,9 @@
 #include <assert.h>
 #include "ap_generic.h"
 #include "ap_linearize.h"
-
 #include "ap_ppl.h"
-#include "ppl_poly.hh"
 #include "ppl_user.hh"
+#include "ppl_poly.hh"
 
 #include <ppl.hh>
 using namespace std;

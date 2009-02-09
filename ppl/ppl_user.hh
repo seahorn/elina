@@ -34,6 +34,16 @@
 using namespace std;
 using namespace Parma_Polyhedra_Library;
 */
+
+#ifndef PPL_VERSION_MAJOR 
+#error "no version information"
+#endif
+
+#if (PPL_VERSION_MAJOR==0) && (PPL_VERSION_MINOR <= 9)
+#define PPL_0_9
+#endif
+
+
 /* ********************************************************************** */
 /* Types and exceptions */
 /* ********************************************************************** */
