@@ -1,3 +1,17 @@
+Version 0.X.Y:
+
+- API
+
+  * Better (correct) signature for Abstract0.permute_dimensions:
+    old: permute_dimensions : 'a Manager.t -> 'a t -> Dim.perm option -> 'a t
+    new: permute_dimensions : 'a Manager.t -> 'a t -> Dim.perm -> 'a t
+
+- Bugs corrected: several
+
+- Distribution/Packaging
+
+  * Optional interface to PPL upgraded to 0.10 (but still support only
+    polyhedra and linear congruences).
 
 Version 0.9.9:
 
