@@ -136,6 +136,35 @@ let f man name =
     ()
 ;;
 
+let test_widening_strict man =
+  let var_x = Var.of_string "x" in
+  let var_y = Var.of_string "y" in
+  let var_z = Var.of_string "z" in 
+  let env = Environment.make
+    [|var_x|]
+    [|var_y; var_z|]
+  in
+  let tab1 = Parser.lincons1_of_lstring
+    env
+    ["-x+8>=0";"-y>=0";"-5*z+4>0"; "z>=0";"x>=0"]
+  in
+  let tab2 = Parser.lincons1_of_lstring
+    env
+    ["-x+8>=0";"-y>=0";"-5*z+4>=0"; "z>=0";"x>=0"]
+  in
+  let abs1 = Abstract1.of_lincons_array man env tab1 in
+  let abs2 = Abstract1.of_lincons_array man env tab2 in
+  let abs3 = Abstract1.widening man abs1 abs2 in
+  printf "widening @[<v>%a@ %a@ = %a@]@."
+    Abstract1.print abs1
+    Abstract1.print abs2
+    Abstract1.print abs3
+  ;
+  ()
+;;
+
+test_widening_strict man1;;
+
 let _ =
   f man1 "bottom";
   f man2 "bottom";
@@ -151,3 +180,36 @@ let _ =
   f man6 "top";
   ()
 ;;
+
+let f man =
+  let abs1 = Abstract0.bottom man 1 1 in
+  let abs2 = Abstract0.top man 0 0 in
+  begin try
+    printf "hash bottom = %i@." (Hashtbl.hash abs1)
+  with _ as exn ->
+    printf "hash bottom = exception %s@." (Printexc.to_string exn)
+  end;
+  begin try
+    printf "hash top = %i@." (Hashtbl.hash abs2)
+  with _ as exn ->
+    printf "hash top = exception %s@." (Printexc.to_string exn)
+  end;
+  begin try
+    printf "compare bottom top = %i@." (Pervasives.compare abs1 abs2)
+  with _ as exn ->
+    printf "compare bottom top = exception %s@." (Printexc.to_string exn)
+  end;
+  ()
+;;
+  f man1;;
+  f man2;;
+  f man3;;
+  f man4;;
+  f man5;;
+  f man6;;
+  f man1;;
+  f man2;;
+  f man3;;
+  f man4;;
+  f man5;;
+  f man6;;

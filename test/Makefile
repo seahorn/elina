@@ -17,10 +17,14 @@ OCAMLINC = \
 -I $(MLGMPIDL_PREFIX)/lib \
 -I $(APRON_PREFIX)/lib 
 
+OCAMLLDFLAGS = \
+-verbose \
+bigarray.cma gmp.cma apron.cma box.cma polka.cma 
+
 OCAMLOPTLDFLAGS = \
 -noautolink -verbose -ccopt "$(LCFLAGS)" \
-bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa ppl.cmxa \
--cclib "-lpolkaGrid_caml -lap_pkgrid_debug -lap_ppl_caml -lap_ppl_debug -lppl -lpolka_caml -lpolka_debug -loct_caml -loctMPQ -lbox_caml -lbox_debug -litv_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmpxx -lgmp -lbigarray -lcamlidl"
+bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa \
+-cclib "-lpolka_caml -lpolka_debug -loct_caml -loctMPQ -lbox_caml -lbox_debug -litv_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
 
 all: C
 
@@ -43,10 +47,14 @@ C: ctest1
 
 # OCaml examples
 %.opt: %.ml
-	$(OCAMLOPT) -cc "g++" $(OCAMLOPTFLAGS) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
+
+%.byte: %.ml
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) $(OCAMLLDFLAGS) -use-runtime ../apronrun -o $@ $<
+
 
 clean:
-	rm -f ctest1 ctest1_debug *.o test_00.cm[xo] test_00.o test_00.opt
+	rm -f ctest1 ctest1_debug *.o *.cm[xo] *.opt
 
 distclean: clean
 
