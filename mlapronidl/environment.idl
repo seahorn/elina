@@ -117,6 +117,7 @@ else {\n\
   }\n\
 }\n\
 assert(_res->count >= 1);")
+     quote(dealloc,"ap_dimperm_clear(&perm);")
 ;
 
 quote(MLI,"\n
@@ -162,6 +163,10 @@ if (_res==NULL){\n\
   caml_failwith(\"Environment.lce: variable with two different types\");\n\
 }\n\
 assert(_res->count >= 1);")
+quote(dealloc,"
+  if (c1) ap_dimchange_free(c1);
+  if (c2) ap_dimchange_free(c2);
+")
 ;
 quote(MLI,"\n
 (** [dimchange e1 e2] computes the transformation for \n\
@@ -176,7 +181,9 @@ if (_res==NULL){\n\
   camlidl_free(_ctx);\n\
   caml_failwith(\"Environment.dimchange: the second environment is not a superenvironment of the first one\");\n\
 }\n\
-");
+")
+quote(dealloc,"ap_dimchange_free(_res);")
+;
 
 quote(MLI,"\n(** Test equality if two environments *)")
 boolean ap_environment_equal(ap_environment_ptr env1,
