@@ -16,9 +16,10 @@
 static inline
 ap_reducedproduct_t* ap_reducedproduct_alloc(size_t size)
 {
+  size_t i;
   ap_reducedproduct_t* res = malloc(sizeof(ap_reducedproduct_t) + size*sizeof(void*));
   res->reduced = false;
-  for (size_t i=0; i<size; i++) res->p[i] = NULL;
+  for (i=0; i<size; i++) res->p[i] = NULL;
   return res;
 }
 
@@ -53,9 +54,10 @@ ap_reducedproduct_internal_t* get_internal_init_tab(ap_manager_t* manager,
 						    ap_funid_t funid,
 						    ap_reducedproduct_t** tab, size_t size)
 {
+  size_t i;
   ap_reducedproduct_internal_t* intern = get_internal_init0(manager);
   if (manager->option.funopt[funid].algorithm & 0x1){
-    for (size_t i=0; i<size; i++){
+    for (i=0; i<size; i++){
       if (tab[i]->reduced==false) intern->reduce(manager,tab[i]);
     }
   }

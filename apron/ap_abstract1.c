@@ -1213,6 +1213,7 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
   qsort(tdim,size,sizeof(ap_dim_t),compar_dim);
   /* Compute the permutation for "exchanging" dim and tdim[0] if necessary  */
   if (dim!=tdim[0]){
+    size_t rank;
     /* We have the following situation
 
     Initially:
@@ -1245,7 +1246,7 @@ ap_abstract1_t ap_abstract1_fold(ap_manager_t* man,
     /* compute permutation */
     ap_dimperm_init(&perm, nenv->intdim+nenv->realdim);
     ap_dimperm_set_id(&perm);
-    for (size_t rank=tdim[0]; rank<dim-index; rank++){
+    for (rank=tdim[0]; rank<dim-index; rank++){
       perm.dim[rank] = rank+1;
     }
     perm.dim[dim-index] = tdim[0];
