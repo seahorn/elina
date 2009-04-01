@@ -123,7 +123,7 @@ libboxRll_debug.a: $(CCMODULES:%=%Rll_debug.o)
 %Rll.o: %.c
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
 %Rll_debug.o: %.c
-	$(CC) $(CFLAGS_DEBIG) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
 
 libboxD.a: $(CCMODULES:%=%D.o)
 	$(AR) rcs $@ $^
