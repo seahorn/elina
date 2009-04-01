@@ -87,7 +87,7 @@ void ITVFUN(itv_linexpr_fprint)(FILE* stream, itv_linexpr_t* expr, char** name)
   bool* peq;
   itv_fprint(stream,expr->cst);
   itv_linexpr_ForeachLinterm(expr,i,dim,pitv,peq) {
-    printf(" + ");
+    fprintf(stream, " + ");
     itv_fprint(stream,pitv);
     if (name) fprintf(stream,"%s",name[dim]);
     else fprintf(stream,"x%lu",(unsigned long)dim);
