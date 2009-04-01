@@ -35,7 +35,7 @@ extern "C" {
    NUMINT_DOUBLE and NUMFLT_LONGDOUBLE also define
 
    - NUMFLT_MAX: positive infinity value
-     It is assumed that (-NUMINT_MAX) is also repreentable
+     It is assumed that (-NUMINT_MAX) is also representable
 
    - NUMFLT_NATIVE: no heap allocated memory
 */
