@@ -514,7 +514,7 @@ ap_interval_t** box_to_box(ap_manager_t* man, box_t* a)
     interval = ap_interval_array_alloc(nbdims);
      for (i=0; i<nbdims; i++){
        if (a->p==NULL){
-	 ap_interval_set_top(interval[i]);
+	 ap_interval_set_bottom(interval[i]);
        } else {
 	 ap_interval_set_itv(intern->itv,interval[i],a->p[i]);
        }
