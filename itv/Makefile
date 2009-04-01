@@ -33,7 +33,6 @@ libitvRll.a libitvRll_debug.a \
 libitvMPZ.a libitvMPZ_debug.a \
 libitvMPQ.a libitvMPQ_debug.a \
 libitvD.a libitvD_debug.a \
-libitvDl.a libitvDl_debug.a \
 libitvMPFR.a libitvMPFR_debug.a \
 libitv.a libitv_debug.a
 
