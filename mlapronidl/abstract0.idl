@@ -425,7 +425,7 @@ ap_abstract0_ptr ap_abstract0_remove_dimensions(ap_manager_ptr man, ap_abstract0
      quote(call,"_res = ap_abstract0_remove_dimensions(man,false,a,&dimchange);ap_dimchange_clear(&dimchange);")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
-ap_abstract0_ptr ap_abstract0_permute_dimensions(ap_manager_ptr man, ap_abstract0_ptr a, struct ap_dimperm_t* perm)
+ap_abstract0_ptr ap_abstract0_permute_dimensions(ap_manager_ptr man, ap_abstract0_ptr a, [ref]struct ap_dimperm_t* perm)
      quote(call,"_res = ap_abstract0_permute_dimensions(man,false,a,perm);")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
