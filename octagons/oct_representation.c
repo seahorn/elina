@@ -279,8 +279,16 @@ void oct_canonicalize(ap_manager_t* man, oct_t* a)
 int oct_hash(ap_manager_t* man, oct_t* a)
 {
   oct_internal_t* pr = oct_init_from_manager(man,AP_FUNID_HASH,0);
-  ap_manager_raise_exception(man,AP_EXC_NOT_IMPLEMENTED,pr->funid,
-			     "not implemented");
+  if (pr->funopt->algorithm>=0) oct_cache_closure(pr,a);
+  if (a->closed || a->m) {
+    int r = 0;
+    bound_t *m = a->closed ? a->closed : a->m;
+    size_t i,j;
+    for (i=0;i<2*a->dim;i++)
+      for (j=0;j<=(i|1);j++,m)
+	r = r*37 + bound_hash(*m);
+    return r;
+  }
   return 0;
 }
 
