@@ -153,10 +153,10 @@ box_t* box_add_ray_array(ap_manager_t* man,
   man->result.flag_best = true;
   man->result.flag_exact = false;
   res = destructive ? a : box_copy(man,a);
-  if (a->p==NULL)
+  if (a->p==NULL){
     man->result.flag_exact = true;
     return res;
-
+  }
   for (i=0;i<array->size; i++){
     box_add_ray(intern,res,&array->p[i]);
   }
