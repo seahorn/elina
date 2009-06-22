@@ -43,9 +43,9 @@ typedef struct ap_dimchange_t {
 
 - Addition of dimensions:
 
-  dimchange.dim[k] means: add one dimension at dimension k and shift the
-  already existing dimensions greater than or equal to k one step on the right
-  (or increment them).
+  dimchange.dim[i]=k means: add one dimension at dimension k and shift the
+  already existing dimensions greater than or equal to k one step on the
+  right (or increment them).
 
   if k is equal to the size of the vector, then it means: add a dimension at
   the end.
@@ -54,12 +54,12 @@ typedef struct ap_dimchange_t {
 
   Example:
   linexpr0_add_dimensions([i0 i1 r0 r1], { [0 1 2 2 4],3,1 }) returns
-  [0 i0 0 i1 0 0 r0 r1 0], considered as a vector with 5 integer dimensions
-  and 4 real dimensions.
+  [0 i0 0 i1 0 0 r0 r1 0], considered as a vector with 6 integer dimensions
+  and 3 real dimensions.
 
 - Removal of dimensions
 
-  dimchange.dim[k] means: remove the dimension k and shift the dimensions
+  dimchange.dim[i]=k means: remove the dimension k and shift the dimensions
   greater than k one step on the left (or decrement them).
 
   Repetitions are meaningless (and are not correct specification)
