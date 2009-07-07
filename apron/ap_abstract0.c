@@ -1565,6 +1565,30 @@ ap_abstract0_t* ap_abstract0_substitute_texpr(ap_manager_t* man,
 					 man,destructive,a,&dim,&expr,1,dest);
 }
 
+/* Applying an ap_dimchange2_t transformation (dimension adding followed by
+   dimension removal/projection).  If project is true, the newly added
+   dimension are projected on their 0-hyperplane. */
+ap_abstract0_t* ap_abstract0_apply_dimchange2(ap_manager_t* man,
+					      bool destructive,
+					      ap_abstract0_t* a, ap_dimchange2_t* dimchange2,
+					      bool project)
+{
+  ap_abstract0_t* res;
+  if (dimchange2->add){
+    res = ap_abstract0_add_dimensions(man,destructive,a,dimchange2->add,project);
+    if (dimchange2->remove){
+      res = ap_abstract0_remove_dimensions(man,true,res,dimchange2->remove);
+    }
+  }
+  else if (dimchange2->remove){
+    res = ap_abstract0_remove_dimensions(man,destructive,a,dimchange2->remove);
+  }
+  else {
+    res = destructive ? a : ap_abstract0_copy(man,a);
+  }
+  return res;
+}
+
 /* This function implements widening with threshold, relying on the
    widening, sat_lincons and meet_lincons_array operations.
 */

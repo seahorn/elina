@@ -314,9 +314,9 @@ ap_abstract0_add_dimensions(ap_manager_t* man,
 			    ap_abstract0_t* a,ap_dimchange_t* dimchange,
 			    bool project);
 ap_abstract0_t*
- ap_abstract0_remove_dimensions(ap_manager_t* man,
-				bool destructive,
-				ap_abstract0_t* a, ap_dimchange_t* dimchange);
+ap_abstract0_remove_dimensions(ap_manager_t* man,
+			       bool destructive,
+			       ap_abstract0_t* a, ap_dimchange_t* dimchange);
   /* Size of the permutation is supposed to be equal to
      the dimension of the abstract value */
 ap_abstract0_t*
@@ -416,8 +416,15 @@ ap_abstract0_t* ap_abstract0_substitute_texpr(ap_manager_t* man,
      octagons.
  */
 
-/* Widening with threshold */
+/* Applying an ap_dimchange2_t transformation (dimension adding followed by
+   dimension removal/projection).  If project is true, the newly added
+   dimension are projected on their 0-hyperplane. */
+ap_abstract0_t* ap_abstract0_apply_dimchange2(ap_manager_t* man,
+					      bool destructive,
+					      ap_abstract0_t* a, ap_dimchange2_t* dimchange2,
+					      bool project);
 
+/* Widening with threshold */
 ap_abstract0_t*
 ap_abstract0_widening_threshold(ap_manager_t* man,
 				ap_abstract0_t* a1, ap_abstract0_t* a2,
