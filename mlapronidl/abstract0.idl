@@ -417,12 +417,20 @@ quote(MLMLI,"(* ============================================================ *)"
 
 quote(MLMLI,"\n")
 
-ap_abstract0_ptr ap_abstract0_add_dimensions(ap_manager_ptr man, ap_abstract0_ptr a, ap_dimchange_t dimchange, boolean v1)
-     quote(call,"_res = ap_abstract0_add_dimensions(man,false,a,&dimchange, v1);ap_dimchange_clear(&dimchange);")
+ap_abstract0_ptr ap_abstract0_add_dimensions(ap_manager_ptr man, ap_abstract0_ptr a, ap_dimchange_t dimchange, boolean project)
+     quote(call,"_res = ap_abstract0_add_dimensions(man,false,a,&dimchange, project);ap_dimchange_clear(&dimchange);")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 ap_abstract0_ptr ap_abstract0_remove_dimensions(ap_manager_ptr man, ap_abstract0_ptr a, ap_dimchange_t dimchange)
      quote(call,"_res = ap_abstract0_remove_dimensions(man,false,a,&dimchange);ap_dimchange_clear(&dimchange);")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+ap_abstract0_ptr ap_abstract0_apply_dimchange2(ap_manager_ptr man, ap_abstract0_ptr a, struct ap_dimchange2_t dimchange2, boolean project)
+     quote(call,"
+_res = ap_abstract0_apply_dimchange2(man,false,a,&dimchange2,project);
+if (dimchange2.add) ap_dimchange_clear(dimchange2.add);
+if (dimchange2.remove) ap_dimchange_clear(dimchange2.remove);
+")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 ap_abstract0_ptr ap_abstract0_permute_dimensions(ap_manager_ptr man, ap_abstract0_ptr a, [ref]struct ap_dimperm_t* perm)
@@ -444,6 +452,14 @@ void ap_abstract0_remove_dimensions_with(ap_manager_ptr man, ap_abstract0_ptr a,
   ap_dimchange_clear(&dimchange);\n\
   *((ap_abstract0_ptr *) Data_custom_val(_v_a)) = res;\n\
 }")
+     quote(dealloc,"I0_CHECK_EXC(man)");
+
+void ap_abstract0_apply_dimchange2_with(ap_manager_ptr man, ap_abstract0_ptr a, struct ap_dimchange2_t dimchange2, boolean project)
+     quote(call,"
+ap_abstract0_t* res  = ap_abstract0_apply_dimchange2(man,true,a,&dimchange2,project);
+ap_dimchange2_clear(&dimchange2);
+*((ap_abstract0_ptr *) Data_custom_val(_v_a)) = res;
+")
      quote(dealloc,"I0_CHECK_EXC(man)");
 
 void ap_abstract0_permute_dimensions_with(ap_manager_ptr man, ap_abstract0_ptr a, struct ap_dimperm_t* perm)
