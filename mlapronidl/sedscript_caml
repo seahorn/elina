@@ -14,6 +14,7 @@ s/Interval.ap_interval_array_t/Interval.t array/g;
 s/ap_coeff_t/t/g;
 s/ap_dim_t/t/g;
 s/ap_dimchange_t/change/g;
+s/ap_dimchange2_t/change2/g;
 s/ap_dimperm_t/perm/g;
 s/ap_dimension_t/dimension/g;
 s/ap_linexpr0_ptr/t/g;

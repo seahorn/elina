@@ -185,6 +185,24 @@ if (_res==NULL){\n\
 quote(dealloc,"ap_dimchange_free(_res);")
 ;
 
+quote(MLI,"\n
+(** [dimchange2 e1 e2] computes the transformation for 
+ converting from an environment [e1] to a (compatible) environment 
+ [e2], by first adding (some) variables of [e2] and then removing 
+(some) variables of [e1]. Raises [Failure] if the two environments 
+are incompatible.
+*)")
+[ref]struct ap_dimchange2_t *ap_environment_dimchange2(ap_environment_ptr e1,
+					        ap_environment_ptr e2)
+     quote(call,"\n\
+_res = ap_environment_dimchange2(e1,e2);\n\
+if (_res==NULL){\n\
+  camlidl_free(_ctx);\n\
+  caml_failwith(\"Environment.dimchange2: the two environments are not compatible\");\n\
+}\n\
+")
+quote(dealloc,"ap_dimchange2_free(_res);")
+;
 quote(MLI,"\n(** Test equality if two environments *)")
 boolean ap_environment_equal(ap_environment_ptr env1,
 			     ap_environment_ptr env2)

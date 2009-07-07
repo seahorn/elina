@@ -217,6 +217,7 @@ static inline
 value camlidl_apron_abstract0_ptr_c2ml(ap_abstract0_ptr* p)
 {
   value v;
+  assert((*p)->man!=NULL);
   v = alloc_custom(&camlidl_apron_custom_abstract0_ptr, sizeof(ap_abstract0_ptr), 
 		   ap_abstract0_size((*p)->man,(*p)), 
 		   camlidl_apron_heap);
