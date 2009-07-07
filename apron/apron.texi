@@ -3308,6 +3308,20 @@ Assuming that dimchange is a transformation for the addition of dimensions,
 invert it to obtain the inverse transformation for removing dimensions.
 @end deftypefun
 
+@deftypefun void ap_dimchange2_init (ap_dimchange2_t* @var{dimchange2}, ap_dimchange_t* @var{add}, ap_dimchange_t* @var{remove})
+@deftypefunx void ap_dimchange2_clear (ap_dimchange2_t* @var{dimchange2})
+Initialize (with @var{add} and @var{remove}) and clear a dimchange2
+structure.
+@end deftypefun
+@deftypefun ap_dimchange2_t* ap_dimchange2_alloc (ap_dimchange_t* @var{add}, ap_dimchange_t* @var{remove})
+@deftypefunx void ap_dimchange2_free (ap_dimchange2_t* @var{dimchange2})
+Allocate and free a dimchange2 structure.
+@end deftypefun
+@deftypefun void ap_dimchange2_fprint (FILE* @var{stream}, ap_dimchange2_t* @var{dimchange2})
+Print the change of dimension.
+@end deftypefun
+
+
 @c -------------------------------------------------------------------
 @node Manipulating permutations of dimensions,  , Manipulating changes of dimensions, Dimensions and related operations
 @subsection Manipulating permutations of dimensions
