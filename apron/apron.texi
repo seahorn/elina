@@ -1621,6 +1621,13 @@ Compute the transformation for converting from an environment
 is not a superenvironment.
 @end deftypefun
 
+@deftypefun ap_dimchange2_t* ap_environment_dimchange2 (ap_environment_t* @var{env1}, ap_environment_t* @var{env2})
+Compute the transformation for switching from an environment
+@var{env1} to an @var{env2}, by first adding (some) variables of
+@var{env2}, and then removing (some) variables of @var{env1}.  Return
+NULL if @var{env1} and @var{env2} ar enot compatible environments.
+@end deftypefun
+
 @deftypefun ap_environment_t* ap_environment_lce (ap_environment_t* @var{env1}, ap_environment_t* @var{env2}, ap_dimchange_t** @var{dimchange1}, ap_dimchange_t** @var{dimchange2})
 Least common environment to two enviroenments.
 @itemize
@@ -3245,6 +3252,20 @@ integer dimensions and 2 real dimensions.
 @end table
 @end deftp
 
+@deftp datatype ap_dimchange2_t
+@example
+typedef struct ap_dimchange_2t @{
+  ap_dimchange_t* add;    /* If not NULL, specifies the adding new dimensions */
+  ap_dimchange_t* remove; /* If not NULL, specifies the removal of dimensions */
+@} ap_dimchange2_t;
+@end example
+Datatype for specifying a transformation composed of the addition and
+the removal of dimensions. Used by functions
+@code{ap_abstract0_apply_dimchange2},
+@code{ap_environment_dimchange2}, and
+@code{ap_abstract1_change_environment.}.
+@end deftp
+
 @deftp datatype ap_dimperm_t
 @example
 typedef struct ap_dimperm_t @{
@@ -4220,6 +4241,12 @@ value @var{a}.
 Addition and Removal of dimensions in @var{a} according to
 @var{dimchange}. In the case of addition, new dimensions are either
 unconstrained (@code{project==false}) or initialized to 0
+((@code{project==true}).
+@end deftypefun
+
+@deftypefun ap_abstract0_t* ap_abstract0_apply_dimchange2 (ap_manager_t* @var{man}, bool @var{destructive}, ap_abstract0_t* @var{a}, ap_dimchange2_t* @var{dimchange2}, bool @var{project})
+Apply the transformation specified by @var{dimchange2}. New dimensions
+are either unconstrained (@code{project==false}) or initialized to 0
 ((@code{project==true}).
 @end deftypefun
 
