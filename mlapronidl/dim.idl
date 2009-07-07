@@ -17,6 +17,11 @@ typedef [mltype("{\n  dim : int array;\n  intdim : int;\n  realdim : int;\n}"),
 	 ml2c(camlidl_apron_dimchange_ml2c)]
 struct ap_dimchange_t ap_dimchange_t;
 
+struct ap_dimchange2_t {
+  ap_dimchange_t* add; 
+  ap_dimchange_t* remove;
+};
+
 struct ap_dimperm_t {
   [size_is(size)]unsigned int* dim;
   unsigned int size;
@@ -29,7 +34,7 @@ struct ap_dimension_t {
 
 quote(MLMLI,"(** APRON Dimensions and related types *)")
 
-quote(MLMLI,"\n(**
+quote(MLI,"\n(**
 
 {ul
 {- [t=int] is the type of dimensions.}
@@ -63,6 +68,12 @@ quote(MLMLI,"\n(**
    realdim=1 }] returns [i1 r0 r2], considered as a vector with 1 integer
    dimensions and 2 real dimensions.
 }}}
+{- The semantics of an object [(change2:change2)] is the combination of the
+two following transformations:
+{ul
+{- [change2.add] indicates an optional addition of dimensions.}
+{- [change2.remove] indicates an optional removal of dimensions.}
+}}
 {- [perm] defines a permutation.}
 {- [dimension] defines the dimensionality of an abstract value (number of
 integer and real dimensions).
