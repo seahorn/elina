@@ -159,10 +159,20 @@ int ap_environment_hash(ap_environment_t* env);
 /* ========================================================================= */
 
 ap_dimchange_t* ap_environment_dimchange(ap_environment_t* env1,
-                                   ap_environment_t* env);
+					 ap_environment_t* env);
   /* Compute the transformation for converting from an environment to a
      superenvironment.
      Return NULL if env is not a superenvironment.
+  */
+
+ap_dimchange2_t* ap_environment_dimchange2(ap_environment_t* env1,
+					   ap_environment_t* env2);
+  /* Compute the transformation for converting from a first environment to a
+     second environment, by first adding (some) variables of the second
+     environment, and then removing (some) variables of the first
+     environment. 
+
+     If the two environments are incompatible, returns NULL
   */
 
 ap_environment_t* ap_environment_lce(ap_environment_t* env1,

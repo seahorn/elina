@@ -29,7 +29,6 @@ static int vardim_cmp(const void* a, const void* b)
   return ap_var_operations->compare(aa->var,bb->var);
 }
 
-
 /* ************************************************************************* */
 /* I. env_t */
 /* ************************************************************************* */
@@ -737,6 +736,61 @@ ap_dimchange_t* ap_environment_dimchange(ap_environment_t* env1,
 }
 
 /*
+  Compute the transformation for switching from one environment to another one (adding and then removal of dimensions.
+
+  - If environments are not compatible, return NULL
+*/
+ap_dimchange2_t* ap_environment_dimchange2(ap_environment_t* env1,
+					   ap_environment_t* env2)
+{
+  size_t size;
+  denv_t denv;
+  bool eq1,eq2;
+  ap_dimchange2_t* res;
+ 
+  if (ap_environment_check_compatibility(env1,env2))
+    return NULL;
+
+  denv_t denv1 = denv_of_environment(env1);
+  denv_t denv2 = denv_of_environment(env2);
+  
+  denv.envint = env_lce(&denv1.envint, &denv2.envint);
+  denv.envreal = env_lce(&denv1.envreal, &denv2.envreal);
+  size = denv.envint.size+denv.envreal.size;
+
+  res = ap_dimchange2_alloc(NULL,NULL);
+  eq1 =
+    denv.envint.size==denv1.envint.size &&
+    denv.envreal.size==denv1.envreal.size;
+  eq2 =
+    denv.envint.size==denv2.envint.size &&
+    denv.envreal.size==denv2.envreal.size;
+  if (!eq1){
+    res->add = ap_dimchange_alloc(denv.envint.size-denv1.envint.size,
+				  denv.envreal.size-denv1.envreal.size);
+    env_lce_dimchange(&denv1.envint,&denv.envint,
+		      res->add, 0, 0);
+    env_lce_dimchange(&denv1.envreal,&denv.envreal,
+		      res->add, res->add->intdim, denv1.envint.size);
+
+  }
+  if (!eq2){
+    /* First build (as for lce) the dimchange for adding dimensions from env2
+       to env(lce), then invert it */
+    res->remove = ap_dimchange_alloc(denv.envint.size-denv2.envint.size,
+				     denv.envreal.size-denv2.envreal.size);
+    env_lce_dimchange(&denv2.envint,&denv.envint,
+		      res->remove, 0,0);
+    env_lce_dimchange(&denv2.envreal,&denv.envreal,
+		      res->remove, res->remove->intdim, denv2.envint.size);
+    ap_dimchange_add_invert(res->remove);
+  }
+  env_clear(&denv.envint);
+  env_clear(&denv.envreal);
+  return res;
+}
+
+/*
   Least common environment to two environment.
 
   - If environments are not compatible, return NULL
@@ -744,7 +798,7 @@ ap_dimchange_t* ap_environment_dimchange(ap_environment_t* env1,
   - Compute also in dimchange1 and dimchange2 the conversion transformations.
 
   - If no dimensions to add to env1, this implies that env is
-  actually env1. In this case, *dimchange1==NULL.
+    actually env1. In this case, *dimchange1==NULL.
 */
 ap_environment_t* ap_environment_lce(ap_environment_t* env1,
 				     ap_environment_t* env2,
@@ -771,39 +825,8 @@ ap_environment_t* ap_environment_lce(ap_environment_t* env1,
   eq2 =
     denv.envint.size==denv2.envint.size &&
     denv.envreal.size==denv2.envreal.size;
-  if (eq1 && eq2){
-    /* env=env1 && env=env2 */
+  if (eq1){
     *dimchange1 = NULL;
-    *dimchange2 = NULL;
-    env_clear(&denv.envint);
-    env_clear(&denv.envreal);
-    return ap_environment_copy(env1);
-  }
-  else if (eq1){
-    /* env=env1 */
-    *dimchange1 = NULL;
-    *dimchange2 = ap_dimchange_alloc(denv.envint.size-denv2.envint.size,
-				     denv.envreal.size-denv2.envreal.size);
-    env_lce_dimchange(&denv2.envint,&denv.envint,
-		      *dimchange2, 0,0);
-    env_lce_dimchange(&denv2.envreal,&denv.envreal,
-		      *dimchange2, (*dimchange2)->intdim, denv2.envint.size);
-    env_clear(&denv.envint);
-    env_clear(&denv.envreal);
-    return ap_environment_copy(env1);
-  }
-  else if (eq2){
-    /* env=env2 */
-    *dimchange2 = NULL;
-    *dimchange1 = ap_dimchange_alloc(denv.envint.size-denv1.envint.size,
-				     denv.envreal.size-denv1.envreal.size);
-    env_lce_dimchange(&denv1.envint,&denv.envint,
-		      *dimchange1, 0, 0);
-    env_lce_dimchange(&denv1.envreal,&denv.envreal,
-		      *dimchange1, (*dimchange1)->intdim, denv1.envint.size);
-    env_clear(&denv.envint);
-    env_clear(&denv.envreal);
-    return ap_environment_copy(env2);
   }
   else {
     *dimchange1 = ap_dimchange_alloc(denv.envint.size-denv1.envint.size,
@@ -812,12 +835,31 @@ ap_environment_t* ap_environment_lce(ap_environment_t* env1,
 		      *dimchange1, 0, 0);
     env_lce_dimchange(&denv1.envreal,&denv.envreal,
 		      *dimchange1, (*dimchange1)->intdim, denv1.envint.size);
+  }
+  if (eq2){
+    *dimchange2 = NULL;
+  }
+  else {
     *dimchange2 = ap_dimchange_alloc(denv.envint.size-denv2.envint.size,
 				     denv.envreal.size-denv2.envreal.size);
     env_lce_dimchange(&denv2.envint,&denv.envint,
 		      *dimchange2, 0,0);
     env_lce_dimchange(&denv2.envreal,&denv.envreal,
 		      *dimchange2, (*dimchange2)->intdim, denv2.envint.size);
+  }
+  if (eq1){
+    /* env=env1 */
+    env_clear(&denv.envint);
+    env_clear(&denv.envreal);
+    return ap_environment_copy(env1);
+  }
+  else if (eq2){
+    /* env=env1 */
+    env_clear(&denv.envint);
+    env_clear(&denv.envreal);
+    return ap_environment_copy(env2);
+  }
+  else {
     return environment_of_denv(&denv);
   }
 }
