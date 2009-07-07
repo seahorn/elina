@@ -998,19 +998,12 @@ ap_abstract1_t ap_abstract1_change_environment(ap_manager_t* man,
 					       ap_environment_t* nenv,
 					       bool project)
 {
-  ap_environment_t* env;
   ap_abstract1_t res;
-  ap_dimchange_t* dimchange1;
-  ap_dimchange_t* dimchange2;
+  ap_dimchange2_t* dimchange2;
   ap_abstract0_t* value;
 
-  if (ap_environment_is_eq(a->env,nenv)){
-    res = destructive ? *a : ap_abstract1_copy(man,a);
-    return res;
-  }
-  dimchange1 = dimchange2 = NULL;
-  env = ap_environment_lce(a->env,nenv,&dimchange1,&dimchange2);
-  if (env==NULL){
+  dimchange2 = ap_environment_dimchange2(a->env,nenv);
+  if (dimchange2==NULL){
     ap_manager_raise_exception(man,AP_EXC_INVALID_ARGUMENT,
 			       AP_FUNID_CHANGE_ENVIRONMENT,
 			       "the abstract value and the new environment are incompatible");
@@ -1018,22 +1011,10 @@ ap_abstract1_t ap_abstract1_change_environment(ap_manager_t* man,
     if (destructive) ap_abstract1_clear(man,a);
     return res;
   }
-  assert(dimchange1 || dimchange2);
-  value =
-    dimchange1 ?
-    ap_abstract0_add_dimensions(man,destructive,a->abstract0,dimchange1,project) :
-    a->abstract0;
-  ;
-  if (dimchange2){
-    ap_dimchange_add_invert(dimchange2);
-    value = ap_abstract0_remove_dimensions(man,destructive || dimchange1,value,dimchange2);
-    ap_dimchange_free(dimchange2);
-  }
-  if (dimchange1)
-    ap_dimchange_free(dimchange1);
-  ap_environment_free(env);
-  res = ap_abstract1_consres2(destructive, a,
-			      value, ap_environment_copy(nenv));
+  value = ap_abstract0_apply_dimchange2(man,destructive,a->abstract0,dimchange2,project);
+  ap_dimchange2_free(dimchange2);
+  res = ap_abstract1_consres2(destructive, 
+			      a, value, ap_environment_copy(nenv));
   return res;
 }
 
