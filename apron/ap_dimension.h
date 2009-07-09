@@ -210,7 +210,7 @@ static inline
 ap_dimchange2_t* ap_dimchange2_alloc(ap_dimchange_t* add, 
 				     ap_dimchange_t* remove)
 {
-  ap_dimchange2_t* res = malloc(sizeof(ap_dimchange2_t));
+  ap_dimchange2_t* res = (ap_dimchange2_t*)malloc(sizeof(ap_dimchange2_t));
   ap_dimchange2_init(res,add,remove);
   return res;
 }
