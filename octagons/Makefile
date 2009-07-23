@@ -41,7 +41,7 @@ ICFLAGS = \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
 
 # Caml
-OCAMLINC = -I ../mlgmpidl -I ../mlapronidl -for-pack ApronDomains
+OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
 
 #---------------------------------------
 # Files
