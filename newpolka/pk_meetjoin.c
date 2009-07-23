@@ -555,9 +555,9 @@ void poly_meet_itv_lincons_array(bool lazy,
 
   /* quasilinearize if needed */
   if (!quasilinear){
-    itv_t* env = matrix_to_box(pk,po->F);
+    itv_t* env = matrix_to_box(pk,pa->F);
     itv_quasilinearize_lincons_array(pk->itv,array,env,true);
-    itv_array_free(env,po->intdim+po->realdim);
+    itv_array_free(env,pa->intdim+pa->realdim);
   }
   itv_linearize_lincons_array(pk->itv,array,true);
   itv_lincons_array_reduce_integer(pk->itv,array,po->intdim);
