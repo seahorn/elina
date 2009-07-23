@@ -41,7 +41,7 @@ ICFLAGS = \
 -I$(CAML_PREFIX)/lib/ocaml -I$(CAMLIDL_PREFIX)/lib/ocaml
 
 # Caml
-OCAMLINC = -I ../mlgmpidl -I ../mlapronidl
+OCAMLINC = -I ../mlgmpidl -I ../mlapronidl -for-pack ApronDomains
 
 #---------------------------------------
 # Files
@@ -118,7 +118,7 @@ install:
 	for i in octtest?? octtop?? octrun??; do \
 		if test -f $$i; then $(INSTALL) $$i $(BINDIR); fi; \
 	done
-	for i in oct.mli oct.cmi oct.cma oct.cmxa oct.a; do \
+	for i in oct.mli oct.cmi oct.cmx oct.cma oct.cmxa oct.a; do \
 		if test -f $$i; then $(INSTALL) $$i $(LIBDIR); fi; \
 	done
 

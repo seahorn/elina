@@ -118,7 +118,7 @@ oct_t* oct_join_array(ap_manager_t* man, oct_t** tab, size_t size)
     arg_assert(tab[k]->dim==r->dim && tab[k]->intdim==r->intdim,
 	       oct_free_internal(pr,r);return NULL;);
     if (algo>=0) oct_cache_closure(pr,tab[k]);
-    /* skip definitively empty */
+    /* skip definitely empty */
     if (!tab[k]->m && !tab[k]->closed) continue;
     if (!m)
       /* first non-empty */
@@ -352,10 +352,10 @@ oct_t* oct_add_epsilon_bin(ap_manager_t* man, oct_t* a1, oct_t* a2,
   oct_t* r;
   arg_assert(a1->dim==a2->dim && a1->intdim==a2->intdim,return NULL;);
   if (!a1->closed && !a1->m)
-    /* a1 definitively closed */
+    /* a1 definitely empty */
     r = oct_copy_internal(pr,a2);
   else if (!a2->closed && !a2->m)
-   /* a2 definitively closed */
+    /* a2 definitely empty */
     r = oct_copy_internal(pr,a1);
   else {
     bound_t* m1 = a1->m ? a1->m : a1->closed;

@@ -396,7 +396,7 @@ oct_t* oct_add_epsilon(ap_manager_t* man, oct_t* a, ap_scalar_t* epsilon);
 oct_t* oct_add_epsilon_bin(ap_manager_t* man, oct_t* a1, oct_t* a2,
 			   ap_scalar_t* epsilon);
   /* Enlarge each bound from a1 by epsilon times the maximum finite bound in
-     a2. Only bounds in a1 that are not stable in a2 are enlared. */
+     a2. Only bounds in a1 that are not stable in a2 are enlarged. */
 
 
 /* ============================================================ */
