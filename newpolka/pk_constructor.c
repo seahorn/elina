@@ -159,7 +159,7 @@ int matrix_fill_constraint_box(pk_internal_t* pk,
 {
   size_t k;
   ap_dim_t i;
-  bool exc;
+  bool ok;
   itv_t itv;
   k = start;
 
@@ -167,11 +167,11 @@ int matrix_fill_constraint_box(pk_internal_t* pk,
   for (i=0; i<intdim+realdim; i++){
     itv_set_ap_interval(pk->itv,itv,box[i]);
     if (itv_is_point(pk->itv,itv)){
-      exc = vector_set_dim_bound(pk,C->p[k],
+      ok = vector_set_dim_bound(pk,C->p[k],
 				 (ap_dim_t)i, bound_numref(itv->sup), 0,
 				 intdim,realdim,
 				 integer);
-      if (exc){
+      if (!ok){
 	itv_clear(itv);
 	return -1;
       }
