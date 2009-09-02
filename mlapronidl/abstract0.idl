@@ -62,6 +62,9 @@ quote(MLI,"\n(** Put the abstract value in canonical form. (not yet clear defini
 void ap_abstract0_canonicalize(ap_manager_ptr man, ap_abstract0_ptr a)
   quote(dealloc,"I0_CHECK_EXC(man)");
 
+int ap_abstract0_hash(ap_manager_ptr man, ap_abstract0_ptr a)
+  quote(dealloc,"I0_CHECK_EXC(man)");
+
 quote(MLI,"\n(** [approximate man abs alg] perform some transformation on the abstract value, guided by the argument [alg]. The transformation may lose information.  The argument [alg] overrides the field algorithm of the structure of type [Manager.funopt] associated to ap_abstract0_approximate (commodity feature).*)")
 void ap_abstract0_approximate(ap_manager_ptr man, ap_abstract0_ptr a, int v)
   quote(dealloc,"I0_CHECK_EXC(man)");

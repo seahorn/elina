@@ -71,6 +71,8 @@ val minimize : 'a Manager.t -> 'a t -> unit\n\
 (** Put the abstract value in canonical form. (not yet clear definition) *)
 val canonicalize : 'a Manager.t -> 'a t -> unit\n\
 \n\
+val hash : 'a Manager.t -> 'a t -> int\n\
+\n\
 (** [approximate man abs alg] perform some transformation on the abstract value, guided by the argument [alg]. The transformation may lose information.  The argument [alg] overrides the field algorithm of the structure of type [Manager.funopt] associated to ap_abstract0_approximate (commodity feature).*)
 val approximate : 'a Manager.t -> 'a t -> int -> unit\n\
 \n\
@@ -78,6 +80,7 @@ val approximate : 'a Manager.t -> 'a t -> int -> unit\n\
 quote(ML,"\n\
 let minimize man x = Abstract0.minimize man x.abstract0\n\
 let canonicalize man x = Abstract0.canonicalize man x.abstract0\n\
+let hash man x = 5*(Environment.hash x.env) + Abstract0.hash man x.abstract0\n\
 let approximate man x n = Abstract0.approximate man x.abstract0 n\n\
 ")
 
