@@ -333,9 +333,13 @@ let print_string_of_round = function\n\
 let print_sprint_unop op typ round =\n\
   if op=Neg then\n\
     Format.sprintf \"%s\" (print_string_of_unop op)\n\
-  else\n\
-    Format.sprintf \"%s_%s,%s\" (print_string_of_unop op)\n\
-	(print_string_of_typ typ) (print_string_of_round round)\n\
+  else begin\n\
+    if typ=Real then\n\
+      Format.sprintf \"%s \" (print_string_of_unop op)\n\
+    else\n\
+      Format.sprintf \"%s_%s,%s \" (print_string_of_unop op)\n\
+        (print_string_of_typ typ) (print_string_of_round round)\n\
+  end\n\
 let print_sprint_binop op typ round =\n\
   if typ=Real then\n\
     Format.sprintf \"%s\" (print_string_of_binop op)\n\
