@@ -157,6 +157,10 @@ bool ap_interval_equal(ap_interval_t* itv1, ap_interval_t* itv2)
   if (inf && sup) return true;
   else return ap_interval_is_bottom(itv1) && ap_interval_is_bottom(itv2);
 }
+bool ap_interval_equal_int(ap_interval_t* itv, int b)
+{  
+  return ap_scalar_equal_int(itv->inf,b) && ap_scalar_equal_int(itv->sup,b);
+}
 
 /* ====================================================================== */
 /* Other operations */

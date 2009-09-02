@@ -119,6 +119,8 @@ bool ap_coeff_equal(ap_coeff_t* coeff1, ap_coeff_t* coeff2);
 
 bool ap_coeff_zero(ap_coeff_t* coeff);
   /* Return true iff coeff is a zero scalar or an interval with zero bounds */
+bool ap_coeff_equal_int(ap_coeff_t* coeff, int i);
+  /* Return true iff coeff is a scalar equals to i or an interval with bounds equal to i */
 
 /* ====================================================================== */
 /* Other operations */

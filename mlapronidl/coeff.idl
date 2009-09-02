@@ -80,6 +80,8 @@ val equal : t -> t -> bool\n\
   (** Equality test *)\n\
 val is_zero : t -> bool\n\
   (** Is the coefficient equal to scalar 0 or interval [0,0] ? *)\n\
+val equal_int : t -> int -> bool\n\
+  (** Is the coefficient equal to scalar b or interval [b,b] ? *)\n\
 val neg : t -> t\n\
   (** Negation *)\n\
 val reduce : t -> t\n\
@@ -118,6 +120,9 @@ let equal c1 c2 = match (c1,c2) with\n\
 let is_zero c = match c with\n\
 | Scalar s -> (Scalar.sgn s)=0\n\
 | Interval i -> Interval.is_zero i\n\
+let equal_int c b = match c with\n\
+| Scalar s -> Scalar.equal_int s b\n\
+| Interval i -> Interval.equal_int i b\n\
 let neg c = match c with\n\
 | Scalar s -> Scalar (Scalar.neg s)\n\
 | Interval i -> Interval (Interval.neg i)\n\

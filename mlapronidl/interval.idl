@@ -72,7 +72,9 @@ val cmp : t -> t -> int\n\
 val equal : t -> t -> bool\n\
   (** Equality test *)\n\
 val is_zero : t -> bool\n\
-  (** Is the coefficient equal to scalar 0 or interval [0,0] ? *)\n\
+  (** Is the interval equal to [0,0] ? *)\n\
+val equal_int : t -> int -> bool\n\
+  (** Is the interval equal to [i,i] ? *)\n\
 val neg : t -> t\n\
   (** Negation *)\n\
 val top : t\n\
@@ -137,6 +139,8 @@ let equal itv1 itv2 =\n\
   Scalar.equal itv1.sup itv2.sup \n\
 let is_zero itv =\n\
   Scalar.sgn itv.inf=0 && Scalar.sgn itv.sup = 0\n\
+let equal_int itv b = \n\
+  Scalar.equal_int itv.inf b && Scalar.equal_int itv.sup b\n\
 let neg itv = \n\
   { inf = Scalar.neg itv.sup; sup = Scalar.neg itv.inf }\n\
 let top = { inf = Scalar.Float neg_infinity; sup = Scalar.Float infinity }\n\

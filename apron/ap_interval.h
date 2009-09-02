@@ -96,6 +96,7 @@ int ap_interval_cmp(ap_interval_t* i1, ap_interval_t* i2);
      +2: i1.inf greater than i2.inf
   */
 bool ap_interval_equal(ap_interval_t* i1, ap_interval_t* i2);
+bool ap_interval_equal_int(ap_interval_t* i, int b);
   /* Equality */
 
 /* ====================================================================== */

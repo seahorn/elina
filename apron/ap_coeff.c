@@ -305,6 +305,17 @@ bool ap_coeff_zero(ap_coeff_t* coeff)
     abort();
   }
 }
+bool ap_coeff_equal_int(ap_coeff_t* coeff, int i)
+{
+  switch (coeff->discr){
+  case AP_COEFF_SCALAR:
+    return ap_scalar_equal_int(coeff->val.scalar,i)==0;
+  case AP_COEFF_INTERVAL:
+    return (ap_scalar_equal_int(coeff->val.interval->inf,i)==0) && (ap_scalar_equal_int(coeff->val.interval->sup,i)==0);
+  default:
+    abort();
+  }
+}
 
 /* ====================================================================== */
 /* Other operations */
