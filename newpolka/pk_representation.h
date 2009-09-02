@@ -102,7 +102,15 @@ bool poly_check_dual(pk_internal_t* pk, pk_t* po, bool usual);
 
 static inline bool poly_is_conseps(pk_internal_t* pk, pk_t* po)
 {
-  return (!(pk->strict && po->realdim>0 && !(po->status & pk_status_conseps)));
+  return (!pk->strict || 
+	  po->realdim==0 || 
+	  (po->status & pk_status_conseps));;
+}
+  static inline bool poly_is_minimaleps(pk_internal_t* pk, pk_t* po)
+{
+  return (!pk->strict ||
+	  po->realdim==0 ||
+	  (po->status & pk_status_minimaleps));
 }
 
 static inline void poly_obtain_C(ap_manager_t* man, pk_t* po, char* msg)

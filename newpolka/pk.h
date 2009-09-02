@@ -25,10 +25,10 @@ typedef enum pk_status_t {
   pk_status_conseps=0x1,
   pk_status_consgauss=0x2,
   pk_status_gengauss=0x4,
-  pk_status_minimal=0x8
+  pk_status_minimaleps=0x8
 } pk_status_t;
 
-struct pk_t {
+  struct pk_t {
   /* private data: do not use directly ! */
   struct matrix_t* C;
   struct matrix_t* F;

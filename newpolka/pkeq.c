@@ -158,8 +158,7 @@ pkeq_t* pkeq_of_box(ap_manager_t* man,
 
   po = poly_alloc(intdim,realdim);
   po->status =
-    pk_status_conseps |
-    pk_status_minimal;
+    pk_status_conseps;
 
   dim = intdim + realdim;
   po->C = matrix_alloc(pk->dec-1 + dim, pk->dec + dim, false);

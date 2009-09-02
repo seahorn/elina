@@ -109,6 +109,13 @@ void cherni_buildsatline(pk_internal_t* pk,
 			 matrix_t* con, numint_t* tab,
 			 bitstring_t* satline);
 
+/* Library is supposed to be in strict mode (pk->strict==true), polyhedron is
+   supposed to be in double representation, with nbeq and nbline correctly
+   initialized, and with saturation matrix satF (row i of satF refers to
+   constraint i, column k refers to ray k).
+ */
+bool cherni_minimizeeps(pk_internal_t* pk, pk_t* po);
+
 #ifdef __cplusplus
 }
 #endif

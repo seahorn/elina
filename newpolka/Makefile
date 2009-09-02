@@ -37,12 +37,14 @@ pk_meetjoin pk_assign pk_project pk_resize pk_expandfold \
 pk_widening pk_closure \
 pkeq
 
-CCSRC = pk_config.h pk.h pkeq.h \
+CCINC = \
+pk_config.h pk.h pkeq.h \
 mf_qsort.h pk_internal.h \
 pk_user.h pk_bit.h pk_satmat.h pk_vector.h pk_matrix.h pk_cherni.h \
 pk_representation.h pk_constructor.h pk_test.h pk_extract.h \
-pk_meetjoin.h pk_assign.h pk_resize.h \
-$(CCMODULES:%=%.c)
+pk_meetjoin.h pk_assign.h pk_resize.h
+
+CCSRC = $(CCINC) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = pk.h pkeq.h
 CCBIN_TO_INSTALL =
@@ -60,7 +62,7 @@ polka.cmi polka.cmx polka.mli polka.ml
 # depend doc install
 # and the following one
 
-all: allMPQ libpolka.a libpolka_debug.a 
+all: allMPQ libpolka.a libpolka_debug.a
 
 ml: $(CAML_TO_INSTALL) libpolka_caml.a libpolka_caml_debug.a
 
@@ -135,14 +137,14 @@ libpolkaMPQ_debug.a: $(CCMODULES:%=%MPQ_debug.o)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-%Rl.o: %.c
+%Rl.o: %.c $(CCINC)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGRAT -c -o $@ $<
-%Rll.o: %.c
+%Rll.o: %.c $(CCINC)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
-%MPQ.o: %.c
+%MPQ.o: %.c $(CCINC)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
 
-%MPQ_debug.o: %.c
+%MPQ_debug.o: %.c $(CCINC)
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 #-----------------------------------
@@ -173,11 +175,11 @@ test.cmo: test.ml
 #---------------------------------------
 
 
-libpolka_caml.a: polka_caml.o 
+libpolka_caml.a: polka_caml.o
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-libpolka_caml_debug.a: polka_caml_debug.o 
+libpolka_caml_debug.a: polka_caml_debug.o
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
@@ -204,7 +206,7 @@ manager.idl: ../mlapronidl/manager.idl
 	ln -s $< $@
 
 # generates X.ml, X.mli, X_caml.c for X = polka
-rebuild: manager.idl polka.idl 
+rebuild: manager.idl polka.idl
 	mkdir -p tmp
 	for i in polka; do \
 		echo "module $$i"; \

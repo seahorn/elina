@@ -49,7 +49,6 @@
 
    Return true if exception
  */
-
 bool poly_meet_matrix(bool meet,
 		      bool lazy,
 		      ap_manager_t* man,
@@ -76,11 +75,7 @@ bool poly_meet_matrix(bool meet,
        if (pa->satF){ satmat_free(pa->satF); pa->satF=NULL; }
        pa->nbeq = pa->nbline = 0;
     }
-    po->status =
-      meet ?
-      pk_status_conseps :
-      0
-      ;
+    po->status = 0;
   }
   /* strict behaviour */
   else {
@@ -104,8 +99,7 @@ bool poly_meet_matrix(bool meet,
     po->status = 
       meet
       ?
-      ( pk_status_conseps | 
-	pk_status_consgauss) 
+      ( pk_status_consgauss ) 
       :
       ( pk_status_gengauss ) 
       ;
@@ -194,6 +188,7 @@ void poly_meet(bool meet,
 	       pk_t* po, pk_t* pa, pk_t* pb)
 {
   pk_internal_t* pk = (pk_internal_t*)man->internal;
+  int pa_status;
 
   man->result.flag_best = true;
 
@@ -205,6 +200,7 @@ void poly_meet(bool meet,
     return;
   }   
   
+  pa_status = pa->status;
   /* Set the dimensions of po */
   if (po!=pa){
     po->intdim = pa->intdim;
@@ -466,8 +462,7 @@ pk_t* poly_meet_array(bool meet,
       if (pk->exn) goto _poly_meet_array_exit0;
       poly->status = 
 	meet ?
-	( pk_status_conseps | 
-	  pk_status_consgauss) :
+	( pk_status_consgauss ) :
 	( pk_status_gengauss ) ;
     }
     assert(poly_check_dual(pk,poly,meet));
@@ -520,7 +515,6 @@ pk_t* pk_meet_array(ap_manager_t* man,
 
 /* ---------------------------------------------------------------------- */
 /* Factorized version */
-
 void poly_meet_itv_lincons_array(bool lazy,
 				 ap_manager_t* man,
 				 pk_t* po, pk_t* pa, 

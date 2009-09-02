@@ -143,6 +143,8 @@ bool pk_is_leq(ap_manager_t* man, pk_t* pa, pk_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_IS_LEQ);
 
+  assert(poly_check(pk,pa));
+  assert(poly_check(pk,pb));
   man->result.flag_exact = man->result.flag_best = false;
   if (pk->funopt->algorithm>0)
     poly_chernikova(man,pa,"of the first argument");
@@ -198,7 +200,6 @@ bool pk_is_leq(ap_manager_t* man, pk_t* pa, pk_t* pb)
 /* ====================================================================== */
 /* Equality test */
 /* ====================================================================== */
-
 bool pk_is_eq(ap_manager_t* man, pk_t* pa, pk_t* pb)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_IS_EQ);
@@ -228,6 +229,7 @@ bool pk_is_eq(ap_manager_t* man, pk_t* pa, pk_t* pb)
       (pa->C && pb->C && 
        pa->C->nbrows == pb->C->nbrows && pa->F->nbrows == pb->F->nbrows &&
        (pa->C->nbrows <= pa->F->nbrows ? matrix_equal(pa->C,pb->C) : matrix_equal(pa->F,pb->F)));
+    assert(res == (pk_is_leq(man,pa,pb) && pk_is_leq(man,pb,pa)));
     return res;
   }
   else {

@@ -126,7 +126,7 @@ pk_t* pk_expand(ap_manager_t* man,
     po = pa;
     po->intdim+=intdimsup;
     po->realdim+=realdimsup;
-    po->status &= ~pk_status_consgauss & ~pk_status_gengauss & ~pk_status_minimal;
+    po->status &= ~pk_status_consgauss & ~pk_status_gengauss & ~pk_status_minimaleps;
   }
   else {
     po = poly_alloc(nintdim,nrealdim);
@@ -154,7 +154,7 @@ pk_t* pk_expand(ap_manager_t* man,
     if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
     if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
     po->nbeq = po->nbline = 0;
-    po->status &= ~pk_status_consgauss & ~pk_status_gengauss & ~pk_status_minimal;
+    po->status &= ~pk_status_consgauss & ~pk_status_gengauss & ~pk_status_minimaleps;
   }
   po->C = matrix_expand(pk, destructive, pa->C, 
 			dim, 
@@ -295,7 +295,7 @@ pk_t* pk_fold(ap_manager_t* man,
     if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
     if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
     po->nbeq = po->nbline = 0;
-    po->status &= ~pk_status_consgauss & ~pk_status_gengauss & ~pk_status_minimal;
+    po->status &= ~pk_status_consgauss & ~pk_status_gengauss & ~pk_status_minimaleps;
   }
   
   po->F = matrix_fold(pk, destructive, pa->F, 

@@ -35,7 +35,7 @@ void poly_set_bottom(pk_internal_t* pk, pk_t* po)
   if (po->satF) satmat_free(po->satF);
   po->C = po->F = NULL;
   po->satC = po->satF = NULL;
-  po->status = pk_status_minimal;
+  po->status = pk_status_conseps | pk_status_minimaleps;
   po->nbeq = po->nbline = 0;
 }
 
@@ -49,7 +49,7 @@ pk_t* pk_bottom(ap_manager_t* man, size_t intdim, size_t realdim)
   pk_t* po = poly_alloc(intdim,realdim);
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_BOTTOM);
   pk_internal_realloc_lazy(pk,intdim+realdim);
-  po->status = pk_status_minimal;
+  po->status = pk_status_conseps | pk_status_minimaleps;
   man->result.flag_exact = man->result.flag_best = true;
   return po;
 }
@@ -91,7 +91,9 @@ void poly_set_top(pk_internal_t* pk, pk_t* po)
   po->status =
     pk_status_conseps |
     pk_status_consgauss |
-    pk_status_gengauss;
+    pk_status_gengauss |
+    pk_status_minimaleps
+    ;
 
   dim = po->intdim + po->realdim;
 
@@ -216,9 +218,7 @@ pk_t* pk_of_box(ap_manager_t* man,
 
   dim = intdim + realdim;
   po = poly_alloc(intdim,realdim);
-  po->status =
-    pk_status_conseps |
-    pk_status_minimal;
+  po->status = pk_status_conseps;
 
   dim = intdim + realdim;
   po->C = matrix_alloc(pk->dec-1 + 2*dim, pk->dec + dim, false);

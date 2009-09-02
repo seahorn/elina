@@ -161,15 +161,13 @@ void poly_chernikova(ap_manager_t* man,
   }
   else {
     if (po->C){
-      if ( !poly_is_conseps(pk,po) ){
+      if (!poly_is_conseps(pk,po) ){
 	matrix_normalize_constraint(pk,po->C,po->intdim,po->realdim);
       }
       matrix_sort_rows(pk,po->C);
       cherni_minimize(pk,true,po);
       if (pk->exn) goto poly_chernikova_exit0;
-      po->status |=
-	pk_status_conseps |
-	pk_status_consgauss;
+      po->status = pk_status_consgauss;
     }
     else {
       po->C = po->F; po->F = NULL;
@@ -177,10 +175,8 @@ void poly_chernikova(ap_manager_t* man,
       cherni_minimize(pk,false,po);
       poly_dual(po);
       if (pk->exn) goto poly_chernikova_exit0;
-      po->status |= pk_status_gengauss;
-      po->status &= ~pk_status_conseps;
+      po->status = pk_status_gengauss;
     }
-    po->status &= ~pk_status_minimal;
   }
   return;
  poly_chernikova_exit0:
@@ -195,10 +191,8 @@ void poly_chernikova(ap_manager_t* man,
   return;
 }
 
-
 /* Same as poly_chernikova, but if usual is false meaning of constraints and
    matrices exchanged. */
-
 void poly_chernikova_dual(ap_manager_t* man,
 			  pk_t* po,
 			  char* msg,
@@ -212,9 +206,8 @@ void poly_chernikova_dual(ap_manager_t* man,
     if (!usual) poly_dual(po);
   }
 }
-/* Same as poly_chernikova, but in addition ensure normalized epsilon
+/* Ensure minimized and normalized epsilon
    constraints. */
-
 void poly_chernikova2(ap_manager_t* man,
 		      pk_t* po,
 		      char* msg)
@@ -225,19 +218,31 @@ void poly_chernikova2(ap_manager_t* man,
     return;
   if (!po->C && !po->F)
     return;
-  if (!poly_is_conseps(pk,po)){
-    // Normalize strict constraints of C
-    bool change = matrix_normalize_constraint(pk,po->C,po->intdim,po->realdim);
-    po->status |= pk_status_conseps;
-    // If there were some change, perform a new minimization from normalized C
+  assert(po->C && po->F);
+  if (!poly_is_minimaleps(pk,po)){
+    poly_obtain_satF(po);
+    bool change = cherni_minimizeeps(pk,po);
+    assert((po->status & pk_status_minimaleps) &&
+	   (po->status & pk_status_conseps));
     if (change){
-      if (po->F){ matrix_free(po->F); po->F = NULL; }
-      if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
-      if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
       matrix_sort_rows(pk,po->C);
       cherni_minimize(pk, true, po);
+      if (pk->exn) goto poly_chernikova2_exit0;
+      assert(po->C && po->F);     
+      po->status = pk_status_consgauss | pk_status_minimaleps;
     }
   }
+  assert(poly_is_minimaleps(pk,po));
+  return;
+ poly_chernikova2_exit0:
+  po->status = 0;
+  {
+    char str[160];
+    sprintf(str,"conversion from %s %s\n",
+	    po->C ? "constraints to generators" : "generators to constraints",
+	    msg);
+    ap_manager_raise_exception(man,pk->exn,pk->funid,str);  }
+  return;
 }
 
 /* Same as poly_chernikova2, but in addition normalize matrices by Gauss
@@ -252,6 +257,7 @@ void poly_chernikova3(ap_manager_t* man,
     return;
 
   if (po->C){
+    assert(po->F);
     size_t rank;
     if (! (po->status & pk_status_consgauss)){
       rank = cherni_gauss(pk,po->C,po->nbeq);
@@ -268,13 +274,12 @@ void poly_chernikova3(ap_manager_t* man,
     poly_obtain_sorted_C(pk,po);
     poly_obtain_sorted_F(pk,po);
     po->status |=
-      pk_status_conseps |
       pk_status_consgauss |
       pk_status_gengauss;
-    assert(po->C->_sorted && po->F->_sorted && 
-	   poly_is_conseps(pk,po) &&
-	   po->status==
-	   pk_status_consgauss|pk_status_gengauss);
+    assert(po->C->_sorted && po->F->_sorted && 	   
+	   (po->status | pk_status_consgauss) &&
+	   (po->status | pk_status_gengauss) &&
+	   (po->status | pk_status_minimaleps));
   }
 }
 
@@ -354,6 +359,7 @@ int pk_hash(ap_manager_t* man, pk_t* po)
   ap_funopt_t opt = ap_manager_get_funopt(man,AP_FUNID_CANONICALIZE);
 
   poly_chernikova3(man,po,NULL);
+  assert(poly_check(pk,po));
   res = 5*po->intdim + 7*po->realdim;
   if (po->C!=NULL){
     res += po->C->nbrows*11 +  po->F->nbrows*13;
@@ -364,17 +370,15 @@ int pk_hash(ap_manager_t* man, pk_t* po)
       res = res*3 + vector_hash(pk,po->F->p[i],po->F->nbcolumns);
     }
   }
-  assert(poly_check(pk,po));
   return res;
 }
-
 
 /* Minimize the size of the representation of the polyhedron */
 void pk_minimize(ap_manager_t* man, pk_t* po)
 {
   pk_internal_t* pk = pk_init_from_manager(man,AP_FUNID_MINIMIZE);
 
-  if (po->status != pk_status_minimal || po->C || po->F){
+  if (po->C || po->F){
     poly_chernikova2(man,po,NULL);
     if (pk->exn){
       pk->exn = AP_EXC_NONE;
@@ -397,7 +401,6 @@ void pk_minimize(ap_manager_t* man, pk_t* po)
 	matrix_minimize(po->C);
 	po->status &= ~pk_status_gengauss;
       }
-      po->status |= pk_status_minimal;
     }
   }
   assert(poly_check(pk,po));
@@ -413,7 +416,7 @@ void pk_minimize(ap_manager_t* man, pk_t* po)
 bool pk_is_minimal(ap_manager_t* man, pk_t* po)
 {
   if ( (!po->C && !po->F) ||
-       (po->status & pk_status_minimal) )
+       (po->C && po->F && (po->status & pk_status_minimaleps)) )
     return true;
   else
     return false;
@@ -431,10 +434,11 @@ bool pk_is_canonical(ap_manager_t* man, pk_t* po)
     res = false;
   else {
     pk_internal_t* pk = (pk_internal_t*)man->internal;
+    assert(poly_check(pk,po));
     if (po->C->_sorted && po->F->_sorted &&
 	po->status & pk_status_consgauss &&
 	po->status & pk_status_gengauss &&
-	poly_is_conseps(pk,po))
+	poly_is_minimaleps(pk,po))
       res = true;
     else
       res = false;
@@ -735,6 +739,27 @@ bool poly_check(pk_internal_t* pk, pk_t* po)
     res = cherni_checksatmat(pk,false,po->F,po->C,po->satF);
     if (!res){
       fprintf(stderr,"poly_check: bad satF\n");
+      return false;
+    }
+  }
+  /* Check status: conseps */
+  if (pk->strict && (po->status & pk_status_conseps) && po->C){
+    matrix_t* mat = po->C;
+    size_t i;
+    numint_t* vec = vector_alloc(mat->nbcolumns);
+    res = true;
+    for (i=0; i<mat->nbrows; i++){
+      if (numint_sgn(mat->p[i][polka_eps])<=0){
+	vector_copy(vec,mat->p[i],mat->nbcolumns);
+	if (vector_normalize_constraint(pk,vec,po->intdim,po->realdim)){
+	  res = false;
+	  break;
+	}
+      }
+    }
+    vector_free(vec,mat->nbcolumns);
+    if (!res){
+      fprintf(stderr,"poly_check: pk_status_conseps true but the matrix is not normalized\n");
       return false;
     }
   }

@@ -692,7 +692,7 @@ void cherni_minimize(pk_internal_t* pk,
     po->nbeq = po->nbline = 0;
   }
   else {  
-    /* If co_to_ray, special case ? */
+    /* If con_to_ray, special case ? */
     /* We have to test
        - In non-strict mode, that $\xi$ can be strictly positive.
        - In strict mode, that both $\xi$ and $\epsilon$ can be strictly
@@ -816,7 +816,7 @@ void cherni_add_and_minimize(pk_internal_t* pk,
 }
 
 /* ********************************************************************** */
-/*  VI. Computation of saturation matrix */
+/*  V. Computation of saturation matrix */
 /* ********************************************************************** */
 
 /* Bits of satline are index by the constraints. satline are
@@ -835,4 +835,145 @@ void cherni_buildsatline(pk_internal_t* pk,
     if (numint_sgn(pk->cherni_prod)) bitstring_set(satline,jx);
     bitindex_inc(&jx);
   }
+}
+
+/* ********************************************************************** */
+/*  VI. epsilon-Minimisation */
+/* ********************************************************************** */
+
+/* Library is supposed to be in strict mode (pk->strict==true), polyhedron is
+   supposed to be in double representation, with nbeq and nbline correctly
+   initialized, and with saturation matrix satF (row i of satF refers to
+   constraint i, column k refers to ray k).
+ */
+
+bool cherni_minimizeeps(pk_internal_t* pk, pk_t* po)
+{
+  bool is_minimaleps,change,removed;
+  matrix_t* C;
+  matrix_t* F;
+  satmat_t* satF;
+  size_t i,j,w,Fnbrows,satFnbcols;
+  bitindex_t k;
+  bitstring_t* mask1;
+  bitstring_t* mask2;
+
+
+  assert(pk->strict && po->C && po->F && po->satF);
+  is_minimaleps = true;
+ 
+  C = po->C;
+  F = po->F;
+  Fnbrows = po->F->nbrows;
+  satF = po->satF;
+  satFnbcols = satF->nbcolumns;
+
+  /* Builds the mask for the 2 redundancy tests */
+  mask1 = bitstring_alloc(satFnbcols);
+  mask2 = bitstring_alloc(satFnbcols);
+  bitstring_clear(mask1,satFnbcols);
+  bitstring_clear(mask2,satFnbcols);
+
+  /* mask1: for testing if a constraint satisfies no closure generator points */
+  /* mask2: for testing if a constraint is subsumed by another by considering
+     only closure points and rays */
+  /* Iterates on generators */
+  k =  bitindex_init(po->nbline);
+  while(k.index < Fnbrows){
+    if (numint_sgn(F->p[k.index][polka_eps])==0){
+      mask2[k.word] |= k.bit;
+      if (numint_sgn(F->p[k.index][polka_cst])>0){
+	mask1[k.word] |= k.bit;
+      }
+    }
+    bitindex_inc(&k);
+  }
+
+  /* Iterates on strict constraints that are no positivity constraint */
+  i = po->nbeq;
+  while (i<C->nbrows){
+    removed = false;
+    if (numint_sgn(C->p[i][polka_eps])<0 &&
+	!vector_is_positivity_constraint(pk,C->p[i],C->nbcolumns)){
+      /* 1. First tests if it does saturate no closure generator points */
+      
+      /* Iterates on saturation line with mask1 */
+      /* We test if one always has: mask=1 ==> not (sat=0) */
+      bool sat_no_closuregen = true;
+      for (w=0; w<satFnbcols; w++){
+	bitstring_t sat = satF->p[i][w] | ~mask1[w];
+	if (~sat != 0){
+	  sat_no_closuregen = false;
+	  break;
+	}
+      }
+      if (sat_no_closuregen){
+	removed = true;
+      }
+      else {
+	/* 2. Check if there is no another constraint that subsumes it */
+	for (j=po->nbeq; j<C->nbrows; j++){
+	  if (j != i && numint_sgn(C->p[j][polka_eps])<0){
+	    /* Iterates on closure points and rays */
+	    bool included = true;
+	    for (w=0; w<satFnbcols; w++){
+	      /* We test: (mask=1 && i==0) ==> j==0 */
+	      bitstring_t isincluded = ~satF->p[j][w] | satF->p[i][w] | ~mask2[w];
+	      if (~isincluded != 0){
+		included = false;;
+		break;
+	      }
+	    }
+	    if (included){
+	      removed = true;
+	      break;
+	    }
+	  }
+	}
+      }
+    }
+    if (removed){
+      is_minimaleps = false;
+      /* one remove the constraint */
+      C->nbrows--; satF->nbrows--;
+      matrix_exch_rows(C, i, C->nbrows);
+      satmat_exch_rows(satF, i, C->nbrows);
+    }
+    else {
+      i++;
+    }
+  }
+  bitstring_free(mask1); mask1=NULL;
+  bitstring_free(mask2); mask2=NULL;
+
+  if (is_minimaleps){
+    po->status |= pk_status_minimaleps;
+    change = false;
+  }
+  else {
+    po->status &= pk_status_conseps | pk_status_consgauss;
+    po->status |= pk_status_minimaleps;
+    matrix_free(po->F); po->F = NULL;
+    satmat_free(po->satF); po->satF = NULL;
+    if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
+    /* Re-add positivity constraint (note: we are sure there is one free row */
+    vector_clear(C->p[C->nbrows],C->nbcolumns);
+    numint_set_int(C->p[C->nbrows][0],1);
+    numint_set_int(C->p[C->nbrows][polka_cst],1);
+    numint_set_int(C->p[C->nbrows][polka_eps],-1);
+    C->_sorted = false;
+    C->nbrows++;
+    change = true;
+  }
+  if (!(po->status & pk_status_conseps)){
+    bool change2 = matrix_normalize_constraint(pk,po->C,po->intdim,po->realdim);
+    if (change2){
+      if (po->F){ matrix_free(po->F); po->F = NULL; }
+      if (po->satC){ satmat_free(po->satC); po->satC = NULL; }
+      if (po->satF){ satmat_free(po->satF); po->satF = NULL; }
+    }
+    po->status |= pk_status_conseps;
+    change = change || change2;
+  }
+  return change;
 }

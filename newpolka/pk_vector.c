@@ -227,8 +227,8 @@ bool vector_normalize_expr(pk_internal_t* pk,
    This function use pk->vector_tmp[0..1] and pk->numintp. */
 
 bool vector_normalize_constraint(pk_internal_t* pk,
-				       numint_t* q,
-				       size_t intdim, size_t realdim)
+				 numint_t* q,
+				 size_t intdim, size_t realdim)
 {
   size_t i;
   bool change = false;
