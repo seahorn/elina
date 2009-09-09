@@ -17,9 +17,8 @@ Source for APRON commoninterface files.
 Most useful make targets:
 
   all: 
-    C library (libapron.a libapron_debug.a)
-  apronrationale.ps:
-    le rationale pour l'interface
+    C library (libapron.a libapron_debug.a, libapron.so)
+	(note: they include libitv.a)
   apron.ps
   apron.info:
   apron.html:
@@ -60,4 +59,6 @@ Additional header files:
   ap_global1.h : all stuff relevant for level 1
 
 * When linking objects against APRON, APRON requires:
-  libitv(.a), libmpfr(.a) and libgmp(.a) libraries.
+  libmpfr(.a) and libgmp(.a) libraries.
+
+  It already include libitv(.a)
