@@ -23,9 +23,6 @@ SRCDIR = $(shell pwd)
 # Programs
 #---------------------------------------
 
-# Library creation
-SHARED = gcc -shared
-
 #---------------------------------------
 # Flags
 #---------------------------------------
@@ -70,6 +67,15 @@ CCINC = ppl_user.hh ppl_poly.hh ppl_grid.hh ppl_grid.h ap_ppl.h
 #---------------------------------------
 
 all: libap_ppl.a libap_ppl_debug.a ap_ppl_test
+ifneq ($(HAS_SHARED),)
+all: libap_ppl.so libap_ppl_debug.so
+endif
+
+mlexample.byte: mlexample.ml ppl.cma
+	$(OCAMLC) $(OCAMLFLAGS) -I $(MLGMPIDL_INSTALL)/lib -I $(APRON_PREFIX)/lib -o $@ bigarray.cma gmp.cma apron.cma ppl.cma $<
+
+mlexample.opt: mlexample.ml ppl.cmxa
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -I $(MLGMPIDL_INSTALL)/lib -I $(APRON_PREFIX)/lib -o $@ bigarray.cmxa gmp.cmxa apron.cmxa ppl.cmxa $<
 
 clean:
 	/bin/rm -f *.[ao] *.so ap_ppl_test
@@ -82,13 +88,15 @@ mostlyclean:
 install:
 	$(INSTALLd) $(INCDIR) $(LIBDIR) $(BINDIR) $(CAMLDIR)
 	$(INSTALL) ap_ppl.h $(INCDIR)
-	$(INSTALL) libap_ppl.a $(LIBDIR)
-	$(INSTALL) libap_ppl_debug.a $(LIBDIR)
+	$(INSTALL) libap_ppl.a libap_ppl_debug.a $(LIBDIR)
+	for i in libap_ppl_caml*.a ppl.idl ppl.cmi ppl.cma ppl.cmxa ppl.a; do \
+		if test -f $$i; then $(INSTALL) $$i $(CAMLDIR); fi; \
+	done
+	for i in libap_ppl_caml*.so; do \
+		if test -f $$i; then cp -f -d $$i $(CAMLDIR); fi; \
+	done	
 	for i in ap_ppl_test pplrun ppltop; do \
 		if test -f $$i; then $(INSTALL) $$i $(BINDIR); fi; \
-	done
-	for i in libap_ppl_caml.a ppl.idl ppl.cmi ppl.cma ppl.cmxa ppl.a; do \
-		if test -f $$i; then $(INSTALL) $$i $(CAMLDIR); fi; \
 	done
 
 uninstall:
@@ -119,6 +127,10 @@ libap_ppl.a: $(subst .cc,.o,$(CXXSOURCES))
 libap_ppl_debug.a: $(subst .cc,_debug.o,$(CXXSOURCES))
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
+libap_ppl.so: $(subst .cc,.o,$(CXXSOURCES))
+	$(CXX) $(CXXFLAGS) -shared -o $@ $^ -lppl -lgmpxx -L$(PPL_PREFIX)/lib -L$(GMP_PREFIX)/lib -Wl,-rpath,$(PPL_PREFIX)/lib:$(APRON_PREFIX)/lib:$(GMP_PREFIX)/lib
+libap_ppl_debug.so: $(subst .cc,_debug.o,$(CXXSOURCES))
+	$(CXX) $(CXXFLAGS_DEBUG) -shared -o $@ $^ -lppl -lgmpxx -L$(PPL_PREFIX)/lib -L$(GMP_PREFIX)/lib -Wl,-rpath,$(PPL_PREFIX)/lib:$(APRON_PREFIX)/lib:$(GMP_PREFIX)/lib
 
 ap_ppl_test: libap_ppl_debug.a ppl_test_debug.o
 	$(CXX) $(CXXFLAGS) -o $@ ppl_test_debug.o \
@@ -144,37 +156,42 @@ ap_ppl_test: libap_ppl_debug.a ppl_test_debug.o
 # Caml part
 #-----------------------------------
 
-ml: ppl.cma ppl.cmxa ppltop pplrun
+ml: ppl.cma ppl.cmxa libap_ppl_caml.a libap_ppl_caml_debug.a
 
-ppltop: ppl.cma libap_ppl_caml.a libap_ppl.a
-	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -cc $(CXX) -custom \
-	bigarray.cma gmp.cma apron.cma ppl.cma \
-	-ccopt "-L. -L../apron  -L../itv -L../mlgmpidl -L../mlapronidl"
+ifneq ($(HAS_SHARED),)
+ml: libap_ppl_caml.so libap_ppl_caml_debug.so dllap_ppl_caml.so libap_ppl_caml_debug.so
+endif
 
-pplrun: ppl.cma libap_ppl_caml.a
-	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime -cc $(CXX) \
-	bigarray.cma gmp.cma apron.cma ppl.cma \
-	-ccopt "-L.  -L../apron -L../itv -L../mlgmpidl -L../mlapronidl"
+#ppltop: ppl.cma libap_ppl_caml.a libap_ppl.a
+#	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -cc $(CXX) -custom \
+#	bigarray.cma gmp.cma apron.cma ppl.cma \
+#	-ccopt "-L. -L../apron  -L../itv -L../mlgmpidl -L../mlapronidl"
 
-ppl.cma: ppl.cmi ppl.cmo libap_ppl_caml.a
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ \
-	ppl.cmo \
-	-ccopt "-L$(PPL_PREFIX)/lib" \
-	-cclib "-lap_ppl_caml -lap_ppl -lppl -lgmpxx"
-
-ppl.cmxa: ppl.cmi ppl.cmx libap_ppl_caml.a
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
-	ppl.cmx \
-	-ccopt "-L$(PPL_PREFIX)/lib" \
-	-cclib "-lap_ppl_caml -lap_ppl -lppl -lgmpxx"
-	$(RANLIB) ppl.a
+#pplrun: ppl.cma libap_ppl_caml.a
+#	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -o $@ -make-runtime -cc $(CXX) \
+#	bigarray.cma gmp.cma apron.cma ppl.cma \
+#	-ccopt "-L.  -L../apron -L../itv -L../mlgmpidl -L../mlapronidl"
 
 libap_ppl_caml.a: ap_ppl_caml.o
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
+libap_ppl_caml_debug.a: ap_ppl_caml_debug.o
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
+libap_ppl_caml.so: ap_ppl_caml.o libap_ppl.so
+	$(CXX) $(CXXFLAGS) -shared -o $@ $< -lap_ppl -lppl -lgmpxx -L. -L$(PPL_PREFIX)/lib -L$(GMP_PREFIX)/lib -Wl,-rpath,$(PPL_PREFIX)/lib:$(APRON_PREFIX)/lib
+libap_ppl_caml_debug.so: ap_ppl_caml_debug.o libap_ppl_debug.so
+	$(CXX) $(CXXFLAGS) -shared -o $@ $< -lap_ppl_debug -lppl -lgmpxx -L. -L$(PPL_PREFIX)/lib -L$(GMP_PREFIX)/lib -Wl,-rpath,$(PPL_PREFIX)/lib:$(APRON_PREFIX)/lib
+dllap_ppl_caml.so: libap_ppl_caml.so
+	ln -s -f $^ $@
+dllap_ppl_caml_debug.so: libap_ppl_caml_debug.so
+	ln -s -f $^ $@
 
-libap_ppl_caml.so: ap_ppl_caml.o
-	$(SHARED) -o $@ $^
+ppl.cma: ppl.cmo libap_ppl_caml.a
+	$(OCAMLMKLIB) -ocamlc "$(OCAMLC) -cc $(CXX)" -verbose -o ppl -oc ap_ppl_caml ppl.cmo -lap_ppl -lppl -lgmpxx -L$(PPL_PREFIX)/lib -L$(APRON_PREFIX)/lib -L$(GMP_PREFIX)/lib -Wl,-rpath,$(PPL_PREFIX)/lib:$(APRON_PREFIX)/lib:$(GMP_PREFIX)/lib
+
+ppl.cmxa: ppl.cmx libap_ppl_caml.a
+	$(OCAMLMKLIB) -ocamlopt "$(OCAMLOPT) -cc $(CXX)" -verbose -o ppl -oc ap_ppl_caml ppl.cmx -lap_ppl -lppl -lgmpxx -L$(PPL_PREFIX)/lib -L$(APRON_PREFIX)/lib -L$(GMP_PREFIX)/lib -Wl,-rpath,$(PPL_PREFIX)/lib:$(APRON_PREFIX)/lib:$(GMP_PREFIX)/lib
 
 manager.idl: ../mlapronidl/manager.idl
 	ln -s $< $@

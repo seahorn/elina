@@ -48,11 +48,23 @@ CCSRC = $(CCINC) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = pk.h pkeq.h
 CCBIN_TO_INSTALL =
-CCLIB_TO_INSTALL = libpolka.a libpolka_debug.a libpolkaMPQ.a libpolkaMPQ_debug.a libpolka_caml.a libpolka_caml_debug.a
+CCLIB_TO_INSTALL = \
+libpolkaMPQ.a libpolkaMPQ_debug.a \
+libpolkaRll.a libpolkaRll_debug.a \
+libpolkaMPQ.so libpolkaMPQ_debug.so \
+libpolkaRll.so libpolkaRll_debug.so \
 
-CAML_TO_INSTALL = polka.idl \
+CAML_TO_INSTALL = \
+polka.idl polka.mli polka.ml polka.cmi polka.cmx \
 polka.cma polka.cmxa polka.a \
-polka.cmi polka.cmx polka.mli polka.ml
+polkaMPQ.cma polkaMPQ.cmxa polkaMPQ.a \
+polkaRll.cma polkaRll.cmxa polkaRll.a \
+libpolkaMPQ_caml.a libpolkaMPQ_caml_debug.a \
+libpolkaRll_caml.a libpolkaRll_caml_debug.a \
+libpolkaMPQ_caml.so libpolkaMPQ_caml_debug.so \
+libpolkaRll_caml.so libpolkaRll_caml_debug.so \
+dllpolkaMPQ_caml.so dllpolkaMPQ_caml_debug.so \
+dllpolkaRll_caml.so dllpolkaRll_caml_debug.so
 
 #---------------------------------------
 # Rules
@@ -62,22 +74,40 @@ polka.cmi polka.cmx polka.mli polka.ml
 # depend doc install
 # and the following one
 
-all: allMPQ libpolka.a libpolka_debug.a
-
-ml: $(CAML_TO_INSTALL) libpolka_caml.a libpolka_caml_debug.a
+all: allMPQ allRll
 
 allMPQ: libpolkaMPQ.a libpolkaMPQ_debug.a
+allRll: libpolkaRll.a libpolkaRll_debug.a
+ifneq ($(HAS_SHARED),)
+allMPQ: libpolkaMPQ.so libpolkaMPQ_debug.so
+allRll: libpolkaRll.so libpolkaRll_debug.so
+endif
 
-test0: test0MPQ_debug.o libpolka_debug.a
-	$(CC) $(ICFLAGS) $(XCFLAGS) -I$(GMP_PREFIX)/include -o $@ $< \
-	-L. -lpolka_debug -L$(APRON_PREFIX)/lib -lapron_debug -lgmp -lm
+ml: polka.mli polka.ml polka.cmi polka.cmx polka.a mlMPQ mlRll polka.cma polka.cmxa
 
-test1: test1MPQ_debug.o libpolka_debug.a
-	$(CC) $(ICFLAGS) $(XCFLAGS) -I$(GMP_PREFIX)/include -o $@ $< \
-	-L. -lpolka_debug -L$(APRON_PREFIX)/lib -lapron_debug -lgmp -lm
+mlMPQ: polkaMPQ.cma polkaMPQ.cmxa libpolkaMPQ_caml.a libpolkaMPQ_caml_debug.a
+mlRll: polkaRll.cma polkaRll.cmxa libpolkaRll_caml.a libpolkaRll_caml_debug.a
+ifneq ($(HAS_SHARED),)
+mlMPQ: libpolkaMPQ_caml.so libpolkaMPQ_caml_debug.so dllpolkaMPQ_caml.so dllpolkaMPQ_caml_debug.so
+mlRll: libpolkaRll_caml.so libpolkaRll_caml_debug.so dllpolkaRll_caml.so dllpolkaRll_caml_debug.so
+endif
+
+test0%: test0%_debug.o libpolka%_debug.a
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -o $@ $< \
+	-L. -lpolka$*_debug -L$(APRON_PREFIX)/lib -lapron_debug -L$(MPFR_PREFIX)/lib -lmpfr -L$(GMP_PREFIX)/lib -lgmp -lm
+
+test1%: test1%_debug.o libpolka%_debug.a
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -o $@ $< \
+	-L. -lpolka$*_debug -L$(APRON_PREFIX)/lib -lapron_debug -L$(MPFR_PREFIX)/lib -lmpfr -L$(GMP_PREFIX)/lib -lgmp -lm
+
+mlexample%.byte: mlexample.ml box%.cma
+	$(OCAMLC) $(OCAMLFLAGS) -I $(MLGMPIDL_INSTALL)/lib -I $(APRON_PREFIX)/lib -o $@ bigarray.cma gmp.cma apron.cma box$*.cma $<
+
+mlexample%.opt: mlexample.ml box%.cmxa
+	$(OCAMLOPT) $(OCAMLOPTFLAGS) -I $(MLGMPIDL_INSTALL)/lib -I $(APRON_PREFIX)/lib -o $@ bigarray.cmxa gmp.cmxa apron.cmxa box$*.cmxa $<
 
 clean:
-	/bin/rm -f *.[ao]
+	/bin/rm -f *.[ao] *.so
 	/bin/rm -f *.?.tex *.log *.aux *.bbl *.blg *.toc *.dvi *.ps *.pstex*
 	/bin/rm -f test[01]Il* test[01]MPQ test[01]Il*_debug test[01]MPQ_debug
 	/bin/rm -fr *.cm[ioax] *.cmxa
@@ -98,14 +128,16 @@ install:
 #		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/bin; fi; \
 #	done
 	for i in $(CAML_TO_INSTALL); do \
-		if test -f $$i; then $(INSTALL) $$i $(PREFIX)/lib; fi; \
+		if test -f $$i; then cp -f -d $$i $(PREFIX)/lib; fi; \
 	done
 
-distclean:
+uninstall:
 	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(PREFIX)/include/$$i; done
-	for i in $(CCLIB_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
-#	for i in $(CCBIN_TO_INSTALL); do /bin/rm -f $(PREFIX)/bin/$$i; done
-	for i in $(CAML_TO_INSTALL); do /bin/rm -f $(PREFIX)/lib/$$i; done
+	/bin/rm -f $(PREFIX)/lib/libpolka*.* $(PREFIX)/lib/liboct*_debug.*
+	/bin/rm -f $(PREFIX)/lib/dllpolka*.so $(PREFIX)/lib/dlloct*_debug.so
+	/bin/rm -f $(PREFIX)/lib/polka.mli $(PREFIX)/lib/polka.cmi $(PREFIX)/lib/polka.idl $(PREFIX)/lib/polka*.cma $(PREFIX)/lib/polka*.cmxa $(PREFIX)/lib/polka*.a
+
+distclean: uninstall
 	/bin/rm -f Makefile.depend
 
 dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.mli polka_caml.c COPYING README
@@ -117,6 +149,12 @@ dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.ml
 
 .SUFFIXES: .tex .c .h .a .o
 
+.PRECIOUS: libpolka%.a libpolka%_debug.a libpolka%.so libpolka%_debug.so 
+.PRECIOUS: libpolka%_caml.a libpolka%_caml_debug.a libpolka%_caml.so libpolka%_caml_debug.so 
+.PRECIOUS: %Rl.o %Rll.o %MPQ.o
+.PRECIOUS: %Rl_debug.o %Rll_debug.o %MPQ_debug.o
+.PRECIOUS: %.cmo %.cmx
+
 #-----------------------------------
 # C part
 #-----------------------------------
@@ -124,44 +162,33 @@ dist: $(CCSRC) Makefile sedscript_caml newpolka.texi polka.idl polka.ml polka.ml
 cxref: $(CCMODULES:%=%.c)
 	cxref -I/usr/include -I/usr/lib/gcc/i386-redhat-linux/4.0.2/include $(ICFLAGS) -DNUM_MPQ -no-comments -xref-func -index-func -html32-src -Otmp $^
 
-libpolka.a: libpolkaMPQ.a
-	cp $^ $@
-libpolka_debug.a: libpolkaMPQ_debug.a
-	cp $^ $@
-
-libpolkaMPQ.a: $(CCMODULES:%=%MPQ.o)
+libpolka%.a: $(subst .c,%.o,$(CCMODULES:%=%.c))
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
-
-libpolkaMPQ_debug.a: $(CCMODULES:%=%MPQ_debug.o)
+libpolka%_debug.a: $(subst .c,%_debug.o,$(CCMODULES:%=%.c))
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
+libpolka%.so:  $(subst .c,%.o,$(CCMODULES:%=%.c))
+	$(CC) $(CFLAGS) -shared -o $@ $^
+libpolka%_debug.so: $(subst .c,%_debug.o,$(CCMODULES:%=%.c))
+	$(CC) $(CFLAGS_DEBUG) -shared -o $@ $^
 
 %Rl.o: %.c $(CCINC)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGRAT -c -o $@ $<
+%Rl_debug.o: %.c $(CCINC)
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGRAT -c -o $@ $<
 %Rll.o: %.c $(CCINC)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
+%Rll_debug.o: %.c $(CCINC)
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_LONGLONGRAT -c -o $@ $<
 %MPQ.o: %.c $(CCINC)
 	$(CC) $(CFLAGS) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
-
 %MPQ_debug.o: %.c $(CCINC)
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -DNUM_MPQ -I$(GMP_PREFIX)/include -c -o $@ $<
 
 #-----------------------------------
 # Caml part
 #-----------------------------------
-
-polkatop: polka.cma libpolka_caml.a libpolka_debug.a
-	$(OCAMLMKTOP) $(OCAMLINC) $(OCAMLFLAGS) -verbose -o $@ \
-	bigarray.cma gmp.cma apron.cma polka.cma \
-	-ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron" \
-	-cclib "-lpolka_debug"
-
-polkarun: polka.cma libpolka_caml_debug.a libpolka_debug.a
-	$(OCAMLC) $(OCAMLINC) $(OCAMLFLAGS) -verbose -o $@ \
-	-make-runtime bigarray.cma gmp.cma apron.cma polka.cma \
-	-ccopt "-L. -L../mlgmpidl -L../mlapronidl -L../apron" \
-	-cclib "-lpolka_debug"
 
 test_caml: test.cmo polkarun
 	$(OCAMLC) -g $(OCAMLINC) -o $@ -use-runtime polkarun \
@@ -171,39 +198,49 @@ test.cmo: test.ml
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -I $(CAMLLIB_PREFIX)/lib -c $<
 
 #---------------------------------------
-# C rules
+# OCaml binding
 #---------------------------------------
 
-
-libpolka_caml.a: polka_caml.o
-	$(AR) rcs $@ $^
+libpolka%_caml.a: polka_caml.o libpolka%.a
+	$(AR) rcs $@ $<
+	$(RANLIB) $@
+libpolka%_caml_debug.a: polka_caml_debug.o libpolka%_debug.a
+	$(AR) rcs $@ $<
 	$(RANLIB) $@
 
-libpolka_caml_debug.a: polka_caml_debug.o
-	$(AR) rcs $@ $^
-	$(RANLIB) $@
+libpolka%_caml.so: polka_caml.o libpolka%.so
+	$(CC) $(CFLAGS) -shared -o $@ polka_caml.o -L. -lpolka$* -Wl,-rpath,$(APRON_PREFIX)/lib
+libpolka%_caml_debug.so: polka_caml_debug.o libpolka%_debug.so
+	$(CC) $(CFLAGS_DEBUG) -shared -o $@ polka_caml_debug.o -L. -lpolka$*_debug -Wl,-rpath,$(APRON_PREFIX)/lib
+
+dllpolka%_caml.so: libpolka%_caml.so
+	ln -s -f $^ $@
+dllpolka%_caml_debug.so: libpolka%_caml_debug.so
+	ln -s -f $^ $@
 
 #---------------------------------------
-# ML rules
+# OCaml rules
 #---------------------------------------
 
-polka.cma: polka.cmo libpolka_caml.a libpolka.a
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -custom -a -o $@ \
-	polka.cmo \
-	-ccopt "-L$(APRON_PREFIX)/lib" -cclib "-lpolka_caml -lpolka"
+polka.cma: polkaMPQ.cma
+	ln -s -f $^ $@
+polka.cmxa: polkaMPQ.cmxa
+	ln -s -f $^ $@
+polka.a: polkaMPQ.a
+	ln -s -f $^ $@
 
-polka.cmxa: polka.cmx libpolka_caml.a libpolka.a
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -a -o $@ \
-	polka.cmx \
-	-ccopt "-L$(APRON_PREFIX)/lib" -cclib "-lpolka_caml -lpolka"
-	$(RANLIB) polka.a
+polka%.cma: polka.cmo libpolka%_caml.a libpolka%.a
+	$(OCAMLMKLIB) -ocamlc "$(OCAMLC)" -verbose -o polka$* -oc polka$*_caml polka.cmo -lpolka$* -L$(APRON_PREFIX)/lib -Wl,-rpath,$(APRON_PREFIX)/lib
+
+polka%.cmxa polka%.a: polka.cmx libpolka%_caml.a libpolka%.a
+	$(OCAMLMKLIB) -ocamlopt "$(OCAMLOPT)" -verbose -o polka$* -oc polka$*_caml polka.cmx -lpolka$* -L$(APRON_PREFIX)/lib -Wl,-rpath,$(APRON_PREFIX)/lib
 
 #---------------------------------------
 # IDL rules
 #---------------------------------------
 
 manager.idl: ../mlapronidl/manager.idl
-	ln -s $< $@
+	ln -s -f $< $@
 
 # generates X.ml, X.mli, X_caml.c for X = polka
 rebuild: manager.idl polka.idl
@@ -238,8 +275,6 @@ rebuild: manager.idl polka.idl
 
 %.cmx: %.ml %.cmi
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -c $<
-
-
 
 #-----------------------------------
 # DEPENDENCIES
