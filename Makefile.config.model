@@ -4,8 +4,11 @@
 # HAS Flags
 ######################################################################
 
-# If defined to non-empty value, compiles the OCaml interface
+# If defined to non-empty value, generates dynamic libraries.
+# Do not forget to add -fPIC to CFLAGS and CFLAGS_DEBUG
+HAS_SHARED=1
 
+# If defined to non-empty value, compiles the OCaml interface
 HAS_OCAML = 1
 
 # If defined to non-empty value, compiles the C++ interface (beta version)
@@ -69,7 +72,7 @@ CFLAGS = \
 -Wall -Wextra -Wundef -Wbad-function-cast -Wcast-align -Wstrict-prototypes \
 -Wno-unused \
 -std=c99 -U__STRICT_ANSI__ \
--O3 -DNDEBUG
+-fPIC -O3 -DNDEBUG
 
 # C compilation flags in debug (or profile) mode
 CFLAGS_DEBUG = \
@@ -77,7 +80,7 @@ CFLAGS_DEBUG = \
 -Wall -Wextra -Wundef -Wbad-function-cast -Wcast-align -Wstrict-prototypes \
 -Wno-unused \
 -std=c99  -U__STRICT_ANSI__ \
--g -O0 -UNDEBUG
+-fPIC -g -O0 -UNDEBUG
 
 # Examples of CFLAGS
 # CFLAGS = -Wswitch -Werror-implicit-function-declaration -Wall -std=c99	\
@@ -92,13 +95,13 @@ CXXFLAGS = \
 -Wcast-qual -Wswitch \
 -Wall -Wextra -Wundef -Wcast-align \
 -Wno-unused \
--O3 -DNDEBUG
+-fPIC -O3 -DNDEBUG
 # C++ compilation flags in debug (or profile) mode
 CXXFLAGS_DEBUG = \
 -Wcast-qual -Wswitch \
 -Wall -Wextra -Wundef -Wcast-align \
 -Wno-unused \
--g -O0 -UNDEBUG
+-fPIC -g -O0 -UNDEBUG
 
 AR = ar
 RANLIB = ranlib
@@ -121,6 +124,7 @@ OCAMLLEX = $(CAML_PREFIX)/bin/ocamllex.opt
 OCAMLYACC = $(CAML_PREFIX)/bin/ocamlyacc
 OCAMLDOC = $(CAML_PREFIX)/bin/ocamldoc.opt
 OCAMLMKTOP = $(CAML_PREFIX)/bin/ocamlmktop
+OCAMLMKLIB = $(CAML_PREFIX)/bin/ocamlmklib
 
 CAMLIDL = $(CAMLIDL_PREFIX)/bin/camlidl
 
