@@ -52,9 +52,10 @@ When linking, libboxXXX.a requires libapron.a
 
 type 'make ml', and then 'make install' 
 
-The C part of the library is named libbox_caml.a (and libbox_caml_debug.a).
-The OCaml part is named box.cma (box.cmxa)
+The C part of the library is named libboxXX_caml.a or
+libboxXX_caml.so/dllboxXX_caml.so (and libboxXX_caml_debug.a or ...).
 
+The OCaml part is named boxXX.cma (boxXX.cmxa)
 
 3. Miscellaneous
 ----------------

@@ -46,11 +46,10 @@ For use via APRON, the include files to consider is ap_pkgrid.h.
 
 type 'make ml', and then 'make install' 
 
-The C part of the library is named libpolkaGrid_caml.a (and
-libpolkaGrid_caml_debug.a).
-The OCaml part is named polkaGrid.cma
-(polkaGrid.cmxa)
+The C part of the library is named libpolkaGrid_caml.a or
+libpolkaGrid_caml.so/dllpolkaGrid_caml.so (and libpolkaGrid_caml_debug.a or ...).
 
+The OCaml part is named polkaGrid.cma (polkaGrid.cmxa)
 
 3. Miscellaneous
 ----------------
