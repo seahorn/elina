@@ -165,28 +165,28 @@ libitv%_debug.a: $(subst .c,%_debug.o,$(CCMODULES:%=%.c))
 
 
 testMPQ: testMPQ_debug.o libitvMPQ_debug.a
-	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPQ_debug -lapron_debug -lgmp -lmpfr -lm
+	$(CC) $(CFLAGS_DEBUG) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPQ_debug -lapron_debug -lgmp -lmpfr -lm
 
 testRll: testRll_debug.o libitvRll_debug.a
-	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvRll_debug -lapron_debug -lgmp -lmpfr -lm
+	$(CC) $(CFLAGS_DEBUG) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvRll_debug -lapron_debug -lgmp -lmpfr -lm
 
 testD: testD_debug.o libitvD_debug.a
-	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvD_debug -lapron_debug -lgmp -lmpfr -lm
+	$(CC) $(CFLAGS_DEBUG) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvD_debug -lapron_debug -lgmp -lmpfr -lm
 
 testMPFR: testMPFR_debug.o libitvMPFR_debug.a
-	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPFR_debug -lapron_debug -lgmp -lmpfr -lm
+	$(CC) $(CFLAGS_DEBUG) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPFR_debug -lapron_debug -lgmp -lmpfr -lm
 
 test2MPQ: testMPQ_debug.o libitvMPQ_debug.a
-	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPQ_debug -lapron_debug -lgmp -lmpfr -lm
+	$(CC) $(CFLAGS_DEBUG) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPQ_debug -lapron_debug -lgmp -lmpfr -lm
 
 test2Rll: testRll_debug.o libitvRll_debug.a
-	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvRll_debug -lapron_debug -lgmp -lmpfr -lm
+	$(CC) $(CFLAGS_DEBUG) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvRll_debug -lapron_debug -lgmp -lmpfr -lm
 
 test2D: testD_debug.o libitvD_debug.a
-	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvD_debug -lapron_debug -lgmp -lmpfr -lm
+	$(CC) $(CFLAGS_DEBUG) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvD_debug -lapron_debug -lgmp -lmpfr -lm
 
 test2MPFR: testMPFR_debug.o libitvMPFR_debug.a
-	$(CC) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPFR_debug -lapron_debug -lgmp -lmpfr -lm
+	$(CC) $(CFLAGS_DEBUG) -L. -L$(GMP_PREFIX)/lib -L../apron -o $@ $< -litvMPFR_debug -lapron_debug -lgmp -lmpfr -lm
 
 out: tests
 	./testMPQ > out.MPQ
