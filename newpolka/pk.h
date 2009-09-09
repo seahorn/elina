@@ -28,7 +28,7 @@ typedef enum pk_status_t {
   pk_status_minimaleps=0x8
 } pk_status_t;
 
-  struct pk_t {
+struct pk_t {
   /* private data: do not use directly ! */
   struct matrix_t* C;
   struct matrix_t* F;
@@ -184,7 +184,7 @@ void pk_fprintdiff(FILE* stream,
 		   char** name_of_dim);
   /* Print the difference between a1 (old value) and a2 (new value),
      using function name_of_dim to name dimensions.
-     The meaning of difference is library dependent. 
+     The meaning of difference is library dependent.
 
      Not implemented */
 
@@ -201,12 +201,12 @@ ap_membuf_t pk_serialize_raw(ap_manager_t* man, pk_t* a);
 /* Allocate a memory buffer (with malloc), output the abstract value in raw
    binary format to it and return a pointer on the memory buffer and the size
    of bytes written.  It is the user responsability to free the memory
-   afterwards (with free). 
+   afterwards (with free).
    Not implemented */
 
 pk_t* pk_deserialize_raw(ap_manager_t* man, void* ptr, size_t* size);
 /* Return the abstract value read in raw binary format from the input stream
-   and store in size the number of bytes read 
+   and store in size the number of bytes read
    Not implemented */
 
 /* ********************************************************************** */
@@ -245,29 +245,29 @@ ap_dimension_t pk_dimension(ap_manager_t* man, pk_t* a);
 /* ============================================================ */
 
 bool pk_is_bottom(ap_manager_t* man, pk_t* a);
-  /* Emptiness test 
+  /* Emptiness test
      algorithm >= 0: strict behaviour, compute canonical form if necessary
      algorithm < 0: lazy behaviour, always cheap
   */
 bool pk_is_top(ap_manager_t* man, pk_t* a);
-  /* Universe test 
+  /* Universe test
      algorithm >= 0: strict behaviour, compute canonical form if necessary
      algorithm < 0: lazy behaviour, always cheap
   */
 
 bool pk_is_leq(ap_manager_t* man, pk_t* a1, pk_t* a2);
-  /* Inclusion test: 
+  /* Inclusion test:
      Is always strict
      algorithm > 0: (nearly always) compute canonical forms
      algorithm <= 0: compute dual representations only if necessary
   */
-  
+
 bool pk_is_eq(ap_manager_t* man, pk_t* a1, pk_t* a2);
   /* Equality test:
      Is always strict
      Use algorithm field of is_leq.
   */
- 
+
 bool pk_sat_lincons(ap_manager_t* man, pk_t* a, ap_lincons0_t* lincons);
   /* Satisfiability of a linear constraint
      Is always strict
@@ -280,7 +280,7 @@ bool pk_sat_tcons(ap_manager_t* man, pk_t* a, ap_tcons0_t* cons);
 
 bool pk_sat_interval(ap_manager_t* man, pk_t* a,
 		     ap_dim_t dim, ap_interval_t* interval);
-  /* Inclusion of a dimension in an interval 
+  /* Inclusion of a dimension in an interval
      Is always strict
      algorithm > 0: (nearly always) compute canonical form
      algorithm <= 0: compute dual representation only if necessary
@@ -328,7 +328,7 @@ ap_lincons0_array_t pk_to_lincons_array(ap_manager_t* man, pk_t* a);
      Always consider canonical form */
 
 ap_tcons0_array_t pk_to_tcons_array(ap_manager_t* man, pk_t* a);
-  /* Converts an abstract value to a 
+  /* Converts an abstract value to a
      conjunction of tree expressions constraints. */
 
 ap_interval_t** pk_to_box(ap_manager_t* man, pk_t* a);
@@ -341,7 +341,7 @@ ap_interval_t** pk_to_box(ap_manager_t* man, pk_t* a);
   */
 
 ap_generator0_array_t pk_to_generator_array(ap_manager_t* man, pk_t* a);
-  /* Converts an abstract value to a system of generators. 
+  /* Converts an abstract value to a system of generators.
      Always consider canonical form. */
 
 
