@@ -26,12 +26,9 @@
 \setlength{\parindent}{0em}
 \setlength{\parskip}{0.5ex}
 
-%\usepackage{listings}
-%\lstloadlanguages{Caml}
-
 \makeindex
 
-\title{MLApronIDL: OCaml interface for APRON library}
+\title{MLAPRONIDL: OCaml interface for APRON library}
 \author{Bertrand Jeannet}
 
 \begin{document}
@@ -42,156 +39,14 @@
 All files distributed in the APRON library, including \textsc{MLApronIDL}
 subpackage, are distributed under LGPL license.
 
-Copyright (C) Bertrand Jeannet 2005-2006 for the
-\textsc{MLApronIDL} subpackage.
+Copyright (C) Bertrand Jeannet 2005-2009 for the
+\textsc{MLAPRONIDL} subpackage.
 
 \newpage
 
 \tableofcontents
 
-%*****************************************************************************
-\chapter{Introduction}
-%*****************************************************************************
-
-This package is an \textsc{OCaml} interface for the APRON
-library/interface.  The interface is accessed via the module
-Apron, which is decomposed into 15 submodules, corresponding to C
-modules:
-
-\noindent
-\begin{tabular}{l@{~:~~}l}
-Scalar     & scalars (numbers) \\
-Interval   & intervals on scalars \\
-Coeff      & coefficients (either scalars or intervals) \\
-Dimension  & dimensions and related operations \\
-Linexpr0   & (interval) linear expressions, level 0 \\
-Lincons0   & (interval) linear constraints, level 0 \\
-Generator0 & generators, level 0 \\
-texpr0     & tree expressions, level 0 \\
-tcons0     & tree constraints, level 0 \\
-Manager    & managers \\
-Abstract0  & abstract values, level 0 \\
-Var        & variables \\
-Environment& environment binding variables to dimensions \\
-Linexpr1   & (interval) linear expressions, level 1 \\
-Lincons1   & interval) linear constraints, level 1 \\
-Generator1 & generators, level 1 \\
-texpr1     & tree expressions, level 1 \\
-tcons1     & tree constraints, level 1 \\
-Abstract1  & abstract values, level 1 \\
-Parser     & strings parsing 
-\end{tabular}
-
-The package also includes the \textsc{MLGmpIDL} wrapper to GMP and
-MPFR libraries.
-
-%=============================================================================
-\subsection*{Requirements}
-%=============================================================================
-
-\begin{itemize}
-\item APRON library
-\item GMP library version 4.2 or up (tested with version 4.2.1)
-\item MPFR library version 2.2 or up (tested with version 2.2.1)
-\item OCaml 3.0 or up (tested with 3.09)
-\item Camlidl (tested with 1.05)
-\end{itemize}
-
-Optionally,
-\begin{itemize}
-\item GNU M4 preprocessor
-\item GNU sed
-\end{itemize}
-
-%=============================================================================
-\subsection*{Installation}
-%=============================================================================
-
-\begin{description}
-\item[Library]
-Set the file ../Makefile.config to your own setting.
-
-type 'make', and then 'make install'
-
-The OCaml part of the library is named apron.cma (.cmxa, .a) The C
-part of the library, which is automatically referenced by
-apron.cma/apron.cmxa, is named libapron\_caml.a
-(libapron\_caml\_debug.a)
-
-'make install' installs not only .mli, .cmi, but also .idl files.
-\item[Documentation]
-The documentation (currently very sketchy) is generated with ocamldoc.
-
-'make mlapronidl.pdf'
-
-'make html' (put the HTML files in the html subdirectoy)
-
-\item[Miscellaneous]
-'make clean' and 'make distclean' have the usual behaviour.
-\end{description}
-
-%=============================================================================
-\subsection*{Compilation and Linking}
-%=============================================================================
-
-To make things clearer, we assume an example file
-\texttt{example.ml} which uses both \textsc{NewPolka} (convex
-polyhedra) and \textsc{Box} (intervals) libraries, in their
-versions where rationals are GMP rationals (which is the default).
-We assume that C and OCaml interface and library files are located
-in directory \$APRON/lib.
-
-The native-code compilation command looks like
-\begin{quote}\tt
-  ocamlopt -I \$APRON/lib -o example.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa
-\end{quote}
-Comments:
-\begin{enumerate}
-\item You need at least the libraries \texttt{bigarray} (standard
-  \textsc{OCaml} distribution), \texttt{gmp}, and \texttt{apron}
-  (standard APRON distribution), plus the one implementing an
-  effective abstract domains: here, \texttt{box}, and
-  \texttt{polka}.
-\item The C libraries associated to those \textsc{OCaml} libraries
-  (\textit{e.g.,} \texttt{gmp\_caml}, \texttt{box\_caml}, \ldots)
-  are automatically looked for, as well as the the libraries
-  implementing abstract domains (\textit{e.g.,} \texttt{polka},
-  \texttt{box} \emph{in their default version} (which corresponds
-  to the MPQ suffix).
-  
-  If other versions of abstract domains library are wanted, you
-  should use the \texttt{-noautolink} option as explained below.
-\end{enumerate}
-
-The byte-code compilation process looks like
-\begin{quote}\tt
-  ocamlc -I \$APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma box.cma polka.cma\\
-  ~\\
-  ocamlc -I \$APRON/lib -use-runtime myrun -o exampleg bigarray.cma gmp.cma apron.cma box.cma polka.cma example.ml
-\end{quote}
-Comments:
-\begin{enumerate}
-\item One first build a custom bytecode interpreter that includes the new native-code needed;
-\item One then compile the \texttt{example.ml} file.
-\end{enumerate}
-
-The automatic search for C libraries associated to these
-\textsc{OCaml} libraries can be disabled by the option
-\texttt{-noautolink} supported by both \texttt{ocamlc} and
-\texttt{ocamlopt} commands. For instance, the command for native-code compilation can alternatively looks like:
-\begin{quote}\tt
-  ocamlopt -I \$APRON/lib -noautolink -o example.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolka\_caml lpolka -lbox\_caml -lbox -lapron\_caml -lapron -lgmp\_caml -LMPFR -lmpfr -LGMP/lib -lgmp"
-\end{quote}
-This is mandatory if you want to use non-default versions of abstract domains library. For insta,ce; if you want to use \textsc{Polka} in its \texttt{Ill} version (\texttt{long long int}) and \textsc{Box} in its \texttt{D} version (\texttt{double}), the command looks like:
-\begin{quote}\tt
-  ocamlopt -I \$APRON/lib -noautolink -o example.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolka\_caml lpolkaIll -lbox\_caml -lboxD -lapron\_caml -lapron -lgmp\_caml -LMPFR -lmpfr -LGMP/lib -lgmp"
-\end{quote}
-
-The option \texttt{-verbose} helps to understand what is happening
-in case of problem.
-
-More details are given in the modules implementing a specific
-abstract domain.
+\input{Introduction.tex}
 
 \part{Coefficients}
 \input{Scalar.tex}
