@@ -180,7 +180,7 @@ ap_reducedproduct_t* ap_reducedproduct_copy(ap_manager_t* manager, ap_reducedpro
 void ap_reducedproduct_free(ap_manager_t* manager, ap_reducedproduct_t* a)
 {
   ap_reducedproduct_internal_t* intern = 
-    get_internal_init1(manager,AP_FUNID_FREE,a);
+    get_internal_init0(manager);
   size_t i;
 
   for (i=0;i<intern->size;i++){
@@ -1145,11 +1145,9 @@ ap_reducedproduct_t* ap_reducedproduct_closure(ap_manager_t* manager, bool destr
 }
 
 
-
-
-
-
-
+/* ============================================================ */
+/* IV. Allocating a manager */
+/* ============================================================ */
 
 void ap_reducedproduct_internal_free(void* p)
 {
@@ -1199,7 +1197,7 @@ ap_manager_t* ap_reducedproduct_manager_alloc
 		    size * sizeof(ap_manager_t*));
   internal->size = size;
   for (i=0; i<size; i++){
-    internal->tmanagers[i] = tab[i];
+    internal->tmanagers[i] = ap_manager_copy(tab[i]);
   }
   internal->reduce = reduce;
   internal->approximate = approximate;
@@ -1300,4 +1298,49 @@ ap_manager_t* ap_reducedproduct_manager_alloc
   funptr[AP_FUNID_CLOSURE] = &ap_reducedproduct_closure;
 
   return man;
+}
+
+/* ============================================================ */
+/* V. Extra functions */
+/* ============================================================ */
+
+void** ap_reducedproduct_decompose(ap_manager_t* manager, bool destructive, ap_reducedproduct_t* a)
+{
+  ap_reducedproduct_internal_t* intern = get_internal_init0(manager);
+  size_t i;
+  void** res = (void**)malloc(intern->size*sizeof(void*));
+
+  for (i=0;i<intern->size;i++){
+    if (destructive){
+      res[i] = a->p[i];
+    }
+    else {
+      ap_manager_t* man = intern->tmanagers[i];
+      void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
+      res[i] = ptr(man,a->p[i]);
+    }
+  }
+  if (destructive) free(a);
+  collect_results0(manager);
+  return res;
+}
+
+ap_reducedproduct_t* ap_reducedproduct_compose(ap_manager_t* manager, bool destructive, void** tabs)
+{
+  ap_reducedproduct_internal_t* intern = get_internal_init0(manager);
+  ap_reducedproduct_t* res = ap_reducedproduct_alloc(intern->size);
+  size_t i;
+  
+  for (i=0;i<intern->size;i++){
+    if (destructive){
+      res->p[i] = tabs[i];
+    }
+    else {
+      ap_manager_t* man = intern->tmanagers[i];
+      void* (*ptr)(ap_manager_t*,...) = man->funptr[AP_FUNID_COPY];
+      res->p[i] = ptr(man,tabs[i]);
+    }
+  }
+  collect_results0(manager);
+  return res;
 }

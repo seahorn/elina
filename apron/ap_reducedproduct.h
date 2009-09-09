@@ -37,6 +37,10 @@ typedef struct ap_reducedproduct_internal_t {
   ap_manager_t* tmanagers[0];  /* of size size */
 } ap_reducedproduct_internal_t;
 
+/* ============================================================ */
+/* IV. Allocating a manager */
+/* ============================================================ */
+
 ap_manager_t* ap_reducedproduct_manager_alloc
 (
  char* library, /* library name */
@@ -47,7 +51,35 @@ ap_manager_t* ap_reducedproduct_manager_alloc
  void (*approximate)(ap_manager_t*, ap_reducedproduct_t*, int n) 
    /* approximate function */
 );
-  
+
+/* ============================================================ */
+/* V. Extra functions */
+/* ============================================================ */
+
+void** ap_reducedproduct_decompose(ap_manager_t* manager, bool destructive, ap_reducedproduct_t* a);
+  /* Decompose an product abstract values into an array of abstract values,
+     the size of which corresponds to the size of the (product) manager.
+
+     Be cautious: no type checking is performed.
+
+     If destructive is true, then a is freed at the end of the call.
+
+     Otherwise, abstract values are copied into the result, and the argument
+     and the result do not share any more information.
+  */
+
+ap_reducedproduct_t* ap_reducedproduct_compose(ap_manager_t* manager, bool destructive, void** tabs);
+  /* Create a product abstract value from an array of size the size of the (product) manager.
+
+     Be cautious: no type checking is performed.
+
+     If destructive is true, the array tabs cannot be used any more, but may
+     require a call to free() if dynamically allocated.
+
+     Otherwise, abstract values are copied into the result, and the argument
+     and the result do not share any more information.
+  */
+
 #ifdef __cplusplus
 }
 #endif
