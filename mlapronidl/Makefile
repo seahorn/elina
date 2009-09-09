@@ -51,7 +51,7 @@ MLLIB_TOINSTALLx = apron.cmx apron.cmxa apron.a
 
 CCMODULES = apron_caml $(IDLMODULES:%=%_caml)
 CCSRC = apron_caml.h $(CCMODULES:%=%.c)
-CCLIB_TOINSTALL = libapron_caml.a libapron_caml_debug.a
+CCLIB_TOINSTALL = libapron_caml.a libapron_caml_debug.a libapron_caml.so libapron_caml_debug.so dllapron_caml.so dllapron_caml_debug.so
 CCINC_TOINSTALL = apron_caml.h
 
 #---------------------------------------
@@ -59,6 +59,10 @@ CCINC_TOINSTALL = apron_caml.h
 #---------------------------------------
 
 all: apron.cmi apron.cmx apron.cma apron.cmxa apron.a libapron_caml.a libapron_caml_debug.a
+
+ifneq ($(HAS_SHARED),)
+all: libapron_caml.so libapron_caml_debug.so dllapron_caml.so dllapron_caml_debug.so
+endif
 
 mldep: $(MLSRC)
 	ocamldep $(MLSRC)
@@ -77,7 +81,7 @@ clean:
 	/bin/rm -f $(IDLMODULEStex) Apron_lexer.tex Apron_parser.tex Parser.tex
 	/bin/rm -f mpz.idl mpq.idl
 	/bin/rm -f mlapronidl.out mlapronidl.aux mlapronidl.idx mlapronidl.ilg mlapronidl.ind mlapronidl.bbl mlapronidl.blg mlapronidl.dvi mlapronidl.log mlapronidl.toc mlapronidl.ps mlapronidl.pdf
-	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma apron_parser.ml apron_parser.mli apron_lexer.ml
+	/bin/rm -f *.o *.a *.so *.cmi *.cmo *.cmx *.cmxa *.cma apron_parser.ml apron_parser.mli apron_lexer.ml
 	/bin/rm -fr tmp html
 	/bin/rm -f ocamldoc.[cefkimoptv]* ocamldoc.sty
 
@@ -93,34 +97,40 @@ distclean:
 install: $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(CCINC_TOINSTALL)
 	mkdir -p $(APRON_PREFIX)/lib
 	mkdir -p $(APRON_PREFIX)/include
-	cp $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL) $(APRON_PREFIX)/lib
-	cp $(CCINC_TOINSTALL) $(APRON_PREFIX)/include
+	for i in $(MLLIB_TOINSTALL) $(MLLIB_TOINSTALLx) $(CCLIB_TOINSTALL); do if test -f $$i; then cp -f -d $$i $(APRON_PREFIX)/lib; fi; done
+	$(INSTALL) $(CCINC_TOINSTALL) $(APRON_PREFIX)/include
 
 #---------------------------------------
-# C rules
-#---------------------------------------
-
-libapron_caml.a: $(CCMODULES:%=%.o)
-	$(AR) rcs $@ $^
-	$(RANLIB) $@
-libapron_caml_debug.a: $(CCMODULES:%=%_debug.o)
-	$(AR) rcs $@ $^
-	$(RANLIB) $@
-
-#---------------------------------------
-# ML rules
+# Library rules
 #---------------------------------------
 
 apron.cma: apron.cmo libapron_caml.a
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -a -o $@ apron.cmo \
-	-ccopt "-L$(APRON_PREFIX)/lib -L$(APRON_PREFIX)/lib" \
-	-cclib "-lapron_caml" -cclib "-lapron"
+	$(OCAMLMKLIB) -ocamlc "$(OCAMLC)" -verbose -o apron -oc apron_caml apron.cmo -lapron -L$(APRON_PREFIX)/lib -Wl,-rpath,$(APRON_PREFIX)/lib
 
 apron.cmxa: apron.cmx libapron_caml.a
-	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) -for-pack Apron -a -o $@ apron.cmx \
-	-ccopt "-L$(APRON_PREFIX)/lib -L$(APRON_PREFIX)/lib" \
-	-cclib "-lapron_caml" -cclib "-lapron"
-	$(RANLIB) apron.a
+	$(OCAMLMKLIB) -ocamlopt "$(OCAMLOPT)" -verbose -o apron -oc apron_caml apron.cmx -lapron -L$(APRON_PREFIX)/lib -Wl,-rpath,$(APRON_PREFIX)/lib
+
+libapron_caml.a: $(CCMODULES:%=%.o)
+	$(AR) rc $@ $^
+	$(RANLIB) $@
+libapron_caml_debug.a: $(CCMODULES:%=%_debug.o)
+	$(AR) rc $@ $^
+	$(RANLIB) $@
+
+libapron_caml.so: $(CCMODULES:%=%.o) ../apron/libapron.so
+	$(CC) $(CFLAGS) -shared -o $@ $(CCMODULES:%=%.o) -L../apron -lapron -Wl,-rpath,$(APRON_PREFIX)/lib
+
+libapron_caml_debug.so: $(CCMODULES:%=%_debug.o) ../apron/libapron_debug.so
+	$(CC) $(CFLAGS_DEBUG) -shared -o $@ $(CCMODULES:%=%_debug.o) -L../apron -lapron -Wl,-rpath,$(APRON_PREFIX)/lib
+
+dllapron_caml.so: libapron_caml.so
+	ln -s $^ $@
+dllapron_caml_debug.so: libapron_caml_debug.so
+	ln -s $^ $@
+
+#---------------------------------------
+# CAML rules
+#---------------------------------------
 
 apron.cmo apron.cmi: $(MLOBJ) $(MLINT)
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) -pack -o $@ $(MLOBJ)
@@ -142,19 +152,19 @@ apron_parser.ml apron_parser.mli: apron_parser.mly
 mlapronidl.pdf: mlapronidl.dvi
 	$(DVIPDF) mlapronidl.dvi
 
-mlapronidl.dvi: mlapronidl.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli  ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
-	$(OCAMLDOC) $(OCAMLINC) -I ../newpolka \
-	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles -o ocamldoc.tex $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
+mlapronidl.dvi: mlapronidl.tex introduction.mli $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli  ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
+	$(OCAMLDOC) $(OCAMLINC) -I ../newpolka -I ../ppl \
+	-latextitle 1,chapter -latextitle 2,section -latextitle 3,subsection -latextitle 4,subsubsection -latextitle 5,paragraph -latextitle 6,subparagraph -noheader -notrailer -latex -sepfiles introduction.mli $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
 	$(LATEX) mlapronidl
 	$(MAKEINDEX) mlapronidl
 	$(LATEX) mlapronidl
 	$(LATEX) mlapronidl
 
-html: $(IDLMODULES:%=%.mli) parser.mli $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
+html: mlapronidl.odoc introduction.mli $(IDLMODULES:%=%.mli) parser.mli $(MLMODULES:%=%.mli) ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
 	mkdir -p html
-	$(OCAMLDOC) $(OCAMLINC)  -I ../newpolka \
--html -d html -colorize-code $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
-	cp -f index.html html
+	$(OCAMLDOC) $(OCAMLINC)  -I ../newpolka -I ../ppl \
+-html -d html -colorize-code -intro mlapronidl.odoc introduction.mli $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
+#	cp -f index.html html
 
 #--------------------------------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES
@@ -167,9 +177,9 @@ html: $(IDLMODULES:%=%.mli) parser.mli $(MLMODULES:%=%.mli) ../box/box.mli ../oc
 #---------------------------------------
 
 %.o: %.c apron_caml.h
-	$(CC) $(CFLAGS) $(ICFLAGS) -c $<
+	$(CC) $(CFLAGS) $(ICFLAGS) -fPIC -c $<
 %_debug.o: %.c apron_caml.h
-	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -fPIC -c -o $@ $<
 
 #---------------------------------------
 # IDL generic rules

@@ -52,16 +52,16 @@ You might also have to modify the Makefile for executables
 type 'make', and then 'make install'
 
 The OCaml part of the library is named apron.cma (.cmxa, .a)
-The C part of the library is named libapron_caml.a (libapron_caml_debug.a)
+The C part of the library is named libapron_caml.a or dllapron_caml.so (libapron_caml_debug.a or ...)
 
 'make install' installs not only .mli, .cmi, but also .idl files.
 
 2. Documentation
 ----------------
 
-The documentation (currently very sketchy) is generated with ocamldoc.
+The documentation is generated with ocamldoc.
 
-'make mlgmpidl.dvi'
+'make mlapronidl.pdf'
 'make html' (put the HTML files in the html subdirectoy)
 
 3. Miscellaneous
@@ -72,7 +72,7 @@ The documentation (currently very sketchy) is generated with ocamldoc.
 COMPILATION AND LINKING
 =======================
 
-To make things clearer, we assume an example file 'example.ml' which uses both
+To make things clearer, we assume an example file 'mlexample.ml' which uses both
 NewPolka (convex polyhedra) and Box (intervals) libraries, in their versions
 where numbers are GMP rationals (the default). We assume
 that C and OCaml interface and library files are located in directory
@@ -80,40 +80,36 @@ $APRON/lib.
 
 The native-code compilation command looks like
 
-ocamlopt -I $APRON/lib -o exampleMPQ.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkaMPQ -lboxMPQ"
+ocamlopt -I $MLGMPIDL/lib -I $APRON/lib -o mlexample.opt bigarray.cmxa gmp.cmxa apron.cmxa boxMPFR.cmxa polkaMPQ.cmxa mlexample.ml
 
 Comments:
 
 1. You need at least the libraries 'bigarray' (standard OCaml
   distribution), 'gmp', and 'apron' (standard APRON distribution),
   plus the one implementing an effective abstract domains: here,
-  'boxMPQ', and 'polkaMPQ'.
+  'boxMPFR', and 'polkaMPQ'.
 
 2. The C libraries associated to those OCaml libraries
-  ('gmp_caml', 'box_caml', ...)  are automatically looked for,
-  with the exception of the libraries implementing abstract
-  domains ('polkaMPQ', 'boxMPQ'). The reason is that most of these
-  libraries may be compiled with different internal
-  representations and/or options, while their interface remains
-  the same.
+  ('gmp_caml', 'box_caml', ...)  are automatically looked for.
 
-The byte-code compilation process looks like
+If dynamic libraries are available (HAS_SHARED variable in Makefile.config), the byte-code compilation process looks the same:
 
-ocamlc -I $APRON/lib -make-runtime -o myrunMPQ bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkaMPQ -lboxMPQ"
+ocamlc -I $MLGMPIDL/lib -I $APRON/lib -o mlexample.byte bigarray.cma gmp.cma apron.cma boxMPFR.cma polkaMPQ.cma mlexample.ml
+
+Otherwise, either
+1. add the '-custom' option on the command-line above
+2. or use a cusrtom runtime interprer:
+
+   ocamlc -I $APRON/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma boxMPFR.cma polkaMPQ.cma 
  
-ocamlc -I $APRON/lib -use-runtime myrunMPQ -o exampleMPQ bigarray.cma gmp.cma apron.cma box.cma polka.cma -cclib "-lpolkaMPQ -lboxMPQ" example.ml
+  ocamlc -I $APRON/lib -use-runtime myrun -o mlexample.byte bigarray.cma gmp.cma apron.cma box.cma polka.cma mlexample.ml
 
-Comments:
-1. One first build a custom bytecode interpreter that includes the
-   new native-code needed;
-2. One then compile the 'example.ml' file.
-
-The automatic search for C libraries associated to these OCaml
-libraries can be disabled by the option '-noautolink' supported by
-both 'ocamlc' and 'ocamlopt' commands. For instance, the command
-for native-code compilation can alternatively looks like:
-
-ocamlopt -I $APRON/lib -noautolink -o exampleMPQ.opt bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa -cclib "-lpolkaMPQ -lpolka_caml -lboxMPQ -lbox_caml -lapron_caml -lapron -lgmp_caml -LMPFR/lib -lmpfr -LGMP/lib -lgmp" 
+  Comments:
+  a. One first build a custom bytecode interpreter that includes the
+     new native-code needed;
+  b. One then compile the 'mlexample.ml' file.
 
 The option '-verbose' helps to understand what is happening in
 case of problem.
+
+See the pdf or html documentations for more details.
