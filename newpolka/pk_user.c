@@ -45,12 +45,12 @@ bool vector_set_dim_bound(pk_internal_t* pk,
   numrat_init(bound);
   if (integer && dim<intdim){
     if (mode>0){
-      numint_fdiv_q(mpq_numref(bound),
+      numint_fdiv_q(numrat_numref(bound),
 		    numrat_numref(numrat),numrat_denref(numrat));
       numint_set_int(numrat_denref(bound),1);
     }
     else if (mode<0){
-      numint_cdiv_q(mpq_numref(bound),
+      numint_cdiv_q(numrat_numref(bound),
 		    numrat_numref(numrat),numrat_denref(numrat));
       numint_set_int(numrat_denref(bound),1);
     }
