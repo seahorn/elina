@@ -18,14 +18,12 @@ OCAMLINC = \
 -I $(APRON_PREFIX)/lib 
 
 OCAMLLDFLAGS = \
--verbose \
-bigarray.cma gmp.cma apron.cma box.cma polka.cma 
+-verbose -cc "g++" \
+bigarray.cma gmp.cma apron.cma boxMPQ.cma polkaMPQ.cma octD.cma ppl.cma polkaGrid.cma
 
 OCAMLOPTLDFLAGS = \
 -noautolink -verbose -ccopt "$(LCFLAGS)" \
-bigarray.cmxa gmp.cmxa apron.cmxa box.cmxa polka.cmxa \
--cclib "-lpolka_caml -lpolka_debug -loct_caml -loctMPQ -lbox_caml -lbox_debug -litv_debug -lapron_caml_debug -lapron_debug -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
-
+bigarray.cmxa gmp.cmxa apron.cmxa boxMPQ.cmxa polkaMPQ.cmxa octD.cmxa ppl.cmxa polkaGrid.cmxa
 all: C
 
 # C examples
@@ -50,11 +48,10 @@ C: ctest1
 	$(OCAMLOPT) $(OCAMLOPTFLAGS) $(OCAMLINC) $(OCAMLOPTLDFLAGS) -o $@ $<
 
 %.byte: %.ml
-	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) $(OCAMLLDFLAGS) -use-runtime ../apronrun -o $@ $<
-
+	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) $(OCAMLLDFLAGS) -o $@ $<
 
 clean:
-	rm -f ctest1 ctest1_debug *.o *.cm[xo] *.opt
+	rm -f ctest1 ctest1_debug *.o *.cm[xoia] *.opt
 
 distclean: clean
 

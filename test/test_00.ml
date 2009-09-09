@@ -28,7 +28,7 @@ let man2 = Oct.manager_alloc ();;
 let man3 = Polka.manager_alloc_loose ();;
 let man4 = Ppl.manager_alloc_loose ();;
 let man5 = Ppl.manager_alloc_grid ();;
-let man6 = PolkaGrid.manager_alloc_loose ();;
+let man6 = PolkaGrid.manager_alloc man3 man5;;
 
 let f man name =
   printf "man=%s, %s@.  @[<v>" (Manager.get_library man) name;
