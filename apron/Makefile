@@ -58,6 +58,9 @@ CH_FILES_AUX = $(H_FILES_AUX) $(C_FILES_AUX)
 #---------------------------------------
 
 all: libapron.a libapron_debug.a
+ifneq ($(HAS_SHARED),)
+all: libapron.so libapron_debug.so
+endif
 
 #---------------------------------------
 # Misc rules
@@ -66,25 +69,27 @@ all: libapron.a libapron_debug.a
 tar: $(H_FILES) $(C_FILES) $(CH_FILES_AUX) apron.texi Makefile COPYING README
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
-dist: $(H_FILES) $(C_FILES) $(CH_FILES_AUX) apron.texi Makefile COPYING README apron.info apron.dvi html
+dist: $(H_FILES) $(C_FILES) $(CH_FILES_AUX) apron.texi Makefile COPYING README apron.info apron.pdf html
 	(cd ..; tar zcvf apron.tgz $(^:%=apron/%))
 
 clean:
 	/bin/rm -f *.aux *.bbl *.blg *.dvi *.log *.toc *.ps *.pdf apron.cps apron.fns apron.info apron.fn apron.ky apron.pg apron.cp apron.tp apron.vr apron.kys apron.pgs apron.tps apron.vrs newpolka.texi box.texi ap_ppl.texi ap_pkgrid.texi apron.info*
-	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma
+	/bin/rm -f *.o *.a *.cmi *.cmo *.cmx *.cmxa *.cma *.so
 	/bin/rm -fr html
 
-install: libapron.a libapron_debug.a
+install: all
 	mkdir -p $(APRON_PREFIX)/include
 	cp $(H_FILES) $(APRON_PREFIX)/include
 	mkdir -p $(APRON_PREFIX)/lib
-	cp libapron.a libapron_debug.a $(APRON_PREFIX)/lib
+	for i in libapron.a libapron_debug.a libapron.so libapron_debug.so; do if test -f $$i; then $(INSTALL) $$i $(APRON_PREFIX)/lib; fi; done
 
 distclean:
 	/bin/rm -f $(H_FILES:%=$(APRON_PREFIX)/include/%)
 	/bin/rm -f $(APRON_PREFIX)/lib/libapron.a
 	/bin/rm -f $(APRON_PREFIX)/lib/libapron_debug.a
-	/bin/rm -f apron.pdf apronrationale.pdf
+	/bin/rm -f $(APRON_PREFIX)/lib/libapron.so
+	/bin/rm -f $(APRON_PREFIX)/lib/libapron_debug.so
+	/bin/rm -f apron.pdf rationale.pdf
 
 #---------------------------------------
 # Latex rules
@@ -101,11 +106,8 @@ newpolka.texi: ../newpolka/newpolka.texi
 box.texi: ../box/box.texi
 	ln -s $< $@
 
-apron.pdf: apron.dvi
-	$(DVIPDF) apron.dvi $@
-
-apron.dvi: apron.texi rationale.texi ap_pkgrid.texi ap_ppl.texi newpolka.texi box.texi 
-	$(TEXI2DVI) -o $@ $<
+apron.pdf: apron.texi rationale.texi ap_pkgrid.texi ap_ppl.texi newpolka.texi box.texi 
+	$(TEXI2DVI) --pdf -o $@ $<
 
 apron.info: apron.texi rationale.texi ap_pkgrid.texi ap_ppl.texi newpolka.texi box.texi
 	$(MAKEINFO) -o $@ $<
@@ -123,10 +125,21 @@ libapron.a: $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%MPQ.o) $(C_FILES_AUX:%.c=%D.o)
 	cp ../itv/libitv.a $@
 	$(AR) rs $@ $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%MPQ.o) $(C_FILES_AUX:%.c=%D.o) $(C_FILES_AUX:%.c=%MPFR.o)
 	$(RANLIB) $@
+
 libapron_debug.a: $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%MPQ_debug.o) $(C_FILES_AUX:%.c=%D_debug.o) $(C_FILES_AUX:%.c=%MPFR_debug.o) ../itv/libitv_debug.a
 	cp ../itv/libitv_debug.a $@
 	$(AR) rs $@ $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%MPQ_debug.o) $(C_FILES_AUX:%.c=%D_debug.o) $(C_FILES_AUX:%.c=%MPFR_debug.o)
 	$(RANLIB) $@
+
+libapron.so: $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%MPQ.o) $(C_FILES_AUX:%.c=%D.o)  $(C_FILES_AUX:%.c=%MPFR.o) ../itv/libitv.a
+	for i in `$(AR) t ../itv/libitv.a`; do ln -s ../itv/$$i $$i; done
+	$(CC) $(CFLAGS) -shared -o $@ $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%MPQ.o) $(C_FILES_AUX:%.c=%D.o) $(C_FILES_AUX:%.c=%MPFR.o) `$(AR) t ../itv/libitv.a`
+	for i in `$(AR) t ../itv/libitv.a`; do $(RM) $$i; done
+
+libapron_debug.so: $(C_FILES:%.c=%_debug.o) $(C_FILES_AUX:%.c=%MPQ_debug.o) $(C_FILES_AUX:%.c=%D_debug.o) $(C_FILES_AUX:%.c=%MPFR_debug.o) ../itv/libitv_debug.a
+	for i in `$(AR) t ../itv/libitv_debug.a`; do ln -s ../itv/$$i $$i; done
+	$(CC) $(CFLAGS_DEBUG) -shared -o $@ $(C_FILES:%.c=%.o) $(C_FILES_AUX:%.c=%MPQ.o) $(C_FILES_AUX:%.c=%D.o) $(C_FILES_AUX:%.c=%MPFR.o) `$(AR) t ../itv/libitv_debug.a`
+	for i in `$(AR) t ../itv/libitv_debug.a`; do $(RM) $$i; done
 
 .PHONY : dep
 
