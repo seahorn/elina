@@ -51,7 +51,7 @@ C: ctest1
 	$(OCAMLC) $(OCAMLFLAGS) $(OCAMLINC) $(OCAMLLDFLAGS) -o $@ $<
 
 clean:
-	rm -f ctest1 ctest1_debug *.o *.cm[xoia] *.opt
+	rm -f ctest1 ctest1_debug *.o *.cm[xoia] *.opt *.byte
 
 distclean: clean
 

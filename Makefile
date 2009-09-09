@@ -2,7 +2,6 @@ include Makefile.config
 
 MLREQUESTED = mlgmpidl/Makefile.config
 
-
 LCFLAGS = \
 -Lapron -Litv -Lbox -Loctagons -Lnewpolka \
 -L$(PPL_PREFIX)/lib -Lppl \
@@ -10,29 +9,12 @@ LCFLAGS = \
 -L$(GMP_PREFIX)/lib -L$(MPFR_PREFIX)/lib \
 -L$(CAMLIDL_PREFIX)/lib/ocaml
 
-OCAMLINC = \
--I mlgmpidl -I mlapronidl -I box -I octagons -I newpolka -I ppl -I products
-
-OCAMLLDFLAGS = \
--noautolink -ccopt "$(LCFLAGS)" \
-bigarray.cma gmp.cma apron.cma box.cma oct.cma polka.cma \
--cclib "-lpolka_caml -lpolkaMPQ -loct_caml -loctMPQ -lbox_caml -lboxMPQ -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
-
-OCAMLLDFLAGS_PPL = \
--noautolink -ccopt "$(LCFLAGS)" -cc "g++" \
-bigarray.cma gmp.cma apron.cma box.cma oct.cma polka.cma \
-polkaGrid.cma ppl.cma \
--cclib "-lpolkaGrid_caml -lap_pkgrid -lap_ppl_caml -lap_ppl -lppl -lgmpxx" \
--cclib "-lpolka_caml -lpolkaMPQ -loct_caml -loctMPQ -lbox_caml -lboxMPQ -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl"
-
-ifneq ($(HAS_OCAML),)
-ifneq ($(HAS_PPL),)
-all: $(REQUESTED) c ml aprontop apronrun apronppltop apronpplrun
-else
-all: $(REQUESTED) c ml aprontop apronrun
-endif
-else
 all: c
+ifneq ($(HAS_OCAML),)
+all: ml
+endif
+ifneq ($(HAS_CPP),)
+all: cxx
 endif
 
 ifneq ($(HAS_OCAML),)
@@ -51,9 +33,9 @@ ifneq ($(HAS_PPL),)
 	(cd ppl; make)
 	(cd products; make)
 endif
-ifneq ($(HAS_CPP),)
+
+cxx:
 	(cd apronxx; make)
-endif
 
 ml: $(MLREQUESTED)
 	(cd mlgmpidl; make all)
@@ -66,19 +48,15 @@ ifneq ($(HAS_PPL),)
 	(cd products; make ml)
 endif
 
-.PHONY: apronrun aprontop apronpplrun apronppltop
-
-apronrun: $(MLREQUESTED)
-	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ $(OCAMLLDFLAGS)
+.PHONY: aprontop apronppltop
 
 aprontop: $(MLREQUESTED)
-	$(OCAMLMKTOP) $(OCAMLINC) -verbose -custom -o $@ $(OCAMLLDFLAGS)
-
-apronpplrun: $(MLREQUESTED)
-	$(OCAMLC) $(OCAMLINC) -verbose -make-runtime -o $@ $(OCAMLLDFLAGS_PPL)
+	$(OCAMLMKTOP) -I $(MLGMPIDL_PREFIX) -I $(APRON_PREFIX) -verbose -o $@ \
+	bigarray.cma gmp.cma apron.cma boxMPQ.cma octMPQ.cma polkaMPQ.cma
 
 apronppltop: $(MLREQUESTED)
-	$(OCAMLMKTOP) $(OCAMLINC) -verbose -custom -o $@ $(OCAMLLDFLAGS_PPL)
+	$(OCAMLMKTOP) -I $(MLGMPIDL_PREFIX) -I $(APRON_PREFIX) -verbose -o $@ \
+	bigarray.cma gmp.cma apron.cma boxMPQ.cma octMPQ.cma polkaMPQ.cma ppl.cma polkaGrid.cma
 
 rebuild: $(MLREQUESTED)
 ifneq ($(HAS_OCAML),)
@@ -106,10 +84,8 @@ ifneq ($(HAS_OCAML),)
 	(cd mlgmpidl; make install)
 	(cd mlapronidl; make install)
 	$(INSTALLd) $(APRON_PREFIX)/bin
-	$(INSTALL) apronrun $(APRON_PREFIX)/bin
 	$(INSTALL) aprontop $(APRON_PREFIX)/bin
 ifneq ($(HAS_PPL),)
-	$(INSTALL) apronpplrun $(APRON_PREFIX)/bin
 	$(INSTALL) apronppltop $(APRON_PREFIX)/bin
 endif
 endif
@@ -131,7 +107,7 @@ clean:
 	(cd apronxx; make clean)
 	(cd examples; make clean)
 	(cd test; make clean)
-	rm -fr online tmp apronrun aprontop apronpplrun apronppltop
+	rm -fr online tmp apron*run aprontop apronppltop
 
 mostlyclean: clean
 	(cd mlgmpidl; make mostlyclean)
@@ -156,7 +132,7 @@ distclean:
 	(cd ppl; make distclean)
 	(cd products; make distclean)
 	(cd apronxx; make distclean)
-	(cd $(APRON_PREFIX)/bin; rm -f apronrun aprontop apronpplrun apronppltop)
+	(cd $(APRON_PREFIX)/bin; rm -f apron*)
 
 doc:
 	(cd apron; make html apron.pdf)
@@ -170,7 +146,7 @@ endif
 
 # make distribution, update to reflect current version
 
-PKGNAME  = apron-0.9.9
+PKGNAME  = apron-0.9.10
 PKGFILES = Makefile README README.windows README.mac AUTHORS COPYING Makefile.config.model Changes
 PKGDIRS  = apron num itv octagons box newpolka ppl products mlgmpidl mlapronidl examples test apronxx
 

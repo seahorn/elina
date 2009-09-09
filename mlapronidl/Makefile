@@ -164,7 +164,6 @@ html: mlapronidl.odoc introduction.mli $(IDLMODULES:%=%.mli) parser.mli $(MLMODU
 	mkdir -p html
 	$(OCAMLDOC) $(OCAMLINC)  -I ../newpolka -I ../ppl \
 -html -d html -colorize-code -intro mlapronidl.odoc introduction.mli $(IDLMODULES:%=%.mli) parser.mli ../box/box.mli ../octagons/oct.mli ../newpolka/polka.mli ../ppl/ppl.mli ../products/polkaGrid.mli ../mlgmpidl/mpz.mli ../mlgmpidl/mpq.mli ../mlgmpidl/gmp_random.mli ../mlgmpidl/mpf.mli ../mlgmpidl/mpfr.mli ../mlgmpidl/mpzf.mli ../mlgmpidl/mpqf.mli ../mlgmpidl/mpfrf.mli
-#	cp -f index.html html
 
 #--------------------------------------------------------------
 # IMPLICIT RULES AND DEPENDENCIES

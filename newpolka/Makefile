@@ -135,7 +135,7 @@ uninstall:
 	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(PREFIX)/include/$$i; done
 	/bin/rm -f $(PREFIX)/lib/libpolka*.* $(PREFIX)/lib/liboct*_debug.*
 	/bin/rm -f $(PREFIX)/lib/dllpolka*.so $(PREFIX)/lib/dlloct*_debug.so
-	/bin/rm -f $(PREFIX)/lib/polka.mli $(PREFIX)/lib/polka.cmi $(PREFIX)/lib/polka.idl $(PREFIX)/lib/polka*.cma $(PREFIX)/lib/polka*.cmxa $(PREFIX)/lib/polka*.a
+	/bin/rm -f $(PREFIX)/lib/polka.mli $(PREFIX)/lib/polka.ml $(PREFIX)/lib/polka.cm[ix] $(PREFIX)/lib/polka.idl $(PREFIX)/lib/polka*.cma $(PREFIX)/lib/polka*.cmxa $(PREFIX)/lib/polka*.a
 
 distclean: uninstall
 	/bin/rm -f Makefile.depend

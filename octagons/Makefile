@@ -143,11 +143,11 @@ install:
 	done
 
 uninstall:
-	/bin/rm -fr $(INCDIR)/oct
+	/bin/rm -fr $(INCDIR)/oct.h
 	/bin/rm -f $(BINDIR)/octtest?? $(BINDIR)/octtop?? $(BINDIR)/octrun??
 	/bin/rm -f $(LIBDIR)/liboct*.* $(LIBDIR)/liboct*_debug.*
 	/bin/rm -f $(LIBDIR)/dlloct*.so $(LIBDIR)/dlloct*_debug.so
-	/bin/rm -f $(LIBDIR)/oct.mli $(LIBDIR)/oct.cmi $(LIBDIR)/oct.idl $(LIBDIR)/oct*.cma $(LIBDIR)/oct*.cmxa $(LIBDIR)/oct*.a
+	/bin/rm -f $(LIBDIR)/oct.mli $(LIBDIR)/oct.cm[ix] $(LIBDIR)/oct.idl $(LIBDIR)/oct*.cma $(LIBDIR)/oct*.cmxa $(LIBDIR)/oct*.a
 
 distclean: uninstall
 	/bin/rm -f Makefile.depend
@@ -243,7 +243,7 @@ octtest%: liboct%_debug.a oct_test%.o
 
 .INTERMEDIATE: mlIl
 
-ml: oct.mli oct.cmi oct.cma oct.cmxa oct.a
+ml: oct.mli oct.cmi oct.cmx oct.cma oct.cmxa oct.a
 mlIl: ml octIl.cma octIl.cmxa liboctIl_caml.a liboctIl_caml_debug.a
 mlIll: ml octIll.cma octIll.cmxa liboctIll_caml.a liboctIll_caml_debug.a 
 mlMPZ: ml octMPZ.cma octMPZ.cmxa liboctMPZ_caml.a liboctMPZ_caml_debug.a
@@ -276,10 +276,10 @@ oct.cmxa: octMPQ.cmxa
 oct.a: octMPQ.a
 	ln -s -f $^ $@
 
-oct%.cma: oct.cmi oct.cmo liboct_caml.a liboct%.a
+oct%.cma: oct.cmi oct.cmo liboct%_caml.a liboct%.a
 	$(OCAMLMKLIB) -ocamlc "$(OCAMLC)" -verbose -o oct$* -oc oct$*_caml oct.cmo -loct$* -L$(APRON_PREFIX)/lib -Wl,-rpath,$(APRON_PREFIX)/lib
 
-oct%.cmxa oct%.a: oct.cmi oct.cmx liboct_caml.a liboct%.a
+oct%.cmxa oct%.a: oct.cmi oct.cmx liboct%_caml.a liboct%.a
 	$(OCAMLMKLIB) -ocamlopt "$(OCAMLOPT)" -verbose -o oct$* -oc oct$*_caml oct.cmx -loct$* -L$(APRON_PREFIX)/lib -Wl,-rpath,$(APRON_PREFIX)/lib
 
 liboct%_caml.a: oct_caml.o liboct%.a

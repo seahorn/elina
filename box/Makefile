@@ -114,7 +114,7 @@ uninstall:
 	for i in $(CCINC_TO_INSTALL); do /bin/rm -f $(PREFIX)/include/$$i; done
 	/bin/rm -f $(PREFIX)/lib/libbox*.* $(PREFIX)/lib/liboct*_debug.*
 	/bin/rm -f $(PREFIX)/lib/dllbox*.so $(PREFIX)/lib/dlloct*_debug.so
-	/bin/rm -f $(PREFIX)/lib/box.mli $(PREFIX)/lib/box.cmi $(PREFIX)/lib/box.idl $(PREFIX)/lib/box*.cma $(PREFIX)/lib/box*.cmxa $(PREFIX)/lib/box*.a
+	/bin/rm -f $(PREFIX)/lib/box.mli $(PREFIX)/lib/box.ml $(PREFIX)/lib/box.cm[ix] $(PREFIX)/lib/box.idl $(PREFIX)/lib/box*.cma $(PREFIX)/lib/box*.cmxa $(PREFIX)/lib/box*.a
 
 distclean: uninstall
 	/bin/rm -f Makefile.depend

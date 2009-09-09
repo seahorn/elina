@@ -1,6 +1,6 @@
 {!indexlist}
 
-{3 {!module: Introduction}}
+{3 {!module: Introduction} (version 0.9.10)}
 
 {2 Coefficients}
 {!modules: Scalar Interval Coeff}
