@@ -37,17 +37,18 @@ PPL library, you @samp{g++} (C++ compiler) instead of @samp{gcc}
 (C compiler) for the linking.
 
 Also, the library is available in debug mode
-(@samp{libap_pkgrid_debug.a}).
+(@samp{libap_pkgrid_debug.a}, @samp{libap_pkgrid_debug.so}).
 
 @c ===================================================================
 @node Allocating pkgrid managers ,  , Use of pkgrid, pkgrid
 @subsection Allocating pkgrid managers
 @c ===================================================================
 
-@deftypefun ap_manager_t* ap_pkgrid_manager_alloc (bool @var{STRICT})
-Allocate a APRON manager linked to the pkgrid
-library. @var{STRICT} indicates whether the polyhedra in the
-product may have strict constraints or not.
+@deftypefun ap_manager_t* ap_pkgrid_manager_alloc (ap_manager_t* @var{manpk}, ap_manager_t* @var{manpplgrid})
+Allocate a APRON manager linked to the pkgrid library, using the
+(loose or strict) polka manager @var{manpk} and the PPL grid manager
+@var{manpplgrid}. If one of the argulment manager is not of the right
+type, returns @code{NULL}.
 @end deftypefun
 
 Available standard options are the one offered by the generic

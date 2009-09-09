@@ -21,7 +21,7 @@
 #include "ppl_grid.h"
 
 void ap_pkgrid_reduce(ap_manager_t* manager,
-			 ap_reducedproduct_t* a)
+		      ap_reducedproduct_t* a)
 {
   size_t i,index;
   ap_reducedproduct_internal_t* intern = 
@@ -57,7 +57,7 @@ void ap_pkgrid_reduce(ap_manager_t* manager,
     array = ap_lincons0_array_make(poly->nbeq);
     for (i=0; i<poly->nbeq; i++){
       array.p[i] = lincons0_of_vector((pk_internal_t*)(manpoly->internal),
-				       poly->C->p[i],poly->C->nbcolumns);
+				      poly->C->p[i],poly->C->nbcolumns);
     }
     grid = ap_ppl_grid_meet_lincons_array(mangrid,true,grid,&array);
     ap_lincons0_array_clear(&array);
@@ -158,7 +158,7 @@ void ap_pkgrid_reduce(ap_manager_t* manager,
   ap_lincons0_array_clear(&array);
   ap_lincons0_array_clear(&array2);
   
-  ap_pkgrid_reduce_exit:
+ ap_pkgrid_reduce_exit:
   mpq_clear(diff);
   mpq_clear(prod);
   mpq_clear(quotient);
@@ -181,20 +181,24 @@ void ap_pkgrid_approximate(ap_manager_t* manager,
   ap_pkgrid_reduce(manager,a);
 }
 
-ap_manager_t* ap_pkgrid_manager_alloc(bool strict)
+ap_manager_t* ap_pkgrid_manager_alloc(ap_manager_t* manpk, ap_manager_t* manpplgrid)
 {
   ap_manager_t* tmanagers[2];
-  tmanagers[0] = pk_manager_alloc(strict);
-  tmanagers[1] = ap_ppl_grid_manager_alloc();
-  for (size_t i=0;i<2;i++){
-    for (size_t exc=0; exc<AP_EXC_SIZE; exc++){
-      tmanagers[i]->option.abort_if_exception[exc] = false;
-    }
-  }
-  char* library =
-    strict ? 
-    "Reduced product of polka, strict mode, PPL::Grid" :
-    "Reduced product of polka, loose mode, PPL::Grid";
+  bool strict;
+
+  strict = (strcmp(manpk->library,"polka, strict mode")==0);
+  
+  if ( !(strcmp(manpk->library,"polka, loose mode")==0 ||
+	 strict)
+       ||
+       !strcmp(manpplgrid->library,"PPL::Grid") )
+    return NULL;
+
+  tmanagers[0] = manpk;
+  tmanagers[1] = manpplgrid;
+  char* library = strict ? 
+    "pkgrid: polka, strict mode and PPL::Grid" :
+    "pkgrid: polka, loose mode and PPL::Grid";
 
   ap_manager_t* man = ap_reducedproduct_manager_alloc(library,
 						      tmanagers,2,
