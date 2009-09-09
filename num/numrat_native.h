@@ -55,8 +55,8 @@ static inline void numrat_canonicalize(numrat_t r)
     numint_set_int(r->n,1);
   }
 }
-#define numrat_numref(a) a->n
-#define numrat_denref(a) a->d
+#define numrat_numref(a) (a)->n
+#define numrat_denref(a) (a)->d
 
 static inline bool numrat_set_numint2(numrat_t a, numint_t b, numint_t c)
 {
