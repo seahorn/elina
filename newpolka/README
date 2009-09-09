@@ -54,11 +54,10 @@ plus libraries required by APRON.
 
 type 'make ml', and then 'make install' 
 
-The C part of the library is named libpolka_caml.a (and libpolka_caml_debug.a).
-The OCaml part is named polka.cma (polka.cmxa)
+The C part of the library is named libpolkaXX_caml.a or
+libpolkaXX_caml.so/dllpolkaXX_caml.so (and libpolkaXX_caml_debug.a or ...).
 
-You may also generate runtime and toplevel with
-'make polkarung', 'make polkatopg'
+The OCaml part is named polkaXX.cma (polkaXX.cmxa)
 
 3. Miscellaneous
 ----------------
