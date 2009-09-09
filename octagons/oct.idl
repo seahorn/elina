@@ -76,41 +76,98 @@ ap_abstract0_ptr ap_abstract0_oct_add_epsilon_bin(ap_manager_ptr man,ap_abstract
 quote(MLI,"(** Algorithms. *)")
 const int pre_widening = 99;
 
-quote(MLI,"\n\n(**
+quote(MLI,"\n(** {2 Type conversions} *)
+
+val manager_is_oct : 'a Apron.Manager.t -> bool
+  (** Return [true] iff the argument manager is an octagon manager *)
+val manager_of_oct : t Apron.Manager.t -> 'a Apron.Manager.t
+  (** Make an octagon manager generic *)
+val manager_to_oct : 'a Apron.Manager.t -> t Apron.Manager.t
+  (** Instanciate the type of an octagon manager.
+      Raises [Failure] if the argument manager is not an octagon manager *)
+module Abstract0 : sig
+  val is_oct : 'a Apron.Abstract0.t -> bool
+    (** Return [true] iff the argument value is an oct value *)
+  val of_oct : t Apron.Abstract0.t -> 'a Apron.Abstract0.t
+    (** Make an oct value generic *)
+  val to_oct : 'a Apron.Abstract0.t -> t Apron.Abstract0.t
+    (** Instanciate the type of an oct value. 
+        Raises [Failure] if the argument value is not an oct value *)
+end
+module Abstract1 : sig
+  val is_oct : 'a Apron.Abstract1.t -> bool
+    (** Return [true] iff the argument value is an oct value *)
+  val of_oct : t Apron.Abstract1.t -> 'a Apron.Abstract1.t
+    (** Make an oct value generic *)
+  val to_oct : 'a Apron.Abstract1.t -> t Apron.Abstract1.t
+    (** Instanciate the type of an oct value. 
+        Raises [Failure] if the argument value is not an oct value *)
+end
+")
+
+quote(ML,"
+let manager_is_oct man =
+  let str = Apron.Manager.get_library man in
+  (String.compare str \"oct\")==0
+let manager_of_oct (man:t Apron.Manager.t) : 'a Apron.Manager.t = Obj.magic man
+let manager_to_oct (man:'a Apron.Manager.t) : t Apron.Manager.t =
+  if manager_is_oct man then 
+    Obj.magic man
+  else
+    failwith \"Oct.manager_to_oct: the argument manager is not an Oct manager\"
+module Abstract0 = struct
+  let is_oct abs = 
+    manager_is_oct (Apron.Abstract0.manager abs)
+  let of_oct (abs: t Apron.Abstract0.t) : 'a Apron.Abstract0.t = Obj.magic abs
+  let to_oct (abs:'a Apron.Abstract0.t) : t Apron.Abstract0.t =
+  if is_oct abs then 
+    Obj.magic abs
+  else
+    failwith \"Oct.Abstract0.to_oct: the argument value is not an oct value\"
+end
+module Abstract1 = struct
+  let is_oct abs = 
+    manager_is_oct (Apron.Abstract1.manager abs)
+  let of_oct (abs: t Apron.Abstract1.t) : 'a Apron.Abstract1.t = Obj.magic abs
+  let to_oct (abs:'a Apron.Abstract1.t) : t Apron.Abstract1.t =
+  if is_oct abs then 
+    Obj.magic abs
+  else
+    failwith \"Oct.Abstract1.to_oct: the argument value is not an oct value\"
+end
+")
+
+quote(MLI,"\n(**
 {2 Compilation information}
 
+See {!Introduction.compilation} for complete explanations. 
+We just show examples with the file [mlexample.ml].
+
 {3 Bytecode compilation}
-To compile to bytecode, you should first generate a custom interpreter with a
-command which should look like:
 
-[ocamlc -I $APRON_PREFIX/lib -make-runtime -o myrun bigarray.cma gmp.cma apron.cma oct.cma]
+{[ocamlc -I $MLGMPIDL_PREFIX/lib -I $APRON_PREFIX/lib -o mlexample.byte \\
+  bigarray.cma gmp.cma apron.cma octD.cma mlexample.ml]}
 
-and then you compile and link your example [X.ml] with
+{[ocamlc -I $MLGMPIDL_PREFIX/lib -I $APRON_PREFIX/lib -make-runtime -o myrun \\
+  bigarray.cma gmp.cma apron.cma octD.cma
 
-[ocamlc -I $APRON_PREFIX/lib -c X.ml] and
-
-[ocamlc -I $APRON_PREFIX/lib -use-runtime myrun -o X bigarray.cma gmp.cma apron.cma oct.cma X.cmo]
-
-{b Comments:} The C libraries related to [gmp.cma] and [apron.cma] are
-automatically looked for (thanks to the auto-linking feature provided by
-[ocamlc]).  For [oct.cma], the library [liboct.a], identic to [liboctMPQ.a], is
-selected by default. The [-noautolink] option should be used to select a
-differetn version. See the C documentation of [Oct] library for details.
-
-With the [-noautolink] option, the generation of the custom runtime executable
-should be done with
-
-[ocamlc -I $APRON_PREFIX/lib -noautolink -make-runtime -o myrun bigarray.cma gmp.cma apron.cma oct.cma -ccopt \"-L$GMP_PREFIX/lib ...\" -cclib \"-loct_caml -loctMPQ -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl\"]
+ocamlc -I $MLGMPIDL_PREFIX/lib -I $APRON_PREFIX/lib -use-runtime myrun -o mlexample.byte \\
+  bigarray.cma gmp.cma apron.cma octD.cma mlexample.ml ]}
 
 {3 Native-code compilation}
-You compile and link with
 
-[ocamlopt -I $APRON_PREFIX/lib -c X.ml] and
+{[ocamlopt -I $MLGMPIDL_PREFIX/lib -I $APRON_PREFIX/lib -o mlexample.opt \\
+  bigarray.cmxa gmp.cmxa apron.cmxa octD.cmxa mlexample.ml ]}
 
-[ocamlopt -I $APRON_PREFIX/lib -o X bigarray.cmxa gmp.cmxa apron.cmxa oct.cmxa X.cmx]
+{3 Without auto-linking feature}
 
-{b Comments:} Same as for bytecode compilation. With the
-[-noautolink] option, the linking command becomes
+{[ocamlopt -I $MLGMPIDL_PREFIX/lib -I $APRON_PREFIX/lib -noautolink -o mlexample.opt \\
+  bigarray.cmxa gmp.cmxa apron.cmxa octD.cmxa mlexample.ml \\
+  -cclib \"-L$MLGMPIDL_PREFIX/lib -L$APRON_PREFIX/lib \\
+	  -loctD_caml_debug -loctD_debug \\
+	  -lapron_caml_debug -lapron_debug \\
+	  -lgmp_caml -L$MPFR_PREFIX/lib -lmpfr -L$GMP_PREFIX/lib -lgmp \\
+	  -L$CAMLIDL_PREFIX/lib/ocaml -lcamlidl \\
+	  -lbigarray\" ]}
 
-[ocamlopt -I $APRON_PREFIX/lib -o X bigarray.cmxa gmp.cmxa apron.cmxa oct.cmxa -ccopt \"-L$GMP_PREFIX/lib ...\" -cclib \"-loct_caml -loctMPQ -lapron_caml -lapron -lgmp_caml -lmpfr -lgmp -lbigarray -lcamlidl\" X.cmx]
 *)")
