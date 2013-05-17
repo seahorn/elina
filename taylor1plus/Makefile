@@ -51,29 +51,22 @@ CCSRC = t1p_config.h t1p.h $(CCMODULES:%=%.h) $(CCMODULES:%=%.c)
 
 CCINC_TO_INSTALL = t1p.h
 CCBIN_TO_INSTALL =
-CCLIB_TO_INSTALL = \
-libt1pMPQ.a libt1pD.a libt1pMPFR.a \
-libt1pMPQ_debug.a libt1pD_debug.a libt1pMPFR_debug.a
+CCLIB_TO_INSTALL = libt1pMPQ.a libt1pMPQ_debug.a 
 ifneq ($(HAS_SHARED),)
 CCLIB_TO_INSTALL := $(CCLIB_TO_INSTALL) \
-libt1pMPQ.so libt1pD.so libt1pMPFR.so \
-libt1pMPQ_debug.so libt1pD_debug.so libt1pMPFR_debug.so
+libt1pMPQ.so libt1pMPQ_debug.so 
 endif
 CAML_TO_INSTALL = \
 t1p.idl t1p.ml t1p.mli t1p.cmi \
 t1pMPQ.cma \
-t1pD.cma \
-t1pMPFR.cma \
-libt1pMPQ_caml.a libt1pD_caml.a libt1pMPFR_caml.a \
-libt1pMPQ_caml_debug.a libt1pD_caml_debug.a libt1pMPFR_caml_debug.a
+libt1pMPQ_caml.a \
+libt1pMPQ_caml_debug.a 
 ifneq ($(HAS_OCAMLOPT),)
 CAML_TO_INSTALL += \
-t1pMPQ.cmxa t1pMPQ.a \
-t1pD.cmxa t1pD.a \
-t1pMPFR.cmxa t1pMPFR.a
+t1pMPQ.cmxa t1pMPQ.a 
 endif
 ifneq ($(HAS_SHARED),)
-CAML_TO_INSTALL += dllt1pMPQ_caml.so dllt1pD_caml.so dllt1pMPFR_caml.so dllt1pMPQ_caml_debug.so dllt1pD_caml_debug.so dllt1pMPFR_caml_debug.so
+CAML_TO_INSTALL += dllt1pMPQ_caml.so dllt1pMPQ_caml_debug.so 
 endif
 
 LIBS = -L$(APRON_PREFIX) -lapron -L$(GMP_PREFIX)/lib -lgmpxx -lgmp -L$(MPFR_PREFIX)/lib -lmpfr -lstdc++ -lm
@@ -87,7 +80,7 @@ LIBS_DEBUG = -L$(APRON_PREFIX) -lapron_debug -L$(GMP_PREFIX)/lib -lgmpxx -lgmp -
 # depend doc install
 # and the following one
 
-all: allMPQ allD allMPFR 
+all: allMPQ #allD allMPFR 
 # testD testMPQ testMPFR testD_debug testMPQ_debug testMPFR_debug test_joinD_debug test_joinMPQ_debug test_joinMPFR_debug 
 
 
@@ -196,7 +189,7 @@ libt1p%_debug.a: $(subst .c,%_debug.o,$(CCMODULES:%=%.c))
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 libt1p%.so:  $(subst .c,%.o,$(CCMODULES:%=%.c))
-	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS) -L../apron
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS) -L../apron -L../box -lbox$* -L../newpolka -lpolka$*
 libt1p%_debug.so: $(subst .c,%_debug.o,$(CCMODULES:%=%.c))
 	$(CC) $(CFLAGS_DEBUG) -shared -o $@ $^ $(LIBS_DEBUG) -L../apron
 
