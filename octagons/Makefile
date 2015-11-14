@@ -188,6 +188,7 @@ liboct%_debug.so: $(subst .c,%_debug.o,$(CCSOURCES))
 
 octtest%: liboct%_debug.a oct_test%.o
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -o $@ oct_test$*.o \
+          -Wl,-rpath-link,../apron \
 	-L. -loct$*_debug \
 	-L../newpolka -lpolkaMPQ_debug \
 	-L../apron -lapron_debug \
