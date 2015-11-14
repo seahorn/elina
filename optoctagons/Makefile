@@ -101,7 +101,7 @@ opt_oct_transfer.o : opt_oct_transfer.c opt_oct_hmat.o
 	$(CC) -c $(CFLAGS) $(DFLAGS) $(INCLUDES) -o opt_oct_transfer.o opt_oct_transfer.c $(LIBS) opt_oct_hmat.o
  
 liboptoct.so : $(OBJS) $(OPTOCTH)
-	$(CC) -shared $(CFLAGS) $(DFLAGS) $(INCLUDES) -o $(SOINST) $(OBJS) $(LIBS)
+	$(CC) -shared $(DFLAGS) $(INCLUDES) -o $(SOINST) $(OBJS) $(LIBS)
 
 
 
