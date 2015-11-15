@@ -49,10 +49,11 @@ INSTALL = install
 INSTALLd = install -d
 
 SOINST = liboptoct.so
+AINST = liboptoct.a
 
 OPTOCTH = opt_oct.h opt_oct_internal.h opt_oct_hmat.h $(CLOSUREH)
 
-all : linkedlistapi liboptoct.so 
+all : linkedlistapi liboptoct.so liboptoct.a 
 
 linkedlistapi:
 	(cd LinkedListAPI; make all)
@@ -103,7 +104,9 @@ opt_oct_transfer.o : opt_oct_transfer.c opt_oct_hmat.o
 liboptoct.so : $(OBJS) $(OPTOCTH)
 	$(CC) -shared $(DFLAGS) $(INCLUDES) -o $(SOINST) $(OBJS) $(LIBS)
 
-
+liboptoct.a : $(OBJS) $(OPTOCTH)
+	$(AR) rcs -o $(AINST) $(OBJS)
+	$(RANLIB) $(AINST)
 
 install:
 	(cd LinkedListAPI; make install)
@@ -111,7 +114,9 @@ install:
 	for i in $(SOINST); do \
 		$(INSTALL) $$i $(LIBDIR); \
 	done; 
-
+	for i in $(AINST); do \
+		$(INSTALL) $$i $(LIBDIR); \
+	done; 
 	$(INSTALLd) $(INCLDIR); \
 	for i in $(OPTOCTH); do \
 		$(INSTALL) $$i $(INCLDIR); \
@@ -120,9 +125,10 @@ install:
 clean:
 	(cd LinkedListAPI; make clean)
 	-rm $(SOINST) 
+	-rm $(AINST) 
 	-rm *.o
 
 
 uninstall:
 	rm -f $(INCLDIR)/opt_oct*.h
-	rm -f $(LIBDIR)/$(SOINST) $(LIBDIR)/liblinkedlistapi.so
+	rm -f $(LIBDIR)/$(SOINST) $(LIBDIR)/$(AINST) $(LIBDIR)/liblinkedlistapi.so

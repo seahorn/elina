@@ -6,6 +6,8 @@ AFLAGS := -D_GNU_SOURCE -pthread -m64 -march=native -fno-tree-vectorize
 
 SOINST = liblinkedlistapi.so
 
+AINST = liblinkedlistapi.a
+
 OBJS = comp_list.o array_comp_list.o intersection.o union.o extract.o 
 
 PREFIX = $(APRON_PREFIX)
@@ -14,7 +16,7 @@ LIBDIR = $(PREFIX)/lib
 
 INCLDIR = $(PREFIX)/include
 
-all: liblinkedlistapi.so
+all: liblinkedlistapi.so liblinkedlistapi.a
 
 comp_list.o: comp_list.h comp_list.c
 	$(CC) -c $(CFLAGS) $(DFLAGS) $(AFLAGS) -o comp_list.o comp_list.c $(LIBS)
@@ -38,9 +40,13 @@ extract.o: comp_list.h extract.c
 liblinkedlistapi.so: $(OBJS)
 	$(CC) -shared $(CFLAGS) $(DFLAGS) -o $(SOINST) $(OBJS) $(LIBS)
 
+liblinkedlistapi.a: $(OBJS)
+	$(AR) rcs -o $(AINST) $(OBJS)
+	$(RANLIB) $(AINST)
+
 install: 
 	$(INSTALLd) $(LIBDIR); \
-	$(INSTALL) $(SOINST) $(LIBDIR);
+	$(INSTALL) $(SOINST) $(AINST) $(LIBDIR);
 
 clean:
-	rm -f $(OBJS) liblinkedlistapi.so
+	rm -f $(OBJS) liblinkedlistapi.so liblinkedlistapi.a
