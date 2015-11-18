@@ -428,6 +428,7 @@ bool is_top_half(opt_oct_mat_t *oo, int dim){
 						int ind = j1 + ((i1 + 1)*(i1 + 1))/2;
 						if(m[ind]!=INFINITY){
 							flag = false;
+                                                                      free(ca);
 							#if defined(TIMING)
 								record_timing(is_top_time);
 							#endif
