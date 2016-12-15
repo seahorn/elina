@@ -50,6 +50,8 @@ AINST = liboptoct.a
 OPTOCTH = opt_oct.h opt_oct_internal.h opt_oct_hmat.h $(CLOSUREH)
 
 
+.PHONY: linkedlistapi
+
 all : linkedlistapi liboptoct.so liboptoct.a 
 	@echo "-- Compiled optoct with flags $(IS_VECTOR) $(IS_SSE) ... "
 
