@@ -50,7 +50,6 @@ AINST = liboptoct.a
 OPTOCTH = opt_oct.h opt_oct_internal.h opt_oct_hmat.h $(CLOSUREH)
 
 
-
 all : linkedlistapi liboptoct.so liboptoct.a 
 	@echo "-- Compiled optoct with flags $(IS_VECTOR) $(IS_SSE) ... "
 
@@ -102,8 +101,7 @@ liboptoct.so : $(OBJS) $(OPTOCTH)
 	$(CC) -shared $(DFLAGS) $(INCLUDES) -o $(SOINST) $(OBJS) $(LIBS)
 
 liboptoct.a : $(OBJS) $(OPTOCTH)
-	$(AR) rcs -o $(AINST) $(OBJS)
-	$(RANLIB) $(AINST)
+	$(AR) rcs $(AINST) $(OBJS)
 
 install:
 	(cd LinkedListAPI; make install)

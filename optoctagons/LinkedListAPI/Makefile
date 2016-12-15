@@ -41,8 +41,7 @@ liblinkedlistapi.so: $(OBJS)
 	$(CC) -shared $(CFLAGS) $(DFLAGS) -o $(SOINST) $(OBJS) $(LIBS)
 
 liblinkedlistapi.a: $(OBJS)
-	$(AR) rcs -o $(AINST) $(OBJS)
-	$(RANLIB) $(AINST)
+	$(AR) rcs $(AINST) $(OBJS)
 
 install: 
 	$(INSTALLd) $(LIBDIR); \
