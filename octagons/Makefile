@@ -96,15 +96,15 @@ allD: D mlD
 allDl: Dl mlDl
 allMPFR: MPFR mlMPFR
 
-Il: liboctIl.a liboctIl_debug.a octtestIl
-Ill: liboctIll.a liboctIll_debug.a octtestIll
-MPZ: liboctMPZ.a liboctMPZ_debug.a octtestMPZ
-Ri: liboctRi.a liboctRi_debug.a octtestRi
-Rll: liboctRll.a liboctRll_debug.a octtestRll
-MPQ: liboctMPQ.a liboctMPQ_debug.a octtestMPQ
-D: liboctD.a liboctD_debug.a octtestD
-Dl: liboctDl.a liboctDl_debug.a octtestDl
-MPFR: liboctMPFR.a liboctMPFR_debug.a octtestMPFR
+Il: liboctIl.a liboctIl_debug.a #octtestIl
+Ill: liboctIll.a liboctIll_debug.a #octtestIll
+MPZ: liboctMPZ.a liboctMPZ_debug.a #octtestMPZ
+Ri: liboctRi.a liboctRi_debug.a #octtestRi
+Rll: liboctRll.a liboctRll_debug.a #octtestRll
+MPQ: liboctMPQ.a liboctMPQ_debug.a #octtestMPQ
+D: liboctD.a liboctD_debug.a #octtestD
+Dl: liboctDl.a liboctDl_debug.a #octtestDl
+MPFR: liboctMPFR.a liboctMPFR_debug.a #octtestMPFR
 ifneq ($(HAS_SHARED),)
 Il: liboctIl.so liboctIl_debug.so
 Ill: liboctIll.so liboctIll_debug.so
