@@ -96,15 +96,15 @@ allD: D mlD
 allDl: Dl mlDl
 allMPFR: MPFR mlMPFR
 
-Il: liboctIl.a liboctIl_debug.a #octtestIl
-Ill: liboctIll.a liboctIll_debug.a #octtestIll
-MPZ: liboctMPZ.a liboctMPZ_debug.a #octtestMPZ
-Ri: liboctRi.a liboctRi_debug.a #octtestRi
-Rll: liboctRll.a liboctRll_debug.a #octtestRll
-MPQ: liboctMPQ.a liboctMPQ_debug.a #octtestMPQ
-D: liboctD.a liboctD_debug.a #octtestD
-Dl: liboctDl.a liboctDl_debug.a #octtestDl
-MPFR: liboctMPFR.a liboctMPFR_debug.a #octtestMPFR
+Il: liboctIl.a liboctIl_debug.a octtestIl
+Ill: liboctIll.a liboctIll_debug.a octtestIll
+MPZ: liboctMPZ.a liboctMPZ_debug.a octtestMPZ
+Ri: liboctRi.a liboctRi_debug.a octtestRi
+Rll: liboctRll.a liboctRll_debug.a octtestRll
+MPQ: liboctMPQ.a liboctMPQ_debug.a octtestMPQ
+D: liboctD.a liboctD_debug.a octtestD
+Dl: liboctDl.a liboctDl_debug.a octtestDl
+MPFR: liboctMPFR.a liboctMPFR_debug.a octtestMPFR
 ifneq ($(HAS_SHARED),)
 Il: liboctIl.so liboctIl_debug.so
 Ill: liboctIll.so liboctIll_debug.so
@@ -181,14 +181,14 @@ liboct%_debug.a: $(subst .c,%_debug.o,$(CCSOURCES))
 	$(RANLIB) $@
 
 liboct%.so: $(subst .c,%.o,$(CCSOURCES))
-	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS) -L../apron
+	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS) -L../apron 
 
 liboct%_debug.so: $(subst .c,%_debug.o,$(CCSOURCES))
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS_DEBUG) -L../apron
 
 octtest%: liboct%_debug.a oct_test%.o
 	$(CC) $(CFLAGS_DEBUG) $(ICFLAGS) -o $@ oct_test$*.o \
-          -Wl,-rpath-link,../apron \
+          -Wl,-rpath,../apron \
 	-L. -loct$*_debug \
 	-L../newpolka -lpolkaMPQ_debug \
 	-L../apron -lapron_debug \
