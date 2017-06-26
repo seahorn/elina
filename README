@@ -1,7 +1,13 @@
-# This file is part of the APRON Library, released under LGPL license, except
-# files requiring the PPL library (in ppl and products subdirectories)
+This repo contains the APRON Library together with the optimized
+Octagon domain from https://github.com/eth-srl/Octagon.
 
-# Please read the COPYING file packaged in the distribution
+# Apron Instructions #
+
+This file is part of the APRON Library, released under LGPL license,
+except files requiring the PPL library (in ppl and products
+subdirectories)
+
+Please read the COPYING file packaged in the distribution
 
 NOTE: If you do not already have MLGMPIDL, you can use the apron-dist
 directory in SVN repository.
